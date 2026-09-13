@@ -32,7 +32,7 @@ console.log('\n2. the two floors that existed are the one floor now');
 
 console.log('\n3. the sweep: every squad aggregate asks the rule');
 {
-  const training = strip(read('src/app/(staff)/reports/training/page.tsx'));
+  const training = strip(read('src/app/(staff)/reports/gps/page.tsx'));
   assert(/const heatFloored = belowSquadFloor\(athletesWithData\)/.test(training) && /const heatOn = heatPref && !heatFloored/.test(training), 'the training report\'s heat shading is off below the floor');
   // Repointed 2026-09-13 (PATTERN-S7 C1): the floor is said inside the figure card's exclusions (boardFigure's `floored`).
   assert(/floored: heatFloored/.test(training) && /Fewer than five have data, so shading is off; the numbers are unchanged\./.test(read('src/lib/reportFigureCards.ts')), 'and says so');

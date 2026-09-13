@@ -78,7 +78,7 @@ console.log('\nthe sweep: every screen with a chip row resolves through the cook
     : `these read the URL only or nothing: ${notResolving.map((p) => p.replace('src/app/(staff)/', '')).join(', ')}`);
   const raw = withChips.filter((p) => /parseGroupParam\(/.test(strip(read(p))));
   assert(raw.length === 0, raw.length === 0 ? 'and none bypasses it with a raw parseGroupParam() of the URL' : `raw URL reads: ${raw.join(', ')}`);
-  for (const must of ['squad/page.tsx', 'reports/squad/page.tsx', 'reports/training/page.tsx', 'reports/compliance/page.tsx', 'dashboard/page.tsx', 'flags/page.tsx', 'nutrition/page.tsx', 'leaderboards/page.tsx', 'analytics/page.tsx']) {
+  for (const must of ['squad/page.tsx', 'reports/squad/page.tsx', 'reports/gps/page.tsx', 'reports/compliance/page.tsx', 'dashboard/page.tsx', 'flags/page.tsx', 'nutrition/page.tsx', 'leaderboards/page.tsx', 'analytics/page.tsx']) {
     assert(withChips.some((p) => p.endsWith(must)), `${must} is in the sweep`);
   }
 }

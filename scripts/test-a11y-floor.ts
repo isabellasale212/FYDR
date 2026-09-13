@@ -99,7 +99,7 @@ console.log('\nevery screen has a heading to navigate by');
     /* A page that only redirects renders no UI, so it has no heading to lack.
        src/app/page.tsx is exactly this: middleware sends a signed-in user to
        their shell, and anyone reaching it has no session. */
-    if (/^\s*redirect\(/m.test(src) && !/return \(/.test(src)) continue;
+    if (/^\s*(permanent)?[rR]edirect\(/m.test(src) && !/return \(/.test(src)) continue;
     /* Resolve the page's own local imports and ask whether any renders one. */
     const imported = [...src.matchAll(/from '@\/components\/[^/]+\/([A-Za-z0-9_]+)'/g)].map((m) => m[1]!);
     if (imported.some((c) => headingComponents.has(c))) continue;

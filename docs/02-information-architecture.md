@@ -163,7 +163,7 @@ and the fifteen-row sidebar in the screenshot of the existing app.
 | 1 | **Dashboard** | Availability, attention list, timetable, today's sessions, compliance |
 | 2 | **Squad overview** | The roster. Every player, groups, and the way into one athlete's profile |
 | 3 | **Schedule** | The calendar, fixtures, sessions, the MD-n planner, testing sessions |
-| 4 | **Reports** | Training report, squad weekly, compliance, injury and availability, testing results |
+| 4 | **Reports** | GPS report (was "Training report"; premium), Training load report (the seventh, every club, 13 Sept 2026), squad weekly, compliance, injury and availability, athlete report, testing results |
 | 5 | **Nutrition** | Targets, guidance, meal ideas, body composition |
 | 6 | **Gym programme** | Programmes, the builder, the exercise library |
 | 7 | **Leaderboard** | Configurable boards |

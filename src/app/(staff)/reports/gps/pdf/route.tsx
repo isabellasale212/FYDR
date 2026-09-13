@@ -39,7 +39,7 @@ import type { AppRole } from '@/lib/types/database';
  *    the session before the full board, same reasoning squad/pdf's own
  *    tile row gives for its four headline numbers. */
 export async function GET(request: Request) {
-  const { db, orgId, orgName, claims, timezone, tier } = await requireReport('training');
+  const { db, orgId, orgName, claims, timezone, tier } = await requireReport('gps');
   /* Same reasoning as the CSV route beside this one: the page gates, the URL
      did not, and a PDF is the whole board rather than a summary of it. */
   if (!isPremium(tier)) return premiumOnlyResponse('The training report');
@@ -125,7 +125,7 @@ export async function GET(request: Request) {
       </PdfReport>,
     );
 
-    await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, format: 'pdf', mode }, 'export');
+    await recordReportView(db, orgId, claims.userId, actorRole, 'gps', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, format: 'pdf', mode }, 'export');
     return pdfResponse(buffer, `match-report-${selected.date}.pdf`);
   }
 
@@ -134,10 +134,10 @@ export async function GET(request: Request) {
   if (!selected) {
     const buffer = await renderToBuffer(
       <PdfReport footer={`${orgName} · Fydr`}>
-        <PdfHeader eyebrow={`Training report · ${orgName}`} title="Training report" meta="No GPS data imported yet." />
+        <PdfHeader eyebrow={`GPS report · ${orgName}`} title="GPS report" meta="No GPS data imported yet." />
       </PdfReport>,
     );
-    return pdfResponse(buffer, 'training-report.pdf');
+    return pdfResponse(buffer, 'gps-report.pdf');
   }
 
   const [overview, board, scopeIds, squadSize] = await Promise.all([
@@ -152,8 +152,8 @@ export async function GET(request: Request) {
     <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(selected.date, timezone)} · not for redistribution without the club's own policy`}>
       <PdfHeader
         eyebrow={`Training · ${selected.title} · ${orgName}`}
-        title="Training report"
-        definition={reportDefinition('training') ?? undefined}
+        title="GPS report"
+        definition={reportDefinition('gps') ?? undefined}
         meta={`${formatDate(selected.date, timezone)} · Scope: ${scopeLabel}${overview ? ` (${overview.athleteCount} athletes)` : ''}`}
       />
 
@@ -191,6 +191,6 @@ export async function GET(request: Request) {
     </PdfReport>,
   );
 
-  await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, format: 'pdf', mode }, 'export');
-  return pdfResponse(buffer, `training-report-${selected.date}.pdf`);
+  await recordReportView(db, orgId, claims.userId, actorRole, 'gps', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, format: 'pdf', mode }, 'export');
+  return pdfResponse(buffer, `gps-report-${selected.date}.pdf`);
 }

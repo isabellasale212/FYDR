@@ -91,11 +91,11 @@ console.log('\n4. training and match: on the board of those in scope');
   assert(match.label === 'Played, on the board' && match.count === '14 of 15' && /1 of 15 in this filter has no GPS record/.test(match.exclusions), 'the match board: played');
   const nobody = boardFigure({ onBoard: 0, inScope: 0, session: 'x', dateLabel: 'y', noun: 'athletes', floored: false });
   assert(nobody.count === 'Nobody in this filter' && nobody.value === 'Not measured' && nobody.exclusions === 'Nobody in this filter.', 'an empty filter: words');
-  const page = strip(read('src/app/(staff)/reports/training/page.tsx'));
+  const page = strip(read('src/app/(staff)/reports/gps/page.tsx'));
   assert((page.match(/<ReportFigure\s[\s\S]{0,40}\{\.\.\.boardFigure\(\{/g) ?? []).length === 2, 'both boards lead their Board card with it');
-  const pdf = strip(read('src/app/(staff)/reports/training/pdf/route.tsx'));
+  const pdf = strip(read('src/app/(staff)/reports/gps/pdf/route.tsx'));
   assert((pdf.match(/<PdfFigure \{\.\.\.boardFigure\(\{/g) ?? []).length === 2, 'and both PDFs');
-  assert(/one emphasised figure/i.test(read('docs/screens/23-training-report.md')), 'the spec says so');
+  assert(/one emphasised figure/i.test(read('docs/screens/23-gps-report.md')), 'the spec says so');
 }
 
 console.log('\n5. the athlete report: met of expected');
@@ -147,7 +147,7 @@ console.log('\n7. testing: athletes with a result, for the test chosen');
   const pdf = strip(read('src/app/(staff)/reports/testing/pdf/route.tsx'));
   assert(/<PdfFigure\s[\s\S]{0,40}\{\.\.\.testCoverageFigure\(\{/.test(pdf), 'and the PDF\'s ranked section leads with it');
   assert(/one emphasised figure/i.test(read('docs/screens/22-testing-report.md')), 'the spec says so');
-  assert(/all six reports lead with one/i.test(read('docs/reports-catalogue.md')), 'the working catalogue notes the figure card is on all six');
+  assert(/all seven reports lead with one/i.test(read('docs/reports-catalogue.md')), 'the working catalogue notes the figure card is on all seven');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

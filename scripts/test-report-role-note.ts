@@ -23,7 +23,7 @@ console.log('1. C10 — the note, from the sets');
   assert(/^Nutritionist: the nutrition domain only/.test(reportRoleNote('compliance', ['nutritionist']) ?? ''), 'compliance, nutritionist: the one domain');
   assert(reportRoleNote('compliance', ['coach']) === null && reportRoleNote('compliance', ['nutritionist', 'coach']) === null, 'compliance reads the same for every other role — no note');
   assert(/^Medical:/.test(reportRoleNote('athlete', ['medic']) ?? '') && /^Nutritionist: availability is shown as a status/.test(reportRoleNote('athlete', ['nutritionist']) ?? '') && /^Availability and the restriction line only/.test(reportRoleNote('athlete', ['strength_conditioning']) ?? ''), 'athlete report: three readings');
-  for (const key of ['squad', 'testing', 'training'] as const) assert(reportRoleNote(key, ['coach']) === null && reportRoleNote(key, ['medic']) === null, `${key}: no difference, no note`);
+  for (const key of ['squad', 'testing', 'gps', 'trainingLoad'] as const) assert(reportRoleNote(key, ['coach']) === null && reportRoleNote(key, ['medic']) === null, `${key}: no difference, no note`);
   const src = strip(read('src/lib/reportRoleNote.ts'));
   assert(/hasAnyRole\(roles, CLINICAL_ONLY\)/.test(src) && !/'medic'\s*\]/.test(src.replace(/roles\.every\(\(r\) => r === 'nutritionist'\)/, '')), 'the medic reading comes from access.ts\'s CLINICAL_ONLY set, not a hand-written role name');
 }
@@ -46,8 +46,8 @@ console.log('\n3. C11 — exports first under the title on a phone');
   const before = css.slice(0, css.indexOf('@media (max-width: 767px) {\n  .rhead {'));
   assert(!/\.rhead\s*\{[^}]*display:\s*flex/.test(before), 'desktop is untouched: .rhead is not flex outside the phone query');
   assert(/\.tr-phone-note\s*\{[^}]*display:\s*none;/.test(css) && /@media \(max-width: 767px\) \{\s*\.tr-phone-note \{\s*display: block;/.test(css), 'the training board\'s phone note draws on a phone only');
-  assert(/On a phone, read it as the PDF — Export PDF is above\./.test(strip(read('src/app/(staff)/reports/training/page.tsx'))), 'and says the board\'s phone reading is the PDF');
-  assert(/exports first/i.test(read('docs/screens/23-training-report.md')), 'the training spec says so');
+  assert(/On a phone, read it as the PDF — Export PDF is above\./.test(strip(read('src/app/(staff)/reports/gps/page.tsx'))), 'and says the board\'s phone reading is the PDF');
+  assert(/exports first/i.test(read('docs/screens/23-gps-report.md')), 'the training spec says so');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

@@ -1,8 +1,17 @@
-# 23. Training report
+# 23. GPS report
 
 ## 1. Page name and URL
 
-**Training report**, at `/reports/training`.
+**GPS report**, at `/reports/gps`. **Was "Training report" at `/reports/training`
+until 13 September 2026**, when the catalogue addendum split the training report
+in two: this per-session GPS board is the **GPS report** (premium), and the RPE ×
+minutes report is the **Training load report**, every club, at
+`/reports/training-load` (`65-training-load-report.md`). Neither keeps the old
+name, because that name was the ambiguity. `/reports/training` is a permanent
+redirect to `/reports/gps` carrying the query (`?mode=match`, `?session=`,
+`?groups=`, `?range=`), so an old link lands where it always did. The report key
+is `gps` (`requireReport('gps')`; audit rows before 13 September say `training`);
+the exports are `gps-report-<date>.csv` and `.pdf`.
 
 How hard each session actually was, judged against a typical session of the same
 kind for that athlete. **Premium package only.**
@@ -28,26 +37,23 @@ while this screen was correctly gated, because the buttons were simply never dra
 
 ---
 
-**Verified access, from the code.** This page's real gates, in the order they run, are: `requireReportAccess()` at `src/app/(staff)/reports/training/page.tsx:252`; a product package check at `src/app/(staff)/reports/training/page.tsx:254`; a product package check at `src/app/(staff)/reports/training/page.tsx:256`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
+**Verified access, from the code.** This page's real gates, in the order they run, are: `requireReportAccess()` at `src/app/(staff)/reports/gps/page.tsx:252`; a product package check at `src/app/(staff)/reports/gps/page.tsx:254`; a product package check at `src/app/(staff)/reports/gps/page.tsx:256`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
 
 ## 3. How you get here
 
-- The Training report card on the reports hub, marked Premium.
+- The GPS report card on the reports hub, marked Premium.
 
 ---
 
 ## 4. What you see
 
-**No definition sentence yet, on either board** (PATTERN-S7 C1, reconciled to
-Isabella's catalogue 13 September 2026; `docs/reports-catalogue.md`). The catalogue's
-confirmed training sentence — "Session load is RPE multiplied by session minutes,
-summed over the period…" — describes a longitudinal RPE-load report, not this
-per-session GPS board, and is raised on the decision sheet rather than put above
-numbers it does not describe; the match sentence is on hold in the catalogue until
-the "who played, minutes" question is ruled on (the code's answer: the app records
-attendance and the team allocation, not who played or minutes). The shell's slot is
-in place and draws nothing for none; the builder's earlier drafted sentence is
-withdrawn.
+**The definition sentence, on the training-session board** (PATTERN-S7 C1; the
+catalogue addendum, 13 September 2026): "Per-session GPS totals for each athlete,
+from the files imported for that session. An athlete with no GPS file for a session
+shows as no record, never as zero." — on screen, in the CSV's first line and under
+the PDF's title. The match board draws none: its sentence is on hold in the
+catalogue until the "who played, minutes" question is ruled on (the code's answer:
+the app records attendance and the team allocation, not who played or minutes).
 
 **Exports first under the title on a phone; the board's phone reading is the PDF**
 (PATTERN-S7 C11, 13 September 2026). Below 768px the shared header puts the

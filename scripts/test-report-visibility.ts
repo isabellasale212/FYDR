@@ -27,7 +27,8 @@ const BASE = 'src/app/(staff)/reports';
 const EXPECTED: Record<ReportKey, string[]> = {
   compliance: ['sport_scientist', 'coach', 'medic', 'strength_conditioning', 'nutritionist'],
   injuries:   ['sport_scientist', 'coach', 'medic', 'strength_conditioning', 'nutritionist'],
-  training:   ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
+  gps:        ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
+  trainingLoad: ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
   athlete:    ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
   squad:      ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
   testing:    ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
@@ -62,10 +63,20 @@ function walk(dir: string): string[] {
 }
 const files = walk(BASE).filter((f) => /\.(tsx?|ts)$/.test(f) && f !== join(BASE, 'page.tsx'));
 const routeFiles = files.filter((f) => /\/(page\.tsx|route\.tsx?|route\.ts)$/.test(f));
+/* The route directory is the key, with two exceptions since the training
+   report split (13 September 2026): /reports/training-load is the
+   `trainingLoad` key, and /reports/training is nothing but a redirect to
+   /reports/gps for old links — it gates on no key because it serves no data. */
+const KEY_BY_DIR: Record<string, ReportKey | 'redirect'> = { 'training-load': 'trainingLoad', training: 'redirect' };
 for (const f of routeFiles) {
   const rel = f.slice(BASE.length + 1);
-  const key = rel.split('/')[0] as ReportKey;
+  const dir = rel.split('/')[0]!;
+  const key = KEY_BY_DIR[dir] ?? (dir as ReportKey);
   const src = readFileSync(f, 'utf8');
+  if (key === 'redirect') {
+    assert(/permanentRedirect\(`\/reports\/gps/.test(src) && !/requireReport|\.from\(/.test(src), `${rel} is a redirect to /reports/gps and reads nothing`);
+    continue;
+  }
   assert(src.includes(`requireReport('${key}')`), `${rel} gates on '${key}'`);
   assert(!/requireReportAccess\(\)/.test(src), `${rel} no longer uses the blanket gate`);
 }

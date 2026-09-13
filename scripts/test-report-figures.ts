@@ -77,14 +77,14 @@ console.log('\n5. the training report — the fourth');
   assert(boardCoverageLine({ onBoard: 21, inScope: 30, noun: 'athletes' }) === 'n = 21 athletes · 9 of 30 in this filter have no GPS record for this session and are not on the board', 'the board says who is not on it, with the denominator');
   assert(boardCoverageLine({ onBoard: 30, inScope: 30, noun: 'athletes' }) === 'n = 30 athletes · every athlete in this filter has a GPS record for this session — nobody is excluded', 'and when everyone is');
   assert(boardCoverageLine({ onBoard: 14, inScope: 15, noun: 'played' }) === 'n = 14 played · 1 of 15 in this filter has no GPS record for this session and is not on the board', 'a match: played');
-  const page = strip(read('src/app/(staff)/reports/training/page.tsx'));
+  const page = strip(read('src/app/(staff)/reports/gps/page.tsx'));
   // Repointed 2026-09-13 (PATTERN-S7 C1): the coverage clause now lives inside the emphasised figure card (boardFigure), on both boards.
   assert(/boardFigure\(\{ onBoard: board\.rows\.length, inScope: scopeSize, session: selected\.title, dateLabel: formatDate\(selected\.date, timezone\), noun: 'athletes', floored: heatFloored \}\)/.test(page) && /boardFigure\(\{ onBoard: board\.rows\.length, inScope: scopeSize, session: `v \$\{selected\.opponent\}`, dateLabel: formatDate\(selected\.date, timezone\), noun: 'played', floored: false \}\)/.test(page), 'both boards carry it');
   assert(/const scopeSize = scopeIds \? scopeIds\.length : squadSize;/.test(page), 'the denominator is the filter\'s size, or the squad');
   assert((page.match(/'—'/g) ?? []).length === 0, 'no dash on the training page — "No data", "No best yet", "Not set", "Result not entered"');
   const q = strip(read('src/lib/queries/trainingReport.ts'));
   assert((q.match(/'—'/g) ?? []).length === 0 && /const NO_VALUE = 'No data';/.test(q), 'nor in its comparison tables');
-  assert(/No GPS record|nobody is excluded/.test(read('docs/screens/23-training-report.md')) || /not on the board/.test(read('docs/screens/23-training-report.md')), 'the spec says so');
+  assert(/No GPS record|nobody is excluded/.test(read('docs/screens/23-gps-report.md')) || /not on the board/.test(read('docs/screens/23-gps-report.md')), 'the spec says so');
 }
 
 console.log('\n6. the testing report — the fifth');

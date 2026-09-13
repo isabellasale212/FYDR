@@ -12,7 +12,7 @@ mirrors the sentences here verbatim and `scripts/test-report-catalogue.ts` fails
 drift.
 
 The rules that apply to all reports are the source's ("Rules that apply to all five")
-and are not repeated. **All six reports lead with one emphasised figure card**
+and are not repeated. **All seven reports lead with one emphasised figure card**
 (PATTERN-S7 C1, 13 Sept — `components/ReportFigure`: the count before the percentage,
 the sample, the exclusions in a full sentence), on screen and in their PDFs. **Every report's main table sits in the one `TableShell`**
 (`components/TableShell`, 13 Sept): the title, the sort order in words where the table is a
@@ -23,13 +23,13 @@ denominator, and a body that scrolls sideways on a phone rather than the page. T
 
 ---
 
-## 1. GPS report — `/reports/training` *(was "Training report"; premium)*
+## 1. GPS report — `/reports/gps` *(was "Training report" at `/reports/training`; premium)*
 
 - **Definition sentence (CONFIRMED, the addendum, 13 Sept 2026):** "Per-session GPS totals for each athlete, from the files imported for that session. An athlete with no GPS file for a session shows as no record, never as zero."
-- **The split (the addendum):** what is built here is a per-session GPS board, and it is now the **GPS report**, premium; the RPE × minutes report the source's original row described is the **Training load report**, row 8 below, every club, the seventh. Neither keeps the name "Training report", because that name was the ambiguity. The route and the name change with the split build; the confirmed GPS sentence is on the board from this reconciliation.
+- **The split (the addendum), built 13 Sept:** the per-session GPS board is the **GPS report**, premium, at `/reports/gps` (the match board at `?mode=match`); the RPE × minutes report the source's original row described is the **Training load report**, row 8 below, every club, the seventh, at `/reports/training-load`. Neither keeps the name "Training report", because that name was the ambiguity: `/reports/training` is a permanent redirect to `/reports/gps` carrying the query, for old links. The report key is `gps` (audit rows before 13 Sept say `training`); the exports are `gps-report-<date>.csv` / `.pdf`.
 - **Open (answered from the code, 13 Sept):** load is derived, not stored — MET-007 (RPE × minutes) from the athlete's rating; a week template's "load 2,910" is the planned load, Σ `duration_min × planned_rpe` over the template's sessions, computed on render (`weekTotalLoad`); `sessions.planned_load` exists as a column and is written and read by nothing.
 
-## 2. Match report — `/reports/training?mode=match`
+## 2. Match report — `/reports/gps?mode=match`
 
 - **Definition sentence:** ON HOLD (the source). No card on the match board until it is written.
 - **Open, answered from the code (13 Sept):** the app does **not** record who played or minutes. It records attendance at a session (`session_attendance`: full / modified / absent / excused with a non-clinical reason, written by a coach from the timetable) and the week's team allocation (`team_allocations`, the published selection list). No column anywhere holds minutes played, starters, bench or substitutions; `fixtures.result` is free text. GPS `duration_s` per athlete is a proxy for time on the pitch only where a unit was worn (premium). By the source's own rule the report is therefore availability plus RPE plus GPS, and must say so rather than show blank columns.
@@ -80,10 +80,16 @@ denominator, and a body that scrolls sideways on a phone rather than the page. T
 - **Sort:** by expected return, soonest first; unknown returns last and said so.
 - **Export:** CSV and PDF with the definition in the header; a medical export carries the confidentiality line (PATTERN-S7 C3, on the sheet).
 
-## 8. Training load report — *not yet built; the seventh, every club*
+## 8. Training load report — `/reports/training-load` *(the seventh, every club; built 13 Sept 2026)*
 
 **The question:** how much training load has each athlete carried?
 
 - **Definition sentence (CONFIRMED, the addendum, 13 Sept 2026):** "Session load is RPE multiplied by session minutes, summed over the period. Only sessions an athlete was expected at are counted, and a session with no rating is not counted as zero."
-- **Off state (CONFIRMED), since RPE is a club setting:** "This club does not collect session RPE, so there is no load to report. A sport scientist can switch it on in Settings." — setting-driven absence keeps the destination (`docs/decisions/absence-rule.md`).
-- **Built with the training report split**, after the RPE package; `src/lib/reportCatalogue.ts` carries both sentences as `TRAINING_LOAD_DEFINITION` and `TRAINING_LOAD_OFF_STATE`.
+- **Off state (CONFIRMED), since RPE is a club setting:** "This club does not collect session RPE, so there is no load to report. A sport scientist can switch it on in Settings." — setting-driven absence keeps the destination (`docs/decisions/absence-rule.md`): the page, the CSV and the PDF all keep their address and carry the sentence, with a link to Settings › Club; the hub card says so too.
+- **Built against it:** "expected at" is a `compliance_expectations` row, domain `training_rpe`, not waived — the same rows the compliance report counts, so the two reports agree about who was asked; the load is `training_entries.session_load` (MET-007) read through the current-revision view, so a coach's correction is what is summed; an athlete with nothing rated reads "No ratings", never 0, and an unrated session is left out of every sum (a rating of 0, rest, is a real load of 0 and is counted). Screen: `docs/screens/23-training-load-report.md`; query: `src/lib/queries/trainingLoadReport.ts`.
+- **Roles:** sport scientist, coach, medic, S&C (`REPORT_ACCESS`); the nutritionist cannot open it.
+- **Figure:** sessions rated of expected — the denominator every sum rests on — the count before the percentage, with the squad's summed load in the sample; the unrated sessions as the exclusions.
+- **Chart:** none — the ranked table is the picture.
+- **Sort:** highest load first; athletes with no rating last, and the header says so.
+- **Period:** week, month (default), season, year, all; `day` refused with its reason; `?to=` walks the window (the compliance report's anchor rule).
+- **Export:** CSV and PDF with the definition in the header, "No ratings" as words.

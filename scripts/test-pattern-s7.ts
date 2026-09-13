@@ -21,7 +21,9 @@ console.log('A1. the index is grouped by what the question is about');
   assert(/const GROUPS = \[/.test(page) && /About the squad over a period/.test(page) && /About one athlete, session or test/.test(page), 'two groups, named as the board names them');
   assert(/<h2 className="eyebrow rep-group-title"/.test(page), 'each group has its heading');
   const squad = page.slice(page.indexOf("key: 'compliance'"), page.indexOf("key: 'athlete'"));
-  assert((squad.match(/about: 'squad'/g) ?? []).length === 3 && /key: 'squad'[\s\S]{0,400}about: 'squad'/.test(page), 'Compliance, Injury & availability, Training report and Squad weekly are about the squad');
+  /* Four, since the training report split (13 September 2026): Training load
+     and the GPS report are both about the squad over a period. */
+  assert((squad.match(/about: 'squad'/g) ?? []).length === 4 && /key: 'squad'[\s\S]{0,400}about: 'squad'/.test(page), 'Compliance, Injury & availability, Training load, GPS report and Squad weekly are about the squad');
   assert(/key: 'athlete'[\s\S]{0,300}about: 'one'/.test(page) && /key: 'testing'[\s\S]{0,300}about: 'one'/.test(page), 'Athlete report and Testing are about one athlete, session or test');
   const spec = read('docs/screens/17-reports-hub.md');
   assert(/About the squad over a period/.test(spec), '17-reports-hub.md describes the grouping');
@@ -33,7 +35,7 @@ console.log('\nC5. the group filter reaches every export route as the page reads
      through resolveGroupFilter — the URL, then the sticky cookie every chip
      row writes — so a bare export URL is scoped the way the screen was. The
      exports hub posts the scope the page resolved. Pinned so it stays so. */
-  const routes = ['training', 'injuries', 'compliance', 'testing', 'squad'];
+  const routes = ['gps', 'training-load', 'injuries', 'compliance', 'testing', 'squad'];
   for (const r of routes) {
     const src = read(`src/app/(staff)/reports/${r}/export/route.ts`);
     assert(/resolveGroupFilter\(url\.searchParams\.get\('groups'\) \?\? undefined\)/.test(src), `${r}: the URL, then the sticky cookie`);

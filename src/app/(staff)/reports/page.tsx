@@ -8,12 +8,12 @@ export const metadata = { title: 'Reports · Fydr' };
 
 // SETTINGS-SPEC.md §7.6: gated destinations "gain a Premium badge and 62%
 // opacity" in the sidebar. This app's real sidebar has one generic
-// "Reports" entry, not six — five of the six reports here are free, so
-// badging the sidebar item itself would misrepresent the other five. This
+// "Reports" entry, not seven — six of the seven reports here are free, so
+// badging the sidebar item itself would misrepresent the other six. This
 // card grid, where the app actually enumerates reports individually, is
 // the honest real equivalent. Still a real link either way: a Basic club
 // sees this card and can click through to the real gate at
-// /reports/training, never a dead end.
+// /reports/gps, never a dead end.
 /* Each report is tinted to the DOMAIN IT READS FROM — the design's own caption
  * for this screen. It is not decoration: these six cards otherwise differ only
  * by a title, and a coach looking for "the medical one" reads six titles every
@@ -48,15 +48,31 @@ const REPORTS = [
     available: true,
     premiumGated: false,
   },
+  /* The training report was two reports (the catalogue addendum, 13 September
+     2026): the per-session GPS board is the GPS report, premium; the RPE ×
+     minutes report is the Training load report, every club — the seventh.
+     Neither keeps the old name, because that name was the ambiguity. */
   {
-    key: 'training',
+    key: 'trainingLoad',
+    about: 'squad',
+    tone: 'training',
+    source: 'session RPE',
+    exports: 'CSV · PDF',
+    title: 'Training load',
+    body: 'RPE × minutes, per athlete, over the period.',
+    href: '/reports/training-load',
+    available: true,
+    premiumGated: false,
+  },
+  {
+    key: 'gps',
     about: 'squad',
     tone: 'gps',
     source: 'GPS · premium',
-    exports: 'CSV',
-    title: 'Training report',
+    exports: 'CSV · PDF',
+    title: 'GPS report',
     body: 'One session, every athlete, every GPS metric, on one board.',
-    href: '/reports/training',
+    href: '/reports/gps',
     available: true,
     premiumGated: true,
   },
@@ -143,7 +159,7 @@ const GROUPS = [
  *  disabled and saying so. Redirecting away entirely would hide that a
  *  reports feature exists at all, which is worse than naming the reason. */
 export default async function ReportsPage() {
-  const { orgName, claims, tier } = await requireStaff();
+  const { orgName, claims, tier, collectsRpe } = await requireStaff();
   const canOpen = (key: ReportKey): boolean => hasAnyRole(claims.roles, REPORT_VISIBILITY[key]);
   const openCount = REPORTS.filter((r) => canOpen(r.key)).length;
   const onPremium = isPremium(tier);
@@ -221,7 +237,10 @@ export default async function ReportsPage() {
                 ) : null}
               </div>
               <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
-                {r.body}
+                {/* docs/decisions/absence-rule.md: a setting-driven absence
+                    keeps its destination and says so from where it is noticed.
+                    The card stays a link; the report carries the off state. */}
+                {r.key === 'trainingLoad' && !collectsRpe ? 'Session RPE is off for this club, so there is no load to report — the report says so, and who can switch it on.' : r.body}
               </p>
               {/* Pushed to the bottom so the six cards' footers line up even
                   when a blurb wraps to two lines and its neighbour does not. */}

@@ -66,12 +66,12 @@ console.log('\n4. the training report (2026-09-13)');
   assert(f.title === 'No GPS record for Academy.' && f.body === 'None of the 5 athletes in Academy has a GPS record for this session. Nothing is missing — the filter is what is empty.' && f.action?.label === 'Show the whole squad', 'a filter that leaves nothing: the denominator, the why, the one action that widens the filter');
   const c = clubEmptyCopy({ what: 'GPS record', fills: 'x' });
   assert(c.title === 'No GPS record on record for the club.' && c.action === null, 'nothing on record for the club: no action');
-  const page = strip(read('src/app/(staff)/reports/training/page.tsx'));
+  const page = strip(read('src/app/(staff)/reports/gps/page.tsx'));
   assert(/trainingFilterEmpty = filterEmptyCopy\(\{\s*what: 'GPS record',\s*inScope: scopeSize,/.test(page) && /matchFilterEmpty = filterEmptyCopy\(\{\s*what: 'match GPS record',/.test(page), 'both boards\' filter empties come from the rule, with the filter\'s own size');
-  assert(/action=\{groupIds\.length > 0 \? \{ href: `\/reports\/training\$\{q\(\{ mode: 'training', session: sessionParam \}\)\}`, label: trainingFilterEmpty\.action!\.label, clearsGroupFilter: true \} : null\}/.test(page), 'the action clears the group filter and keeps the session — only when a filter is on'); // repointed 2026-09-13: clearsGroupFilter
+  assert(/action=\{groupIds\.length > 0 \? \{ href: `\/reports\/gps\$\{q\(\{ mode: 'training', session: sessionParam \}\)\}`, label: trainingFilterEmpty\.action!\.label, clearsGroupFilter: true \} : null\}/.test(page), 'the action clears the group filter and keeps the session — only when a filter is on'); // repointed 2026-09-13: clearsGroupFilter
   assert(/no GPS file has been imported yet\. A session appears here once its GPS file is imported from Settings › Imports\./.test(page), 'nothing on record says where the data enters — the "no import pipeline yet" claim is gone');
   assert(!/No athletes in this filter/.test(page) && !/no import pipeline/.test(page), 'the old lines are gone');
-  assert(/the filter is what is empty/.test(read('docs/screens/23-training-report.md')), 'the spec says so');
+  assert(/the filter is what is empty/.test(read('docs/screens/23-gps-report.md')), 'the spec says so');
 }
 
 console.log('\n5. the squad weekly report (2026-09-13)');
@@ -104,9 +104,9 @@ console.log('\n6. the testing report (2026-09-13)');
   assert(/on populated loads too/.test(rawPage), 'the comment says the read runs on every load');
   assert(/selectedTestId derives from\s+selectedDefinition/.test(rawPage), 'the non-null assertions say why they are sound');
   assert(/label: athletesFilterEmpty\.action!\.label, clearsGroupFilter: true/.test(page) && /clearsGroupFilter: scopeIsEmpty/.test(page), 'both filter empties on this report clear the cookie');
-  const training = strip(read('src/app/(staff)/reports/training/page.tsx'));
+  const training = strip(read('src/app/(staff)/reports/gps/page.tsx'));
   assert(/label: matchFilterEmpty\.action!\.label, clearsGroupFilter: true/.test(training) && /label: trainingFilterEmpty\.action!\.label, clearsGroupFilter: true/.test(training), 'and so do the training report\'s two');
-  assert(/clears the filter — the cookie/.test(read('docs/screens/23-training-report.md')) && /clears the filter — the cookie/.test(read('docs/screens/22-testing-report.md')), 'both specs say the action clears the shared filter');
+  assert(/clears the filter — the cookie/.test(read('docs/screens/23-gps-report.md')) && /clears the filter — the cookie/.test(read('docs/screens/22-testing-report.md')), 'both specs say the action clears the shared filter');
   assert(/No test defined for the club yet\./.test(page) && /Nothing is missing — no test has been defined/.test(page), 'no test defined: nothing is missing, where the data enters');
   assert(!/No result recorded for this test in/.test(page) && !/No athletes in the current scope/.test(page), 'the old lines are gone');
   assert(/one grammar/.test(read('docs/screens/22-testing-report.md')), 'the spec says so');

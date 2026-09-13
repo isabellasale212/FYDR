@@ -4,8 +4,8 @@
 
 **Reports**, at `/reports`.
 
-The way in to six reports. It holds no data of its own: it exists so that a coach
-looking for "the medical one" reads six titles rather than remembering six
+The way in to seven reports. It holds no data of its own: it exists so that a coach
+looking for "the medical one" reads seven titles rather than remembering seven
 addresses.
 
 ---
@@ -14,10 +14,10 @@ addresses.
 
 | Role | Can reach the page | What they can see | What they can change | Fields hidden or masked | Tier required | Where this is enforced |
 |---|---|---|---|---|---|---|
-| Sport scientist | Yes | All six | Nothing | None | Base, with one card marked Premium | Route guard, `src/lib/session.ts:69` |
-| Coach | Yes | All six | Nothing | None | Same | Same |
-| Medic | Yes | All six | Nothing | None | Same | Same |
-| S&C | Yes | All six | Nothing | None | Same | Same |
+| Sport scientist | Yes | All seven | Nothing | None | Base, with one card marked Premium | Route guard, `src/lib/session.ts:69` |
+| Coach | Yes | All seven | Nothing | None | Same | Same |
+| Medic | Yes | All seven | Nothing | None | Same | Same |
+| S&C | Yes | All seven | Nothing | None | Same | Same |
 | Nutritionist | Yes | Five. **The injury and availability card is withheld** | Nothing | The injury card entirely | Same | **NOT BUILT.** Decision D-01 |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
@@ -66,17 +66,19 @@ through `resolveGroupFilter` — the address's `?groups=` first, then the sticky
 typed, carries the scope the page was showing; the exports hub posts the scope
 its page resolved.
 
-**Six cards in two groups** (PATTERN-S7 A1, 13 September 2026), each card with a
+**Seven cards in two groups** (PATTERN-S7 A1, 13 September 2026; seven since the
+catalogue addendum split the training report the same day), each card with a
 title, a sentence on what the report answers, and where its numbers come from.
 The groups are what the question is about: **"About the squad over a period"**
-— Compliance, Injury & availability, Training report, Squad weekly — and
-**"About one athlete, session or test"** — Athlete report, Testing.
+— Compliance, Injury & availability, Training load, GPS report, Squad weekly —
+and **"About one athlete, session or test"** — Athlete report, Testing.
 
 | Card | What it answers | Package |
 |---|---|---|
 | Compliance | Who has and has not submitted what was expected | Base |
 | Injury and availability | Who is unavailable, why in limited terms, and when they are expected back | Base |
-| Training report | How hard each session was against a typical one | **Premium**, and the card says so |
+| Training load | RPE × minutes, per athlete, over the period (the seventh; `65-training-load-report.md`). When the club has session RPE off the card's line says so and still links — the report carries the off state (`docs/decisions/absence-rule.md`) | Base |
+| GPS report | One session, every athlete, every GPS metric, on one board (was "Training report"; `23-gps-report.md`) | **Premium**, and the card says so |
 | Athlete report | Everything about one athlete over a period | Base |
 | Squad weekly | The squad's week on one page | Base |
 | Testing | Test results and personal bests | Base |
@@ -98,7 +100,8 @@ None. The hub displays no figures of its own.
 |---|---|---|---|---|---|---|---|
 | Compliance card | The grid | Opens the compliance report | `/reports/compliance` | Nothing | Coach, medic, sport scientist, S&C, nutritionist | None | Never |
 | Injury and availability card | The grid | Opens the injury report | `/reports/injuries` | Nothing | Everyone except the nutritionist | None | **Should be hidden from the nutritionist. Not built** |
-| Training report card | The grid | Opens the training report | `/reports/training` | Nothing | As the report | None | Marked Premium on the Base package. **UNVERIFIED whether it is clickable there** |
+| Training load card | The grid | Opens the Training load report | `/reports/training-load` | Nothing | As the report (not the nutritionist) | None | Never; with session RPE off the line says so |
+| GPS report card | The grid | Opens the GPS report | `/reports/gps` | Nothing | As the report | None | Marked Premium on the Base package; clickable, and the page shows the plan gate |
 | Athlete report card | The grid | Opens the athlete picker | `/reports/athlete` | Nothing | As the report | None | Never |
 | Squad weekly card | The grid | Opens the squad weekly report | `/reports/squad` | Nothing | As the report | None | Never |
 | Testing card | The grid | Opens the testing report | `/reports/testing` | Nothing | As the report | None | Never |
@@ -124,7 +127,7 @@ built by the page for the dialog and by the route for the file and the audit row
 
 ## 7. How this page is built, in plain English
 
-Built on the server. The six cards are a fixed list in the page itself, not a
+Built on the server. The seven cards are a fixed list in the page itself, not a
 database read, so the hub cannot fall out of step with what exists by showing a
 report that has been removed.
 
@@ -137,13 +140,13 @@ Premium card.
 
 **Loading.** Renders immediately.
 
-**Empty.** Not possible. The six cards always exist.
+**Empty.** Not possible. The seven cards always exist.
 
 **Error.** Not possible for the card list. A failure to read the package would at
 worst mark the Premium card wrongly.
 
 **No permission.** Athletes are redirected. A staff member with no report access
-sees all six cards marked unavailable to them, with the reason, rather than being
+sees all seven cards marked unavailable to them, with the reason, rather than being
 turned away or sent down links that refuse.
 
 **Wrong tier.** The training report card is marked Premium.

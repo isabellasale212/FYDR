@@ -49,11 +49,14 @@ console.log('1. the source, the working copy and the module agree');
     assert(s !== null && s === w, `${key}: the working copy carries the source's confirmed sentence verbatim`);
     assert(REPORT_DEFINITIONS[key] === s, `${key}: the module mirrors it`);
   }
-  /* Reconciled 2026-09-13 against the addendum (ruling four): the drafts are
-     gone; the GPS board carries the GPS sentence; the seventh's two
-     sentences are constants until the split builds the route. */
+  /* Reconciled 2026-09-13 against the addendum (ruling four), then built
+     (the training report split): the drafts are gone; the GPS board is the
+     GPS report at /reports/gps and carries the GPS sentence; the Training
+     load report is the seventh, at /reports/training-load, with the
+     addendum's sentence and its off state. */
   for (const [name, wrk, key] of [
-    ['GPS report', '1. GPS report', 'training'],
+    ['GPS report', '1. GPS report', 'gps'],
+    ['Training load report', '8. Training load report', 'trainingLoad'],
     ['Compliance report', '6. Compliance', 'compliance'],
     ['Injury and availability report', '7. Injury and availability', 'injuries'],
   ] as const) {
@@ -62,7 +65,7 @@ console.log('1. the source, the working copy and the module agree');
     assert(a !== null && a === w, `${key}: the working copy carries the addendum's confirmed sentence verbatim`);
     assert(REPORT_DEFINITIONS[key] === a, `${key}: the module mirrors it`);
   }
-  assert(addendumSentence('Training load report') === TRAINING_LOAD_DEFINITION && workSentence('8. Training load report') === TRAINING_LOAD_DEFINITION, 'the seventh report\'s sentence, confirmed, held for the split');
+  assert(TRAINING_LOAD_DEFINITION === REPORT_DEFINITIONS.trainingLoad, 'the seventh report\'s sentence is one string, named twice');
   const off = addendum.slice(addendum.indexOf('Its off state')).match(/\n> ([\s\S]*?)\n\n/)![1]!.replace(/\n> /g, ' ').trim();
   assert(off === TRAINING_LOAD_OFF_STATE, 'and its off state');
   assert(!/drafted by the builder, pending/.test(work) && !/draft, builder/.test(work), 'no draft remains in the working copy');
@@ -87,11 +90,12 @@ console.log('\n2. the shell carries the definition');
 
 console.log('\n3. the reports that carry a sentence carry it everywhere; the two without carry it nowhere');
 {
-  const withSentence: { key: 'compliance' | 'injuries' | 'squad' | 'testing'; dir: string; spec: string; viaPager: boolean }[] = [
+  const withSentence: { key: 'compliance' | 'injuries' | 'squad' | 'testing' | 'trainingLoad'; dir: string; spec: string; viaPager: boolean }[] = [
     { key: 'compliance', dir: 'compliance', spec: 'docs/screens/20-compliance-report.md', viaPager: true },
     { key: 'injuries', dir: 'injuries', spec: 'docs/screens/24-injury-report.md', viaPager: true },
     { key: 'squad', dir: 'squad', spec: 'docs/screens/21-squad-weekly-report.md', viaPager: false },
     { key: 'testing', dir: 'testing', spec: 'docs/screens/22-testing-report.md', viaPager: true },
+    { key: 'trainingLoad', dir: 'training-load', spec: 'docs/screens/65-training-load-report.md', viaPager: false },
   ];
   for (const r of withSentence) {
     const page = strip(read(`src/app/(staff)/reports/${r.dir}/page.tsx`));
@@ -113,12 +117,28 @@ console.log('\n3. the reports that carry a sentence carry it everywhere; the two
      board is the GPS report and carries the confirmed GPS sentence on screen,
      in the CSV and in the PDF; the match board is kept but its sentence is
      not yet written, so it carries none anywhere. */
-  const training = strip(read('src/app/(staff)/reports/training/page.tsx'));
-  assert(/definition=\{mode === 'training' \? \(reportDefinition\('training'\) \?\? undefined\) : undefined\}/.test(training), 'training: the GPS sentence on the training-mode board only');
-  const trainingCsv = strip(read('src/app/(staff)/reports/training/export/route.ts'));
-  assert((trainingCsv.match(/exportCaption\(descriptor, reportDefinition\('training'\)/g) ?? []).length === 1 && (trainingCsv.match(/exportCaption\(descriptor, null/g) ?? []).length === 1, 'the training CSV carries the sentence; the match CSV carries none');
-  const trainingPdf = strip(read('src/app/(staff)/reports/training/pdf/route.tsx'));
-  assert((trainingPdf.match(/definition=\{reportDefinition\('training'\) \?\? undefined\}/g) ?? []).length === 1 && /title="Match day GPS report"\s*definition=\{undefined\}/.test(trainingPdf), 'the training PDF carries the sentence; the match PDF carries none');
+  const gps = strip(read('src/app/(staff)/reports/gps/page.tsx'));
+  assert(/definition=\{mode === 'training' \? \(reportDefinition\('gps'\) \?\? undefined\) : undefined\}/.test(gps), 'gps: the GPS sentence on the training-session board only');
+  const gpsCsv = strip(read('src/app/(staff)/reports/gps/export/route.ts'));
+  assert((gpsCsv.match(/exportCaption\(descriptor, reportDefinition\('gps'\)/g) ?? []).length === 1 && (gpsCsv.match(/exportCaption\(descriptor, null/g) ?? []).length === 1, 'the GPS CSV carries the sentence; the match CSV carries none');
+  const gpsPdf = strip(read('src/app/(staff)/reports/gps/pdf/route.tsx'));
+  assert((gpsPdf.match(/definition=\{reportDefinition\('gps'\) \?\? undefined\}/g) ?? []).length === 1 && /title="Match day GPS report"\s*definition=\{undefined\}/.test(gpsPdf), 'the GPS PDF carries the sentence; the match PDF carries none');
+}
+
+console.log('\n4. the split (the addendum): two names, two routes, neither called "Training report"');
+{
+  assert(/title: 'GPS report · Fydr'/.test(read('src/app/(staff)/reports/gps/page.tsx')) && /title: 'Training load report · Fydr'/.test(read('src/app/(staff)/reports/training-load/page.tsx')), 'the two titles');
+  const hub = strip(read('src/app/(staff)/reports/page.tsx'));
+  assert(/key: 'gps'[\s\S]*?premiumGated: true/.test(hub) && /key: 'trainingLoad'[\s\S]*?premiumGated: false/.test(hub), 'the hub: GPS premium, Training load every club');
+  assert(!/title: 'Training report'/.test(hub) && !/reports\/training'/.test(hub), 'no card is called "Training report" and none links to the old address');
+  assert(/permanentRedirect\(`\/reports\/gps/.test(read('src/app/(staff)/reports/training/page.tsx')), 'the old address redirects to /reports/gps, query and all');
+  const page = strip(read('src/app/(staff)/reports/training-load/page.tsx'));
+  assert(/if \(!collectsRpe\)/.test(page) && /body=\{TRAINING_LOAD_OFF_STATE\}/.test(page) && /href: '\/settings\/club#rpe'/.test(page), 'the Training load report keeps its destination and carries the off state, pointing at the setting');
+  assert(/TRAINING_LOAD_OFF_STATE/.test(strip(read('src/app/(staff)/reports/training-load/export/route.ts'))) && /TRAINING_LOAD_OFF_STATE/.test(strip(read('src/app/(staff)/reports/training-load/pdf/route.tsx'))), 'so do its CSV and PDF');
+  assert(/'No ratings'/.test(page) && /No ratings/.test(read('src/app/(staff)/reports/training-load/export/route.ts')), 'nothing rated is words, never 0, on screen and in the file');
+  const q = strip(read('src/lib/queries/trainingLoadReport.ts'));
+  assert(/\.eq\('domain', 'training_rpe'\)/.test(q) && /if \(!expected\.has\(k\)\) continue;/.test(q) && /total_load: rated > 0 \? total : null/.test(q), 'the query counts only expected sessions and never sums an unrated one as zero');
+  assert(/from\('training_entries_current'\)/.test(q), 'a corrected rating is what is summed');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

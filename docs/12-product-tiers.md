@@ -157,7 +157,7 @@ Every screen in the `02-information-architecture.md` §5 inventory.
 | 34 | GPS data import | **P** | The premium hook. See section 5. |
 | 35 | Audit log viewer | Both | Gating the audit trail undermines the compliance story that sells the product. |
 | 36 | Report a problem | Both | Athlete safety route into medical. |
-| 37 | Training report | **P** | All six metric columns and three of four summary tiles are GPS-derived. It is a GPS screen. |
+| 37 | GPS report (was "Training report" until the catalogue addendum split it, 13 Sept 2026; the RPE × minutes **Training load report** at `/reports/training-load` is every club's) | **P** | All six metric columns and three of four summary tiles are GPS-derived. It is a GPS screen. |
 | ~~38~~ | ~~Flight control~~ | n/a | **REMOVED from the product at client instruction, 5 Aug 2026.** Not tiered because it does not exist. |
 | 39 | My dashboard | Both | Same treatment as 8, pending O-720. |
 | 40 | Squad overview | Both | Same treatment as 9 and 19, pending O-721. |

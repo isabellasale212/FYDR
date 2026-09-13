@@ -24,7 +24,7 @@ import { formatDateTime } from '@/lib/format';
  *  lib/queries/trainingReport.ts's header for why there is no H1/H2 split
  *  to export either). */
 export async function GET(request: Request) {
-  const { db, orgId, claims, timezone, tier, fullName } = await requireReport('training');
+  const { db, orgId, claims, timezone, tier, fullName } = await requireReport('gps');
   /* The page this exports refuses on Basic (reports/training/page.tsx), but a
      route handler is reachable by URL whether or not a button was drawn. */
   if (!isPremium(tier)) return premiumOnlyResponse('The training report');
@@ -44,7 +44,7 @@ export async function GET(request: Request) {
   if (mode === 'match') {
     const sessions = await fetchMatchSessions(db, orgId, timezone);
     const selected = sessions.find((s) => s.sessionId === requested) ?? sessions[0] ?? null;
-    if (!selected) return csvResponse(toCsv([], [['x', 'No match GPS data']]), 'training-report.csv');
+    if (!selected) return csvResponse(toCsv([], [['x', 'No match GPS data']]), 'gps-report.csv');
 
     const board = await fetchMatchBoard(db, orgId, groupIds, selected);
     const rows = board.rows.map((r) => ({
@@ -85,13 +85,13 @@ export async function GET(request: Request) {
        sentence belongs to the training-mode board below. */
     const withCaption = exportCaption(descriptor, null, { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) + csv;
 
-    await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode, ...exportAuditMetadata(descriptor) }, 'export');
+    await recordReportView(db, orgId, claims.userId, actorRole, 'gps', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode, ...exportAuditMetadata(descriptor) }, 'export');
     return csvResponse(withCaption, descriptor.fileName);
   }
 
   const sessions = await fetchTrainingSessions(db, orgId, timezone);
   const selected = sessions.find((s) => s.sessionId === requested) ?? sessions[0] ?? null;
-  if (!selected) return csvResponse(toCsv([], [['x', 'No GPS data']]), 'training-report.csv');
+  if (!selected) return csvResponse(toCsv([], [['x', 'No GPS data']]), 'gps-report.csv');
 
   const board = await fetchTrainingBoard(db, orgId, groupIds, selected);
   const rows = board.rows.map((r) => ({
@@ -117,8 +117,8 @@ export async function GET(request: Request) {
     ['vs_unit', 'vs unit'],
   ]);
   const descriptor: ExportDescriptor = {
-    fileName: `training-report-${selected.date}.csv`,
-    report: 'Training report',
+    fileName: `gps-report-${selected.date}.csv`,
+    report: 'GPS report',
     window: `${selected.title}, ${selected.date}`,
     scope: `${scopeLabel} (${rows.length} on the board)`,
     rows: rows.length,
@@ -126,8 +126,8 @@ export async function GET(request: Request) {
     filters: [`Session: ${selected.title}, ${selected.date}`],
     medical: false,
   };
-  const withCaption = exportCaption(descriptor, reportDefinition('training'), { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) + csv;
+  const withCaption = exportCaption(descriptor, reportDefinition('gps'), { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) + csv;
 
-  await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode, ...exportAuditMetadata(descriptor) }, 'export');
+  await recordReportView(db, orgId, claims.userId, actorRole, 'gps', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode, ...exportAuditMetadata(descriptor) }, 'export');
   return csvResponse(withCaption, descriptor.fileName);
 }

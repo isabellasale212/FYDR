@@ -120,7 +120,8 @@ Deep links arriving from push are shell namespaced (`/staff/...`, `/athlete/...`
 | 25 | Logging grid | `/schedule/testing/:sessionId/log` | `screens/testing.md` | staff web, staff phone | coach, medical | `/schedule/testing` |
 | 16 | Session detail | `/schedule/:sessionId` | `screens/session-detail.md` | staff web, staff phone | coach, medical | `/schedule` |
 | 28 | Reports | `/reports` | `screens/reports.md` | staff web, staff phone | coach, medical, admin (aggregate) | none |
-| 37 | Training report | `/reports/training` | `screens/training-report.md` | staff web | coach, medical | `/reports` |
+| 37 | GPS report *(was Training report; the catalogue addendum, 13 Sept 2026)* | `/reports/gps` — `/reports/training` redirects here, query and all | `screens/23-gps-report.md` | staff web | coach, medical | `/reports` |
+| 65 | Training load report *(the seventh, every club; 13 Sept 2026)* | `/reports/training-load` | `screens/65-training-load-report.md` | staff web, staff phone | coach, medical, S&C, sport scientist | `/reports` |
 | 25 | Testing results | `/reports/testing` | `screens/testing.md` | staff web | coach, medical | `/reports` |
 | 28 | Report schedules | `/reports/schedules` | `screens/reports.md` | staff web | coach, medical | `/reports` |
 | 28 | Report viewer | `/reports/runs/:runId` | `screens/reports.md` | staff web, staff phone | coach, medical, admin (aggregate) | `/reports` |
@@ -1182,8 +1183,10 @@ bound in §4.
       "panels": ["session-header", "planned-load", "required-entries", "participants", "attendance-tab", "load-tab", "attached-programme", "gym-floor-view"] },
     { "id": "staff.reports", "screen": 28, "name": "Reports", "path": "/reports", "spec": "docs/screens/reports.md", "shells": ["staff web", "staff phone"], "roles": ["coach", "medical", "admin"], "role_notes": { "admin": "club level totals with no names" }, "parent": null,
       "panels": ["report-cards", "import-entry-point", "recent-runs"] },
-    { "id": "staff.reports.training", "screen": 37, "name": "Training report", "path": "/reports/training", "spec": "docs/screens/training-report.md", "shells": ["staff web"], "roles": ["coach", "medical"], "parent": "staff.reports",
-      "panels": ["training-report-tiles", "date-chips", "metric-selector", "training-report-board", "export"] },
+    { "id": "staff.reports.gps", "screen": 37, "name": "GPS report", "path": "/reports/gps", "spec": "docs/screens/23-gps-report.md", "shells": ["staff web"], "roles": ["coach", "medical"], "parent": "staff.reports",
+      "panels": ["training-report-tiles", "date-chips", "metric-selector", "training-report-board", "export"], "redirects_from": ["/reports/training"] },
+    { "id": "staff.reports.trainingLoad", "screen": 65, "name": "Training load report", "path": "/reports/training-load", "spec": "docs/screens/65-training-load-report.md", "shells": ["staff web", "staff phone"], "roles": ["coach", "medical", "strength_conditioning", "sport_scientist"], "parent": "staff.reports",
+      "panels": ["report-figure", "load-by-athlete", "export"] },
     { "id": "staff.reports.testing", "screen": 25, "name": "Testing results", "path": "/reports/testing", "spec": "docs/screens/testing.md", "shells": ["staff web"], "roles": ["coach", "medical"], "parent": "staff.reports",
       "panels": ["testing-results-history"] },
     { "id": "staff.reports.schedules", "screen": 28, "name": "Report schedules", "path": "/reports/schedules", "spec": "docs/screens/reports.md", "shells": ["staff web"], "roles": ["coach", "medical"], "parent": "staff.reports",

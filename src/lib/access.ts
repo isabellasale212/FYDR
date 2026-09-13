@@ -264,12 +264,17 @@ export const REPORT_ACCESS = [
  *  the coach, and the coach's own injury view is the censored one above, so
  *  "every report except the medic's clinical detail" is already what the pages
  *  hand them. Nothing narrows for the S&C; what was broken was the hub. */
-export type ReportKey = 'compliance' | 'injuries' | 'training' | 'athlete' | 'squad' | 'testing';
+/** Seven since the catalogue addendum (13 September 2026): the training report
+ *  was two — `gps` is the per-session GPS board (premium; the key was
+ *  `training` until then, and audit rows before that date say so) and
+ *  `trainingLoad` is the RPE × minutes report, every club. */
+export type ReportKey = 'compliance' | 'injuries' | 'gps' | 'trainingLoad' | 'athlete' | 'squad' | 'testing';
 
 export const REPORT_VISIBILITY: Record<ReportKey, readonly AppRole[]> = {
   compliance: ['sport_scientist', 'coach', 'medic', 'strength_conditioning', 'nutritionist'],
   injuries: ['sport_scientist', 'coach', 'medic', 'strength_conditioning', 'nutritionist'],
-  training: REPORT_ACCESS,
+  gps: REPORT_ACCESS,
+  trainingLoad: REPORT_ACCESS,
   athlete: REPORT_ACCESS,
   /* SQUAD WEEKLY IS CLOSED TO THE NUTRITIONIST ON PURPOSE, and this note exists
      because the obvious "correction" is to open it. docs/access-matrix.md §3.5

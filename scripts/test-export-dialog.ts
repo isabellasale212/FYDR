@@ -47,7 +47,7 @@ console.log('\n2. the one dialog pattern (B11)');
 
 console.log('\n3. every export route and page');
 {
-  const routes = ['compliance', 'injuries', 'squad', 'testing', 'training'].map((k) => [k, strip(read(`src/app/(staff)/reports/${k}/export/route.ts`))] as const);
+  const routes = ['compliance', 'injuries', 'squad', 'testing', 'gps', 'training-load'].map((k) => [k, strip(read(`src/app/(staff)/reports/${k}/export/route.ts`))] as const);
   const athleteRoute = strip(read('src/app/(staff)/reports/athlete/[athleteId]/export/route.ts'));
   for (const [k, r] of [...routes, ['athlete', athleteRoute] as const]) {
     assert(/exportCaption\(descriptor/.test(r) && /\.\.\.exportAuditMetadata\(descriptor\)/.test(r) && /csvResponse\([^)]*descriptor\.fileName\)/.test(r), `${k}: the file header and the audit row read the same descriptor, the file takes its name`);
@@ -55,7 +55,7 @@ console.log('\n3. every export route and page');
   assert(/medical: isMedical/.test(routes[1]![1]) && /The medic's copy/.test(routes[1]![1]), 'injuries: the medic\'s copy is marked medical');
   assert(/Ranked test: \$\{selectedTestName\}/.test(routes[3]![1]), 'testing: the ranked test is a filter the file reads back');
   assert(/Session: v \$\{selected\.opponent\}/.test(routes[4]![1]) && /Session: \$\{selected\.title\}/.test(routes[4]![1]), 'training: the session is a filter the file reads back');
-  const pages = ['compliance', 'injuries', 'squad', 'testing', 'training'].map((k) => strip(read(`src/app/(staff)/reports/${k}/page.tsx`)));
+  const pages = ['compliance', 'injuries', 'squad', 'testing', 'gps', 'training-load'].map((k) => strip(read(`src/app/(staff)/reports/${k}/page.tsx`)));
   const athletePage = strip(read('src/app/(staff)/reports/athlete/[athleteId]/page.tsx'));
   for (const [i, p] of [...pages, athletePage].entries()) {
     assert(/<ExportDialog/.test(p) && !/>\s*Export CSV\s*<\/a>/.test(p.replace(/exportDescriptor \? \([\s\S]*?\) : \(\s*<a[^>]*>\s*Export CSV\s*<\/a>\s*\)/, '')), `page ${i}: Export CSV opens the dialog`);

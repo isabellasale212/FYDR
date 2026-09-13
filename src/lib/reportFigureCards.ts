@@ -154,3 +154,40 @@ export function testCoverageFigure(o: { withResult: number; inScope: number; tes
     exclusions: o.inScope > 0 ? rankedCoverageLine({ withResult: o.withResult, inScope: o.inScope, floored: o.floored }) : 'Nobody in this filter.',
   };
 }
+
+/** The Training load report (the seventh, 13 September 2026): rated of
+ *  expected — the sessions the load is summed over, the count before the
+ *  percentage — with the squad's summed load as the value's companion in
+ *  the sample, and the unrated sessions as the exclusions, said the way the
+ *  definition sentence says it: not counted as zero. A club with no ratings
+ *  at all reads "No ratings", never 0. */
+export function trainingLoadFigure(o: {
+  expected: number;
+  rated: number;
+  totalLoad: number | null;
+  athleteCount: number;
+  rangeLabel: string;
+  floored: boolean;
+}): ReportFigureCopy {
+  const unrated = Math.max(0, o.expected - o.rated);
+  const pct = o.expected > 0 ? Math.round((100 * o.rated) / o.expected) : null;
+  const load = o.totalLoad === null ? 'No ratings' : `${Math.round(o.totalLoad).toLocaleString('en-GB')} AU`;
+  const exclusions =
+    o.athleteCount === 0
+      ? 'Nobody in this filter.'
+      : o.expected === 0
+        ? 'Nothing is excluded — no session expected a rating in this period.'
+        : unrated === 0
+          ? 'Nothing is excluded — every expected session was rated.'
+          : `${unrated} expected session${unrated === 1 ? '' : 's'} with no rating ${unrated === 1 ? 'is' : 'are'} not counted as zero — ${unrated === 1 ? 'it is' : 'they are'} left out of every sum.`;
+  return {
+    label: 'Sessions rated of expected',
+    count: o.expected > 0 ? `${o.rated} of ${o.expected}` : 'Nothing expected',
+    value: pct === null ? NOT_EXPECTED : `${pct}%`,
+    sample:
+      o.athleteCount === 0
+        ? `Nobody in this filter · ${o.rangeLabel.toLowerCase()}`
+        : `${o.athleteCount} athlete${o.athleteCount === 1 ? '' : 's'} · ${o.rangeLabel.toLowerCase()} · squad load ${load}`,
+    exclusions: o.floored ? `${exclusions} Fewer than five athletes have a rating, so no mean is drawn.` : exclusions,
+  };
+}

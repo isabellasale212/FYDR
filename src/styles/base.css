@@ -10656,7 +10656,10 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   --rep-pill: rgb(var(--good-rgb) / 0.22);
   --rep-pill-text: var(--good-pill-text);
 }
-.rep-card[data-tone='medical'] {
+/* 'medic', the role's own word since the five-role rename: the rule was
+   still 'medical' and the card says 'medic', so the injuries card alone had
+   no tint (found 13 Sept 2026 while the seventh card was added beside it). */
+.rep-card[data-tone='medic'] {
   border-color: rgb(var(--bad-rgb) / 0.55);
   background: rgb(var(--bad-rgb) / 0.11);
   --rep-dot: var(--bad);
@@ -10676,6 +10679,18 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   --rep-dot: var(--gym);
   --rep-pill: rgb(var(--gym-rgb) / 0.24);
   --rep-pill-text: var(--warn-pill-text);
+}
+/* The Training load report (the seventh, 13 September 2026) reads the
+   athlete's session rating — the pitch domain, the same dot the GPS card
+   carries, on the pitch tint rather than the accent so the two training
+   cards read as siblings and not as one report twice. Composed from the
+   existing --accent2 tokens (the pitch domain's own). */
+.rep-card[data-tone='training'] {
+  border-color: rgb(var(--accent2-rgb) / 0.5);
+  background: rgb(var(--accent2-rgb) / 0.1);
+  --rep-dot: var(--domain-pitch);
+  --rep-pill: rgb(var(--accent2-rgb) / 0.2);
+  --rep-pill-text: var(--accent2-pill-text);
 }
 /* Reads every domain, so it is tinted to none. */
 .rep-card[data-tone='neutral'] {

@@ -38,7 +38,7 @@ console.log('\n2. the six reports\' main tables sit in it');
   assert(/<TableShell title="Testing" titleId="tests-title" sort=\{null\}/.test(athlete), 'athlete report: the tests table, no sort line (not a ranking)');
   const squad = strip(read('src/app/(staff)/reports/squad/page.tsx'));
   assert(/<TableShell title="Load" titleId="load-title" sort=\{null\} count=\{`\$\{report\.tiles\.acwr\.computable\} of \$\{report\.athleteCount\} computable`\}/.test(squad), 'squad weekly: the load rows with the computable count');
-  const training = strip(read('src/app/(staff)/reports/training/page.tsx'));
+  const training = strip(read('src/app/(staff)/reports/gps/page.tsx'));
   assert((training.match(/<TableShell title="Board" sort="By unit, then the most distance first" count=\{`\$\{board\.rows\.length\} of \$\{scopeSize\} athletes`\}>/g) ?? []).length === 2, 'training: both boards');
   for (const [f, src] of [['compliance', compliance], ['injuries', injuries], ['testing', testing], ['athlete', athlete], ['squad', squad], ['training', training]] as const) {
     const opens = (src.match(/<TableShell[\s>]/g) ?? []).length;

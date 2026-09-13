@@ -53,6 +53,17 @@ date of the most recent record, so a coach can see how current the picture is.
 
 ---
 
+**An empty card follows the one grammar** (PATTERN-S6 C8, 13 September 2026;
+`lib/staffEmpty.ts`, the staff twin of My data's 12 C6): the Wellness card with
+nothing in the window reads "Nothing in the last 28 days." — "Dan's last morning
+check-in was Sun 16 Aug, 28 days ago. It is still on record, just before the
+period chosen. A morning check-in appears here the day it is submitted." — with
+one action, "Show this season" or "Show all on record", that widens the report's
+period to the smallest one holding it; with nothing on record at all, "No morning
+check-in on record for Dan. Nothing is missing — none has been recorded yet…"
+and no action. Never "never" when the truth is "not in this period". The other
+cards follow, one screen a commit.
+
 **Every figure carries its denominator, and a missing value is words**
 (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`). The Compliance figure
 in the identity row carries "24 of 30 submitted · 2 waived · last 28 days" (or

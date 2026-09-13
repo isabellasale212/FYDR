@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { fetchMyLatestRecord } from '@/lib/queries/myLatestRecord';
+import { staffEmptyCopy } from '@/lib/staffEmpty';
 import { notFound } from 'next/navigation';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
@@ -97,6 +99,20 @@ export default async function AthleteReportPage({
   if (!report) notFound();
 
   const { athlete, compliancePct, openFlags, currentProgrammes } = report.summary;
+  /* PATTERN-S6 C8: the wellness card's empty state names the most recent
+     check-in on record, any period — the same read the athlete's own My data
+     makes for its empty period (12 C6). */
+  const latestWellnessOnRecord = await fetchMyLatestRecord(db, athleteId, 'wellness');
+  const wellnessEmpty = staffEmptyCopy({
+    domain: 'wellness',
+    firstName: athlete.first_name,
+    periodKey: period.key,
+    rangeLabel: period.label,
+    latest: latestWellnessOnRecord,
+    latestLabel: latestWellnessOnRecord ? formatDate(latestWellnessOnRecord, timezone) : null,
+    seasonStart: period.season?.starts_on ?? null,
+    today: report.to,
+  });
   const status = availabilityStatus(athlete.availability?.status ?? null);
   const restrictions = athlete.availability?.restrictions ?? [];
   const age = ageFrom(athlete.date_of_birth, timezone);
@@ -253,10 +269,20 @@ export default async function AthleteReportPage({
                       </span>
                     </div>
                     {report.wellness.every((p) => p.value === null) ? (
+                      /* PATTERN-S6 C8 (2026-09-13): the one empty-state grammar
+                         — the window, the most recent check-in on record and
+                         its date, what would fill it, one action that widens
+                         the period. Never "never" when the truth is "not in
+                         this period". */
                       <EmptyState
                         headingLevel={3}
-                        title="No wellness entries in this period"
-                        body="Nothing submitted in this window."
+                        title={wellnessEmpty.title}
+                        body={wellnessEmpty.body}
+                        action={
+                          wellnessEmpty.action
+                            ? { href: `/reports/athlete/${athleteId}?period=${wellnessEmpty.action.period}`, label: wellnessEmpty.action.label }
+                            : null
+                        }
                       />
                     ) : (
                       <>
@@ -464,7 +490,16 @@ export default async function AthleteReportPage({
                   Wellness
                 </h2>
                 {report.wellness.every((p) => p.value === null) ? (
-                  <EmptyState headingLevel={3} title="No wellness entries in this period" body="Nothing submitted in this window." />
+                  <EmptyState
+                    headingLevel={3}
+                    title={wellnessEmpty.title}
+                    body={wellnessEmpty.body}
+                    action={
+                      wellnessEmpty.action
+                        ? { href: `/reports/athlete/${athleteId}?period=${wellnessEmpty.action.period}`, label: wellnessEmpty.action.label }
+                        : null
+                    }
+                  />
                 ) : (
                   <WellnessChart series={report.wellness} bars min={0} max={100} ticks={[0, 50, 100]} title={`Readiness for ${athlete.first_name} ${athlete.last_name}`} timezone={timezone} />
                 )}

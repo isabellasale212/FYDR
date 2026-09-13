@@ -1273,6 +1273,13 @@ table.tbl.lb-table td.r {
   padding: var(--sp-20) var(--sp-18);
   text-align: center;
 }
+/* PATTERN-S6 C8 (2026-09-13): the one action an empty state may carry —
+   widening the window — under its sentence, 44px. */
+.empty .empty-action {
+  display: inline-flex;
+  min-height: 44px;
+  margin-top: var(--sp-12);
+}
 .empty h2 {
   font-size: var(--fs-15);
   font-weight: 700;

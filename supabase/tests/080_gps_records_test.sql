@@ -15,6 +15,9 @@ begin;
 select * from no_plan();
 
 select tests.fixtures();
+-- 0119: the GPS tables are Premium at the row. This test is about the roles,
+-- so the fixture club is put on Premium first; 740 tests the tier itself.
+update public.organisations set tier = 'performance' where id = tests.uid('orga', 'org');
 
 do $$
 declare

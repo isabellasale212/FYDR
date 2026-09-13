@@ -633,8 +633,8 @@ console.log('\nthe other three immutable entries: the gaps that were actually th
     assert(existsSync(f), `${f} exists`);
   }
   assert(
-    /six BEFORE TRUNCATE guards exist in public/.test(read('supabase/tests/530_gym_truncate_guard_test.sql')),
-    "530's catalogue count was raised from three to six, so a dropped guard still fails something",
+    /eight BEFORE TRUNCATE guards exist in public/.test(read('supabase/tests/530_gym_truncate_guard_test.sql')),
+    "530's catalogue count was raised from three to six, then to eight with 0104's sessions guards, so a dropped guard still fails something",
   );
 }
 

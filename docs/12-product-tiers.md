@@ -704,17 +704,29 @@ client check must be a mirror of it rather than the thing itself. This is the sa
 > club's athletes in a consent they wanted to revoke. Existing rows are untouched: a club
 > that downgrades keeps its record of what was granted and when.
 >
+> **Closed at the row, 13 September 2026, migration `0119_tier_gate_at_the_database.sql`**
+> (Isabella's decision batch: "The tier gate moves to the database … The subject access
+> read path stays open as a written, tested exception"). The four GPS-import tables —
+> `gps_records`, `import_batches`, `import_held_rows`, `athlete_import_aliases` — gain
+> `and auth_org_is_premium()` (0061's helper) on every staff SELECT, INSERT and UPDATE
+> policy. Keep and hide at the row: a Basic club's staff read **no rows**, an empty result
+> and never an error, so a screen that forgets its own gate shows nothing rather than
+> everything; the rows stay and return on upgrade. `compute_leaderboard`'s own gate (0094)
+> is unchanged. **The written, tested exception** (`supabase/tests/740_tier_gate_at_the_database_test.sql`):
+> the service role, which `queries/sarPackAssembly.ts` uses and which RLS never applied
+> to — Article 15 does not lapse with an invoice, and the data is kept; and the athlete's
+> own rows (`gps_records_self_select`, 0023) — the right to read what is held about you is
+> yours, not the plan's; the athlete app's premium surfaces stay app-gated. Fydr staff
+> previewing Basic do so on the real tier at the database: a preview is a view.
+>
 > **Still application-layer, on purpose:**
-> - **`gps_records`** — a downgraded club must still answer a subject access request, and
->   `queries/sarPackAssembly.ts` reads that table to build one. GDPR Article 15 is not a
->   plan feature, and a tier predicate there would turn a billing state into a refusal to
->   disclose someone's own data.
-> - **Leaderboards** — the honest fix for `gps.*` boards is tier inside
->   `compute_leaderboard`, not a policy that would also hide a board's history from the
->   club that created it. `leaderboards/new/page.tsx` names this gap in its own header.
-> - **The staff export routes** — all now refuse at the route (`premiumOnlyResponse()`),
->   guarded against regression by `npm run test:premium-routes`. They read tables that
->   Basic clubs are entitled to read; what is Premium is the report, not the row.
+> - **The analytics bar chart** — a drawing of gym and wellness data every club holds.
+>   There is no premium row to hide, only a premium view.
+> - **Leaderboards** — tier inside `compute_leaderboard` (0094), not a policy that would
+>   also hide a board's history from the club that created it.
+> - **The staff export routes** — all refuse at the route (`premiumOnlyResponse()`),
+>   guarded against regression by `npm run test:premium-routes`; since 0119 the GPS rows
+>   behind them are also absent for a Basic caller.
 
 ### 8.1 Schema additions
 

@@ -160,11 +160,14 @@ select is(
 -- 7. An athlete has no access to either table at all
 -- ===========================================================================
 
+/* 0114 (PATTERN-S8 C10, 13 September 2026): the athlete named in a request
+   reads its stage — the same words the club reads — on their own Privacy and
+   my data page. The row, not the pack: sar_packs stays the club's. */
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
 select is(
   (select count(*) from sar_requests),
-  0::bigint,
-  'the athlete named in the request cannot read it themselves — a SAR is the club responding to a request, not a self-service screen'
+  1::bigint,
+  'the athlete named in the request reads its stage on their own page (0114); the pack itself is not theirs'
 );
 
 select * from finish();

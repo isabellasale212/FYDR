@@ -88,12 +88,16 @@ select is(
   'both status changes are still recorded, including the one written alongside a last_seen_at'
 );
 
+/* 0109 (deploy seven): every status change also bumps claims_version so the
+   account is signed out on its next request, and that bump is a real change
+   the audit row names. last_seen_at is still absent from the list. */
 select is(
   (select count(*)::int from audit_log
     where action = 'users.update' and entity_id = tests.uid('orga','user_nutritionist')
-      and metadata -> 'changed' = '["status"]'::jsonb),
+      and metadata -> 'changed' @> '["status"]'::jsonb
+      and not (metadata -> 'changed' @> '["last_seen_at"]'::jsonb)),
   2,
-  'and the combined write records status ALONE — the half a person chose, without the bookkeeping'
+  'and the combined write records status (with 0109''s claims_version bump) and never last_seen_at — the bookkeeping half is excluded'
 );
 
 select ok(

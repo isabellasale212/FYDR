@@ -6,6 +6,7 @@ import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { createThreshold, type BaselineType, type ThresholdComparison } from '@/lib/queries/thresholds';
+import { ThresholdPreview } from '@/components/ThresholdPreview/ThresholdPreview';
 import { METRIC_REGISTRY, getMetricInfo } from '@/lib/metrics';
 import type { AppRole } from '@/lib/types/database';
 
@@ -96,6 +97,22 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
       return next;
     });
   }
+
+  /* PATTERN-S8 C6: the rule as typed so far, for the 28-day preview before
+     Create — null until there is a number to test. The preview writes
+     nothing; it is the same fields createThreshold would save. */
+  const magnitudeForPreview = Number(value);
+  const previewInput =
+    value.trim() && !Number.isNaN(magnitudeForPreview)
+      ? {
+          metric,
+          comparison,
+          value: comparison === 'z_score' && direction === 'below' ? -magnitudeForPreview : magnitudeForPreview,
+          baseline_type: baselineType,
+          baseline_days: baselineType === 'absolute' ? null : Number(baselineDays),
+          consecutive_days: Number(consecutiveDays) || 1,
+        }
+      : null;
 
   function onSubmit(event: React.FormEvent<HTMLFormElement>) {
     event.preventDefault();
@@ -268,6 +285,10 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
           ))}
         </div>
       </fieldset>
+
+      <div style={{ marginTop: 'var(--sp-18)' }}>
+        <ThresholdPreview kind="draft" input={previewInput} label="Preview: who would this have flagged in the last 28 days?" blockedReason={previewInput ? null : 'Enter a value to preview the rule.'} />
+      </div>
 
       {error ? (
         <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>

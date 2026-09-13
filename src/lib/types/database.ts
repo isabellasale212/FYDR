@@ -4626,6 +4626,41 @@ export type Database = {
       }
       Returns: number
     }
+    preview_threshold: {
+      Args: {
+        p_threshold_id: string
+        p_days: number
+      }
+      Returns: {
+          athlete_id: string
+          first_name: string
+          last_name: string
+          breach_days: number
+          in_scope: number
+          window_days: number
+        }[]
+    }
+    preview_threshold_rule: {
+      Args: {
+        p_metric: string
+        p_comparison: Database["public"]["Enums"]["threshold_comparison"]
+        p_value: number
+        p_baseline_type: Database["public"]["Enums"]["baseline_type"]
+        p_baseline_days: number
+        p_consecutive_days: number
+        p_min_baseline_observations: number
+        p_applies_to_group_id: string
+        p_days: number
+      }
+      Returns: {
+          athlete_id: string
+          first_name: string
+          last_name: string
+          breach_days: number
+          in_scope: number
+          window_days: number
+        }[]
+    }
     reference_base36: {
       Args: {
         p: number

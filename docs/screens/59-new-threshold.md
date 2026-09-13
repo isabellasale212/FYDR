@@ -49,11 +49,14 @@ one on this form.
 | Rule and cutoff | Middle | Sets when it fires | Stays here | Nothing until submitted | Coach | None | Never |
 | Baseline or absolute | Middle | Decides what the cutoff is measured against | Stays here | Nothing until submitted | Coach | None | Never |
 | Notify roles | Lower | Chooses who is told | Stays here | Nothing until submitted | Coach | None | Never |
+| **Preview: who would this have flagged in the last 28 days?** | Above Create | Runs the rule as typed over the trailing 28 club-local days and reads back "N of 30 athletes · last 28 days" with the names and day counts (PATTERN-S8 C6, migration 0113) | Stays here | **Nothing** | Coach and sport scientist | None | Never; disabled with "Enter a value to preview the rule." until there is a number |
 | **Create** | Foot | Writes the threshold | Back to Thresholds | Creates a rule that will begin raising flags | Coach | The form is the confirmation | Disabled while saving |
 
 **A new threshold starts firing immediately** against data that already exists.
 Creating a strict rule on a squad with months of history can raise a great many
-flags at once.
+flags at once — which is what the preview above Create is for: the same
+evaluator the sweep runs, on the same entries, writing nothing, so the coach
+sees "4 of 30 athletes" before the rule exists rather than after.
 
 ## 7. How this page is built, in plain English
 

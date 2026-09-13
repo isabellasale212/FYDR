@@ -5385,6 +5385,23 @@ img.me-avatar {
   border-color: var(--border-warn);
   background: var(--wash-warn);
 }
+/* PATTERN-S8 C6 (2026-09-13): each threshold's owner line and the on-demand
+   28-day preview card under the rule — wash-accent, the report figure's
+   family, because it is a computed reading, not a warning. */
+.thr-owner {
+  color: var(--muted);
+}
+.thr-preview-card {
+  margin-top: var(--sp-10);
+  background: var(--wash-accent);
+  border-color: var(--border-accent-soft);
+}
+.thr-preview-names {
+  margin: var(--sp-6) 0 0;
+  padding-left: var(--sp-18);
+  font-size: var(--fs-13);
+  line-height: 1.45;
+}
 /* PATTERN-S8 A1 (2026-09-13): Log out is a button, set apart from the lists,
    with the session it ends named beside it. */
 .set-logout-form {

@@ -29,8 +29,29 @@ even a medic is sent back.
 
 ## 4. What you see
 
-Every threshold with the measure it watches, the rule, and **which roles get
-notified when it fires**.
+Every threshold with the measure it watches, the rule in one plain-English
+sentence (`describeThreshold`: "Fires when Sleep hours drops by more than 20%
+against the athlete's own 28-day average, for 2 consecutive days running."),
+**which roles get notified when it fires**, and — since 13 September 2026
+(PATTERN-S8 C6) — **who set it and when, exactly as the dashboard quotes it**:
+"Set by Jane Pemberton · Thu 6 Aug", or, for a rule with no creator, "One of
+the club defaults · unchanged since Thu 6 Aug" (D8, answered: no creator means
+default; the dashboard says "the club defaults" for the same case). The date is
+the rule's `updated_at`, the one stored date the dashboard's own
+"Thresholds set by …" line reads.
+
+**A 28-day preview, on demand, writing nothing.** Under each rule, for the
+coach and the sport scientist, **Preview the last 28 days** asks the database
+which athletes the rule would have flagged over the trailing 28 club-local days
+(migration 0113, `preview_threshold`): the same per-day evaluator the nightly
+sweep runs, with its gap rule, so a preview agrees with the engine. The answer
+reads back with its denominator — "3 of 30 athletes · last 28 days", the names
+most days first with their day counts ("Adam Selby (2 days)"), "0 of 30
+athletes" when nobody, "Nobody in scope" when the rule applies to no one — and
+carries its caveat: it writes nothing (no flag, no notification) and counts
+every day the rule would fire, without the cooldown the sweep leaves between
+flags, so it can show more days than flags. It takes about a second per rule
+and is not run on page load.
 
 ## 5. Every number on this page
 
@@ -48,6 +69,7 @@ raises a flag is here.** The two can differ and nothing reconciles them.
 | Element and label | Where it sits | What happens | Where it goes | What it writes | Permission | Confirmation | Hidden when |
 |---|---|---|---|---|---|---|---|
 | A threshold | The list | Opens it for editing | Stays here | Updates the threshold, keeping a revision | Coach and sport scientist | Form submission | **Not built** for view only roles |
+| Preview the last 28 days | Under each rule | Reads which athletes the rule would have flagged in the last 28 days, with the denominator | Stays here | **Nothing** | Coach and sport scientist (the database answers nobody else) | None | For every other role |
 | New threshold | Header | Opens the create screen | `/settings/thresholds/new` | Nothing | **Coach only today** | None | Refuses a medic |
 | Notify roles | A threshold | Chooses who is told when it fires | Stays here | Updates the threshold | Coach and sport scientist | Form submission | **Not built** |
 

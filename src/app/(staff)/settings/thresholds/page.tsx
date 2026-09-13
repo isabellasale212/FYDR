@@ -1,7 +1,8 @@
 import Link from 'next/link';
 import { SeedDefaultThresholds } from '@/components/SeedDefaultThresholds/SeedDefaultThresholds';
 import { ThresholdRow } from '@/components/ThresholdRow/ThresholdRow';
-import { describeThreshold, fetchThresholds } from '@/lib/queries/thresholds';
+import { describeThreshold, fetchThresholdOwnerNames, fetchThresholds } from '@/lib/queries/thresholds';
+import { thresholdOwnerLine } from '@/lib/thresholdWords';
 import { enumLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 import { THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
@@ -12,7 +13,7 @@ export const metadata = { title: 'Thresholds · Fydr' };
  *  for why. Configures the rules; screens/flags.md is where they get acted
  *  on. */
 export default async function ThresholdsPage() {
-  const { db, orgId, claims } = await requireStaff();
+  const { db, orgId, claims, timezone } = await requireStaff();
   /* §3.6 Thresholds is VECD for the coach AND the sport scientist. This read
      `isCoach` alone, so it refused the sport scientist from configuring the
      rules that raise flags. */
@@ -40,6 +41,10 @@ export default async function ThresholdsPage() {
   }
 
   const thresholds = await fetchThresholds(db, orgId, true);
+  /* PATTERN-S8 C6: the owner and date on every rule — the same provenance the
+     dashboard's "Thresholds set by …" line reads (fetchThresholdProvenance),
+     here per rule. No creator means one of Fydr's defaults (D8). */
+  const owners = await fetchThresholdOwnerNames(db, thresholds.map((t) => t.created_by));
   const sections = new Map<string, typeof thresholds>();
   for (const t of thresholds) {
     const list = sections.get(t.domain) ?? [];
@@ -95,7 +100,13 @@ export default async function ThresholdsPage() {
               </h2>
               {rows.map((t) => (
                 <ThresholdRow
-              canManage={hasAnyRole(claims.roles, THRESHOLD_EDIT)} key={t.id} threshold={t} orgId={orgId} sentence={describeThreshold(t)} />
+                  canManage={hasAnyRole(claims.roles, THRESHOLD_EDIT)}
+                  key={t.id}
+                  threshold={t}
+                  orgId={orgId}
+                  sentence={describeThreshold(t)}
+                  ownerLine={thresholdOwnerLine({ setBy: t.created_by ? (owners.get(t.created_by) ?? 'a staff member') : null, updatedAt: t.updated_at, timezone })}
+                />
               ))}
             </section>
           ))}

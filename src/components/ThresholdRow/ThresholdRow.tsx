@@ -10,11 +10,16 @@ import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { Pill } from '@/components/Pill/Pill';
 import { SEVERITY_STATUS } from '@/lib/status';
 import { enumLabel } from '@/lib/format';
+import { ThresholdPreview } from '@/components/ThresholdPreview/ThresholdPreview';
 
 type Props = {
   threshold: Threshold;
   orgId: string;
   sentence: string;
+  /** PATTERN-S8 C6: "Set by Jane Pemberton · 24 Aug" or "One of the club
+   *  defaults · unchanged since 6 Aug" — the owner and date the dashboard
+   *  quotes ("Thresholds set by … · 24 Aug"), per rule. */
+  ownerLine: string;
   /** Whether this viewer may actually write. G-34: the control used to be
    *  unconditional, so a role the policy excludes pressed it and nothing
    *  happened, with no error. Resolved from the matching set in lib/access.ts
@@ -22,7 +27,7 @@ type Props = {
   canManage: boolean;
 };
 
-export function ThresholdRow({ threshold, orgId, sentence, canManage }: Props) {
+export function ThresholdRow({ threshold, orgId, sentence, ownerLine, canManage }: Props) {
   const router = useRouter();
   const [confirmingArchive, setConfirmingArchive] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -82,6 +87,9 @@ export function ThresholdRow({ threshold, orgId, sentence, canManage }: Props) {
         <span className="tiny" style={{ display: 'block', marginTop: 'var(--sp-4)' }}>
           Notifies {threshold.notify_roles.map(enumLabel).join(', ')}
         </span>
+        <span className="tiny thr-owner" style={{ display: 'block', marginTop: 'var(--sp-4)' }}>
+          {ownerLine}
+        </span>
 
         {error ? (
           <span className="form-error" role="alert" style={{ display: 'block', marginTop: 'var(--sp-6)' }}>
@@ -93,6 +101,14 @@ export function ThresholdRow({ threshold, orgId, sentence, canManage }: Props) {
             medic and the S&C a V on thresholds. Only the two write controls go,
             for the roles that cannot write. Hiding the row instead would take
             away a read the matrix grants. */}
+        {/* PATTERN-S8 C6: the 28-day preview on demand, for the roles that
+            configure rules (the RPC answers nobody else). */}
+        {canManage ? (
+          <span style={{ display: 'block', marginTop: 'var(--sp-8)' }}>
+            <ThresholdPreview kind="saved" thresholdId={threshold.id} />
+          </span>
+        ) : null}
+
         {!canManage ? null : confirmingArchive ? (
           <span style={{ display: 'flex', gap: 'var(--sp-8)', marginTop: 'var(--sp-8)' }}>
             <span className="tiny">Retire this threshold for good?</span>

@@ -33,10 +33,15 @@ export type Threshold = {
   severity: FlagSeverity;
   notify_roles: AppRole[];
   is_active: boolean;
+  /** PATTERN-S8 C6: who set it (null = one of Fydr's defaults, D8) and the
+   *  one stored date the dashboard quotes. */
+  created_by: string | null;
+  updated_at: string;
+  applies_to_group_id: string | null;
 };
 
 const COLUMNS =
-  'id, name, description, domain, metric, comparison, value, baseline_type, baseline_days, consecutive_days, severity, notify_roles, is_active';
+  'id, name, description, domain, metric, comparison, value, baseline_type, baseline_days, consecutive_days, severity, notify_roles, is_active, created_by, updated_at, applies_to_group_id';
 
 export async function fetchThresholds(
   db: Db,
@@ -118,6 +123,54 @@ export async function setThresholdActive(
   if (!data || data.length === 0) {
     throw new Error('Not saved: thresholds belong to the coach and the sport scientist.');
   }
+}
+
+/** PATTERN-S8 C6: the names behind created_by, for the owner line on each
+ *  rule. One read for the distinct ids; a missing name (a deactivated or
+ *  removed account) reads as null and the line falls back to the default
+ *  wording's opposite, "Set by a staff member". */
+export async function fetchThresholdOwnerNames(db: Db, ids: readonly (string | null)[]): Promise<Map<string, string>> {
+  const distinct = [...new Set(ids.filter((id): id is string => id !== null))];
+  if (distinct.length === 0) return new Map();
+  const { data, error } = await db.from('users').select('id, full_name').in('id', distinct);
+  if (error) throw new Error(error.message);
+  return new Map((data ?? []).map((u) => [u.id, u.full_name]));
+}
+
+/** PATTERN-S8 C6: the 28-day preview — migration 0113's preview_threshold_rule,
+ *  which runs 0052/0053's own per-day evaluator over the trailing window for a
+ *  rule that need not be saved. Writes nothing. Sport scientist and coach;
+ *  empty for anyone else. */
+export type ThresholdPreviewInput = Pick<Threshold, 'metric' | 'comparison' | 'value' | 'baseline_type' | 'baseline_days' | 'consecutive_days'> & {
+  min_baseline_observations?: number;
+  applies_to_group_id?: string | null;
+};
+
+export type ThresholdPreviewRow = { athlete_id: string | null; first_name: string | null; last_name: string | null; breach_days: number; in_scope: number; window_days: number };
+
+export async function previewThresholdRule(db: Db, input: ThresholdPreviewInput, days = 28): Promise<ThresholdPreviewRow[]> {
+  const { data, error } = await db.rpc('preview_threshold_rule', {
+    p_metric: input.metric,
+    p_comparison: input.comparison,
+    p_value: input.value,
+    p_baseline_type: input.baseline_type,
+    /* The generated types read the SQL parameters as non-null; both are
+       nullable in 0113 (null = absolute baseline, null = the whole squad)
+       and PostgREST passes a JSON null through. */
+    p_baseline_days: (input.baseline_days ?? null) as unknown as number,
+    p_consecutive_days: input.consecutive_days,
+    p_min_baseline_observations: input.min_baseline_observations ?? 10,
+    p_applies_to_group_id: (input.applies_to_group_id ?? null) as unknown as string,
+    p_days: days,
+  });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as ThresholdPreviewRow[];
+}
+
+export async function previewThreshold(db: Db, thresholdId: string, days = 28): Promise<ThresholdPreviewRow[]> {
+  const { data, error } = await db.rpc('preview_threshold', { p_threshold_id: thresholdId, p_days: days });
+  if (error) throw new Error(error.message);
+  return (data ?? []) as ThresholdPreviewRow[];
 }
 
 /** screens/thresholds.md job 1: "make the rules legible... the UI renders it

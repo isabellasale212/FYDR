@@ -10846,6 +10846,80 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   border-radius: var(--r-control);
 }
 
+/* PATTERN-S8 C13 (2026-09-13): the athlete's "Mute everything" — one switch
+   at the top of the notifications screen. The whole card row is the control
+   (44px floor); the track is the product's existing switch shape (the
+   training board's heat toggle: --hair off, --accent on), not a new one. */
+.mute-card {
+  background: var(--wash-accent);
+  border-color: var(--border-accent-soft);
+}
+.mute-switch {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-12);
+  width: 100%;
+  min-height: 44px;
+  padding: var(--sp-4) 0;
+  border: 0;
+  background: none;
+  font-family: inherit;
+  color: var(--text);
+  text-align: left;
+  cursor: pointer;
+}
+.mute-switch:disabled {
+  cursor: progress;
+}
+.mute-switch-text {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+.mute-switch-title {
+  font-size: var(--fs-15);
+  font-weight: 700;
+}
+.mute-switch-sub {
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
+.mute-switch-track {
+  width: 40px;
+  height: 22px;
+  border-radius: 999px;
+  background: var(--hair);
+  position: relative;
+  transition: background var(--t-state);
+  flex: none;
+}
+.mute-switch-track::after {
+  content: '';
+  position: absolute;
+  top: 3px;
+  left: 3px;
+  width: 16px;
+  height: 16px;
+  border-radius: 50%;
+  background: #fff;
+  transition: transform var(--t-state);
+}
+.mute-switch[aria-checked='true'] .mute-switch-track {
+  background: var(--accent);
+}
+.mute-switch[aria-checked='true'] .mute-switch-track::after {
+  transform: translateX(18px);
+}
+.mute-switch:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: var(--r-control);
+}
+.mute-note {
+  margin-top: var(--sp-8);
+}
 /* Back, top-left of the content area on every screen that is a step inside a
    journey. Sits above the page's own header rather than inside it, so no page
    has to make room for it and every one places it identically. */

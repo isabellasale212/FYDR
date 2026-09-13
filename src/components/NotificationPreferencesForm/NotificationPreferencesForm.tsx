@@ -97,15 +97,31 @@ export function NotificationPreferencesForm({ orgId, userId, entries, initialPre
   return (
     <div className="stack">
       {showMuteAll ? (
-        <section className="card">
-          <h2 className="card-title">Pause everything</h2>
-          <p className="import-sub">
-            Turns off every notification you&apos;re allowed to mute in one go. Availability changes and privacy notices still
-            reach you either way &mdash; those two never turn off.
-          </p>
-          <button type="button" className="btn-ghost" onClick={muted ? onUnmuteAll : onMuteAll} disabled={busyId === '__mute_all__'}>
-            {busyId === '__mute_all__' ? 'Working…' : muted ? 'Turn notifications back on' : 'Mute everything else'}
+        /* PATTERN-S8 C13 (2026-09-13): one switch at the top, no confirmation,
+           and the sentence that matters — nothing stops being recorded and no
+           coach is told. The switch IS the mute (muteAll / unmuteAll, which
+           restore each type's prior state, §0z); its state is read from the
+           rows, so it is right after a reload and on another device. */
+        <section className="card mute-card">
+          <button
+            type="button"
+            role="switch"
+            aria-checked={muted}
+            className="mute-switch"
+            onClick={muted ? onUnmuteAll : onMuteAll}
+            disabled={busyId === '__mute_all__'}
+          >
+            <span className="mute-switch-text">
+              <span className="mute-switch-title">Mute everything</span>
+              <span className="mute-switch-sub">{busyId === '__mute_all__' ? 'Working…' : muted ? 'Muted. Switch off to get your notifications back as they were.' : 'One switch for every notification you may turn off.'}</span>
+            </span>
+            <span className="mute-switch-track" aria-hidden="true" />
           </button>
+          <p className="tiny mute-note">
+            Nothing stops being recorded. Your check-ins, ratings and sessions are still expected and still count, and no
+            coach is told you muted this. Availability changes and privacy notices still reach you &mdash; those two never
+            turn off.
+          </p>
         </section>
       ) : null}
 

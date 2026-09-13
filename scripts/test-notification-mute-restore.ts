@@ -57,7 +57,8 @@ console.log('\nthe form shows the truth');
   assert(/for \(const \[id, state\] of Object\.entries\(restored\)\) next\[id\] = state;/.test(form), 'un-mute renders what the database restored');
   assert(!/next\[id\] = \{ push: true, email: true \}/.test(form), 'and no longer paints every chip on');
   assert(/\[channel\]: next, muted: false/.test(form), 'a chip changed by hand marks its row as no longer muted');
-  assert(/Turn notifications back on/.test(form), 'the label stays "Turn notifications back on" — with this rule it is finally true');
+  // Repointed 2026-09-13 (PATTERN-S8 C13): the control is one switch, "Mute everything"; switching it off restores — the rule is unchanged.
+  assert(/role="switch"/.test(form) && /Switch off to get your notifications back as they were\./.test(form) && /onClick=\{muted \? onUnmuteAll : onMuteAll\}/.test(form), 'the switch off restores — with this rule it is finally true');
 }
 
 console.log('\nthe spec says so');

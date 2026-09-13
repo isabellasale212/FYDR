@@ -7,6 +7,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, formatNumber } from '@/lib/format';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
@@ -37,6 +38,7 @@ export async function GET(request: Request) {
       <PdfHeader
         eyebrow={`Squad weekly · ${orgName}`}
         title="Squad weekly report"
+        definition={reportDefinition('squad')}
         meta={`${formatDate(report.from, timezone)} to ${formatDate(report.to, timezone)} · Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes)`}
       />
 

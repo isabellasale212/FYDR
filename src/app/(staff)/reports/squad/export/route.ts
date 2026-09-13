@@ -6,6 +6,7 @@ import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatNumber } from '@/lib/format';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
@@ -83,6 +84,7 @@ export async function GET(request: Request) {
   );
 
   const caption =
+    `# ${reportDefinition('squad')}\r\n` +
     `# Squad weekly report, ${report.from} to ${report.to}. ` +
     `Scope: ${groupScopeLabel(groups, groupIds)} (${report.athleteCount} athletes). ` +
     `Compliance ${report.tiles.compliancePct === null ? 'n/a' : `${report.tiles.compliancePct}%`}, ` +

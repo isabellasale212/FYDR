@@ -63,6 +63,7 @@ const DONE: { key: string; dir: string; spec: string; csv?: string; pdf?: string
   /* The athlete report's header is its own (one athlete, a breadcrumb), so
      the card is composed in the page with the shared header's classes. */
   { key: 'athlete', dir: 'athlete/[athleteId]', spec: 'docs/screens/19-athlete-report.md', screen: /<div className="card rhead-definition"[^>]*>\s*<p>\{reportDefinition\('athlete'\)\}<\/p>\s*<\/div>/ },
+  { key: 'squad', dir: 'squad', spec: 'docs/screens/21-squad-weekly-report.md' },
 ];
 console.log('\n4. the reports that carry it so far');
 for (const r of DONE) {

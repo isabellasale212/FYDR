@@ -14,6 +14,7 @@ import { ACWR_BAND_TEXT, ACWR_CHRONIC_WINDOW_DAYS, acwrBandTone, acwrRequirement
 import { filterEmptyCopy } from '@/lib/staffEmpty';
 import { addDays, enumLabel, formatDate, formatNumber, todayIso } from '@/lib/format';
 import { availabilityStatus } from '@/lib/status';
+import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
@@ -106,6 +107,8 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
         groupIds={groupIds}
         eyebrow="Reports · Squad weekly"
         title="Squad weekly"
+        /* PATTERN-S7 C1: the catalogue's sentence, above the numbers. */
+        definition={reportDefinition('squad')}
         actions={
           <>
             <a href={`/reports/squad/export?${exportQuery}`} className="rhead-btn">

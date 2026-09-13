@@ -20,7 +20,7 @@ export async function POST(_request: Request, { params }: { params: Promise<{ at
      malformed id is a URL that does not name anything, not a server fault. */
   if (!isUuid(athleteId)) notFound();
 
-  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect(`/squad/${athleteId}?e=no-sar-access`);
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect('/denied');
 
   const { id, error } = await createSarRequest(db, orgId, athleteId, claims.userId);
   if (error || !id) redirect(`/squad/${athleteId}?error=${encodeURIComponent(error ?? 'Could not open the request.')}`);

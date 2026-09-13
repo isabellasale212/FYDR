@@ -220,7 +220,7 @@ function xLabelsFor(series: readonly Band[]): string[] {
 export default async function AnalyticsPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, timezone, tier, claims } = await requireStaff();
   /* D-02: Analytics is the sport scientist's alone. Confirmed 2026-09-05. */
-  if (!hasAnyRole(claims.roles, ANALYTICS)) redirect('/dashboard?e=no-analytics');
+  if (!hasAnyRole(claims.roles, ANALYTICS)) redirect('/denied');
   /* Read from requireStaff(), which has already resolved the Basic-plan
    * preview through effectiveTier() — so this screen shows a previewing admin
    * exactly what a Basic club sees, and effectiveTier() guarantees a preview

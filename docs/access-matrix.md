@@ -438,6 +438,20 @@ correctly.**
 **No new decisions were raised while writing this matrix.** Every difference
 found was already recorded at Stage A2.
 
+**What a refusal looks like** (PATTERN-S6 C7, 13 September 2026). Every staff role
+gate that refuses — `requireReport`, `requireReportAccess`, `requireInjuryAccess`,
+`requireSubjectAccess`, `requirePlatformStaff`, the analytics gate, the three
+subject-access routes — redirects to one screen, `/denied`, which says what is true
+without saying what exists: "This is not available to you. It may not exist, or your
+role may not include it. Nothing more can be said about it here." Then who they are
+signed in as ("Signed in as Peter Ackland · coach.") and what the role covers (the
+sidebar's own destinations for it: "Your role covers Dashboard, Squad overview, …"),
+and one primary, Back to dashboard. The screen reads no reason and echoes no path.
+The `?e=` reasons those redirects used to carry were rendered by nothing. A reference
+code an admin could look up waits for a denial log (the decision sheet, ⚠ migration).
+Route handlers that return 403 JSON (the export routes) are unchanged. Sign-in and
+shell redirects (`/login`, `/today`, `/dashboard`) are not refusals and are untouched.
+
 ---
 
 ## 7. The one rule this document cannot enforce

@@ -93,6 +93,7 @@ Deep links arriving from push are shell namespaced (`/staff/...`, `/athlete/...`
 | # | Page | Route | Spec file | Shell | Roles | Parent |
 |---|---|---|---|---|---|---|
 | 8 | Dashboard | `/dashboard` | `screens/dashboard.md` | staff web, staff phone | coach, medical | none |
+| — | Not available | `/denied` | `access-matrix.md` §6 "What a refusal looks like" | staff web, staff phone | any staff | none — reached only by a role gate's redirect |
 | 10 | Flags | `/flags` | `screens/flags.md` | staff web, staff phone | coach, medical | `/dashboard` |
 | 10 | One flag | `/flags/:flagId` | `screens/flags.md` | staff web, staff phone | coach, medical | `/flags` |
 | 12 | Injury dashboard | `/injuries` | `screens/injury-dashboard.md` | staff web, staff phone | coach, medical, admin (aggregate) | `/dashboard` |

@@ -16,7 +16,7 @@ import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
 export async function POST(_request: Request, { params }: { params: Promise<{ requestId: string }> }) {
   const { requestId } = await params;
   const { db, orgId, claims } = await requireStaff();
-  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect('/settings/subject-access?e=no-sar-access');
+  if (!hasAnyRole(claims.roles, SETTINGS_ADMIN)) redirect('/denied');
 
   const request = await fetchSarRequest(db, orgId, requestId);
   if (!request) redirect('/settings/subject-access?error=Request+not+found.');

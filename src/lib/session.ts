@@ -143,9 +143,12 @@ export async function requireStaff(): Promise<StaffContext> {
  *  coach/medical-only feature, applied in the other direction. Used by
  *  every report page and every report export/pdf Route Handler, so an
  *  admin is blocked the same way regardless of which door they try. */
+/* PATTERN-S6 C7 (2026-09-13): every refusal below lands on /denied — one
+ * screen that says what is true without saying what exists. The ?e= reasons
+ * these used to carry were rendered by nothing. */
 export async function requireReportAccess(): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!hasAnyRole(ctx.claims.roles, REPORT_ACCESS)) redirect('/settings?e=no-report-access');
+  if (!hasAnyRole(ctx.claims.roles, REPORT_ACCESS)) redirect('/denied');
   return ctx;
 }
 
@@ -164,7 +167,7 @@ export async function requireReportAccess(): Promise<StaffContext> {
  *  grid to consult. */
 export async function requireReport(key: ReportKey): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!hasAnyRole(ctx.claims.roles, REPORT_VISIBILITY[key])) redirect('/reports?e=no-report-access');
+  if (!hasAnyRole(ctx.claims.roles, REPORT_VISIBILITY[key])) redirect('/denied');
   return ctx;
 }
 
@@ -205,7 +208,7 @@ export async function requireReport(key: ReportKey): Promise<StaffContext> {
 
 export async function requireInjuryAccess(): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!hasAnyRole(ctx.claims.roles, INJURY_ACCESS)) redirect('/?e=no-injury-access');
+  if (!hasAnyRole(ctx.claims.roles, INJURY_ACCESS)) redirect('/denied');
   return ctx;
 }
 
@@ -242,7 +245,7 @@ export function premiumOnlyResponse(feature: string): Response {
  *  pair of roles. */
 export async function requireSubjectAccess(): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!hasAnyRole(ctx.claims.roles, SETTINGS_ADMIN) && !hasAnyRole(ctx.claims.roles, CLINICAL_ONLY)) redirect('/settings?e=no-sar-access');
+  if (!hasAnyRole(ctx.claims.roles, SETTINGS_ADMIN) && !hasAnyRole(ctx.claims.roles, CLINICAL_ONLY)) redirect('/denied');
   return ctx;
 }
 
@@ -268,7 +271,7 @@ export async function requireSubjectAccess(): Promise<StaffContext> {
  *  the variable is deliberately set. */
 export async function requirePlatformStaff(): Promise<StaffContext> {
   const ctx = await requireStaff();
-  if (!isPlatformStaff(ctx.claims.email)) redirect('/?e=not-platform-staff');
+  if (!isPlatformStaff(ctx.claims.email)) redirect('/denied');
   return ctx;
 }
 

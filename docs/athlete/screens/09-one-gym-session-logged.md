@@ -28,9 +28,14 @@ The one-line summary the page always had ("6 sets logged · session RPE 6.0 ·
 3240 kg total") is kept beneath the card.
 
 Then the sets logged in that session, as a table: set number, exercise, reps,
-load, and a "Correct" button per row. **An absent reps or load reads "Not
-logged"**, never a dash and never a zero. Beneath the table: "A correction keeps
-the original. Corrections stay open on a finished session."
+load, **Prescribed** (PATTERN-S5 C1, 13 September 2026 — what the set was asked
+for on the day, read from the row's own snapshot, never from the programme as it
+is now: "100 kg × 8", "8 reps" for a bodyweight set, "Not recorded" for a set
+logged before the snapshot existed or with none to state), and a "Correct"
+button per row. **An absent reps or load reads "Not logged"**, never a dash and
+never a zero. Beneath the table: "A correction keeps the original. Corrections
+stay open on a finished session. Prescribed is what the set was asked for on the
+day, kept with it — a programme changed since does not change it."
 
 When a set was corrected, the "What you reported" card opens with "Set 1 was
 corrected on Fri 14 Aug. Both values are kept on record." (C3 — the date is the

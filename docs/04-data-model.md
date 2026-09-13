@@ -575,7 +575,15 @@ create table gym_set_logs (
   is_warmup             boolean not null default false,
   volume_kg             numeric(10,2) generated always as
                           (coalesce(reps_completed,0) * coalesce(load_kg,0)) stored,
-  logged_at             timestamptz not null default now()
+  logged_at             timestamptz not null default now(),
+  -- PATTERN-S5 C1 (0111): the prescription as resolved for this athlete at
+  -- logging, kept with the set so a block edited later never rewrites what a
+  -- past set is compared to. Null = none at logging (pre-0111, no programme
+  -- exercise, or a basis with no kilogram). Carried by a correction; never
+  -- taken from a correction's payload.
+  prescribed_reps       int,
+  prescribed_load_kg    numeric(6,2),
+  prescribed_step_kg    numeric(4,2)
 );
 ```
 

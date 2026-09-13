@@ -1215,6 +1215,18 @@ six month old test.
 **Screens.** Gym programme, programme detail, the athlete's own view of a
 programme.
 
+**Kept with the logged set (PATTERN-S5 C1, 13 September 2026, migration 0111).**
+The number an athlete is shown when they log a set — this metric as resolved for
+them at that moment, with the prescribed reps and the exercise's kg step — is
+written onto the `gym_set_logs` row (`prescribed_load_kg`, `prescribed_reps`,
+`prescribed_step_kg`). Every later reading of "what was this set asked for"
+(the logger's correction reference, My data's session detail, the athlete's and
+the staff CSV exports) takes it from the row, never from the programme, so a
+block edited afterwards, a new override or a new 1RM result changes what the
+next set is asked for and nothing about a set already logged. A correction
+carries the original's values. Null on a set logged before the migration or
+with no kilogram to state; read as "Not recorded", never zero.
+
 **Roles and tier.** All staff today. Base. Under the agreed model, S&C and sport
 scientist edit, everyone views.
 

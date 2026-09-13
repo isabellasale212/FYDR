@@ -16,6 +16,13 @@ export const GymSetLogInput = z.object({
   reps_completed: z.number().int().min(0).max(100).nullable(),
   load_kg: z.number().min(0).max(500).nullable(),
   rpe: z.number().min(1).max(10).nullable(),
+  /* PATTERN-S5 C1 (migration 0111): the prescription as resolved for this
+   * athlete at logging — reps prefill, kg (absolute or percent_1rm resolved),
+   * the exercise's step. Null = none to state. Defaulted so an item queued
+   * on a phone before 0111 still parses and lands with no snapshot. */
+  prescribed_reps: z.number().int().min(0).max(100).nullable().default(null),
+  prescribed_load_kg: z.number().min(0).max(500).nullable().default(null),
+  prescribed_step_kg: z.number().min(0).max(50).nullable().default(null),
 });
 
 export type GymSetLogInput = z.infer<typeof GymSetLogInput>;

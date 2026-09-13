@@ -768,6 +768,9 @@ what a past set is compared against. That is **C1** and it is a migration.
 - **D1** PATTERN-S3's Approved pill for a rehab proposal appearing as an assignment — with S3 C6 (proposal states, ⚠ migration). **D2** ATH-ADULT-09's "Prescribed 100 kg · +2.5" reference line depends on C1 — the logger's rebuild (09 C1, approved) should read the snapshot when it exists.
 
 **Built:** A1, A7. **Recorded:** C1–C10, D1–D2 — appended to the decision sheet.
+**C1 built 2026-09-13** (migration 0111): the snapshot on the logged set, carried by a
+correction, read by every comparison surface from the row; D2's dependency is met — the
+logger's correction reference reads the snapshot.
 
 ---
 

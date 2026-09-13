@@ -1010,6 +1010,10 @@ export type LoggedSet = {
   reps_completed: number | null;
   load_kg: number | null;
   rpe: number | null;
+  /* PATTERN-S5 C1 (0111): the prescription the set was logged against; null
+   * on a set logged before 0111 or with none to state. */
+  prescribed_reps: number | null;
+  prescribed_load_kg: number | null;
 };
 
 /** Reads gym_set_logs_current (migration 0044), not the base table — ADR-005 rule 3: a
@@ -1018,7 +1022,7 @@ export type LoggedSet = {
 export async function fetchLoggedSets(db: Db, gymSessionLogId: string): Promise<LoggedSet[]> {
   const { data, error } = await db
     .from('gym_set_logs_current')
-    .select('id, programme_exercise_id, exercise_id, set_number, reps_completed, load_kg, rpe')
+    .select('id, programme_exercise_id, exercise_id, set_number, reps_completed, load_kg, rpe, prescribed_reps, prescribed_load_kg')
     .eq('gym_session_log_id', gymSessionLogId)
     .order('logged_at');
   if (error) throw new Error(error.message);
@@ -1049,6 +1053,10 @@ export async function submitGymSetLog(
     reps_completed: input.reps_completed,
     load_kg: input.load_kg,
     rpe: input.rpe,
+    /* PATTERN-S5 C1 (0111): what the set was asked for, kept with it. */
+    prescribed_reps: input.prescribed_reps,
+    prescribed_load_kg: input.prescribed_load_kg,
+    prescribed_step_kg: input.prescribed_step_kg,
   });
   if (error) throw new Error(error.message);
 }
@@ -1290,6 +1298,13 @@ export type GymSessionSetDetail = {
   reps_completed: number | null;
   load_kg: number | null;
   rpe: number | null;
+  /* PATTERN-S5 C1 (0111): the prescription as it was AT LOGGING — stored on
+   * the set, never re-read from the programme, so a block edited since does
+   * not rewrite what this set is compared to. Null = not recorded (a set
+   * logged before 0111) or none to state (no programme, a bodyweight/%BW/RPE
+   * basis). */
+  prescribed_reps: number | null;
+  prescribed_load_kg: number | null;
 };
 
 /** The per-session set breakdown for the My Data gym detail view — reads
@@ -1303,7 +1318,7 @@ export async function fetchGymSessionSetDetails(
 ): Promise<GymSessionSetDetail[]> {
   const { data, error } = await db
     .from('gym_set_logs_current')
-    .select('id, exercise_id, set_number, reps_completed, load_kg, rpe')
+    .select('id, exercise_id, set_number, reps_completed, load_kg, rpe, prescribed_reps, prescribed_load_kg')
     .eq('gym_session_log_id', gymSessionLogId)
     .order('set_number');
   if (error) throw new Error(error.message);
@@ -1330,6 +1345,8 @@ export async function fetchGymSessionSetDetails(
     reps_completed: r.reps_completed,
     load_kg: r.load_kg,
     rpe: r.rpe,
+    prescribed_reps: r.prescribed_reps,
+    prescribed_load_kg: r.prescribed_load_kg,
   }));
 }
 

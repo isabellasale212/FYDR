@@ -185,6 +185,8 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
           load_kg: s.load_kg ?? '',
           rpe: s.rpe ?? '',
           side: s.side ?? '',
+          prescribed_reps: s.prescribed_reps ?? '',
+          prescribed_load_kg: s.prescribed_load_kg ?? '',
         })),
         [
           ['athlete', 'Athlete'],
@@ -195,6 +197,9 @@ export async function POST(request: Request): Promise<NextResponse<GenerateResul
           ['load_kg', 'Load (kg)'],
           ['rpe', 'RPE'],
           ['side', 'Side'],
+          /* PATTERN-S5 C1 (0111): what the set was asked for, as logged. */
+          ['prescribed_reps', 'Prescribed reps'],
+          ['prescribed_load_kg', 'Prescribed load (kg)'],
         ],
       );
       csv = `# Gym sessions\r\n${sessionsCsv}\r\n# Gym sets\r\n${setsCsv}`;

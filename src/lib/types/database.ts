@@ -1219,6 +1219,9 @@ export type Database = {
         logged_at: string
         revision_of: string | null
         superseded_by: string | null
+        prescribed_reps: number | null
+        prescribed_load_kg: number | null
+        prescribed_step_kg: number | null
       }
       Insert: {
         id?: string
@@ -1237,6 +1240,9 @@ export type Database = {
         logged_at?: string
         revision_of?: string | null
         superseded_by?: string | null
+        prescribed_reps?: number | null
+        prescribed_load_kg?: number | null
+        prescribed_step_kg?: number | null
       }
       Update: {
         id?: string
@@ -1255,6 +1261,9 @@ export type Database = {
         logged_at?: string
         revision_of?: string | null
         superseded_by?: string | null
+        prescribed_reps?: number | null
+        prescribed_load_kg?: number | null
+        prescribed_step_kg?: number | null
       }
       Relationships: [
         {
@@ -4292,6 +4301,9 @@ export type Database = {
         logged_at: string | null
         revision_of: string | null
         superseded_by: string | null
+        prescribed_reps: number | null
+        prescribed_load_kg: number | null
+        prescribed_step_kg: number | null
       }
       Relationships: [
 

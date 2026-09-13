@@ -107,6 +107,9 @@ export type GymSetExportRow = {
   load_kg: number | null;
   rpe: number | null;
   side: string | null;
+  /* PATTERN-S5 C1 (0111): as logged against, from the row. */
+  prescribed_reps: number | null;
+  prescribed_load_kg: number | null;
 };
 
 /** Completed sessions only (status = 'complete'), the same filter
@@ -145,7 +148,7 @@ export async function fetchGymExportRows(
 
   const setsRes = await db
     .from('gym_set_logs_current')
-    .select('gym_session_log_id, exercise_id, set_number, reps_completed, load_kg, rpe, side')
+    .select('gym_session_log_id, exercise_id, set_number, reps_completed, load_kg, rpe, side, prescribed_reps, prescribed_load_kg')
     .in('gym_session_log_id', logIds)
     .order('set_number');
   if (setsRes.error) throw new Error(setsRes.error.message);
@@ -177,6 +180,8 @@ export async function fetchGymExportRows(
       load_kg: r.load_kg,
       rpe: r.rpe,
       side: r.side,
+      prescribed_reps: r.prescribed_reps,
+      prescribed_load_kg: r.prescribed_load_kg,
     })),
   };
 }

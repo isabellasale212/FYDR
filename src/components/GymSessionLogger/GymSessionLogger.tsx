@@ -422,6 +422,13 @@ export function GymSessionLogger({
       reps_completed: reps,
       load_kg: load,
       rpe: null,
+      /* PATTERN-S5 C1 (0111): the prescription this set is logged against,
+         as resolved for this athlete right now — the reference line's own
+         numbers (recommendedFor / prescribedReps) and the exercise's step —
+         kept on the row so a block edited later never rewrites it. */
+      prescribed_reps: prescribedReps(ex),
+      prescribed_load_kg: recommendedFor(ex),
+      prescribed_step_kg: ex.weight_step_kg,
     };
     const parsed = GymSetLogInput.safeParse(candidate);
     return parsed.success ? parsed.data : null;
@@ -482,8 +489,19 @@ export function GymSessionLogger({
   const showWeight = card ? (correcting ? true : weightFor(card) !== null) : false;
   const weightShown = card ? (correcting ? corr.weight : weightFor(card)) : null;
   const repsShown = card ? (correcting ? corr.reps : repsFor(card)) : null;
-  const rec = card ? recommendedFor(card) : null;
-  const recReps = card ? prescribedReps(card) : null;
+  /* PATTERN-S5 C1 (0111): while correcting, the reference is the set's OWN
+     snapshot — what it was asked for on the day — not today's programme; a
+     set logged before the snapshot existed falls back to the live value. */
+  const rec = card
+    ? correctingRow && correctingRow.prescribed_load_kg !== null
+      ? correctingRow.prescribed_load_kg
+      : recommendedFor(card)
+    : null;
+  const recReps = card
+    ? correctingRow && correctingRow.prescribed_reps !== null
+      ? correctingRow.prescribed_reps
+      : prescribedReps(card)
+    : null;
   const lastLogged = lastLoggedId ? (loggedSets.find((r) => r.id === lastLoggedId) ?? null) : null;
   const lastLoggedExercise = lastLogged
     ? (exercises.find((ex) => ex.programme_exercise_id === lastLogged.programme_exercise_id) ?? null)

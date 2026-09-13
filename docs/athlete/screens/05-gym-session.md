@@ -81,6 +81,18 @@ carries a way to log every set.
 stopping a row pointing at itself, so the correction pattern exists at the table
 level.
 
+**A logged set keeps the prescription it was logged against** (PATTERN-S5 C1,
+13 September 2026, migration 0111). "Log set N" writes, beside the two numbers,
+the reference line's own numbers as they stood — `prescribed_reps`,
+`prescribed_load_kg` (absolute, or the percent-of-1RM already resolved for this
+athlete) and `prescribed_step_kg` — kept with it on the row. A block edited
+later, a new override or a new 1RM changes what the next set is asked for and
+nothing about a set already logged; a correction's reference line reads the
+set's own snapshot, and the correction row carries it. A set with no kilogram
+to state (bodyweight, percent of bodyweight, an RPE target) writes null there,
+never zero. An item queued on the phone before the migration lands without a
+snapshot.
+
 ## 5. Every number shown
 
 | Metric ID | Label | Meaning | Window | When missing |

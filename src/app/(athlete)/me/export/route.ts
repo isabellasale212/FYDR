@@ -101,6 +101,8 @@ export async function GET() {
       load_kg: g.load_kg ?? '',
       rpe: g.rpe ?? '',
       side: g.side ?? '',
+      prescribed_reps: g.prescribed_reps ?? '',
+      prescribed_load_kg: g.prescribed_load_kg ?? '',
     })),
     [
       ['date', 'Date'],
@@ -110,6 +112,9 @@ export async function GET() {
       ['load_kg', 'Load (kg)'],
       ['rpe', 'RPE'],
       ['side', 'Side'],
+      /* PATTERN-S5 C1 (0111): what the set was asked for, as logged. */
+      ['prescribed_reps', 'Prescribed reps'],
+      ['prescribed_load_kg', 'Prescribed load (kg)'],
     ],
   );
 

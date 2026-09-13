@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import type { GymSessionSetDetail } from '@/lib/queries/programmes';
+import { prescribedWords } from '@/lib/gymPrescribedWords';
 
 type Props = {
   sets: readonly GymSessionSetDetail[];
@@ -36,6 +37,9 @@ export function GymSessionSetsList({ sets, correctHref }: Props) {
               <th scope="col" className="r">
                 Load
               </th>
+              <th scope="col" className="r">
+                Prescribed
+              </th>
               <th scope="col">
                 <span className="visually-hidden">Actions</span>
               </th>
@@ -56,6 +60,11 @@ export function GymSessionSetsList({ sets, correctHref }: Props) {
                   <td className="r num" data-missing={s.load_kg === null ? '' : undefined}>
                     {s.load_kg !== null ? `${s.load_kg} kg` : 'Not logged'}
                   </td>
+                  {/* As logged against, on the row (0111) — a block edited since
+                      does not change this column. */}
+                  <td className="r num sub" data-missing={s.prescribed_load_kg === null && s.prescribed_reps === null ? '' : undefined}>
+                    {prescribedWords(s)}
+                  </td>
                   <td className="sub">
                     {href ? (
                       <Link href={href} className="btn-ghost" aria-label={`Correct set ${s.set_number} of ${s.exercise_name}`}>
@@ -74,7 +83,8 @@ export function GymSessionSetsList({ sets, correctHref }: Props) {
           how long after a session a set can be corrected. */}
       <p className="tiny">
         A correction keeps the original. Corrections stay open on a finished
-        session.
+        session. Prescribed is what the set was asked for on the day, kept with
+        it — a programme changed since does not change it.
       </p>
     </div>
   );

@@ -54,6 +54,9 @@ export type MyGymSetRow = {
   load_kg: number | null;
   rpe: number | null;
   side: string | null;
+  /* PATTERN-S5 C1 (0111): as logged against, from the row. */
+  prescribed_reps: number | null;
+  prescribed_load_kg: number | null;
 };
 
 export type MyNutritionTargetRow = {
@@ -148,11 +151,13 @@ export async function fetchMyDataExport(db: Db, orgId: string, athleteId: string
     load_kg: number | null;
     rpe: number | null;
     side: string | null;
+    prescribed_reps: number | null;
+    prescribed_load_kg: number | null;
   }[] = [];
   if (gymSessionLogIds.length > 0) {
     const { data, error } = await db
       .from('gym_set_logs_current')
-      .select('gym_session_log_id, exercise_id, set_number, reps_completed, load_kg, rpe, side, logged_at')
+      .select('gym_session_log_id, exercise_id, set_number, reps_completed, load_kg, rpe, side, logged_at, prescribed_reps, prescribed_load_kg')
       .in('gym_session_log_id', gymSessionLogIds)
       .order('logged_at');
     if (error) throw new Error(error.message);
@@ -202,6 +207,8 @@ export async function fetchMyDataExport(db: Db, orgId: string, athleteId: string
       load_kg: r.load_kg,
       rpe: r.rpe,
       side: r.side,
+      prescribed_reps: r.prescribed_reps,
+      prescribed_load_kg: r.prescribed_load_kg,
     }));
 
   const nutritionTargets: MyNutritionTargetRow[] = targetsRes.data ?? [];

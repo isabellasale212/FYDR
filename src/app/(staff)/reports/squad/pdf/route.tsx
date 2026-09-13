@@ -5,10 +5,11 @@ import { recordReportView } from '@/lib/queries/reports';
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { formatDate, formatNumber } from '@/lib/format';
+import { formatDate, formatNumber, todayIso } from '@/lib/format';
 import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
+import { squadWeek } from '@/lib/squadWeek';
 import type { AppRole } from '@/lib/types/database';
 
 /** lib/pdf.tsx has the full "this was actually buildable" story. Squad
@@ -26,12 +27,16 @@ export async function GET(request: Request) {
   // filter cookie exactly as the on-screen report does (audit S4), and the
   // header meta names the resolved scope.
   const groupIds = await resolveGroupFilter(url.searchParams.get('groups') ?? undefined);
-  // Same ?to= the on-screen report's week nav sets, so an exported file
-  // matches whatever week the coach was actually looking at (audit B4).
+  // Same ?week= the on-screen report's pager sets (an old ?to= still
+  // resolves to its week), so an exported file matches the week the coach
+  // was looking at (audit B4) — Monday to Sunday, club local time.
+  const isDate = (v: string | null): v is string => v !== null && /^\d{4}-\d{2}-\d{2}$/.test(v);
+  const realToday = todayIso(timezone);
+  const weekParam = url.searchParams.get('week');
   const toParam = url.searchParams.get('to');
-  const endDate = toParam && /^\d{4}-\d{2}-\d{2}$/.test(toParam) ? toParam : undefined;
+  const week = squadWeek({ anchor: isDate(weekParam) ? weekParam : isDate(toParam) ? toParam : realToday, today: realToday });
 
-  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchSquadWeeklyReport(db, orgId, groupIds, timezone, endDate)]);
+  const [groups, report] = await Promise.all([fetchGroups(db, orgId), fetchSquadWeeklyReport(db, orgId, groupIds, timezone, { from: week.from, to: week.to })]);
 
   const buffer = await renderToBuffer(
     <PdfReport footer={`${orgName} · Fydr · generated ${formatDate(report.to, timezone)} · not for redistribution without the club's own policy`}>

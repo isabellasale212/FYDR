@@ -38,6 +38,16 @@ their own normal, and who is carrying something.
 denominator." — a `--surf` card under the scope line; it prints with the page and is
 the first line of the CSV and the line under the PDF's title.
 
+**The week is Monday to Sunday, club local time** (reconciled 13 September 2026;
+`lib/squadWeek.ts`). The report is about the calendar week containing its anchor day
+— `?week=` is the Monday the pager sets, and an old `?to=` link resolves to its own
+week — the current week running Monday to today, never a day that has not happened.
+The pager moves a week at a time and stops at the current one; the deltas compare
+against the previous week in full. Until 13 September the window was a trailing seven
+days ending today, which made the sentence true only on a Sunday. There is no
+automatic send: the report is generated on demand at any point in the week (Isabella,
+13 September 2026).
+
 **The header is one template shared by all five reports** (and specified in
 `CHANGELOG-headers-spec.md`). Five rows, always in this order:
 

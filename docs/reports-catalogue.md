@@ -30,7 +30,7 @@ and are not repeated. The shell is PATTERN-S7's; the figure grammar is C2
 ## 3. Squad weekly report — `/reports/squad`
 
 - **Definition sentence (CONFIRMED, 13 Sept 2026):** "The week Monday to Sunday, club local time. Each section states its own denominator."
-- **Raised on the sheet, fixed in the commit after the reconciliation:** as built the report's window was a trailing seven days ending today, not the calendar week; the sentence is true only on a Sunday. Reconciled: the window is Monday to Sunday in the club's timezone (the current week runs Monday to today), the pager moves a week at a time.
+- **Built against it (13 Sept):** the window is the calendar week Monday to Sunday in the club's timezone (the current week runs Monday to today), the pager moves a week at a time, an old `?to=` link resolves to its week (`lib/squadWeek.ts`). Until 13 Sept the window was a trailing seven days ending today, which made the sentence true only on a Sunday — raised on the sheet and fixed.
 - **Automatic send:** NOT BUILT (the source). On demand only, at any point in the week; no scheduler, no outbound email, no distribution list.
 - **Open (answered from the code, 13 Sept):** a shared Monday week boundary exists — `mondayOf` (`lib/queries/schedule.ts`) is the one rule for the schedule grid, the dashboard strip, the timetable, the nutrition check-in (`week_start`, checked at the database as `date_trunc('week')`, on `nutrition_checkins` and `team_allocations`) and My data. RPE has no week of its own: a rating is per session per day, and weeks enter only by aggregation (acute load, trailing seven days). The dashboard's strip draws Monday to Saturday, six days.
 

@@ -7,7 +7,8 @@ import { fetchNotFullyAvailable, type NotFullyAvailableRow } from './availabilit
 import { fetchSquadList } from './squad';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchAllPaged } from './paged';
-import { addDays, todayIso } from '@/lib/format';
+import { todayIso } from '@/lib/format';
+import { mondayOf } from './schedule';
 import { countGymSessions, fetchSessionLogIdsWithLiveSets, type GymLogRow } from '@/lib/gymSessionCounts';
 
 /* screens/reports.md, report 2 of 5 ("Squad weekly report"), built the same
@@ -22,9 +23,10 @@ import { countGymSessions, fetchSessionLogIdsWithLiveSets, type GymLogRow } from
  *     headings on one scroll instead — there's less unique content per
  *     "page" here than the Athlete report has, so a tab per section would be
  *     four extra clicks for very little.
- *   - The week is the trailing 7 days ending a navigable date (?to= on the
- *     page, defaulting to real today) — not a Monday-start week pinned to a
- *     fixture. "The fixture context is on every page header" (the spec's
+ *   - The week is the calendar week Monday to Sunday, club local time (the
+ *     catalogue's confirmed sentence, 2026-09-13; lib/squadWeek.ts), the
+ *     current week running Monday to today — not a week pinned to a
+ *     fixture. It was a trailing 7 days ending a navigable date before. "The fixture context is on every page header" (the spec's
  *     own words) needs a session-to-fixture mapping this report doesn't
  *     build; there is no MD-n row and no "planned against actual" load bar,
  *     both of which need that same mapping. A fixed "always today" window
@@ -113,15 +115,20 @@ export async function fetchSquadWeeklyReport(
   orgId: string,
   groupIds: readonly string[],
   timezone: string,
-  /** The trailing window's last day. Defaults to real today; a caller can
-   *  pass an earlier date to look at a past week — added because a fixed
-   *  "always today" window could never show the week that actually had
-   *  data (audit B4: the seed clock lagging real-world "today" meant this
-   *  report was permanently empty with no way to look back). */
-  endDate?: string,
+  /** The week, Monday to Sunday in the club's calendar (lib/squadWeek.ts —
+   *  the current week runs Monday to today). Was a trailing seven days
+   *  ending a navigable date until 2026-09-13; the catalogue's confirmed
+   *  sentence is "The week Monday to Sunday, club local time", and the
+   *  trailing window made it true only on a Sunday. Defaults to the current
+   *  week. */
+  week?: { from: string; to: string },
 ): Promise<SquadWeeklyReport> {
-  const today = endDate ?? todayIso(timezone);
-  const from = addDays(today, -6);
+  const realToday = todayIso(timezone);
+  const resolved = week ?? { from: mondayOf(realToday), to: realToday };
+  const from = resolved.from;
+  // `today` is the week's last day — real today for the current week, its
+  // Sunday for a past one; every read below is bounded by it.
+  const today = resolved.to;
 
   const [athletes, acwr, wellness, compliance, attentionResult, availability, scope] = await Promise.all([
     fetchSquadList(db, orgId, groupIds),

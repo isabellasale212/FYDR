@@ -16,6 +16,7 @@ import { addDays, enumLabel, formatDate, formatNumber, todayIso } from '@/lib/fo
 import { availabilityStatus } from '@/lib/status';
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { requireReport } from '@/lib/session';
+import { squadWeek } from '@/lib/squadWeek';
 import type { AppRole } from '@/lib/types/database';
 
 export const metadata = { title: 'Squad weekly report · Fydr' };
@@ -39,12 +40,13 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
   const groupIds = await resolveGroupFilter(params.groups);
 
   const realToday = todayIso(timezone);
-  const requestedTo = typeof params.to === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(params.to) ? params.to : realToday;
-  // Never let a stray ?to= park the report in the future — clamp to today.
-  const endDate = requestedTo > realToday ? realToday : requestedTo;
-  const prevWeek = addDays(endDate, -7);
-  const nextWeek = addDays(endDate, 7);
-  const isCurrentWeek = endDate === realToday;
+  /* The week Monday to Sunday, club local time (the catalogue's confirmed
+     sentence; lib/squadWeek.ts). ?week= is the Monday the pager sets; an old
+     ?to= link (the trailing-window days) resolves to its own week. A future
+     anchor is clamped to the current week. */
+  const isDate = (v: unknown): v is string => typeof v === 'string' && /^\d{4}-\d{2}-\d{2}$/.test(v);
+  const anchor = isDate(params.week) ? params.week : isDate(params.to) ? params.to : realToday;
+  const week = squadWeek({ anchor, today: realToday });
 
   /* The previous week, fetched for one reason: the design's deltas. A KPI
    * with no comparison is a number a coach cannot act on — 72% compliance
@@ -54,8 +56,10 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
    * measuring the method, not the squad. */
   const [groups, report, prior] = await Promise.all([
     fetchGroups(db, orgId),
-    fetchSquadWeeklyReport(db, orgId, groupIds, timezone, endDate),
-    fetchSquadWeeklyReport(db, orgId, groupIds, timezone, addDays(endDate, -7)),
+    fetchSquadWeeklyReport(db, orgId, groupIds, timezone, { from: week.from, to: week.to }),
+    /* The previous calendar week in full (Monday to Sunday), so the deltas
+       compare like with like even when this week is only Monday to today. */
+    fetchSquadWeeklyReport(db, orgId, groupIds, timezone, { from: week.prev, to: addDays(week.prev, 6) }),
   ]);
   /* PATTERN-S6 C8: the words for the scope in an empty sentence — "the
      squad" for no filter, the chip's own name otherwise. */
@@ -90,8 +94,8 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
   };
 
   const groupQuery = groupIds.length > 0 ? `&groups=${groupIds.join(',')}` : '';
-  const toQuery = (d: string) => `/reports/squad?to=${d}${groupQuery}`;
-  const exportQuery = `${groupIds.length ? `groups=${groupIds.join(',')}&` : ''}to=${endDate}`;
+  const toQuery = (d: string) => `/reports/squad?week=${d}${groupQuery}`;
+  const exportQuery = `${groupIds.length ? `groups=${groupIds.join(',')}&` : ''}week=${week.from}`;
 
   const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(db, orgId, claims.userId, actorRole, 'squad_weekly', {
@@ -124,18 +128,18 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
              everything below is about. The canvas puts that control at the far
              end of the tab row, which is where it now sits. */
             <span className="week-nav">
-            <Link href={toQuery(prevWeek)} aria-label="Previous week">
+            <Link href={toQuery(week.prev)} aria-label="Previous week">
             &lsaquo;
             </Link>
             <b>
             {formatDate(report.from, timezone)} – {formatDate(report.to, timezone)}
             </b>
-            {isCurrentWeek ? (
+            {week.next === null ? (
             <span aria-disabled="true" data-disabled="true">
             &rsaquo;
             </span>
             ) : (
-            <Link href={toQuery(nextWeek)} aria-label="Next week">
+            <Link href={toQuery(week.next)} aria-label="Next week">
             &rsaquo;
             </Link>
             )}

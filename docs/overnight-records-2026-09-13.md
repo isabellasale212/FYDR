@@ -145,3 +145,89 @@ subject access row beside withdrawal with `LEGAL-3F`, no export; (3) all four
 forms lock, above; (4) "no published mean is recomputed retrospectively" is
 `LEGAL-3E`'s and nothing recomputes either way; (5) ATH-ADULT-03's 44px submit
 is left alone and reported under the accessibility sweep.
+
+---
+
+## PATTERN-S3 — Step 1, what exists for C1, C2, C3 and C6 (item 3)
+
+Read from the schema and the code on scratch, with the sheet rows' own
+history (C4, C5, C7, D1 built; C8 decided tonight: body site and side are not
+coach-visible, a club setting defaulting to off).
+
+**C1 — the read flag.** `availability` (0042) is the ledger the C7 history is
+built on: `id, org_id, athlete_id, status, restrictions[], reason_category,
+injury_id, effective_from, effective_to, set_by, note, created_at` —
+close-then-insert, one open row per athlete. **Nothing records that the athlete
+has seen their current status**; Today's `AvailabilityBanner` renders the open
+row on every visit with no memory. The athlete cannot write `availability`
+(the coach, the sport scientist and the medic can — 0068). **Proposed and
+built:** `availability.athlete_seen_at timestamptz` on the row, set by
+`mark_availability_seen()` (definer, the athlete's own open row) when the
+status screen is opened; the Today card is emphasised while the open row is
+unseen and was set by staff, for every status including a return to
+available (the cleared state), and goes the first time the screen is opened.
+No timer.
+
+**C2 — the status screen.** Nothing like it exists. The athlete sees the
+availability line on Today (`AvailabilityBanner`, with the restriction line
+and the body area phrase) and, on Today, their own clinical record through
+`injury_clinical_athlete_view` (0009; everything but the working notes; adults
+only — `athlete_age_years >= 18` is in the view). `/me` shows the line. **Built:**
+`/me/status` — three cards in order (Can I train today · What can I do and not
+do · When am I back), answers as sentences, restrictions one row each, the
+stage ladder where a protocol exists, medical detail lower and labelled for
+the athlete and their medical team, "Not known yet" where the medic has set
+nothing, the cleared state after an injury.
+
+**C3 — protocol stages.** A bare counter in a string, and not even that any
+more: since PATTERN-S3 D1 `lib/restrictions.ts` strips protocol, stage and
+diagnosis entries from the restriction line at every read, and the seed no
+longer writes one. `injuries.status` is the only structure
+(`open | rehab | return_to_play | closed`); `injury_timeline_event` records a
+`stage_change` when that enum moves (0080's trigger). **No stage is data, no
+criteria exist, nothing is numbered.** **Built:** `injury_protocols`
+(`injury_id`, `total_stages`, opened by the medic) and the append-only
+`injury_stage_events` (`from_stage`, `to_stage`, `moved_by`, `moved_at`,
+`restriction_line`, `criteria_reviewed`, `reason`), written only by
+`move_injury_stage()` — advancing moves exactly one stage and requires a
+rewritten restriction line and the criteria-reviewed confirmation; any other
+stage requires a reason. Read by the medic and the athlete (their own), never
+the coach: the tables carry no coach policy, so a stage is not reachable from
+a coach session at the database, and the ladder's words — Done, Now, Next,
+Later, Cleared — are state words with no invented stage names. The next
+stage's criteria live in the club's protocol, and the screen says so.
+
+**C6 — rehab proposals.** `programme_assignments.status` has `proposed`
+(0079); `INJURY_PROGRAMME_PROPOSER` is the S&C; a proposal reaches the athlete
+only when the medic signs it off (`signOffProposal` sets `active` and writes a
+`programme_signed_off` timeline event — **approval does assign**, the
+assignment is the same row). **No returned state and no return reason exist:**
+the medic's note stays in the injury timeline the S&C cannot read, and
+InjuryTimeline.tsx's own header records that "the medic's reason for sending
+it back reaches them in person — a deliberate limit of this build". **Built:**
+`returned` joins `assignment_status`; `programme_assignments` gains
+`decided_by`, `decided_at`, `return_reason`; `decide_proposal(id, decision,
+reason)` (medic only: approve → `active` as today, return → `returned` with a
+required reason) and one list at `/programmes/proposals` the S&C and the medic
+both see — Proposed, Approved (the `active` row of an injury-linked
+assignment, in the board's word), Returned with the reason shown in full. An
+S&C re-proposes by assigning again; the returned row stays as the record.
+
+**C8 — body site and side (decided tonight).** Stored per injury as
+`body_area` and `side`. Today the coach reads both at the database
+(`injuries_staff_select` admits every staff role but the nutritionist) and on
+screen (the injuries list, the availability line's phrase, the injury report,
+the allocation and rehab boards). **Built with C1:** `organisations.
+coach_sees_injury_site boolean not null default false`, and the two columns
+taken away from `authenticated` at the table (`revoke select (body_area, side)`)
+and given back only through `injuries_staff`, a view that masks them to null
+for a coach unless the club's setting is on — so a coach's direct API read
+cannot obtain them, which is the check the S3 prompt asks for. The medic, the
+sport scientist and the S&C read them as before; the athlete reads their own.
+The Club settings page carries the switch (sport scientist only) with both
+consequences stated.
+
+**Not in this cluster:** the injury form's two-column split (C9), From/Until
+dates on the absence form (C5's open half), the academy slot on the status
+screen (the board draws it; nothing in the schema names an academy squad —
+"Academy" is a group name, 0116's ruling).

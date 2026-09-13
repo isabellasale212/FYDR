@@ -1,4 +1,6 @@
 import Link from 'next/link';
+import { NOT_EXPECTED, exclusionsLine, submittedLine } from '@/lib/reportFigures';
+import { belowSquadFloor } from '@/lib/smallSample';
 import { AttentionRow } from '@/components/AttentionRow/AttentionRow';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ReportHeader } from '@/components/ReportHeader/ReportHeader';
@@ -9,7 +11,7 @@ import { recordReportView } from '@/lib/queries/reports';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { ACWR_BAND_TEXT, acwrBandTone, acwrRequirementText } from '@/lib/acwr';
-import { BLANK, addDays, enumLabel, formatDate, formatNumber, todayIso } from '@/lib/format';
+import { addDays, enumLabel, formatDate, formatNumber, todayIso } from '@/lib/format';
 import { availabilityStatus } from '@/lib/status';
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
@@ -137,35 +139,47 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
       <div className="stack">
         <div className="sw-kpis">
           {[
+            /* PATTERN-S7 C2 (2026-09-13): every figure with its denominator
+               beneath it, and words for a missing value — lib/reportFigures.ts. */
             {
               label: 'Wellness compliance',
-              value: report.tiles.compliancePct === null ? BLANK : `${report.tiles.compliancePct}%`,
+              value: report.tiles.compliancePct === null ? NOT_EXPECTED : `${report.tiles.compliancePct}%`,
               trend: delta(report.tiles.compliancePct, prior.tiles.compliancePct, true, ' pts'),
+              sub: submittedLine(report.tiles.compliance),
             },
             {
               label: 'Median readiness',
               value:
                 report.wellness.medianReadiness === null
-                  ? BLANK
+                  ? report.tiles.readinessAthletes === 0
+                    ? 'No entries'
+                    : 'Not shown'
                   : formatNumber(report.wellness.medianReadiness, 0),
               trend: delta(report.wellness.medianReadiness, prior.wellness.medianReadiness, true),
               /* Over the entries that EXIST. Readiness only exists where an
                  entry was submitted, so this median says nothing about the
                  athletes who did not submit — the compliance tile beside it
-                 is where they show up. */
+                 is where they show up. Below five athletes with an entry the
+                 median is not shown (C8). */
+              sub:
+                report.tiles.readinessAthletes === 0
+                  ? 'nobody submitted this week'
+                  : `over ${report.tiles.readinessAthletes} of ${report.athleteCount} athletes with an entry`,
             },
             {
               label: 'Available today',
               value:
                 report.tiles.availablePct === null
-                  ? BLANK
+                  ? 'No athletes'
                   : `${report.athleteCount - report.availability.length} of ${report.athleteCount}`,
               trend: delta(report.tiles.availablePct, prior.tiles.availablePct, true, '%'),
+              sub: `${report.availability.length} not fully available`,
             },
             {
               label: 'Open flags',
               value: String(report.tiles.openFlagCount),
               trend: delta(report.tiles.openFlagCount, prior.tiles.openFlagCount, false),
+              sub: `across ${report.athleteCount} athletes`,
             },
           ].map((k) => (
             <div key={k.label} className="card sw-kpi">
@@ -178,9 +192,19 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                   </span>
                 ) : null}
               </span>
+              <span className="tiny sw-kpi-sub">{k.sub}</span>
             </div>
           ))}
         </div>
+        {/* The exclusions sentence under the four figures (C2): waivers and,
+            when it applies, the squad floor. */}
+        <p className="tiny" style={{ margin: 'calc(-1 * var(--sp-6)) 0 0', color: 'var(--muted)' }}>
+          {exclusionsLine({
+            waivedAthletes: report.tiles.compliance.waivedAthletes,
+            waivedDays: report.tiles.compliance.waived,
+            floored: report.tiles.readinessAthletes > 0 && belowSquadFloor(report.tiles.readinessAthletes),
+          })}
+        </p>
 
         <div className="sw-body">
         <section className="card" aria-labelledby="attention-title">
@@ -258,8 +282,8 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                       <span className="sw-load-name">
                         {r.first_name} {r.last_name}
                       </span>
-                      <span className="sw-load-num">{r.acute === null ? BLANK : formatNumber(r.acute, 0)}</span>
-                      <span className="sw-load-num">{r.chronic === null ? BLANK : formatNumber(r.chronic, 0)}</span>
+                      <span className="sw-load-num">{r.acute === null ? 'No data' : formatNumber(r.acute, 0)}</span>
+                      <span className="sw-load-num">{r.chronic === null ? 'No data' : formatNumber(r.chronic, 0)}</span>
                       <span className="sw-load-acwr" data-out={acwrBandTone(r.acwr!) !== 'good'}>
                         {formatNumber(r.acwr!, 2)}
                       </span>
@@ -328,9 +352,15 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
           <div className="sw-well-figs">
             <div>
               <p className="sw-well-num num">
-                {report.wellness.medianReadiness === null ? BLANK : formatNumber(report.wellness.medianReadiness, 0)}
+                {report.wellness.medianReadiness === null
+                  ? report.tiles.readinessAthletes === 0
+                    ? 'No entries'
+                    : 'Not shown'
+                  : formatNumber(report.wellness.medianReadiness, 0)}
               </p>
-              <p className="sw-well-lab">squad median readiness</p>
+              <p className="sw-well-lab">
+                squad median readiness · over {report.tiles.readinessAthletes} of {report.athleteCount} athletes
+              </p>
             </div>
             <div>
               <p className="sw-well-num num">{report.wellness.outliers.length}</p>
@@ -359,8 +389,10 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
               <div key={d.domain}>
                 {/* Figure first, label under — the same order as the two
                     figures above, so the whole card reads one way down. */}
-                <p className="num nm sw-well-pct">{d.pct === null ? BLANK : `${d.pct}%`}</p>
-                <p className="sw-well-lab">{enumLabel(d.domain)}</p>
+                <p className="num nm sw-well-pct">{d.pct === null ? NOT_EXPECTED : `${d.pct}%`}</p>
+                <p className="sw-well-lab">
+                  {enumLabel(d.domain)} · {submittedLine({ submitted: d.submitted, expected: d.expected, waived: d.waived })}
+                </p>
               </div>
             ))}
           </div>

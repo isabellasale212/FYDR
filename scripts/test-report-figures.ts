@@ -55,7 +55,22 @@ console.log('\n3. the injury report — the second');
   assert(/joined part-way/.test(read('docs/screens/24-injury-report.md')), 'the spec says so');
 }
 
-console.log('\n4. the spec');
+console.log('\n4. the squad weekly report — the third');
+{
+  const q = strip(read('src/lib/queries/squadWeeklyReport.ts'));
+  assert(/compliance: \{ submitted: number; expected: number; waived: number; waivedAthletes: number \};\s*readinessAthletes: number;/.test(q), 'the tiles carry the compliance counts and how many athletes the median is over');
+  assert(/const medianReadiness = belowSquadFloor\(readinessAthletes\) \? null : median\(readinessValues\);/.test(q), 'the median is off below the squad floor (C8)');
+  const page = strip(read('src/app/(staff)/reports/squad/page.tsx'));
+  assert(/sub: submittedLine\(report\.tiles\.compliance\)/.test(page), 'the compliance tile carries "24 of 30 submitted · 2 waived"');
+  assert(/over \$\{report\.tiles\.readinessAthletes\} of \$\{report\.athleteCount\} athletes with an entry/.test(page), 'the readiness tile says how many athletes it is over');
+  assert(/sub: `\$\{report\.availability\.length\} not fully available`/.test(page) && /sub: `across \$\{report\.athleteCount\} athletes`/.test(page), 'availability and flags carry their denominators');
+  assert(/exclusionsLine\(\{\s*waivedAthletes: report\.tiles\.compliance\.waivedAthletes,/.test(page), 'the exclusions sentence under the four figures');
+  assert(!/\bBLANK\b/.test(page), 'no BLANK stands in for a value on this report — "No entries", "Not shown", "No data", "Not expected", "No athletes"');
+  assert(/'No entries'/.test(page) && /'Not shown'/.test(page) && /'No data'/.test(page) && /NOT_EXPECTED/.test(page), 'the words');
+  assert(/Nobody is excluded/.test(read('docs/screens/21-squad-weekly-report.md')), 'the spec says so');
+}
+
+console.log('\n5. the spec');
 {
   assert(/Nobody is excluded/.test(read('docs/screens/20-compliance-report.md')), '20-compliance-report.md carries the exclusions sentence');
 }

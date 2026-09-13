@@ -11448,6 +11448,10 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   flex-direction: column;
   gap: var(--sp-4);
 }
+/* PATTERN-S7 C2 (2026-09-13): the denominator under each figure. */
+.sw-kpi-sub {
+  color: var(--muted);
+}
 .sw-kpi-label {
   font-size: var(--fs-11);
   font-weight: 500;

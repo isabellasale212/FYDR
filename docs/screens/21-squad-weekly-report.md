@@ -69,6 +69,16 @@ PDF so a number is never green on screen and amber on paper.
 
 ---
 
+**Every figure carries its denominator, an exclusions sentence, and words for a
+missing value** (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`). Under
+each of the four tiles: "24 of 30 submitted · 2 waived", "over 27 of 30 athletes
+with an entry", "3 not fully available", "across 30 athletes"; under the four:
+"Nobody is excluded." or the waivers and, when it applies, the squad floor (C8 —
+the readiness median is not shown below five athletes with an entry: "Not
+shown"; with none, "No entries"). A missing value is words: "Not expected", "No
+data" (a load row), "No athletes" — never a dash. The Needing attention list is
+ranked worst first.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means in plain English | Time window | What shows when data is missing |

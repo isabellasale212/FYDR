@@ -1,4 +1,5 @@
 import { acwrWithinBand } from '@/lib/acwr';
+import { belowSquadFloor } from '@/lib/smallSample';
 import { fetchAcwr, fetchWellnessTrend, type AcwrRow, type WellnessTrendRow } from './analytics';
 import { fetchComplianceReport, type ComplianceDomainSummary } from './reports';
 import { fetchDashboardAttention, type AttentionRow } from './flags';
@@ -56,6 +57,11 @@ export type SquadWeeklyTiles = {
    *  many sit outside the display band. "Outside band: 0" over an
    *  all-suppressed table was the audit's false-reassurance case (S1/B4). */
   acwr: { outsideBand: number; computable: number; suppressed: number };
+  /** PATTERN-S7 C2 (2026-09-13): every figure with its denominator and its
+   *  exclusions — the compliance tile's counts, and how many athletes the
+   *  readiness median is over (the squad floor applies to it). */
+  compliance: { submitted: number; expected: number; waived: number; waivedAthletes: number };
+  readinessAthletes: number;
 };
 
 export type GymByAthleteRow = {
@@ -201,14 +207,18 @@ export async function fetchSquadWeeklyReport(
     }));
 
   let compliancePct: number | null = null;
+  let complianceCounts = { submitted: 0, expected: 0, waived: 0, waivedAthletes: 0 };
   {
     let expected = 0;
     let submitted = 0;
+    let waived = 0;
     for (const d of compliance.summary) {
       expected += d.expected;
       submitted += d.submitted;
+      waived += d.waived;
     }
     compliancePct = expected > 0 ? Math.round((100 * submitted) / expected) : null;
+    complianceCounts = { submitted, expected, waived, waivedAthletes: compliance.byAthlete.filter((a) => a.waivedCount > 0).length };
   }
 
   const availableCount = athletes.filter((a) => a.availability === 'available').length;
@@ -221,7 +231,11 @@ export async function fetchSquadWeeklyReport(
     suppressed: acwr.filter((r) => r.suppressed).length,
   };
 
-  const medianReadiness = median(wellness.map((w) => w.readiness).filter((v): v is number => v !== null));
+  /* PATTERN-S7 C8: the squad floor — the median is over athletes with an
+     entry, and below five of them it is not shown. */
+  const readinessValues = wellness.map((w) => w.readiness).filter((v): v is number => v !== null);
+  const readinessAthletes = new Set(wellness.filter((w) => w.readiness !== null).map((w) => w.athlete_id)).size;
+  const medianReadiness = belowSquadFloor(readinessAthletes) ? null : median(readinessValues);
   const outliers = wellness.filter((w) => w.outlier);
 
   return {
@@ -233,6 +247,8 @@ export async function fetchSquadWeeklyReport(
       availablePct,
       openFlagCount: attentionResult.openTotal,
       acwr: acwrTile,
+      compliance: complianceCounts,
+      readinessAthletes,
     },
     attention: attentionResult.rows,
     wellness: {

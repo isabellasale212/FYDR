@@ -2,7 +2,8 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { GpsImportForm } from '@/components/GpsImportForm/GpsImportForm';
 import { PlanGate } from '@/components/PlanGate/PlanGate';
-import { countImportBatches, fetchRecentImportBatches } from '@/lib/queries/gpsImport';
+import { countImportBatches, fetchHeldRows, fetchImportRoster, fetchRecentImportBatches } from '@/lib/queries/gpsImport';
+import { HeldRowsPanel } from '@/components/HeldRowsPanel/HeldRowsPanel';
 import { formatDateTime } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
@@ -42,9 +43,13 @@ export default async function ImportsPage({ searchParams }: { searchParams: Sear
 
   const params = await searchParams;
   const showAll = params.all === '1';
-  const [batches, totalBatches] = await Promise.all([
+  /* PATTERN-S8 C11: the rows every import so far could not match, and the
+     roster to match them against. */
+  const [batches, totalBatches, held, roster] = await Promise.all([
     fetchRecentImportBatches(db, orgId, showAll ? null : DEFAULT_LIMIT),
     countImportBatches(db, orgId),
+    fetchHeldRows(db, orgId),
+    fetchImportRoster(db, orgId),
   ]);
 
   return (
@@ -61,6 +66,8 @@ export default async function ImportsPage({ searchParams }: { searchParams: Sear
 
       <div className="stack">
         <GpsImportForm />
+
+        <HeldRowsPanel rows={held} roster={roster} />
 
         <section className="card" aria-labelledby="history-title">
           <div

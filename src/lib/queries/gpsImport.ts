@@ -77,20 +77,36 @@ export type AcceptedRow = {
   duration_s: number | null;
 };
 
+/** PATTERN-S8 C11 (2026-09-13): a row whose "Player Name" matched no athlete
+ *  (or more than one) is HELD, not rejected: its spelling, its date and its
+ *  parsed values are kept so the sport scientist can match it on screen.
+ *  A row with a bad number is still rejected — the vendor must fix that. */
+export type HeldRow = {
+  row: number;
+  player_name: string;
+  record_date: string;
+  reason: string;
+  values: Omit<AcceptedRow, 'athlete_id' | 'record_date'>;
+};
+
 export type ImportParseResult = {
   accepted: AcceptedRow[];
   rejected: RejectedRow[];
-  templateMismatch: string | null; // set (and both lists empty) when the header row itself doesn't match
+  held: HeldRow[];
+  templateMismatch: string | null; // set (and every list empty) when the header row itself doesn't match
 };
 
-function normaliseName(name: string): string {
+/** A remembered vendor spelling → athlete (athlete_import_aliases). */
+export type ImportAlias = { alias: string; athlete_id: string };
+
+export function normaliseName(name: string): string {
   return name.trim().toLowerCase().replace(/\s+/g, ' ');
 }
 
 /** Builds the {name -> athlete} lookup once per import. A name that maps to
  *  more than one athlete becomes a deliberate ambiguity entry (null),
  *  caught below instead of silently picking one. */
-function buildRosterIndex(roster: ImportRosterAthlete[]): Map<string, ImportRosterAthlete | null> {
+function buildRosterIndex(roster: ImportRosterAthlete[], aliases: readonly ImportAlias[] = []): Map<string, ImportRosterAthlete | null> {
   const index = new Map<string, ImportRosterAthlete | null>();
   const add = (key: string, athlete: ImportRosterAthlete) => {
     if (!index.has(key)) {
@@ -103,6 +119,15 @@ function buildRosterIndex(roster: ImportRosterAthlete[]): Map<string, ImportRost
     add(normaliseName(`${a.first_name} ${a.last_name}`), a);
     if (a.preferred_name) add(normaliseName(`${a.preferred_name} ${a.last_name}`), a);
   }
+  /* PATTERN-S8 C11: the vendor's remembered spellings, read before the parser
+     gives up on a name. An alias is one per org per spelling (0115), so it
+     never makes a name ambiguous; it only resolves one. A spelling that is
+     already a roster name is left to the roster. */
+  const byId = new Map(roster.map((a) => [a.id, a]));
+  for (const al of aliases) {
+    const athlete = byId.get(al.athlete_id);
+    if (athlete && !index.has(normaliseName(al.alias))) index.set(normaliseName(al.alias), athlete);
+  }
   return index;
 }
 
@@ -114,7 +139,7 @@ function parseNumber(raw: string): number | null {
 
 const DATE_RE = /^\d{4}-\d{2}-\d{2}$/;
 
-export function parseGpsImportCsv(text: string, roster: ImportRosterAthlete[]): ImportParseResult {
+export function parseGpsImportCsv(text: string, roster: ImportRosterAthlete[], aliases: readonly ImportAlias[] = []): ImportParseResult {
   const { headers, records } = parseCsvRecords(text);
 
   const normalisedActual = headers.map((h) => h.trim());
@@ -126,15 +151,22 @@ export function parseGpsImportCsv(text: string, roster: ImportRosterAthlete[]): 
     return {
       accepted: [],
       rejected: [],
+      held: [],
       templateMismatch:
         `Header row doesn't match the expected template. Expected exactly: ${GPS_IMPORT_HEADERS.join(', ')}. ` +
         `Download the template and re-export from your GPS software's spreadsheet using those column names, in that order.`,
     };
   }
 
-  const rosterIndex = buildRosterIndex(roster);
+  const rosterIndex = buildRosterIndex(roster, aliases);
   const accepted: AcceptedRow[] = [];
   const rejected: RejectedRow[] = [];
+  const held: HeldRow[] = [];
+  /* One row per athlete per date in a file. Two rows that resolve to the same
+     athlete on the same date (two spellings of one name — an alias makes
+     that reachable) would collide in the upsert; the second is rejected
+     naming the first, because it is the file that is wrong. */
+  const seen = new Map<string, { row: number; name: string }>();
 
   records.forEach((record, idx) => {
     const rowNum = idx + 2; // header is row 1
@@ -150,14 +182,6 @@ export function parseGpsImportCsv(text: string, roster: ImportRosterAthlete[]): 
 
     const name = record['Player Name'] ?? '';
     const athlete = rosterIndex.get(normaliseName(name));
-    if (athlete === undefined) {
-      rejected.push({ row: rowNum, reason: `No athlete on the roster matches "${name}"` });
-      return;
-    }
-    if (athlete === null) {
-      rejected.push({ row: rowNum, reason: `"${name}" matches more than one athlete — rename to be unambiguous, e.g. add a squad number` });
-      return;
-    }
 
     const date = (record['Date'] ?? '').trim();
     if (!DATE_RE.test(date)) {
@@ -203,9 +227,7 @@ export function parseGpsImportCsv(text: string, roster: ImportRosterAthlete[]): 
       return;
     }
 
-    accepted.push({
-      athlete_id: athlete.id,
-      record_date: date,
+    const values = {
       total_distance_m: totalDistance,
       high_speed_distance_m: hsr,
       sprint_distance_m: sprint,
@@ -214,10 +236,31 @@ export function parseGpsImportCsv(text: string, roster: ImportRosterAthlete[]): 
       decelerations: decel === null ? null : Math.round(decel),
       player_load: load,
       duration_s: duration === null ? null : Math.round(duration * 60),
-    });
+    };
+
+    /* PATTERN-S8 C11: a valid row under a name the club cannot be matched to
+       is held with its values, never rejected and never guessed at. */
+    if (athlete === undefined) {
+      held.push({ row: rowNum, player_name: name.trim(), record_date: date, reason: `No athlete on the roster matches "${name.trim()}"`, values });
+      return;
+    }
+    if (athlete === null) {
+      held.push({ row: rowNum, player_name: name.trim(), record_date: date, reason: `"${name.trim()}" matches more than one athlete`, values });
+      return;
+    }
+
+    const key = `${athlete.id}|${date}`;
+    const first = seen.get(key);
+    if (first) {
+      rejected.push({ row: rowNum, reason: `Row ${first.row} ("${first.name}") already carries ${athlete.first_name} ${athlete.last_name} for ${date} — one row per athlete per date; this row was not imported` });
+      return;
+    }
+    seen.set(key, { row: rowNum, name: name.trim() });
+
+    accepted.push({ athlete_id: athlete.id, record_date: date, ...values });
   });
 
-  return { accepted, rejected, templateMismatch: null };
+  return { accepted, rejected, held, templateMismatch: null };
 }
 
 export async function fetchImportRoster(db: Db, orgId: string): Promise<ImportRosterAthlete[]> {
@@ -238,13 +281,15 @@ export async function commitGpsImport(
   filename: string,
   accepted: AcceptedRow[],
   rejectedCount: number,
+  /** PATTERN-S8 C11: the rows held for a name the club must match by hand. */
+  held: HeldRow[] = [],
 ): Promise<{ batchId: string | null; error: string | null }> {
   const { data: batch, error: batchError } = await db
     .from('import_batches')
     .insert({
       org_id: orgId,
       filename,
-      row_count: accepted.length + rejectedCount,
+      row_count: accepted.length + rejectedCount + held.length,
       accepted_count: accepted.length,
       rejected_count: rejectedCount,
       imported_by: userId,
@@ -252,6 +297,21 @@ export async function commitGpsImport(
     .select('id')
     .single();
   if (batchError || !batch) return { batchId: null, error: batchError?.message ?? 'Could not start the import batch' };
+
+  if (held.length > 0) {
+    const { error: heldError } = await db.from('import_held_rows').insert(
+      held.map((h) => ({
+        org_id: orgId,
+        batch_id: batch.id,
+        row_number: h.row,
+        player_name: h.player_name,
+        record_date: h.record_date,
+        values: h.values,
+        reason: h.reason,
+      })),
+    );
+    if (heldError) return { batchId: batch.id, error: heldError.message };
+  }
 
   if (accepted.length > 0) {
     /* UPSERT, not insert. G-25: this always inserted, and nothing in the
@@ -535,4 +595,130 @@ export async function recordImportExport(
     entity_id: batchId,
     metadata: { format: 'csv', row_count: rowCount },
   });
+}
+
+
+/* ── PATTERN-S8 C11 (2026-09-13): what the import could not match ─────────── */
+
+export async function fetchImportAliases(db: Db, orgId: string): Promise<ImportAlias[]> {
+  const { data, error } = await db.from('athlete_import_aliases').select('alias, athlete_id').eq('org_id', orgId);
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+export type HeldRowRecord = {
+  id: string;
+  batch_id: string;
+  filename: string | null;
+  row_number: number;
+  player_name: string;
+  record_date: string;
+  values: Record<string, number | null>;
+  reason: string;
+  created_at: string;
+};
+
+/** Every row still held in the org, oldest first — the list the imports page
+ *  shows above its history until each is matched or discarded. */
+export async function fetchHeldRows(db: Db, orgId: string): Promise<HeldRowRecord[]> {
+  const { data, error } = await db
+    .from('import_held_rows')
+    .select('id, batch_id, row_number, player_name, record_date, values, reason, created_at, import_batches(filename)')
+    .eq('org_id', orgId)
+    .eq('status', 'held')
+    .order('created_at', { ascending: true })
+    .order('row_number', { ascending: true });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    batch_id: r.batch_id,
+    filename: (r.import_batches as { filename: string | null } | null)?.filename ?? null,
+    row_number: r.row_number,
+    player_name: r.player_name,
+    record_date: r.record_date,
+    values: (r.values as Record<string, number | null> | null) ?? {},
+    reason: r.reason,
+    created_at: r.created_at,
+  }));
+}
+
+export async function countHeldRows(db: Db, orgId: string): Promise<number> {
+  const { count, error } = await db.from('import_held_rows').select('id', { count: 'exact', head: true }).eq('org_id', orgId).eq('status', 'held');
+  if (error) throw new Error(error.message);
+  return count ?? 0;
+}
+
+/** Match a held row to an athlete: writes the gps_records row the import
+ *  would have written (the same upsert, the same batch id), remembers the
+ *  vendor's spelling as an alias, and resolves the held row by status. The
+ *  alias is written only when the spelling is not already remembered for
+ *  this org (a different athlete under the same spelling is refused by the
+ *  unique key — reported, never re-pointed). Every step is RLS-gated to the
+ *  sport scientist; nothing here is service-role. */
+export async function matchHeldRow(
+  db: Db,
+  orgId: string,
+  userId: string,
+  heldId: string,
+  athleteId: string,
+): Promise<{ error: string | null; aliasRemembered: boolean; alias: string }> {
+  const { data: row, error: readErr } = await db
+    .from('import_held_rows')
+    .select('id, batch_id, player_name, record_date, values, status')
+    .eq('org_id', orgId)
+    .eq('id', heldId)
+    .maybeSingle();
+  if (readErr) return { error: readErr.message, aliasRemembered: false, alias: '' };
+  if (!row) return { error: 'That held row is not here any more.', aliasRemembered: false, alias: '' };
+  if (row.status !== 'held') return { error: 'That row has already been resolved.', aliasRemembered: false, alias: '' };
+
+  const v = (row.values as Record<string, number | null> | null) ?? {};
+  const { error: gpsErr } = await db.from('gps_records').upsert(
+    {
+      org_id: orgId,
+      athlete_id: athleteId,
+      record_date: row.record_date,
+      total_distance_m: v.total_distance_m ?? 0,
+      high_speed_distance_m: v.high_speed_distance_m ?? null,
+      sprint_distance_m: v.sprint_distance_m ?? null,
+      max_speed_ms: v.max_speed_ms ?? null,
+      accelerations: v.accelerations ?? null,
+      decelerations: v.decelerations ?? null,
+      player_load: v.player_load ?? null,
+      duration_s: v.duration_s ?? null,
+      source: 'file_import' as const,
+      import_batch_id: row.batch_id,
+    },
+    { onConflict: 'org_id,athlete_id,record_date,session_id' },
+  );
+  if (gpsErr) return { error: gpsErr.message, aliasRemembered: false, alias: '' };
+
+  const alias = normaliseName(row.player_name);
+  let aliasRemembered = false;
+  const { data: existing } = await db.from('athlete_import_aliases').select('athlete_id').eq('org_id', orgId).eq('alias', alias).maybeSingle();
+  if (!existing) {
+    const { error: aliasErr } = await db.from('athlete_import_aliases').insert({ org_id: orgId, athlete_id: athleteId, alias, created_by: userId });
+    if (!aliasErr) aliasRemembered = true;
+  }
+
+  const { error: resolveErr } = await db
+    .from('import_held_rows')
+    .update({ status: 'matched', matched_athlete_id: athleteId, resolved_by: userId, resolved_at: new Date().toISOString() })
+    .eq('org_id', orgId)
+    .eq('id', heldId);
+  if (resolveErr) return { error: resolveErr.message, aliasRemembered, alias };
+  return { error: null, aliasRemembered, alias };
+}
+
+export async function discardHeldRow(db: Db, orgId: string, userId: string, heldId: string): Promise<{ error: string | null }> {
+  const { data, error } = await db
+    .from('import_held_rows')
+    .update({ status: 'discarded', resolved_by: userId, resolved_at: new Date().toISOString() })
+    .eq('org_id', orgId)
+    .eq('id', heldId)
+    .eq('status', 'held')
+    .select('id');
+  if (error) return { error: error.message };
+  if (!data || data.length === 0) return { error: 'That row is not held any more.' };
+  return { error: null };
 }

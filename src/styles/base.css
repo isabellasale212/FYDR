@@ -5571,6 +5571,52 @@ img.me-avatar {
 .sar-next {
   color: var(--muted);
 }
+/* PATTERN-S8 C11 (2026-09-13): the held import rows — warn wash, each row
+   the vendor's spelling and its line, a picker and Match / Discard; the row
+   stacks at a phone. */
+.held-card {
+  border-color: var(--border-warn);
+  background: var(--wash-warn);
+}
+.held-list {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.held-row {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) auto;
+  gap: var(--sp-12);
+  align-items: center;
+  padding: var(--sp-12) 0;
+  border-top: 1px solid var(--hair);
+}
+.held-who {
+  min-width: 0;
+}
+.held-line {
+  display: block;
+  margin-top: var(--sp-4);
+  overflow-wrap: anywhere;
+}
+.held-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-8);
+  align-items: center;
+}
+.held-pick {
+  min-height: 44px;
+  min-width: 200px;
+}
+@media (max-width: 767px) {
+  .held-row {
+    grid-template-columns: minmax(0, 1fr);
+  }
+  .held-pick {
+    width: 100%;
+  }
+}
 /* PATTERN-S8 A1 (2026-09-13): Log out is a button, set apart from the lists,
    with the session it ends named beside it. */
 .set-logout-form {

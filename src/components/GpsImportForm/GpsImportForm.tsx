@@ -98,6 +98,9 @@ export function GpsImportForm() {
           </span>
           <span>
             {result.filename}: {result.acceptedCount} record{result.acceptedCount === 1 ? '' : 's'} imported
+            {/* PATTERN-S8 C11: held is said separately from rejected — one the
+                club can resolve below, the other the vendor must fix. */}
+            {result.heldCount > 0 ? `, ${result.heldCount} row${result.heldCount === 1 ? '' : 's'} held for a name to match — below` : ''}
             {result.rejectedCount > 0 ? `, ${result.rejectedCount} row${result.rejectedCount === 1 ? '' : 's'} rejected` : ''}.
           </span>
         </p>

@@ -149,6 +149,14 @@ must not be treated as missing anywhere. Check every place that tests an RPE for
 truthiness rather than for null, because `0` is falsy and that is exactly how a
 rested session becomes an unrated one.
 
+**The match report is kept.** Considered for removal and rejected. A rugby
+product that cannot say who played is odd, and "who played, and for how long" is
+the question a coach asks before any analytics panel. Keeping it commits three
+things: the match participation build (starters, who came on, minutes each, and
+nothing more), a migration for it, and the fixture-to-match-session decision
+underneath, which must be settled at the same time because a half-linked schema
+is worse than either end state. The catalogue stays at seven reports.
+
 ## Group C: the order of the big briefs
 
 Each is a day or more and needs its own brief. Agreed order, 13 September 2026:

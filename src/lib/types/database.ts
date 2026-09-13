@@ -65,6 +65,58 @@ export type Database = {
         }
       ]
     }
+    athlete_import_aliases: {
+      Row: {
+        id: string
+        org_id: string
+        athlete_id: string
+        alias: string
+        source: string
+        created_by: string | null
+        created_at: string
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        athlete_id: string
+        alias: string
+        source?: string
+        created_by?: string | null
+        created_at?: string
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        athlete_id?: string
+        alias?: string
+        source?: string
+        created_by?: string | null
+        created_at?: string
+      }
+      Relationships: [
+        {
+          foreignKeyName: "athlete_import_aliases_athlete_id_fkey"
+          columns: ["athlete_id"]
+          isOneToOne: false
+          referencedRelation: "athletes"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "athlete_import_aliases_created_by_fkey"
+          columns: ["created_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "athlete_import_aliases_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
     athletes: {
       Row: {
         id: string
@@ -1367,6 +1419,83 @@ export type Database = {
           columns: ["vendor_profile_id"]
           isOneToOne: false
           referencedRelation: "vendor_profiles"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
+    import_held_rows: {
+      Row: {
+        id: string
+        org_id: string
+        batch_id: string
+        row_number: number
+        player_name: string
+        record_date: string
+        values: Json
+        reason: string
+        status: string
+        matched_athlete_id: string | null
+        resolved_by: string | null
+        resolved_at: string | null
+        created_at: string
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        batch_id: string
+        row_number: number
+        player_name: string
+        record_date: string
+        values?: Json
+        reason: string
+        status?: string
+        matched_athlete_id?: string | null
+        resolved_by?: string | null
+        resolved_at?: string | null
+        created_at?: string
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        batch_id?: string
+        row_number?: number
+        player_name?: string
+        record_date?: string
+        values?: Json
+        reason?: string
+        status?: string
+        matched_athlete_id?: string | null
+        resolved_by?: string | null
+        resolved_at?: string | null
+        created_at?: string
+      }
+      Relationships: [
+        {
+          foreignKeyName: "import_held_rows_batch_id_fkey"
+          columns: ["batch_id"]
+          isOneToOne: false
+          referencedRelation: "import_batches"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "import_held_rows_matched_athlete_id_fkey"
+          columns: ["matched_athlete_id"]
+          isOneToOne: false
+          referencedRelation: "athletes"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "import_held_rows_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "import_held_rows_resolved_by_fkey"
+          columns: ["resolved_by"]
+          isOneToOne: false
+          referencedRelation: "users"
           referencedColumns: ["id"]
         }
       ]

@@ -1,5 +1,5 @@
 import { NextResponse } from 'next/server';
-import { commitGpsImport, fetchImportRoster, parseGpsImportCsv } from '@/lib/queries/gpsImport';
+import { commitGpsImport, fetchImportAliases, fetchImportRoster, parseGpsImportCsv } from '@/lib/queries/gpsImport';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import { GPS_IMPORT, hasAnyRole } from '@/lib/access';
@@ -12,6 +12,9 @@ export type UploadResult = {
   acceptedCount: number;
   rejectedCount: number;
   rejected: { row: number; reason: string }[];
+  /** PATTERN-S8 C11: rows held for a name the club must match by hand. */
+  heldCount: number;
+  held: { row: number; player_name: string; record_date: string; reason: string }[];
 };
 
 const MAX_BYTES = 5 * 1024 * 1024; // a season of GPS data for a squad is a few thousand rows; 5MB is generous headroom
@@ -33,13 +36,13 @@ export async function POST(request: Request): Promise<NextResponse<UploadResult>
      matrix answer here is the opposite of the six pages above. */
   if (!hasAnyRole(claims.roles, GPS_IMPORT)) {
     return NextResponse.json(
-      { ok: false, error: 'Importing GPS files is not part of this role.', batchId: null, filename: null, acceptedCount: 0, rejectedCount: 0, rejected: [] },
+      { ok: false, error: 'Importing GPS files is not part of this role.', batchId: null, filename: null, acceptedCount: 0, rejectedCount: 0, rejected: [], heldCount: 0, held: [] },
       { status: 403 },
     );
   }
   if (!isPremium(tier)) {
     return NextResponse.json(
-      { ok: false, error: 'GPS import is a Premium feature, and this club is on Basic.', batchId: null, filename: null, acceptedCount: 0, rejectedCount: 0, rejected: [] },
+      { ok: false, error: 'GPS import is a Premium feature, and this club is on Basic.', batchId: null, filename: null, acceptedCount: 0, rejectedCount: 0, rejected: [], heldCount: 0, held: [] },
       { status: 403 },
     );
   }
@@ -49,52 +52,55 @@ export async function POST(request: Request): Promise<NextResponse<UploadResult>
 
   if (!(file instanceof File)) {
     return NextResponse.json(
-      { ok: false, error: 'No file received.', batchId: null, filename: null, acceptedCount: 0, rejectedCount: 0, rejected: [] },
+      { ok: false, error: 'No file received.', batchId: null, filename: null, acceptedCount: 0, rejectedCount: 0, rejected: [], heldCount: 0, held: [] },
       { status: 400 },
     );
   }
   if (file.size === 0) {
     return NextResponse.json(
-      { ok: false, error: 'That file is empty.', batchId: null, filename: file.name, acceptedCount: 0, rejectedCount: 0, rejected: [] },
+      { ok: false, error: 'That file is empty.', batchId: null, filename: file.name, acceptedCount: 0, rejectedCount: 0, rejected: [], heldCount: 0, held: [] },
       { status: 400 },
     );
   }
   if (file.size > MAX_BYTES) {
     return NextResponse.json(
-      { ok: false, error: `File is too large (over ${Math.round(MAX_BYTES / 1024 / 1024)}MB).`, batchId: null, filename: file.name, acceptedCount: 0, rejectedCount: 0, rejected: [] },
+      { ok: false, error: `File is too large (over ${Math.round(MAX_BYTES / 1024 / 1024)}MB).`, batchId: null, filename: file.name, acceptedCount: 0, rejectedCount: 0, rejected: [], heldCount: 0, held: [] },
       { status: 400 },
     );
   }
   if (!file.name.toLowerCase().endsWith('.csv')) {
     return NextResponse.json(
-      { ok: false, error: 'Only .csv files are accepted.', batchId: null, filename: file.name, acceptedCount: 0, rejectedCount: 0, rejected: [] },
+      { ok: false, error: 'Only .csv files are accepted.', batchId: null, filename: file.name, acceptedCount: 0, rejectedCount: 0, rejected: [], heldCount: 0, held: [] },
       { status: 400 },
     );
   }
 
   const text = await file.text();
-  const roster = await fetchImportRoster(db, orgId);
-  const result = parseGpsImportCsv(text, roster);
+  /* PATTERN-S8 C11: the remembered spellings are read with the roster, so a
+     name matched once matches again without a second question. */
+  const [roster, aliases] = await Promise.all([fetchImportRoster(db, orgId), fetchImportAliases(db, orgId)]);
+  const result = parseGpsImportCsv(text, roster, aliases);
 
   if (result.templateMismatch) {
     return NextResponse.json(
-      { ok: false, error: result.templateMismatch, batchId: null, filename: file.name, acceptedCount: 0, rejectedCount: 0, rejected: [] },
+      { ok: false, error: result.templateMismatch, batchId: null, filename: file.name, acceptedCount: 0, rejectedCount: 0, rejected: [], heldCount: 0, held: [] },
       { status: 400 },
     );
   }
 
-  if (result.accepted.length === 0 && result.rejected.length === 0) {
+  if (result.accepted.length === 0 && result.rejected.length === 0 && result.held.length === 0) {
     return NextResponse.json(
-      { ok: false, error: 'The file has a valid header but no data rows.', batchId: null, filename: file.name, acceptedCount: 0, rejectedCount: 0, rejected: [] },
+      { ok: false, error: 'The file has a valid header but no data rows.', batchId: null, filename: file.name, acceptedCount: 0, rejectedCount: 0, rejected: [], heldCount: 0, held: [] },
       { status: 400 },
     );
   }
 
-  const { batchId, error } = await commitGpsImport(db, orgId, claims.userId, file.name, result.accepted, result.rejected.length);
+  const heldOut = result.held.map((h) => ({ row: h.row, player_name: h.player_name, record_date: h.record_date, reason: h.reason }));
+  const { batchId, error } = await commitGpsImport(db, orgId, claims.userId, file.name, result.accepted, result.rejected.length, result.held);
 
   if (error) {
     return NextResponse.json(
-      { ok: false, error, batchId, filename: file.name, acceptedCount: 0, rejectedCount: result.rejected.length, rejected: result.rejected },
+      { ok: false, error, batchId, filename: file.name, acceptedCount: 0, rejectedCount: result.rejected.length, rejected: result.rejected, heldCount: result.held.length, held: heldOut },
       { status: 500 },
     );
   }
@@ -104,6 +110,8 @@ export async function POST(request: Request): Promise<NextResponse<UploadResult>
     error: null,
     batchId,
     filename: file.name,
+    heldCount: result.held.length,
+    held: heldOut,
     acceptedCount: result.accepted.length,
     rejectedCount: result.rejected.length,
     rejected: result.rejected,

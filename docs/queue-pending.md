@@ -71,3 +71,82 @@ default costs a migration and a data fix.
   its own definition sentence; the RPE-load report is built as a seventh for
   every club. NOTE: this interacts with the RPE club setting above, so send the
   two together.
+
+---
+
+## LAST IN THE PROGRAMME: the accessibility sweep
+
+**Do NOT send until three things are done: the PATTERN-S8 rows, the RPE change
+and the training report split above, and S9.** The sweep only tells the truth
+about a settled app. Sweeping screens that are about to be rewritten measures
+something that will not exist tomorrow.
+
+> # Accessibility sweep. Whole product.
+>
+> This is not a restyle. The current look is settled and stays. Do not
+> harmonise, tidy, align or improve anything visual. Three defect classes only.
+> Anything else you notice, report, do not change.
+>
+> ## The three classes
+>
+> **1. Contrast below 4.5 to 1.** Every text and background pair, **in BOTH
+> themes**. `tokens.css` carries light and dark, and a pair can pass in one and
+> fail in the other; a sweep that measures only light reports a clean product
+> that is not. Large text may use 3 to 1 where it genuinely qualifies, so state
+> the size when you apply that. Fix by changing the text colour to an existing
+> token that passes. If none passes, report it and stop on that instance rather
+> than inventing one.
+>
+> **2. Tap targets under 44px.** Any interactive element on any surface. Grow
+> the target; never shrink the gap to a neighbour and never overlap two targets.
+> **`aria-disabled` elements are IN SCOPE.** WCAG exempts genuinely disabled
+> controls, but `BlockedButton` uses `aria-disabled` with the reason on tap, so
+> those are still interactive and still in the accessibility tree.
+>
+> **3. Colour as the only carrier of meaning.** Any state, rank, flag or status
+> distinguished by colour alone. Fix by adding a label, a shape or a position.
+> Do not change the colour itself.
+>
+> ## Method, and this part is not optional
+>
+> Measure computed styles from the RENDERED DOM, not the stylesheet, and measure
+> contrast against the ACTUAL COMPOSITED background, since a tint over a surface
+> is not the token's nominal value. Reading the stylesheet has produced wrong
+> answers in this codebase twice.
+>
+> Run as SINGLE-ROLE users. A sweep signed in as one account misses every
+> role-gated screen. Say which roles you signed in as and which screens each one
+> reached.
+>
+> ## Two existing guards, and why they did not catch this
+>
+> `test:a11y-floor` and `test:nav-hit-floor` already run in `prebuild`. So the
+> interesting question is not only what is failing but **why those guards missed
+> it**. If they cover only some surfaces or some element types, that gap is a
+> finding worth more than the individual fixes, because it is what stops the
+> defects returning. Report it.
+>
+> ## Rules
+>
+> - Do not change layout, copy, data, queries, logic, or which data a role sees.
+> - Do not change any colour except where a contrast failure requires it, and
+>   **never in a way that collapses the four colour meanings**: rank tint, flag
+>   badges, deviation bars and neutral status text must stay distinguishable
+>   after the sweep. `docs/decisions/design-constitution.md` is the reference.
+> - Do not introduce a new token. If one is needed, report it and wait.
+> - Do not fix anything else you find. Report it in a list at the end.
+> - Scratch database only. No production, no `db:push`, no Vercel.
+>
+> ## Step 1. Report before building. Answer and stop.
+>
+> Produce the full defect list before changing anything. For each defect: file,
+> line, class, measured value, theme, the surface it appears on, the role that
+> can reach it, and the proposed fix. Group by class, then by page. Then stop.
+>
+> ## Commit and verify
+>
+> - **One commit per class PER APP**, staff and athlete separately. One commit
+>   per class across the whole product is too large to revert safely.
+> - State the measured value before and after for every contrast and tap-target
+>   fix, in both themes.
+> - Report drift: anything you could not fix within these rules, and why.

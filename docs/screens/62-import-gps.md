@@ -38,6 +38,33 @@ whose export does not match is expected to re-head it in a spreadsheet.
 
 **The upload control.**
 
+**What the import could not match, held** (PATTERN-S8 C11, 13 September 2026). A
+valid row whose "Player Name" matches no athlete on the roster, or more than one,
+is **held, not rejected**: its spelling, its date and its parsed values are kept
+against the batch (`import_held_rows`, migration 0115) and named on screen in a
+warn-washed card above the history — "2 rows held for a name to match", then each
+row: "D Okonkwo (GK)" · "Row 3 of session.csv · 2026-09-12 · 4,980 m · No athlete
+on the roster matches "D Okonkwo (GK)"" — with an athlete picker, **Match** and
+**Discard**. Nothing is guessed. **Match** writes the GPS record the import would
+have written (the same upsert, the same batch: an athlete who already has a
+record for that date has it replaced, as a re-upload does), resolves the row, and
+**remembers the vendor's spelling** (`athlete_import_aliases`, one per club per
+spelling): "Matched "D Okonkwo (GK)" to Dan Okonkwo: one GPS record written. "D
+Okonkwo (GK)" is remembered as Dan Okonkwo — the next file with that spelling
+matches without asking." The parser reads the club's aliases before it gives up
+on a name, so the same spelling in the next file is accepted outright. A spelling
+already remembered for a different athlete is never re-pointed; the match still
+writes the record and says the alias was left. **Discard** resolves the row and
+writes nothing; a discarded spelling is held again next time. The upload result
+line says held separately from rejected: "1 record imported, 2 rows held for a
+name to match — below, 1 row rejected."
+
+**A row with a bad number is still rejected** — the vendor must fix that. And two
+rows in one file that resolve to one athlete on one date (two spellings of one
+name, which an alias makes reachable) reject the second naming the first: "Row 2
+("Dan Okonkwo") already carries Dan Okonkwo for 2026-09-12 — one row per athlete
+per date; this row was not imported."
+
 **The history**, one row per import, with who did it, when, and how many rows were
 accepted and rejected.
 
@@ -47,6 +74,7 @@ accepted and rejected.
 |---|---|---|---|---|
 | None | Accepted | Rows that became GPS records | This import | Zero, if the file matched the header but held no valid rows |
 | None | Rejected | Rows that did not, **each with its row number and reason** | This import | Zero is the good outcome |
+| None | Held | Valid rows under a name the club must match by hand, each with its row number, spelling, date and distance | Until matched or discarded | "Nothing held" |
 
 **Rows are numbered as a spreadsheet numbers them**, counting the header as row 1,
 so a coach can go straight to the row the message names.
@@ -63,6 +91,8 @@ D-24.
 | Download the template | Header | Gives you a file with the ten correct headings | A server route | Nothing | Coach or medic | None | Never |
 | **Upload a file** | The body | Reads it, validates every row, and writes the ones that pass | Stays here, with the result | **Creates GPS records**, and an import batch recording who and when | Coach or medic, **and Premium, both checked on the server** | The result is shown before anything else happens | Refuses on Base with a sentence |
 | Export a past import | The history | Downloads what a previous import contained | A server route | Nothing | Same | None | Never |
+| **Match** (a held row) | The held card | Writes the GPS record for the chosen athlete, resolves the row, remembers the spelling | Stays here, with the sentence | A `gps_records` row, an `athlete_import_aliases` row, the held row's status | Sport scientist, and Premium, both checked on the server | The status line is the answer | When nothing is held |
+| **Discard** (a held row) | The held card | Resolves the row without writing a record | Stays here | The held row's status | Same | None | When nothing is held |
 
 **Three ways a file is refused, each with a different message.**
 

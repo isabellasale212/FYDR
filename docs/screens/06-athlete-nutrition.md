@@ -109,10 +109,17 @@ withdrawn does not reappear as history.
 
 **Loading.** Renders when ready.
 
-**No body weight recorded.** No targets can be calculated at all, because every
-one of them is a rate per kilogram. The screen says so rather than showing zeroes.
+**No body weight recorded.** The resolver still serves a target — the club's absolute
+default (`nutrition_targets.org_default`, `04-data-model.md` §17.3), or an absolute
+personal or group target — and every surface that shows it says whose it is and that it
+is not scaled: "The club default target, the same for everyone on it. Not scaled to
+their weight — no weigh-in on record." (Isabella's ruling, 13 September 2026: neither
+the board's dashes nor a bare number — the club default, labelled as the club default,
+so the number is present and its provenance is on the face of it. This paragraph used
+to say no target could be calculated at all, which the code never did.)
 
-**No rule set.** The club's default applies. If there is none, no targets exist.
+**No rule set.** The club's default applies, labelled as the club default. If there is
+none, no targets exist.
 
 **No target range set.** Weights are drawn without a band.
 

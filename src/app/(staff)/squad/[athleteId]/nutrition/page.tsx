@@ -16,6 +16,7 @@ import {
 import { fetchTargetRangeHistory } from '@/lib/queries/bodyMassTargetRange';
 import { fetchRecentCheckins } from '@/lib/queries/nutrition';
 import { fetchTargets, resolveTargetForDate } from '@/lib/queries/nutritionTargets';
+import { targetProvenanceLine } from '@/lib/nutritionNoWeighIn';
 import {
   positionalScopeLine,
   resolvePositionalUnit,
@@ -346,7 +347,11 @@ export default async function AthleteNutritionPage({
                   </div>
                 ))}
               </div>
-              
+              {/* PATTERN-S5 C7 (Isabella, 2026-09-13): whose numbers these are
+                  and whether they are scaled, on the face of the card. */}
+              <p className="tiny" style={{ margin: 'var(--sp-8) 0 0' }}>
+                {targetProvenanceLine({ sourceScope: resolved.source_scope, hasWeighIn: latestOwn !== null, you: false })}
+              </p>
             </>
           ) : (
             <EmptyState

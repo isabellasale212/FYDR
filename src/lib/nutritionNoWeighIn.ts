@@ -1,5 +1,8 @@
-/* PATTERN-S5 C7 (2026-09-13): the profile's nutrition card when the athlete
- * has no weigh-in on record. Targets are per kilogram, so nothing can be
+/* PATTERN-S5 C7 (2026-09-13; Isabella's ruling the same day: neither the
+ * board's dashes nor a silent number — show the club default, labelled as
+ * the club default, so the number is present and its provenance is on the
+ * face of it). The profile's nutrition card when the athlete has no weigh-in
+ * on record, and the provenance line every resolved surface carries. Targets are per kilogram, so nothing can be
  * scaled to them — but the resolver (0019, 04-data-model §17.3) still serves
  * a target: the club's absolute default, or an absolute personal or group
  * target written at assignment. The card used to say "this plan needs a
@@ -12,4 +15,22 @@ export function noWeighInLine(o: { firstName: string; sourceScope: string }): st
     return `No weigh-in on record, so these are the club default figures, not scaled to ${o.firstName}. Targets are per kilogram; a weigh-in scales them.`;
   }
   return `No weigh-in on record: these figures were set as absolute targets, not scaled to ${o.firstName}. Targets are per kilogram; a weigh-in scales them.`;
+}
+
+/** The provenance line under a resolved target, on every surface that shows
+ *  one — the athlete's own card, the staff athlete page. Says whose the
+ *  numbers are, and, when there is no weigh-in, that they are not scaled. */
+export function targetProvenanceLine(o: { sourceScope: string; hasWeighIn: boolean | null; you: boolean }): string {
+  const whose =
+    o.sourceScope === 'squad_default'
+      ? 'The club default target, the same for everyone on it.'
+      : o.sourceScope === 'group'
+        ? o.you
+          ? "Your group's target."
+          : "The group's target."
+        : o.you
+          ? 'Set for you.'
+          : 'Set for this athlete.';
+  if (o.hasWeighIn === false) return `${whose} Not scaled to ${o.you ? 'your' : 'their'} weight — no weigh-in on record.`;
+  return whose;
 }

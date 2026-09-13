@@ -27,6 +27,8 @@ Ten artboards: eight desktop, two phone, with athlete-app frames beside 4 and 7.
 
 **A nutrition plan is authored in rules, and the worked example is part of it.** Four tiles in g or ml per kilogram, then one sentence resolving them for a round 100 kg athlete, then the squad mean with its own n. Carbohydrate names the day type it is showing because it is the only periodised rule. The card closes with "Coach-set guidance, not a clinical prescription".
 
+**Ruling, 13 September 2026 (Isabella) — the resolved side with no weigh-in.** Neither the dashes below nor a bare number: the app shows the club's default target, labelled as the club default, so the number is present and its provenance is on the face of it — "The club default target, the same for everyone on it. Not scaled to their weight — no weigh-in on record." An athlete with no weigh-in is still excluded from the squad mean. The board is updated to the code plus the label, not the code to the board. (`lib/nutritionNoWeighIn.ts`; `06-athlete-nutrition.md` §States.)
+
 **An unset rule is a dashed frame when authored and a dash when resolved.** Fat and energy are not set on Adam's plan, so they read "not set" in a dashed frame in the authored column and a dash on every resolved surface including the athlete's own. An athlete with no weigh-in reads four dashes and a sentence saying why, and is excluded from the squad mean rather than counted low.
 `1px dashed --line-dashed for an unset rule · --faint dash when resolved · denominator drops, never a zero`
 

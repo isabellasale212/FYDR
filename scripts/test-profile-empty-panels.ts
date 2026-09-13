@@ -25,7 +25,14 @@ console.log('\nnutrition plan');
      says what the numbers are. */
   assert(!/Targets are per kilogram, so this plan needs a weigh-in\./.test(page), 'the contradiction is gone');
   assert(/noWeighInLine\(\{ firstName: athlete\.first_name, sourceScope: nutrition\.source_scope \}\)/.test(page), 'a plan with no weigh-in says what the figures are and whose');
+  /* PATTERN-S5 C7, Isabella's ruling 2026-09-13: show the club default,
+     labelled as the club default, on every resolved surface. */
+  const athleteProgramme = flat('src/app/(athlete)/programme/page.tsx');
+  assert(/targetProvenanceLine\(\{ sourceScope: target\.source_scope, hasWeighIn, you: true \}\)/.test(athleteProgramme), 'the athlete\'s own targets card says whose the numbers are');
+  const staffNutrition = flat('src/app/(staff)/squad/[athleteId]/nutrition/page.tsx');
+  assert(/targetProvenanceLine\(\{ sourceScope: resolved\.source_scope, hasWeighIn: latestOwn !== null, you: false \}\)/.test(staffNutrition), 'and so does the staff athlete nutrition page');
   const words = readFileSync('src/lib/nutritionNoWeighIn.ts', 'utf8');
+  assert(/The club default target, the same for everyone on it\./.test(words) && /Not scaled to \$\{o\.you \? 'your' : 'their'\} weight — no weigh-in on record\./.test(words), 'the club default is labelled as the club default; unscaled says so');
   assert(/squad_default/.test(words) && /club default figures, not scaled to/.test(words) && /set as absolute targets, not scaled to/.test(words), 'the words: club default vs an absolute personal or group target');
 }
 console.log('\nflags');

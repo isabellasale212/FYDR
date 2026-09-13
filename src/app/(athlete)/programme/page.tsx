@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { fetchMyProgrammeSessions } from '@/lib/queries/programmes';
 import { resolveTargetForDate } from '@/lib/queries/nutritionTargets';
+import { fetchLatestBodyMassForAthletes } from '@/lib/queries/bodyComposition';
+import { targetProvenanceLine } from '@/lib/nutritionNoWeighIn';
 import { Toast } from '@/components/Toast/Toast';
 import { enumLabel, mdExplainer, mdLabel, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
@@ -51,17 +53,21 @@ export default async function MyProgrammePage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, athleteId, timezone } = await requireAthlete();
+  const { db, athleteId, timezone, orgId } = await requireAthlete();
   const params = await searchParams;
   const today = todayIso(timezone);
   /* The nutrition check-in and outstanding-count queries went with the header
      pill they fed. Nothing else on this screen asks what is still to do, and
      that count belongs on Today, beside the list it counts. Two fewer round
      trips, and one fewer sequential await after the parallel batch. */
-  const [sessions, target] = await Promise.all([
+  const [sessions, target, latestMass] = await Promise.all([
     fetchMyProgrammeSessions(db, athleteId),
     resolveTargetForDate(db, athleteId, today),
+    /* PATTERN-S5 C7: whether there is a weigh-in to scale the target to,
+       for the provenance line — the athlete's own row, RLS. */
+    fetchLatestBodyMassForAthletes(db, orgId, [athleteId], { since: '1900-01-01', asOf: today }),
   ]);
+  const hasWeighIn = latestMass.has(athleteId);
 
   const programmeName = sessions[0]?.programme_name ?? null;
   const programmeType = sessions[0]?.programme_type ?? null;
@@ -161,6 +167,12 @@ export default async function MyProgrammePage({
               'Your standing target.'
             )}{' '}
             Guidance only &mdash; nothing to log here.
+          </p>
+          {/* PATTERN-S5 C7 (Isabella, 2026-09-13): whose numbers these are,
+              on the face of the card — the club default is labelled as the
+              club default, and an unscaled one says so. */}
+          <p className="tiny" style={{ margin: '0 0 var(--sp-10)' }}>
+            {targetProvenanceLine({ sourceScope: target.source_scope, hasWeighIn, you: true })}
           </p>
           {TARGET_ROWS.map((row) => {
             const raw = target[row.key];

@@ -6,12 +6,9 @@ import { fetchSarRequests } from '@/lib/queries/sarPack';
 import { formatLongDate } from '@/lib/format';
 import { SAR_STATUS } from '@/lib/status';
 import { requireSubjectAccess } from '@/lib/session';
+import { sarDueWords, sarNextStep, type SarStatus } from '@/lib/subjectAccess/words';
 
 export const metadata = { title: 'Subject access requests · Fydr' };
-
-function daysUntil(dueAtIso: string): number {
-  return Math.ceil((new Date(dueAtIso).getTime() - Date.now()) / 86_400_000);
-}
 
 /** screens/exports.md, "Admin, subject access pack", and
  *  09-security-and-compliance.md §6. Entry points: an admin opens a
@@ -41,8 +38,9 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
       </div>
 
       <p className="import-sub" style={{ marginTop: -6, marginBottom: 'var(--sp-14)' }}>
-        Article 15, UK GDPR. Each request is due within one month. An admin opens a request from an athlete&apos;s own
-        profile page; medical reviews any clinical notes it contains before an admin can release it.
+        Article 15, UK GDPR. Each request is due within one month. The sport scientist opens a request from an
+        athlete&apos;s own profile page; the medic reviews any clinical notes it contains before the sport scientist can
+        release it. The athlete sees the same stage, in the same words, on their own Privacy and my data page.
       </p>
 
       {error ? (
@@ -72,7 +70,9 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
           </thead>
           <tbody>
             {requests.map((r) => {
-              const days = daysUntil(r.due_at);
+              /* PATTERN-S8 C10: the same due words and the same "waiting on
+                 whom" the athlete reads on /me/privacy (lib/subjectAccess/words). */
+              const due = sarDueWords(r.due_at, r.status as SarStatus);
               return (
                 <tr key={r.id}>
                   <td className="nm">
@@ -82,14 +82,17 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
                   <td className="sub">{r.requested_by_name}</td>
                   <td className="num sub">
                     {formatLongDate(r.due_at, timezone)}
-                    {r.status !== 'released' ? (
-                      <span className={`sub ${days <= 7 ? 'g-bad' : days <= 14 ? 'g-warn' : ''}`} style={{ marginInlineStart: 6 }}>
-                        ({days} day{days === 1 ? '' : 's'})
+                    {due ? (
+                      <span className={`sub ${due.tone === 'bad' ? 'g-bad' : due.tone === 'warn' ? 'g-warn' : ''}`} style={{ marginInlineStart: 6 }}>
+                        ({due.text})
                       </span>
                     ) : null}
                   </td>
                   <td>
                     <Pill status={SAR_STATUS[r.status as keyof typeof SAR_STATUS] ?? SAR_STATUS.pending_review} />
+                    <span className="tiny sar-next" style={{ display: 'block', marginTop: 'var(--sp-4)' }}>
+                      {sarNextStep(r.status as SarStatus)}
+                    </span>
                   </td>
                   <td className="r">
                     {r.status === 'pending_review' && isMedical ? (

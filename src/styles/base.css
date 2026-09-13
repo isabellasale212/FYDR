@@ -5520,6 +5520,57 @@ img.me-avatar {
 .ret-armed {
   border-color: var(--border-bad);
 }
+/* PATTERN-S8 C10 (2026-09-13): the athlete's Privacy and my data page — the
+   request sentence, the four steps, the rules, the pack's categories. */
+.pv-requests {
+  margin: 0 0 var(--sp-12);
+  padding: 0;
+  list-style: none;
+}
+.pv-request {
+  padding: var(--sp-12) var(--sp-14);
+  border: 1px solid var(--border-accent-soft);
+  border-radius: var(--r-control);
+  background: var(--wash-accent);
+  font-size: var(--fs-14);
+  line-height: 1.5;
+}
+.pv-request + .pv-request {
+  margin-top: var(--sp-8);
+}
+.pv-steps,
+.pv-rules {
+  margin: var(--sp-10) 0 var(--sp-8);
+  padding-left: var(--sp-18);
+  font-size: var(--fs-14);
+  line-height: 1.5;
+}
+.pv-steps li + li,
+.pv-rules li + li {
+  margin-top: var(--sp-6);
+}
+.pv-holds {
+  margin: 0;
+  padding: 0;
+  list-style: none;
+}
+.pv-holds li {
+  display: grid;
+  gap: var(--sp-2);
+  padding: var(--sp-10) 0;
+  border-top: 1px solid var(--hair);
+}
+.pv-cat {
+  font-size: var(--fs-14);
+  font-weight: 600;
+}
+.pv-meta {
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
+.sar-next {
+  color: var(--muted);
+}
 /* PATTERN-S8 A1 (2026-09-13): Log out is a button, set apart from the lists,
    with the session it ends named beside it. */
 .set-logout-form {

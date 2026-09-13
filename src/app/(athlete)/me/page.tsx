@@ -294,7 +294,20 @@ export default async function MePage() {
               athletes export no report; they ask a coach or sport scientist
               out of band, who exports through the staff routes. No request
               button, no queue, no new entity — the row, the route and
-              lib/queries/myDataExport.ts are removed. */}
+              lib/queries/myDataExport.ts are removed. PATTERN-S8 C10, the
+              same day: the row that stands here instead says what the club
+              holds, who sees what, and how to ask — and where a request
+              for your data stands. */}
+          <Link href="/me/privacy" className="me-row">
+            <span className="k">
+              Privacy and my data
+              <span className="s">what the club holds, who sees it, how to get a copy</span>
+            </span>
+            <span className="chev" aria-hidden="true">
+              ›
+            </span>
+          </Link>
+          <div className="hair" />
           {/* Migration 0040's problem_reports table, 03-flows.md §6. This is
            *  now the ONLY route to it — Today's "Something not right?" row was
            *  removed by the same redesign. */}

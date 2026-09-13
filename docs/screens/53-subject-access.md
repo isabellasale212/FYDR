@@ -32,6 +32,16 @@ may read that. So the process needs both.
 Every request with the athlete, when it was made, what stage it has reached, and
 who is waiting on whom.
 
+**One pattern with the athlete side** (PATTERN-S8 C10, 13 September 2026). The
+due date carries its words and tone from `sarDueWords` ("19 days left", warn
+inside 14 days, bad inside 7, "due today", "3 days overdue"); under the status
+pill the next step from `sarNextStep` — "Waiting on the medic to review the
+clinical notes", "Reviewed — waiting on the sport scientist to release the pack",
+"Released". The athlete reads the same stage in the same words on
+`/me/privacy` (`docs/athlete/screens/20-privacy-and-my-data.md`), from their own
+`sar_requests` rows (migration 0114), with the pack's own manifest as "what the
+club holds about you" and the four steps to ask. The intro says so.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means | Time window | When missing |

@@ -47,6 +47,36 @@ export async function fetchSarRequests(db: Db, orgId: string): Promise<SarReques
   }));
 }
 
+/** PATTERN-S8 C10 (2026-09-13): the athlete's own requests, for /me/privacy —
+ *  readable since 0114's sar_requests_athlete_select. Who opened it is the
+ *  one join the athlete may see (the staff member's name); nothing clinical. */
+export type MySarRequestRow = {
+  id: string;
+  requested_at: string;
+  due_at: string;
+  status: string;
+  released_at: string | null;
+  requested_by_name: string | null;
+};
+
+export async function fetchMySarRequests(db: Db, orgId: string, athleteId: string): Promise<MySarRequestRow[]> {
+  const { data, error } = await db
+    .from('sar_requests')
+    .select('id, requested_at, due_at, status, released_at, users!sar_requests_requested_by_fkey(full_name)')
+    .eq('org_id', orgId)
+    .eq('athlete_id', athleteId)
+    .order('requested_at', { ascending: false });
+  if (error) throw new Error(error.message);
+  return (data ?? []).map((r) => ({
+    id: r.id,
+    requested_at: r.requested_at,
+    due_at: r.due_at,
+    status: r.status,
+    released_at: r.released_at,
+    requested_by_name: r.users?.full_name ?? null,
+  }));
+}
+
 export type SarRequestDetail = {
   id: string;
   athlete_id: string;

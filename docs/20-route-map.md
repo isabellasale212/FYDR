@@ -79,7 +79,10 @@ Deep links arriving from push are shell namespaced (`/staff/...`, `/athlete/...`
 | 29 | Me | `/me` | `screens/settings.md` | athlete phone | athlete | none |
 | 29 | Edit my profile | `/me/profile` | `screens/settings.md` | athlete phone | athlete | `/me` |
 | 29 | Notifications | `/me/notifications` | `screens/settings.md` | athlete phone | athlete | `/me` |
-| 43 | Privacy and my data | `/me/privacy` | `screens/settings.md` | athlete phone | athlete | `/me` |
+| 43 | Privacy and my data | `/me/privacy` | `athlete/screens/20-privacy-and-my-data.md` | athlete phone | athlete | `/me` |
+
+  *Built 13 September 2026 (PATTERN-S8 C10): what the club holds, who sees what, how to ask for a copy, and where a request stands.*
+
 | ~~31~~ | ~~Export my data~~ | ~~`/me/export`~~ removed 13 Sept 2026 — athlete self-export is not built (`docs/reports-catalogue-source.md`) | — | athlete phone | athlete | — |
 | 26 | My leaderboard opt-ins | `/me/leaderboards` | `screens/leaderboards.md` | athlete phone | athlete | `/me` |
 | 33 | Onboarding | `/onboarding/:step` | `screens/onboarding.md` | athlete phone, staff web | athlete, coach, medical, admin | none |

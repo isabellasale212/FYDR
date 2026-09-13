@@ -308,12 +308,11 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
       groups={groups}
       groupIds={groupIds}
       title={mode === 'training' ? 'Training report' : 'Match day GPS report'}
-      /* PATTERN-S7 C1 (reconciled 2026-09-13): no definition card on either
-         board yet. The catalogue's confirmed training sentence describes an
-         RPE-load report, not this GPS board (raised on the sheet); the match
-         sentence is on hold in the catalogue. lib/reportCatalogue.ts holds
-         null for both, and the header draws nothing for null. */
-      definition={reportDefinition('training') ?? undefined}
+      /* PATTERN-S7 C1, reconciled 2026-09-13 against the catalogue's addendum:
+         the per-session GPS board is the GPS report and carries the confirmed
+         GPS sentence. The match board is kept (decision batch) but its sentence
+         is not yet written, so it draws none. */
+      definition={mode === 'training' ? (reportDefinition('training') ?? undefined) : undefined}
       sub={
         <>
           <p className="eyebrow rhead-sub">

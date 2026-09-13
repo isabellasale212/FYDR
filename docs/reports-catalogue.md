@@ -2,12 +2,14 @@
 
 **Status.** Reconciled 13 September 2026 against `docs/reports-catalogue-source.md`,
 Isabella's catalogue (the source of truth; not edited here — anything wrong in it is
-raised on `docs/design-decisions-outstanding.md`). Same shape as the source, one row
-per report. The definition sentences below are the source's exact wording where the
-source confirms them; the two reports the source does not cover (compliance, injury
-and availability) carry rows **drafted by the builder, pending Isabella's
-confirmation**. `src/lib/reportCatalogue.ts` mirrors the sentences here verbatim and
-`scripts/test-report-catalogue.ts` fails on drift.
+raised on `docs/design-decisions-outstanding.md`), including its 13 September
+addendum. Same shape as the source, one row per report — **seven** since the
+addendum: the training report is two (the GPS report, premium; the Training load
+report, every club). Every definition sentence below is the source's exact wording,
+confirmed; the builder's two drafts for compliance and injury and availability are
+superseded by the addendum's confirmed sentences. `src/lib/reportCatalogue.ts`
+mirrors the sentences here verbatim and `scripts/test-report-catalogue.ts` fails on
+drift.
 
 The rules that apply to all reports are the source's ("Rules that apply to all five")
 and are not repeated. **All six reports lead with one emphasised figure card**
@@ -21,10 +23,10 @@ denominator, and a body that scrolls sideways on a phone rather than the page. T
 
 ---
 
-## 1. Training report — `/reports/training`
+## 1. GPS report — `/reports/training` *(was "Training report"; premium)*
 
-- **Definition sentence (CONFIRMED by Isabella, 13 Sept 2026):** "Session load is RPE multiplied by session minutes, summed over the period. Only sessions an athlete was expected at are counted, and a session with no rating is not counted as zero."
-- **Not on the built page, raised on the sheet.** `/reports/training` as built is the per-session GPS board (MET-017/018/019/021 and the MET-026 dials; premium) — it shows no RPE × minutes load and no load by week. The confirmed sentence describes a longitudinal RPE-load report the app has as an Analytics board, not as a report. Until Isabella rules (the sheet: "the catalogue's training report is not the built GPS board"), the GPS board carries no definition card; the builder's drafted GPS sentence is withdrawn.
+- **Definition sentence (CONFIRMED, the addendum, 13 Sept 2026):** "Per-session GPS totals for each athlete, from the files imported for that session. An athlete with no GPS file for a session shows as no record, never as zero."
+- **The split (the addendum):** what is built here is a per-session GPS board, and it is now the **GPS report**, premium; the RPE × minutes report the source's original row described is the **Training load report**, row 8 below, every club, the seventh. Neither keeps the name "Training report", because that name was the ambiguity. The route and the name change with the split build; the confirmed GPS sentence is on the board from this reconciliation.
 - **Open (answered from the code, 13 Sept):** load is derived, not stored — MET-007 (RPE × minutes) from the athlete's rating; a week template's "load 2,910" is the planned load, Σ `duration_min × planned_rpe` over the template's sessions, computed on render (`weekTotalLoad`); `sessions.planned_load` exists as a column and is written and read by nothing.
 
 ## 2. Match report — `/reports/training?mode=match`
@@ -52,26 +54,36 @@ denominator, and a body that scrolls sideways on a phone rather than the page. T
 
 ---
 
-## 6. Compliance — `/reports/compliance` *(drafted by the builder, pending Isabella's confirmation)*
+## 6. Compliance — `/reports/compliance`
 
 **The question:** how much of the picture does the club actually have?
 
 - **Shape:** who submitted what was expected of them, over a period. Rows are athletes; a by-day grid beneath.
-- **Definition sentence (draft, builder):** "Who has submitted what was expected of them, and who has not — how much of the picture the club actually has, over the period and group chosen." **Confirm.**
+- **Definition sentence (CONFIRMED, the addendum, 13 Sept 2026):** "The share of expected entries that were submitted, over the period. An entry counts as expected only where the schedule or the club's settings asked for one, so a day nobody was asked about is not counted against anybody."
+- **The rule that comes with it (the addendum):** compliance spans wellness, RPE and nutrition, and RPE can be switched off, so one club's denominator is not another's — **the report must state which entry types it counted.** Built with the RPE club setting.
 - **Roles:** sport scientist, coach, medic, S&C; the nutritionist sees the nutrition domain only.
 - **Figure:** submitted of expected, the count before the percentage, summed over the domains that expect anything; waived days excluded and named. Nothing expected reads "Not expected", never "0 of 0".
 - **Chart:** none — the by-day grid is the picture.
 - **Sort:** worst first, and the header says so.
 - **Export:** CSV and PDF with the definition in the header.
 
-## 7. Injury and availability — `/reports/injuries` *(drafted by the builder, pending Isabella's confirmation)*
+## 7. Injury and availability — `/reports/injuries`
 
 **The question:** who is unavailable, for how long, and where are injuries happening?
 
 - **Shape:** the squad's availability now, injuries over a period. Three figures, no chart.
-- **Definition sentence (draft, builder):** "Who is unavailable, why in limited terms, when they are expected back, and where injuries are happening, over the period and group chosen." **Confirm.**
+- **Definition sentence (CONFIRMED, the addendum, 13 Sept 2026):** "Every injury open at any point in the period, with each athlete's availability as it stands today. Diagnosis, mechanism and clinical notes appear only in the medic's copy."
+- **The medic's copy:** the sentence promises diagnosis, mechanism and clinical notes in the medic's copy; today the CSV holds the same eight columns for both — on the sheet with a proposal (found at PATTERN-S7 C3).
 - **Roles:** medic (clinical columns), sport scientist, coach, S&C (status word, restriction line, expected return only). The nutritionist cannot open it.
 - **Figure:** available now of the roster, the count before the percentage; days lost and new injuries beneath it; athletes with no recorded status and athletes who joined in the period named as exclusions.
 - **Chart:** none — the body-area table stands in for it.
 - **Sort:** by expected return, soonest first; unknown returns last and said so.
 - **Export:** CSV and PDF with the definition in the header; a medical export carries the confidentiality line (PATTERN-S7 C3, on the sheet).
+
+## 8. Training load report — *not yet built; the seventh, every club*
+
+**The question:** how much training load has each athlete carried?
+
+- **Definition sentence (CONFIRMED, the addendum, 13 Sept 2026):** "Session load is RPE multiplied by session minutes, summed over the period. Only sessions an athlete was expected at are counted, and a session with no rating is not counted as zero."
+- **Off state (CONFIRMED), since RPE is a club setting:** "This club does not collect session RPE, so there is no load to report. A sport scientist can switch it on in Settings." — setting-driven absence keeps the destination (`docs/decisions/absence-rule.md`).
+- **Built with the training report split**, after the RPE package; `src/lib/reportCatalogue.ts` carries both sentences as `TRAINING_LOAD_DEFINITION` and `TRAINING_LOAD_OFF_STATE`.

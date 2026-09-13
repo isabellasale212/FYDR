@@ -81,7 +81,9 @@ export async function GET(request: Request) {
       filters: [`Session: v ${selected.opponent}, ${selected.date}`, 'Whole-match totals only — GPS is not recorded as a first-half/second-half split'],
       medical: false,
     };
-    const withCaption = exportCaption(descriptor, reportDefinition('training'), { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) + csv;
+    /* The match board's sentence is not yet written (the addendum); the GPS
+       sentence belongs to the training-mode board below. */
+    const withCaption = exportCaption(descriptor, null, { exportedBy: fullName, at: formatDateTime(new Date().toISOString(), timezone) }) + csv;
 
     await recordReportView(db, orgId, claims.userId, actorRole, 'training', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode, ...exportAuditMetadata(descriptor) }, 'export');
     return csvResponse(withCaption, descriptor.fileName);

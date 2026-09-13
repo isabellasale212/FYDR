@@ -7,7 +7,7 @@
  * both exports; the two with none (training — raised; match — on hold) carry
  * none anywhere. */
 import { readFileSync } from 'node:fs';
-import { REPORT_DEFINITIONS, athleteDefinition, reportDefinition } from '@/lib/reportCatalogue';
+import { REPORT_DEFINITIONS, TRAINING_LOAD_DEFINITION, TRAINING_LOAD_OFF_STATE, athleteDefinition, reportDefinition } from '@/lib/reportCatalogue';
 
 let failed = 0;
 function assert(cond: boolean, msg: string) {
@@ -25,12 +25,21 @@ console.log('1. the source, the working copy and the module agree');
     const sec = source.slice(source.indexOf(`## ${heading}`));
     return sec.match(/\*\*Definition sentence \(draft\):\*\* "([^"]+)"/)?.[1] ?? null;
   };
+  /* The addendum's confirmed sentences are blockquotes under a bold name. */
+  const addendum = source.slice(source.indexOf('# Addendum, 13 September 2026'));
+  const addendumSentence = (name: string) => {
+    /* The name appears in the naming table first; the sentence sits under
+       its second, bold-heading occurrence in "Definition sentences, confirmed". */
+    const confirmed = addendum.slice(addendum.indexOf('## Definition sentences, confirmed'));
+    const sec = confirmed.slice(confirmed.indexOf(`**${name}**`));
+    const q = sec.match(/\n> ([\s\S]*?)\n\n/);
+    return q ? q[1]!.replace(/\n> /g, ' ').trim() : null;
+  };
   const workSentence = (heading: string) => {
     const sec = work.slice(work.indexOf(`## ${heading}`));
     return sec.match(/\*\*Definition sentence[^:]*:\*\* "([^"]+)"/)?.[1] ?? null;
   };
   for (const [src, wrk, key] of [
-    ['1. Training report', '1. Training report', 'training'],
     ['3. Squad weekly report', '3. Squad weekly report', 'squad'],
     ['4. Athlete report', '4. Athlete report', 'athlete'],
     ['5. Testing report', '5. Testing report', 'testing'],
@@ -38,16 +47,29 @@ console.log('1. the source, the working copy and the module agree');
     const s = sourceSentence(src);
     const w = workSentence(wrk);
     assert(s !== null && s === w, `${key}: the working copy carries the source's confirmed sentence verbatim`);
-    if (key !== 'training') assert(REPORT_DEFINITIONS[key] === s, `${key}: the module mirrors it`);
+    assert(REPORT_DEFINITIONS[key] === s, `${key}: the module mirrors it`);
   }
-  assert(REPORT_DEFINITIONS.training === null && /raised on the sheet/i.test(work.slice(work.indexOf('## 1. Training'), work.indexOf('## 2. Match'))), 'training: the confirmed sentence is not put on the GPS board — null in the module, raised in the working copy');
-  assert(/ON HOLD/.test(work.slice(work.indexOf('## 2. Match'), work.indexOf('## 3. Squad'))) && !('match' in REPORT_DEFINITIONS), 'match: on hold, no sentence anywhere');
+  /* Reconciled 2026-09-13 against the addendum (ruling four): the drafts are
+     gone; the GPS board carries the GPS sentence; the seventh's two
+     sentences are constants until the split builds the route. */
+  for (const [name, wrk, key] of [
+    ['GPS report', '1. GPS report', 'training'],
+    ['Compliance report', '6. Compliance', 'compliance'],
+    ['Injury and availability report', '7. Injury and availability', 'injuries'],
+  ] as const) {
+    const a = addendumSentence(name);
+    const w = workSentence(wrk);
+    assert(a !== null && a === w, `${key}: the working copy carries the addendum's confirmed sentence verbatim`);
+    assert(REPORT_DEFINITIONS[key] === a, `${key}: the module mirrors it`);
+  }
+  assert(addendumSentence('Training load report') === TRAINING_LOAD_DEFINITION && workSentence('8. Training load report') === TRAINING_LOAD_DEFINITION, 'the seventh report\'s sentence, confirmed, held for the split');
+  const off = addendum.slice(addendum.indexOf('Its off state')).match(/\n> ([\s\S]*?)\n\n/)![1]!.replace(/\n> /g, ' ').trim();
+  assert(off === TRAINING_LOAD_OFF_STATE, 'and its off state');
+  assert(!/drafted by the builder, pending/.test(work) && !/draft, builder/.test(work), 'no draft remains in the working copy');
+  assert(!/pending confirmation|builder\'s drafts pending/.test(read('src/lib/reportCatalogue.ts')), 'no draft remains in the module');
+  assert(/must state which entry types it counted/.test(work), 'the compliance rule that comes with the sentence is recorded');
+  assert(/ON HOLD|not yet written/.test(work.slice(work.indexOf('## 2. Match'), work.indexOf('## 3. Squad'))) && !('match' in REPORT_DEFINITIONS), 'match: kept, no sentence yet');
   assert(/does \*\*not\*\* record who played or minutes/.test(work), 'match: the open question is answered in the working copy');
-  for (const key of ['compliance', 'injuries'] as const) {
-    const heading = key === 'compliance' ? '6. Compliance' : '7. Injury and availability';
-    const w = workSentence(heading);
-    assert(w !== null && REPORT_DEFINITIONS[key] === w && /drafted by the builder, pending/.test(work.slice(work.indexOf(`## ${heading}`), work.indexOf(`## ${heading}`) + 400)), `${key}: the builder's draft, marked pending, mirrored by the module`);
-  }
   assert(athleteDefinition({ athlete: 'Dan Okonkwo', start: 'Mon 17 Aug', end: 'Sun 13 Sept' }) === 'Everything recorded for Dan Okonkwo between Mon 17 Aug and Sun 13 Sept. Sections with no data say so rather than showing zeros.', 'the athlete sentence resolves its three placeholders');
   assert(reportDefinition('squad') === REPORT_DEFINITIONS.squad, 'reportDefinition reads the map');
   assert(!/Do not edit this file/.test(work) && /SOURCE OF TRUTH/.test(source), 'the source is the source; the working copy does not claim to be');
@@ -87,13 +109,16 @@ console.log('\n3. the reports that carry a sentence carry it everywhere; the two
   assert(/<p>\{athleteDefinition\(\{ athlete: `\$\{athlete\.first_name\} \$\{athlete\.last_name\}`, start: formatDate\(report\.from, timezone\), end: formatDate\(report\.to, timezone\) \}\)\}<\/p>/.test(athletePage), 'athlete: the resolved sentence on screen');
   assert(/athleteDefinition\(\{ athlete: `\$\{athlete\.first_name\} \$\{athlete\.last_name\}`, start: report\.from, end: report\.to \}\)/.test(strip(read('src/app/(staff)/reports/athlete/[athleteId]/export/route.ts'))), 'athlete: in the CSV');
   assert(/definition=\{athleteDefinition\(\{/.test(strip(read('src/app/(staff)/reports/athlete/[athleteId]/pdf/route.tsx'))), 'athlete: in the PDF');
+  /* Reconciled 2026-09-13 against the addendum (ruling four): the training-mode
+     board is the GPS report and carries the confirmed GPS sentence on screen,
+     in the CSV and in the PDF; the match board is kept but its sentence is
+     not yet written, so it carries none anywhere. */
   const training = strip(read('src/app/(staff)/reports/training/page.tsx'));
-  assert(/definition=\{reportDefinition\('training'\) \?\? undefined\}/.test(training), 'training: the header is handed null and draws nothing (no drafted sentence remains)');
+  assert(/definition=\{mode === 'training' \? \(reportDefinition\('training'\) \?\? undefined\) : undefined\}/.test(training), 'training: the GPS sentence on the training-mode board only');
   const trainingCsv = strip(read('src/app/(staff)/reports/training/export/route.ts'));
-  // Repointed 2026-09-13 (PATTERN-S7 C3): both boards hand reportDefinition('training') to exportCaption, which writes no line for null.
-  assert((trainingCsv.match(/exportCaption\(descriptor, reportDefinition\('training'\)/g) ?? []).length === 2, 'training and match CSVs: the line only once there is a sentence');
+  assert((trainingCsv.match(/exportCaption\(descriptor, reportDefinition\('training'\)/g) ?? []).length === 1 && (trainingCsv.match(/exportCaption\(descriptor, null/g) ?? []).length === 1, 'the training CSV carries the sentence; the match CSV carries none');
   const trainingPdf = strip(read('src/app/(staff)/reports/training/pdf/route.tsx'));
-  assert((trainingPdf.match(/definition=\{reportDefinition\('training'\) \?\? undefined\}/g) ?? []).length === 2, 'both PDFs likewise');
+  assert((trainingPdf.match(/definition=\{reportDefinition\('training'\) \?\? undefined\}/g) ?? []).length === 1 && /title="Match day GPS report"\s*definition=\{undefined\}/.test(trainingPdf), 'the training PDF carries the sentence; the match PDF carries none');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

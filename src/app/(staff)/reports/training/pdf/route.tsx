@@ -88,7 +88,8 @@ export async function GET(request: Request) {
         <PdfHeader
           eyebrow={`Match day GPS · v ${selected.opponent} · ${orgName}`}
           title="Match day GPS report"
-          definition={reportDefinition('training') ?? undefined}
+          /* The match board's sentence is not yet written (the addendum). */
+          definition={undefined}
           meta={`${formatDate(selected.date, timezone)}${selected.result ? ` · ${selected.result}` : ''} · Scope: ${scopeLabel}${overview ? ` (${overview.athleteCount} athletes)` : ''}`}
         />
 

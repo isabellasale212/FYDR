@@ -1,30 +1,44 @@
-/* PATTERN-S7 C1 (reconciled 2026-09-13): the report catalogue's definition
- * sentences — the sentence that sits above the numbers on the report, in the
- * print view and in the exported file's header.
+/* PATTERN-S7 C1 (reconciled 2026-09-13, and again against the source's
+ * 13 September addendum): the report catalogue's definition sentences — the
+ * sentence that sits above the numbers on the report, in the print view and
+ * in the exported file's header.
  *
  * docs/reports-catalogue-source.md is Isabella's catalogue and the source of
  * truth; docs/reports-catalogue.md is the working copy reconciled against it,
  * and this mirrors the working copy verbatim (scripts/test-report-catalogue.ts
- * fails on drift). Null means the report carries no sentence yet:
- *   training — the confirmed sentence describes an RPE-load report, not the
- *              built GPS board; raised on the sheet.
- *   match    — on hold in the source until the "who played, minutes" question
- *              is ruled on. The answer is in the working catalogue.
- * compliance and injuries are the builder's drafts pending confirmation. */
+ * fails on drift). Every sentence here is confirmed; none is a draft.
+ *
+ * The addendum split the training report in two: the per-session GPS board
+ * that exists is the GPS report (premium) and carries the GPS sentence under
+ * the `training` key until the split renames the route; the RPE × minutes
+ * Training load report (every club) is the seventh, `trainingLoad`, with its
+ * own off state for a club that does not collect RPE. The match board stays
+ * without a sentence: kept (decision batch), its sentence not yet written. */
 
 import type { ReportKey } from '@/lib/access';
 
 export const REPORT_DEFINITIONS: Record<ReportKey, string | null> = {
   compliance:
-    'Who has submitted what was expected of them, and who has not — how much of the picture the club actually has, over the period and group chosen.',
+    "The share of expected entries that were submitted, over the period. An entry counts as expected only where the schedule or the club's settings asked for one, so a day nobody was asked about is not counted against anybody.",
   injuries:
-    'Who is unavailable, why in limited terms, when they are expected back, and where injuries are happening, over the period and group chosen.',
-  training: null,
+    "Every injury open at any point in the period, with each athlete's availability as it stands today. Diagnosis, mechanism and clinical notes appear only in the medic's copy.",
+  training: 'Per-session GPS totals for each athlete, from the files imported for that session. An athlete with no GPS file for a session shows as no record, never as zero.',
   athlete: 'Everything recorded for {athlete} between {start} and {end}. Sections with no data say so rather than showing zeros.',
   squad: 'The week Monday to Sunday, club local time. Each section states its own denominator.',
   testing:
     'The most recent result for each test inside the period. A test with no result in the window is not shown as zero, and an athlete who has never been assigned a test does not appear for it.',
 };
+
+/** The seventh report (the addendum): RPE × minutes, every club. Not yet a
+ *  route; the training report split builds it. */
+export const TRAINING_LOAD_DEFINITION =
+  'Session load is RPE multiplied by session minutes, summed over the period. Only sessions an athlete was expected at are counted, and a session with no rating is not counted as zero.';
+
+/** Its off state, since RPE is a club setting (the addendum, and
+ *  docs/decisions/absence-rule.md: setting-driven absence keeps the
+ *  destination and names the setting and who can change it). */
+export const TRAINING_LOAD_OFF_STATE =
+  'This club does not collect session RPE, so there is no load to report. A sport scientist can switch it on in Settings.';
 
 /** The sentence for a report, or null when it has none yet. The athlete
  *  report's is a template (see athleteDefinition). */

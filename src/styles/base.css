@@ -3728,245 +3728,286 @@ a.hist-row:focus-visible {
 .gym-body {
   padding-top: var(--sp-14);
 }
-.gym-ex-card {
-  /* ATH-ADULT-09 (2026-09-12): structure from spacing, not borders — a
-     white surface on the tinted page with no outline, per the gym logger
-     board. The active card is still marked by its gym-tinted head below
-     (a 2026-09-08 decision this board's colour rule would reverse; that
-     reversal is recorded, not built — D4 in the overnight record). */
-  border: none;
-  background: var(--surf);
-  border-radius: var(--r-toggle); /* the athlete card radius since 11 Sept 2026 — see .phone-body .card */
-  overflow: hidden;
-  margin-bottom: var(--sp-14);
-}
-/* SPEC §7.4, the set keys. One box a set, flex: 1, 44px tall (the athlete
-   app's floor — 42px until 12 Sept 2026, ATH-ADULT-09 B4), radius 12 —
-   logged takes the accent fill, border and a tick; pending shows its index
-   on the card border. */
+/* ============================================================================
+   THE GYM LOGGER, rebuilt set by set — ATH-ADULT-09 C1 (12 Sept 2026), with
+   10 C1 (Finish early in the header) and 11 C1 (the footer swaps for a
+   correction). Isabella's decision the same day added the two target-size
+   tokens it reads, --hit-lg and --hit-md (tokens.css). Structure comes from
+   spacing, not borders: white surfaces on the tinted page, hairlines only on
+   the pinned header and footer. One accent and no second hue inside the
+   logger (D4). The 8 Sept exercise-card list — .gym-ex-card, .gym-ex-head,
+   .gym-weight, .gym-stepper, .gym-correct, .gym-more — stood here and is
+   retired with it, rules and markup together.
+   ========================================================================== */
+
+/* THE SET CHIPS, 48px — the state display and the correction target. Logged
+   is the accent with a ✓ and is a button; current is the accent tint with
+   the ring; not reached is --faint on --surf2. Neither of the last two is a
+   control, so there is no disabled attribute anywhere on the screen. The
+   48px is a literal by decision: it is a state display, not a target size
+   (tokens.css, --hit-*). */
 .gym-set-keys {
   display: flex;
   gap: var(--sp-8);
+  margin-top: var(--sp-12);
 }
 .gym-set-key {
   flex: 1;
   min-width: 0;
-  min-height: 44px;
-  border-radius: 12px;
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--muted);
+  min-height: 48px;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  border-radius: var(--r-field);
+  border: none;
+  background: var(--surf2);
+  color: var(--faint);
   font-family: inherit;
-  font-size: var(--fs-15);
+  font-size: var(--fs-16);
   font-weight: 700;
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
-  cursor: pointer;
-  transition: background var(--t-state), border-color var(--t-state), color var(--t-state);
-}
-/* The three key states, one accent — ATH-ADULT-09 D4 (reversed 2026-09-12):
-   not reached is --faint on --surf2, undimmed (it is not a control that
-   failed, it is a set not yet reached); the current one is the accent wash
-   with the accent ring; a logged one is the accent itself with a ✓. */
-.gym-set-key:disabled {
-  cursor: default;
-  background: var(--surf2);
-  color: var(--faint);
+  transition: background var(--t-state), color var(--t-state);
 }
 .gym-set-key[data-next] {
   background: var(--wash-accent);
-  border-color: var(--border-accent-soft);
   color: var(--accent-text);
   box-shadow: var(--ring-accent);
 }
 .gym-set-key[data-logged] {
   background: var(--accent);
-  border-color: var(--accent);
   color: var(--on-accent);
-  opacity: 1;
   cursor: pointer;
 }
-.gym-set-key:not(:disabled):hover {
-  border-color: var(--border-hover);
-  color: var(--text);
+.gym-set-key[data-correcting] {
+  box-shadow: var(--ring-accent);
 }
 .gym-set-key:focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
 }
 
-/* §7.4's weight row: label and note left, stepper right, under a hairline. */
-.gym-weight {
+/* The one exercise card. */
+.gl-card {
+  background: var(--surf);
+  border-radius: var(--r-toggle); /* the athlete card radius since 11 Sept 2026 */
+  padding: var(--sp-14) var(--sp-16) var(--sp-16);
+  margin-bottom: var(--sp-14);
+}
+.gl-card-head {
   display: flex;
-  align-items: center;
-  gap: var(--sp-12);
-  padding-top: var(--sp-10);
-  border-top: 1px solid var(--hair);
-}
-.gym-weight-label {
-  flex: 1;
-  min-width: 0;
-}
-.gym-weight-label .k {
-  font-size: var(--fs-12);
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--muted);
-}
-.gym-weight-label .n {
-  margin-top: var(--sp-2);
-  font-size: var(--fs-13);
-  color: var(--muted);
-}
-/* §9 rule 4: when the athlete has overridden the prescription the coach's
-   number stays on screen. In --muted since 2026-09-12 (09 D4): a deviation
-   is a fact — "prescribed 100 kg · +2.5" — not a warning, so it carries no
-   tone; the weight held in the stepper is what the athlete reads first. */
-.gym-weight-label .n[data-warn] {
-  color: var(--muted);
-  font-weight: 600;
-}
-.gym-stepper {
-  display: flex;
-  align-items: center;
-  gap: var(--sp-8);
-  flex: none;
-}
-.gym-stepper button {
-  width: 44px;
-  min-height: 44px;
-  border-radius: var(--r-control);
-  border: 1px solid var(--border);
-  background: transparent;
-  color: var(--text);
-  font-family: inherit;
-  font-size: var(--fs-20);
-  line-height: 1;
-  cursor: pointer;
-  transition: border-color var(--t-state), background var(--t-state);
-}
-.gym-stepper button:hover {
-  border-color: var(--border-hover);
-}
-.gym-stepper button:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
-.gym-stepper .v {
-  width: 62px;
-  text-align: center;
-  font-size: var(--fs-18);
-  font-weight: 700;
-  letter-spacing: -0.01em;
-}
-.gym-stepper .v small {
-  display: block;
-  font-size: var(--fs-11);
-  font-weight: 600;
-  color: var(--muted);
-  letter-spacing: 0;
-}
-
-/* The inline correction. Not in 23g — see the note at its call site. */
-.gym-correct {
-  margin-top: var(--sp-10);
-  padding: var(--sp-12);
-  border-radius: 14px;
-  background: var(--surf2);
-  border: 1px solid var(--border);
-}
-.gym-correct-k {
-  margin: 0 0 var(--sp-8);
-  font-size: var(--fs-13);
-  font-weight: 700;
-}
-.gym-correct-fields {
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: var(--sp-10);
-}
-.gym-correct-actions {
-  display: flex;
-  gap: var(--sp-8);
-  margin-top: var(--sp-10);
-}
-.gym-correct-actions .btn-primary,
-.gym-correct-actions .btn-ghost {
-  flex: 1;
-  min-height: 44px;
-}
-
-/* The exercise you are on, 23g — in the accent wash since 2026-09-12 (09 D4
-   reversed): one accent inside the logger. The gold stays on the tab bar's
-   dumbbell and the domain chips, where it names the domain rather than a
-   state. */
-.gym-ex-card[data-active] {
-  border-color: var(--border-accent-soft);
-}
-.gym-ex-card[data-active] .gym-ex-head {
-  background: var(--wash-accent);
-  border-bottom-color: var(--border-accent-soft);
-}
-.gym-ex-head {
-  background: var(--surf2);
-  border-bottom: 1px solid var(--hair);
-  padding: var(--sp-12) var(--sp-14);
-  display: flex;
-  align-items: flex-start;
+  align-items: baseline;
   justify-content: space-between;
   gap: var(--sp-10);
 }
-/* Name on its own line, prescription under it — 23g. Side by side, the
-   prescription was a nowrap string competing with the name for one row:
-   "3 × 8–10 @ 100 kg · 90s rest" is longer than most exercise names and was
-   winning. */
-.gym-ex-head .nm {
-  display: block;
+.gl-card-name {
+  margin: 0;
   font-size: var(--fs-16);
   font-weight: 700;
   letter-spacing: -0.01em;
 }
-.gym-ex-head .scheme {
-  display: block;
-  margin-top: var(--sp-4);
+/* "Set 2 of 3 · Rest 90s": position and rest as reference text, --muted, no
+   timer, no glyph, no accent. */
+.gl-card-pos {
+  flex: none;
+  font-size: var(--fs-13);
+  font-weight: 600;
+  color: var(--muted);
+  white-space: nowrap;
+}
+
+/* THE TWO NUMBERS ARE THE SCREEN. A value at --fs-48 in tabular figures
+   between its two --hit-md steppers; the unit rides alongside at --fs-15 in
+   --muted rather than inside the figure — which is what lets "102.5 kg" fit
+   at 375 between two 52px squares. The prescription beneath as reference,
+   the difference in bold when the athlete moves off it. */
+.gl-num {
+  display: grid;
+  grid-template-columns: var(--hit-md) minmax(0, 1fr) var(--hit-md);
+  align-items: center;
+  gap: var(--sp-8);
+  margin-top: var(--sp-14);
+}
+.gl-num-mid {
+  text-align: center;
+  min-width: 0;
+}
+.gl-num-k {
+  font-size: var(--fs-11);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.gl-num-v {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-48);
+  font-weight: 800;
+  letter-spacing: -0.025em;
+  line-height: 1;
+  color: var(--text);
+  white-space: nowrap;
+}
+.gl-num-v[data-words] {
+  font-size: var(--fs-20);
+  font-weight: 700;
+  color: var(--muted);
+  letter-spacing: 0;
+  line-height: 1.2;
+  padding: var(--sp-12) 0;
+}
+.gl-num-v small {
+  margin-inline-start: var(--sp-4);
+  font-size: var(--fs-15);
+  font-weight: 600;
+  color: var(--muted);
+  letter-spacing: 0;
+}
+.gl-num-ref {
+  margin-top: var(--sp-6);
   font-size: var(--fs-12);
   color: var(--muted);
 }
-.gym-ex-adjust {
-  padding: var(--sp-8) var(--sp-14) 0;
-  font-size: var(--fs-12);
-  font-weight: 600;
+.gl-num-ref b {
+  font-weight: 700;
+  color: var(--text);
+}
+/* The stepper square: --hit-md, no border, the surf2 fill, the accent glyph. */
+.gl-step {
+  width: var(--hit-md);
+  min-height: var(--hit-md);
+  border: none;
+  border-radius: var(--r-control);
+  background: var(--surf2);
   color: var(--accent-text);
+  font-family: inherit;
+  font-size: var(--fs-24);
+  font-weight: 700;
+  line-height: 1;
+  cursor: pointer;
+  transition: background var(--t-state);
 }
-.gym-set-row {
-  display: grid;
-  grid-template-columns: 30px minmax(0, 1fr) minmax(0, 1fr) 30px;
-  gap: var(--sp-10);
-  align-items: center;
-  padding: var(--sp-14) var(--sp-14);
-  border-top: 1px solid var(--hair);
+.gl-step:hover {
+  background: var(--wash-accent);
 }
-.gym-set-row .n {
-  font-size: var(--fs-12);
-  color: var(--faint);
+.gl-step:focus-visible {
+  outline: 2px solid var(--focus);
+  outline-offset: 2px;
 }
-.gym-set-row[data-done='true'] {
-  background: rgb(var(--accent-rgb) / 0.05);
+/* A lift with no kilogram to show (bodyweight, or a 1RM never linked): the
+   reason in words where the weight block would be. */
+.gl-noload {
+  margin: var(--sp-14) 0 0;
+  text-align: center;
+  font-size: var(--fs-13);
+  color: var(--muted);
 }
-/* .gym-footer, the sticky finish bar, stood here. The reference removes it and
-   the button it held moved inline to the end of the exercise list — see
-   GymSessionLogger's own note on why the button could not go with the bar.
 
-   The reference's own disclosure row, "1 more · Nordic curl". A control, so
-   --r-control like every other one; the reference draws it square-cornered and
-   it is not one of the athlete pills. */
+/* The set that just landed — "Back squat set 2 logged · 102.5 kg × 8 ·
+   Correct it" — above the card, the accent wash, the way back in the accent. */
+.gl-strip {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-10);
+  margin-bottom: var(--sp-10);
+  padding: var(--sp-10) var(--sp-14);
+  border-radius: var(--r-control);
+  background: var(--wash-accent);
+  font-size: var(--fs-13);
+  font-weight: 600;
+  color: var(--text);
+}
+.gl-strip-link {
+  flex: none;
+  min-height: 44px;
+  padding: 0 var(--sp-4);
+  border: none;
+  background: none;
+  font-family: inherit;
+  font-size: var(--fs-13);
+  font-weight: 700;
+  color: var(--accent-text);
+  text-decoration: underline;
+  cursor: pointer;
+}
+
+/* What is next, beneath the card: the eyebrow, then rows 2px apart with
+   the prescription and the count — or one line when one exercise remains. */
+.gl-then-k {
+  margin: var(--sp-4) 0 var(--sp-6);
+  font-size: var(--fs-11);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.gl-then-line {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-13);
+  color: var(--text);
+}
+.gl-then-line .gl-then-k {
+  display: inline;
+  margin: 0 var(--sp-4) 0 0;
+}
+.gl-then {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+}
+.gl-then-row {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-10);
+  padding: var(--sp-12) var(--sp-16);
+  background: var(--surf);
+  border-radius: var(--r-toggle);
+}
+.gl-then-row .nm {
+  font-size: var(--fs-14);
+}
+.gl-then-sub {
+  margin-top: var(--sp-2);
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
+.gl-then-count {
+  flex: none;
+  font-size: var(--fs-13);
+  color: var(--muted);
+}
+
+/* The one primary, at --hit-lg. */
+.gl-primary {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  width: 100%;
+  min-height: var(--hit-lg);
+}
+/* The header's second row: the title with Finish early beside it (10 C1). */
+.gym-head-row2 {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: var(--sp-10);
+}
+.gym-head-row2 .gym-head-title {
+  min-width: 0;
+}
+.gym-head-row2 .gym-finish-early {
+  flex: none;
+  padding: 0 var(--sp-14);
+}
+
 /* ATH-ADULT-11 C2 (12 Sept 2026): "Set 1 corrected · was 100 kg × 8" under
    the set keys — the neutral corrected marker in words, --muted, one line a
    set. Flush with the keys and the weight row (the card pads its children
    itself). */
 .gym-corrected-strip {
-  padding: var(--sp-8) 0 0;
+  padding: var(--sp-10) 0 0;
   font-size: var(--fs-12);
   color: var(--muted);
   line-height: 1.5;
@@ -4073,38 +4114,6 @@ a.hist-row:focus-visible {
   border: 1px dashed var(--border-strong);
   border-inline-start: 1px dashed var(--border-strong);
 }
-.gym-more {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: var(--sp-10);
-  width: 100%;
-  min-height: 44px;
-  margin-top: var(--sp-4);
-  padding: var(--sp-14) var(--sp-16);
-  border: 1px solid var(--border);
-  border-radius: var(--r-control);
-  background: var(--surf);
-  color: var(--text);
-  font-family: inherit;
-  font-size: var(--fs-14);
-  font-weight: 600;
-  text-align: start;
-  cursor: pointer;
-  transition: border-color var(--t-state);
-}
-.gym-more:hover {
-  border-color: var(--border-hover);
-}
-.gym-more:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
-.gym-more .chev {
-  color: var(--faint);
-  flex: none;
-}
-
 /* ---------- Programme, §11 ---------- */
 .prog-header h1 {
   font-size: var(--fs-20);
@@ -12977,8 +12986,8 @@ main:has(.rhead) > .back-btn > :first-child {
    anticipates, not one currently in use, and it costs nothing to be right
    before it happens. */
 .squad-chip:not(:disabled):not([aria-disabled='true']):active { background: var(--surf2); }
-.gym-set-key:not(:disabled):active { background: var(--surf2); }
-.gym-stepper button:not(:disabled):active { background: var(--surf2); }
+.gym-set-key[data-logged]:active { background: var(--accent); }
+.gl-step:active { background: var(--wash-accent); }
 .nutr-stepper-btn:not(:disabled):active { background: var(--surf2); }
 .btn-ghost-pill:not(:disabled):not([aria-disabled='true']):active { background: var(--surf2); }
 .sg-weeknav-btn:not(:disabled):active { background: var(--surf2); }

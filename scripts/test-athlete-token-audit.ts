@@ -176,8 +176,10 @@ console.log('\n5. the athlete controls the guard\'s NET misses are exactly the k
      What this assertion is for is the NEXT one. Pinning the set means a fourth
      athlete control with a raw radius fails the build, instead of joining a
      list nobody is counting. */
+  /* .gym-set-key left this list on 2026-09-12 with the logger's rebuild
+     (ATH-ADULT-09 C1): the chip reads var(--r-field), the 12px token, so it is
+     no longer a raw radius. Two remain. */
   const KNOWN: readonly { sel: string; value: string; why: string }[] = [
-    { sel: '.gym-set-key', value: '12px', why: 'gym logger set keys, rounded in screens 09/10' },
     { sel: '.dots .opt > span', value: '14px', why: "the wellness sheet's 1-5 scale, rounded in screens 13/14" },
     { sel: '.prog-item', value: '14px', why: 'Programme list rows, a screen the changelog leaves unchanged' },
   ];

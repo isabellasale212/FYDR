@@ -26,13 +26,17 @@ const rule = (sel: string): string => {
 
 console.log('A1. finishing early is not shaped like logging a set');
 {
-  assert(/className=\{doneCount >= totalSets \? 'btn-primary' : 'btn-ghost gym-finish-early'\}/.test(logger), 'the control is the primary only once every set is logged; otherwise the dashed neutral outline');
+  /* C1 (2026-09-12): Finish early moved to the header, dashed, while sets
+     remain; "Finish session" is the footer's primary once every set is
+     logged — two controls, one call. */
+  assert(/className="btn-ghost gym-finish-early"/.test(logger) && /\{!alreadyComplete && !allLogged \? \(/.test(logger), 'Finish early is the dashed neutral outline in the header, only while sets remain');
+  assert(/allLogged \? \(\s*<div className="subm">[\s\S]{0,400}btn-primary gl-primary[\s\S]{0,200}Finish session/.test(logger), 'and the primary is "Finish session" in the footer once every set is logged');
   const early = rule('.gym-finish-early');
   assert(/border:\s*1px dashed var\(--border-strong\)/.test(early), 'dashed 1px --border-strong');
   assert(/background:\s*none/.test(early) || /background:\s*transparent/.test(early), 'no fill');
   assert(/color:\s*var\(--muted\)/.test(early), '--muted');
   assert(/min-height:\s*44px/.test(early), '44px');
-  assert(/Finish session/.test(logger) && /Finish early · /.test(logger), 'both labels are unchanged');
+  assert(/Finish session/.test(logger) && /Finish early · \$\{doneCount\} of \$\{totalSets\} sets/.test(logger), 'both labels — the count now in the header control\'s label');
   assert(/completeMutation\.mutate\(\)/.test(logger), 'and it is still the one call that completes a session');
 }
 

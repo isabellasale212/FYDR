@@ -15,16 +15,42 @@ An athlete with a gym session assigned to them.
 
 ## 3. What you see
 
-One eyebrow line ("PRE-SEASON STRENGTH · ACCUMULATION · WEEK 1 · DAY 1"), the
-session name, and a gold progress bar with its set count — this header is pinned
-and never scrolls away (ATH-ADULT-09, 12 September 2026), so what is next is
-always stated. Then the exercise you are on and the one after it, each a white
-card with no border on the tinted page (structure from spacing; the active card
-is marked by its tinted head), a **"2 more · Split squat, Nordic curl"** disclosure
-row folding the rest, the optional session RPE field, and the finish control —
-a dashed neutral outline reading "Finish early · N of M" while sets are
-outstanding (ATH-ADULT-10, 12 September 2026: it is not shaped like logging a
-set), and the primary "Finish session" once every set is logged.
+**Rebuilt set by set on 12 September 2026** (ATH-ADULT-09 C1, approved with the
+two target-size tokens `--hit-lg` 56px and `--hit-md` 52px; 10 C1 and 11 C1 with
+it). The header is pinned and never scrolls away: one eyebrow line
+("PRE-SEASON STRENGTH · ACCUMULATION · WEEK 1 · DAY 1"), the session name with
+**"Finish early"** beside it — a dashed neutral outline, 44px, only while sets
+remain — and the accent progress bar with its running count and the clock
+("3 of 12 sets · 00:12:40", "· 2 waiting to send" when the outbox holds sets).
+
+Then **one exercise at a time**, a white card with no border on the tinted page:
+its name and position ("Set 2 of 3 · Rest 90s" — rest is reference text, no
+timer, no glyph), its **set chips** at 48px as the state display (logged = the
+accent with a ✓, and the correction target; current = the accent tint with the
+ring; not reached = `--faint` on `--surf2`; the last two are not controls, so
+nothing on the screen is disabled), then **the two numbers** — Weight and Reps at
+`--fs-48` in tabular figures, each between two 52px steppers, the unit beside
+the figure in `--muted`, the prescription beneath as reference ("Prescribed 100
+kg"; "Prescribed 100 kg · **+2.5**" once the athlete moves off it — information,
+not a warning, a real minus sign). The weight steps by the exercise's own
+increment (`exercises.weight_step_kg`), reps by one; a bodyweight exercise logs
+reps only; a lift whose load cannot resolve says why in the weight's place.
+There is no keypad.
+
+Beneath the card, **what is next**: "THEN Romanian deadlift · 3 × 8 @ 80 kg" as
+one line when one exercise remains, rows with the prescription and "0 of 3"
+otherwise — never behind a disclosure. Then the optional session RPE field.
+
+The **footer** is pinned and holds the one primary, labelled with what it
+writes: **"Log set 2 · 100 kg × 8"** at 56px, over "Sets save as you log them."
+Once every set is logged the footer reads **"Finish session"**. After a set
+lands, a strip above the card reads "Back squat set 2 logged · 102.5 kg × 8 ·
+Correct it". Tapping a logged chip (or Correct it) opens the correction in
+place: the card reads "Correcting set 2 · was 100 kg × 8", the two numbers edit
+the correction, and the footer swaps to **"Save correction · 102.5 kg × 8"** /
+**"Cancel"** (ATH-ADULT-11 C1) — no set can be logged by accident while one is
+open. Corrections are online only; a minus on a value that was never logged
+leaves it "Not set".
 
 The session's exercises are **already adjusted for this athlete**, and each
 carries a way to log every set.
@@ -42,7 +68,7 @@ carries a way to log every set.
 
 | Field | As worded | Type and range | Validation | On invalid | Stored | Editable | Who sees it |
 |---|---|---|---|---|---|---|---|
-| Set logs | UNVERIFIED exact labels | weight and repetitions per set | client validator in `src/lib/validation/gym.ts` | UNVERIFIED | `gym_set_logs` | **No** | staff, immediately |
+| Set logs | "Weight" and "Reps", each a 48px figure between two steppers; "Log set N · {weight} kg × {reps}" writes them | weight and repetitions per set, prefilled from the prescription and moved by the steppers (the exercise's own kg step; one rep) | client validator in `src/lib/validation/gym.ts` | "Something on this set did not check out. Try again." | `gym_set_logs` | Once logged, only through a correction (a revision row) | staff, immediately |
 
 `gym_set_logs` carries `revision_of` and `superseded_by` with check constraints
 stopping a row pointing at itself, so the correction pattern exists at the table
@@ -59,10 +85,13 @@ level.
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
 | Log a set | Per exercise | Records weight and reps | stays | a `gym_set_logs` row | UNVERIFIED | the exercise is exempt for this athlete |
-| − / + on the weight | The weight row | Moves the weight by the exercise's own step — `exercises.weight_step_kg` (migration 0108, ATH-ADULT-09 C3, 12 September 2026): 2.5 kg a plate a side by default, 2 for a dumbbell, 1.25 microloaded, as set on the library's create form; a substitute override steps by the substitute's value. Never below zero. Bodyweight (load basis none) has no stepper: reps only | stays | nothing until the set is logged | no | no load to set |
+| − / + on the weight and on the reps | The two number blocks, `--hit-md` squares | Moves the weight by the exercise's own step — `exercises.weight_step_kg` (migration 0108, ATH-ADULT-09 C3, 12 September 2026): 2.5 kg a plate a side by default, 2 for a dumbbell, 1.25 microloaded, as set on the library's create form; a substitute override steps by the substitute's value — and the reps by one. Never below zero. Bodyweight (load basis none) has no weight block: reps only. The adjustment is kept on the phone until the session is finished | stays | nothing until the set is logged | no | no load to set (the weight block) |
+| Log set N · … | The footer, `--hit-lg`, the one primary | Writes the set with the two numbers shown — queued on the phone first, sent at once | stays; the next chip lights, the strip names what landed | one `gym_set_logs` row | no | every set logged (the footer reads Finish session); a correction is open (Save correction / Cancel) |
+| A logged chip · Correct it | The set chips; the strip above the card | Opens the correction in place: the numbers edit it, the footer swaps | stays | nothing until saved | no | never (a logged set is always the correction target) |
+| Save correction · … / Cancel | The footer while a correction is open (ATH-ADULT-11 C1) | Writes the revision — the original is kept — or closes the correction | stays | one revision row (`revise_gym_set_log`) | no | no correction open |
 | Start session | On open | `startOrGetSessionLog` creates or resumes the session log | stays | a `gym_session_logs` row | no | never |
 | N more · … | After the last shown exercise | Expands the rest of the session | stays | nothing | no | nothing is folded |
-| Finish session / Finish early · N of M | End of the list | `completeMutation` closes the session log and the screen becomes its summary (below); it no longer leaves for My programme | stays | `gym_session_logs` | no | the session is already complete |
+| Finish early (header) / Finish session (footer) | Finish early beside the title, dashed and neutral, while sets remain (ATH-ADULT-10 C1); Finish session as the footer's primary once every set is logged | `completeSessionLog` closes the session log and the screen becomes its summary (below) | stays | `gym_session_logs` | no | the session is already complete |
 | Session complete summary | In place of the set list, once every set is logged (ATH-ADULT-09 C6, 12 September 2026) | "Session complete · 12 of 12 sets" / "Every prescribed set is logged and saved."; then Total volume (MET-041, "Weight × reps across 12 sets") and Sets done ("4 exercises · 52 min"), both at `--fs-48`; then "Best you have logged" — each exercise whose best set today beats its best before today (MET-040), in the accent, with "Best before today 100 kg × 8 · 21 Aug" so the claim is checkable; then "All 4 exercises" with each lift's load ("no load logged" / "bodyweight" where none); the caption that the session is in My data set by set. Nothing celebratory beyond the numbers | stays | nothing | no | not complete, or finished early |
 | Finished early summary | In place of the set list, once the session is closed with sets outstanding (ATH-ADULT-10 C3) | A dashed card: "Finished early · 8 of 12 sets" / "Everything you logged is saved. The 4 sets you did not log are recorded as not logged, not as zero."; one row per exercise with its sets ("102.5 kg × 8, 8, 8", "× 10, 10" for bodyweight, "Not logged") and a count pill — accent when complete, dashed when short; no totals block. The head reads "8 of 12 sets logged · 4 not logged" | stays | nothing | no | not complete, or every set logged |
 | Corrected strip | Beneath an exercise's set keys, for each set that has been corrected (ATH-ADULT-11 C2, 12 September 2026) | Reads "Set 1 corrected · was 100 kg × 8" — the superseded values, read from the revision chain the way My data reads them; the logged key's label says "corrected" too. A neutral line in `--muted`; no bar, no second colour | stays | nothing | no | no set on the exercise has been corrected |
@@ -141,9 +170,11 @@ than drop it.
 - **Supported browsers.** UNVERIFIED: no browser support policy found.
 - **Thumb reach.** The primary action sits at the bottom of the screen on the
   entry forms, which is the reachable third on a phone.
-- **Target size.** Every set key stands on the athlete app's 44px floor
-  (`.gym-set-key { min-height: 44px }`; 42px until 12 September 2026 —
-  ATH-ADULT-09 B4, built ahead of the set-by-set rebuild).
+- **Target size.** The set chips are 48px (44px for the morning of 12
+  September 2026 — B4 — then 48 with the rebuild the same afternoon); the
+  steppers are `--hit-md` 52px squares and the one primary is `--hit-lg` 56px
+  (the two tokens Isabella approved with the rebuild). The 44px floor is
+  unchanged for everything else.
 
 ## 12. Open issues
 

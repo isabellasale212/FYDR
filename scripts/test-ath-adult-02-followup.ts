@@ -73,7 +73,9 @@ console.log('\n3. athlete cards take the existing 9px token; staff cards do not'
   assert(/border-radius:\s*var\(--r-toggle\)/.test(rule('.phone-body .card')), '.phone-body .card is --r-toggle');
   assert(/border-radius:\s*var\(--r-toggle\)/.test(rule('.phone-body .empty')), '.phone-body .empty (EmptyState on athlete screens) too');
   assert(/border-radius:\s*var\(--r-toggle\)/.test(rule('.avail-banner')), '.avail-banner (athlete-only) too');
-  assert(/border-radius:\s*var\(--r-toggle\)/.test(rule('.gym-ex-card')), '.gym-ex-card (athlete-only) too');
+  /* .gym-ex-card became .gl-card with the logger's rebuild (ATH-ADULT-09 C1,
+     2026-09-12); the athlete card radius travels with it. */
+  assert(/border-radius:\s*var\(--r-toggle\)/.test(rule('.gl-card')), '.gl-card (the gym logger\'s exercise card, athlete-only) too');
   assert(/border-radius:\s*var\(--r-card\)/.test(rule('.card')), 'the global .card stays --r-card for the staff app');
   for (const sel of ['.pp-banner', '.dash-week', '.dash-stat-expand', '.report-card']) {
     assert(/border-radius:\s*var\(--r-card\)/.test(rule(sel)), `${sel} (staff) stays --r-card`);

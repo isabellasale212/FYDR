@@ -231,6 +231,19 @@
      that guard fails the build if any other interactive rule does — so "no
      pill-shaped buttons anywhere" still holds everywhere it is not listed. */
   --r-full: 999px;
+
+  /* THE GYM LOGGER'S TWO TARGET SIZES — 12 Sept 2026, Isabella's decision,
+     the third token-value decision under CLAUDE.md §0.01 and recorded in the
+     to-do list's decisions log: "the gym logger rebuild 09 C1 with --hit-lg:
+     56px, --hit-md: 52px … add both as named tokens in that commit". New
+     steps, not aliases: --hit-lg is the one primary on the logger ("Log set
+     2 · 100 kg × 8"), the thumb's target under a bar with cold hands;
+     --hit-md is the stepper square flanking each 48px value. The 44px floor
+     every other control stands on is unchanged (nothing else reads these),
+     and the 48px set chip stays a literal in base.css because it is a state
+     display, not a target size. Read by .gl-primary and .gl-step only. */
+  --hit-lg: 56px;
+  --hit-md: 52px;
   --gap-stack: 14px;
   /* THE ATHLETE SHELL'S OWN BLOCK RHYTHM, and the reason it is not --gap-stack.
      Isabella tried 14px on a phone on 2026-09-08 and it read too tight, so the

@@ -72,17 +72,48 @@ type Props = {
    since §0u (2026-09-12): the line carries a load VALUE or nothing, the
    weight row carries the reason there is none. */
 
+/** "102.5 kg × 8" / "8 reps" / "" — what a tap will write, on the button. */
+function setWords(weight: number | null, reps: number | null): string {
+  if (weight !== null && reps !== null) return `${formatKg(weight)} kg × ${reps}`;
+  if (weight !== null) return `${formatKg(weight)} kg`;
+  if (reps !== null) return `${reps} rep${reps === 1 ? '' : 's'}`;
+  return '';
+}
+
+/** A real minus sign, never a hyphen: "+2.5" / "−2.5". */
+function signed(delta: number): string {
+  const v = Math.round(Math.abs(delta) * 100) / 100;
+  return `${delta >= 0 ? '+' : '−'}${formatKg(v)}`;
+}
+
 /**
+ * The athlete gym logger — rebuilt set by set on 2026-09-12 (ATH-ADULT-09
+ * C1, approved by Isabella with two new tokens, --hit-lg 56px and --hit-md
+ * 52px; ATH-ADULT-10 C1 moves Finish early into the header; ATH-ADULT-11 C1
+ * swaps the footer for Save correction / Cancel while a correction is open).
+ *
+ * THE TWO NUMBERS ARE THE SCREEN. One exercise at a time: its set chips as
+ * the state display (logged = accent + ✓ and the correction target; current
+ * = accent tint with the ring; not reached = --faint on --surf2 and not a
+ * control), then the weight and the reps at --fs-48 in tabular figures
+ * between two 52px steppers each, with the prescription beneath as
+ * reference ("Prescribed 100 kg · +2.5" in --muted when the athlete moves
+ * off it — information, not a warning). Bodyweight exercises log reps only.
+ * The footer holds the one primary, labelled with what it writes: "Log set
+ * 2 · 100 kg × 8" at 56px. What is next is stated beneath the card ("THEN
+ * Romanian deadlift · 3 × 8 · 80 kg"), never behind a disclosure. The header
+ * never scrolls away; Finish early lives there, dashed and neutral, while
+ * sets remain; "Finish session" takes the footer once every set is logged.
+ *
  * Full screen, not a sheet — ATHLETE-APP-SPEC.md §9 is explicit this is a
- * place used repeatedly through a session, not a task that opens and
- * closes once. Kept real over pixel-literal in one place: the spec's set
- * rows read as fixed prescribed values ticked off; this app lets an
- * athlete log the reps and load they actually did (prefilled from the
- * prescription, editable), because a gym log that can't record "I only
- * got 6 of the 8 reps" is not a useful one. Per-set RPE, which the schema
- * supports, is dropped from this quick-log row to keep it to the spec's
- * own 4-column grid — session RPE at the end still covers the whole
- * session, which is what §9's own footer asks for.
+ * place used repeatedly through a session. What the athlete logs is what
+ * they did: the prescription is the prefill, the steppers move it.
+ *
+ * Kept from before the rebuild, unchanged in what they do: the offline
+ * outbox (a tap queues the set before the write, the logger and Today
+ * retry it), the Wake Lock and the haptic (C5), the correction path
+ * (ADR-005's revise, online only), the summaries (C6 / 10 C3), the
+ * corrected strip (11 C2), the elapsed clock.
  */
 export function GymSessionLogger({
   orgId,
@@ -102,22 +133,19 @@ export function GymSessionLogger({
 }: Props) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
-  /* Typed-but-not-yet-ticked reps and loads.
-   *
-   * These used to be React state and nothing else, so an athlete who typed a
-   * set and then took a phone call lost it with no warning — the one real
-   * data-loss path on this screen. Logged sets themselves were never at
-   * risk: each tick writes immediately (see logMutation below) and a failed
-   * write stays in the outbox. It was only the in-progress row.
-   *
-   * Persisted per gym_session_log_id so two sessions cannot bleed into each
-   * other, and cleared as soon as the set is logged or the session is
-   * finished. localStorage rather than the database on purpose: this is an
-   * unsubmitted draft, and rule 6's immutability applies to entries that
-   * exist, not to a half-typed row. Every access is guarded — private
-   * windows and blocked site data throw rather than return null. */
+
+  /* The athlete's adjusted weight and reps per exercise, keyed by
+   * programme_exercise_id. Empty until they touch a stepper — the
+   * prescription is the value until then, so an untouched exercise shows the
+   * coach's number rather than a copy of it that has stopped tracking
+   * changes. Persisted per gym_session_log_id so an athlete who takes a
+   * phone call mid-set finds their adjustment where they left it; cleared
+   * when the session is finished. localStorage rather than the database on
+   * purpose: an unlogged adjustment is a draft, not an entry. Every access
+   * is guarded — private windows and blocked site data throw. */
   const draftKey = `fydr-gym-draft-${gymSessionLogId}`;
-  const [drafts, setDrafts] = useState<Record<string, { reps: string; load: string }>>({});
+  type Adjust = { weight?: number; reps?: number };
+  const [adjust, setAdjust] = useState<Record<string, Adjust>>({});
 
   /* The screen stays on for the session (ATH-ADULT-09 C5, approved
      2026-09-12): a phone that dims between sets is the phone the athlete
@@ -180,39 +208,36 @@ export function GymSessionLogger({
   useEffect(() => {
     try {
       const raw = window.localStorage.getItem(draftKey);
-      if (raw) setDrafts(JSON.parse(raw) as Record<string, { reps: string; load: string }>);
+      if (raw) setAdjust(JSON.parse(raw) as Record<string, Adjust>);
     } catch {
-      /* Unreadable or malformed storage: start empty. A lost draft is bad;
-       * a screen that will not render because of one is worse. */
+      /* Unreadable or malformed storage: start empty. A lost adjustment is
+       * a nuisance; a screen that will not render because of one is worse. */
     }
   }, [draftKey]);
 
   useEffect(() => {
     try {
-      const hasContent = Object.values(drafts).some((d) => d.reps !== '' || d.load !== '');
-      if (hasContent) window.localStorage.setItem(draftKey, JSON.stringify(drafts));
+      const hasContent = Object.values(adjust).some((a) => a.weight !== undefined || a.reps !== undefined);
+      if (hasContent) window.localStorage.setItem(draftKey, JSON.stringify(adjust));
       else window.localStorage.removeItem(draftKey);
     } catch {
-      /* Storage unavailable. The draft still lives in React for this
+      /* Storage unavailable. The adjustment still lives in React for this
        * session; it just will not survive the app closing. */
     }
-  }, [drafts, draftKey]);
-  const [sessionRpe, setSessionRpe] = useState('');
-  const [showAllExercises, setShowAllExercises] = useState(false);
-  const [now, setNow] = useState<number | null>(null);
-  /* screens/gym-logging.md: "Tap a completed set row: re-opens it as active for
-   * correction." correcting holds the LoggedSet.id currently open for correction, in
-   * place, mid-session or on the completed review — this build has no ConfirmSheet, so
-   * both cases behave the same way, a real, small simplification against the fuller spec. */
-  const [correcting, setCorrecting] = useState<string | null>(null);
-  /* The athlete's chosen weight per exercise, keyed by programme_exercise_id.
-     Empty until they touch a stepper — the recommendation is the value until
-     then, so an untouched exercise shows the coach's number rather than a copy
-     of it that has stopped tracking changes. */
-  const [weights, setWeights] = useState<Record<string, number>>({});
-  const [correctionDrafts, setCorrectionDrafts] = useState<Record<string, { reps: string; load: string }>>({});
+  }, [adjust, draftKey]);
 
-    /* Ticks only while the session is open and only when there is a start to
+  const [sessionRpe, setSessionRpe] = useState('');
+  const [now, setNow] = useState<number | null>(null);
+  /* The set being corrected, by its live id — reached from a logged chip.
+     While it is open the two numbers edit the correction and the footer
+     reads Save correction / Cancel (ATH-ADULT-11 C1). */
+  const [correcting, setCorrecting] = useState<string | null>(null);
+  const [corr, setCorr] = useState<{ weight: number | null; reps: number | null }>({ weight: null, reps: null });
+  /* The set that just landed, for the "Set 2 logged · 102.5 kg × 8 · Correct
+     it" strip above the card. */
+  const [lastLoggedId, setLastLoggedId] = useState<string | null>(null);
+
+  /* Ticks only while the session is open and only when there is a start to
      count from, so a completed session does not keep a timer alive. */
   useEffect(() => {
     if (alreadyComplete || !startedAt) return;
@@ -237,11 +262,11 @@ export function GymSessionLogger({
 
   /* THE SUMMARIES — ATH-ADULT-09 C6 (session complete) and ATH-ADULT-10 C3
      (finished early), 2026-09-12. Once the session is closed the set list
-     gives way to a summary; "Correct a set" brings the list back beneath it.
-     The two must not be mistaken for each other: complete is the one screen
-     allowed to be pleased — total volume first (MET-041, the number that
-     grows over a block), sets done, then the new bests with what they beat
-     and when (MET-040) so the claim is checkable; early has a different
+     gives way to a summary; "Correct a set" brings the exercises back beneath
+     it. The two must not be mistaken for each other: complete is the one
+     screen allowed to be pleased — total volume first (MET-041, the number
+     that grows over a block), sets done, then the new bests with what they
+     beat and when (MET-040) so the claim is checkable; early has a different
      title, a dashed card, per-exercise rows that read "Not logged", and no
      totals block at all. No gradient, no confetti, no praise copy. */
   const [showSets, setShowSets] = useState(false);
@@ -265,50 +290,37 @@ export function GymSessionLogger({
   const nameById = new Map(exercises.map((ex) => [ex.exercise_id, ex.exercise_name]));
   const correctedIds = new Set(corrections.map((c) => c.id));
 
-  /* The exercise being worked on, 23g's gold-bordered card: the FIRST with
-     sets still to log, in prescribed order. First rather than "the one most
-     recently touched" because a programme is an order — the athlete works
-     down it — and because "most recent" would move the highlight backwards
-     the moment somebody corrected an earlier set. Once every exercise is
-     complete nothing is active, which is correct: there is nothing to do. */
-  const activeExerciseId =
-    exercises.find((ex) => (setsByExercise.get(ex.programme_exercise_id) ?? []).length < ex.sets)
-      ?.programme_exercise_id ?? null;
-
-  /* WHAT THE REFERENCE SHOWS AND WHAT IT COLLAPSES (screens 09/10).
-   *
-   * The drawing shows Back squat mid-set, Romanian deadlift whole and unstarted
-   * below it, and "1 more · Nordic curl" as a single row after that — so the
-   * rule is not "unstarted exercises collapse", which would have hidden the
-   * Romanian deadlift too. It is the exercise you are ON and the one you are
-   * going TO, then everything after that folded away.
-   *
-   * A whole-session view is still one tap away, which is why this is a
-   * disclosure rather than a truncation: an athlete checking what is left in
-   * the session, or how heavy the last lift will be, is asking a fair question
-   * and the old screen answered it by scrolling. */
-  const activeIndex = exercises.findIndex((ex) => ex.programme_exercise_id === activeExerciseId);
-  /* -1 (nothing left to log) shows everything: at the end of a session the
-     list is a record of what was done, and folding most of it away turns the
-     one screen that reviews the work into a summary of two exercises. */
-  const visibleCount = activeIndex < 0 ? exercises.length : Math.min(exercises.length, activeIndex + 2);
-  const shownExercises = showAllExercises ? exercises : exercises.slice(0, visibleCount);
-  const hiddenExercises = exercises.slice(shownExercises.length);
+  /* The exercise being worked on: the FIRST with sets still to log, in
+     prescribed order. First rather than "the one most recently touched"
+     because a programme is an order — the athlete works down it — and
+     because "most recent" would move the highlight backwards the moment
+     somebody corrected an earlier set. Once every exercise is complete
+     nothing is active: there is nothing to do, and the footer says so. */
+  const activeIndex = exercises.findIndex((ex) => (setsByExercise.get(ex.programme_exercise_id) ?? []).length < ex.sets);
+  const active = activeIndex >= 0 ? (exercises[activeIndex] ?? null) : null;
+  const nextExercises = activeIndex >= 0 ? exercises.slice(activeIndex + 1) : [];
+  /* A logged set of an exercise that is no longer active (the last set of
+     the exercise before) is corrected from the strip; the card it belongs
+     to is drawn for the correction so the numbers have somewhere to be. */
+  const correctingRow = correcting ? (loggedSets.find((r) => r.id === correcting) ?? null) : null;
+  const correctingExercise = correctingRow
+    ? (exercises.find((ex) => ex.programme_exercise_id === correctingRow.programme_exercise_id) ?? null)
+    : null;
+  const card = correctingExercise ?? active;
 
   /* Bounded (ten seconds) and has a real onError — before this, a thrown network failure
    * showed nothing at all and a hung request pinned the tick button disabled forever
    * (audit S5's shape, on the screen whose footer promises "sets save as you log them").
-   * A failed set stays on screen as the next set to log: tapping the tick again is the
+   * A failed set stays on screen as the next set to log: tapping the primary again is the
    * retry, now safely idempotent (migration 0044's gym_set_logs_one_live_per_slot index).
    *
    * Also enqueued into the offline outbox (blocker B4): onMutate queues it before the
    * write is even attempted, onSuccess dequeues it. If the write fails, the item stays
-   * queued and OutboxFlusher (mounted on /today) retries it later even if the athlete
-   * never taps the tick again or the app is closed mid-set — the visible error and the
-   * tap-to-retry above are the fast path, the queue is the safety net underneath it, not
-   * a replacement for it: unlike a one-shot form (NutritionCheckinForm), this screen stays
-   * open for up to 45 minutes and the athlete needs to know, right now, whether the set
-   * they just tapped actually saved. */
+   * queued and the retry — from this screen on `online` (C4), or from Today — sends it
+   * later even if the athlete never taps again or the app is closed mid-set. The visible
+   * error and the tap-to-retry are the fast path, the queue is the safety net underneath
+   * it: this screen stays open for up to 45 minutes and the athlete needs to know, right
+   * now, whether the set they just tapped actually saved. */
   const logMutation = useMutation({
     mutationFn: async (input: GymSetLogInput) => {
       await withWriteTimeout(submitGymSetLog(createClient(), orgId, input));
@@ -321,18 +333,7 @@ export function GymSessionLogger({
       /* Felt, not heard: a 10 ms buzz where the browser has one (Android
          Chrome), nothing on iPhone Safari — ATH-ADULT-09 C5. */
       buzz(navigator);
-      // The row is real now, so its draft is no longer the only copy.
-      // programme_exercise_id is nullable on the input (an ad-hoc set belongs
-      // to no prescribed exercise); drafts are only ever keyed by a real one,
-      // so a null here simply has no draft to clear.
-      const draftedExercise = input.programme_exercise_id;
-      if (draftedExercise !== null) {
-        setDrafts((d) => {
-          const next = { ...d };
-          delete next[draftedExercise];
-          return next;
-        });
-      }
+      setLastLoggedId(input.id);
       setError(null);
       router.refresh();
     },
@@ -341,10 +342,6 @@ export function GymSessionLogger({
        set is now "waiting to send" on the progress row as well as an error. */
     onSettled: () => setWaiting(queuedGymSets(gymSessionLogId)),
   });
-
-  /* The step is the exercise's own (ex.weight_step_kg, migration 0108 —
-     ATH-ADULT-09 C3): 2.5 a plate a side, 2 for a dumbbell, 1.25 microloaded.
-     It used to be a constant 2.5 here for every movement. */
 
   /* What the coach set, resolved for this athlete: an absolute kg prescription,
      or a percent_1rm already resolved against their own latest 1RM (migration
@@ -358,47 +355,57 @@ export function GymSessionLogger({
   }
 
   function weightFor(ex: ResolvedExercise): number | null {
-    const own = weights[ex.programme_exercise_id];
+    const own = adjust[ex.programme_exercise_id]?.weight;
     return own !== undefined ? own : recommendedFor(ex);
   }
 
+  /* The prescribed reps are the prefill; reps_min when a range is set. */
+  function prescribedReps(ex: ResolvedExercise): number | null {
+    return ex.reps_min ?? ex.reps_max ?? null;
+  }
+
+  function repsFor(ex: ResolvedExercise): number | null {
+    const own = adjust[ex.programme_exercise_id]?.reps;
+    return own !== undefined ? own : prescribedReps(ex);
+  }
+
+  /* The step is the exercise's own (ex.weight_step_kg, migration 0108 —
+     ATH-ADULT-09 C3): 2.5 a plate a side, 2 for a dumbbell, 1.25 microloaded.
+     Never below zero, and rounded so a chain of taps cannot drift onto
+     0.30000000000000004. */
   function bumpWeight(ex: ResolvedExercise, delta: number) {
     const base = weightFor(ex);
     if (base === null) return;
-    // Never below zero, and rounded to the step so a chain of taps cannot
-    // drift onto 0.30000000000000004.
     const next = Math.max(0, Math.round((base + delta) * 100) / 100);
-    setWeights((w) => ({ ...w, [ex.programme_exercise_id]: next }));
+    setAdjust((a) => ({ ...a, [ex.programme_exercise_id]: { ...a[ex.programme_exercise_id], weight: next } }));
   }
 
-  const correctingRow = correcting ? (loggedSets.find((r) => r.id === correcting) ?? null) : null;
+  function bumpReps(ex: ResolvedExercise, delta: number) {
+    const base = repsFor(ex) ?? 0;
+    const next = Math.max(0, base + delta);
+    setAdjust((a) => ({ ...a, [ex.programme_exercise_id]: { ...a[ex.programme_exercise_id], reps: next } }));
+  }
 
   function openCorrection(row: LoggedSet) {
     setError(null);
-    setCorrectionDrafts((d) => ({
-      ...d,
-      [row.id]: {
-        reps: row.reps_completed !== null ? String(row.reps_completed) : '',
-        load: row.load_kg !== null ? String(row.load_kg) : '',
-      },
-    }));
+    setCorr({ weight: row.load_kg, reps: row.reps_completed });
     setCorrecting(row.id);
   }
 
-  function buildSetInput(
-    ex: ResolvedExercise,
-    setNumber: number,
-    reps: string,
-    load: string,
-  ): GymSetLogInput | null {
+  function closeCorrection() {
+    setCorrecting(null);
+    setCorr({ weight: null, reps: null });
+  }
+
+  function buildSetInput(ex: ResolvedExercise, setNumber: number, reps: number | null, load: number | null): GymSetLogInput | null {
     const candidate = {
       id: crypto.randomUUID(),
       gym_session_log_id: gymSessionLogId,
       programme_exercise_id: ex.programme_exercise_id,
       exercise_id: ex.exercise_id,
       set_number: setNumber,
-      reps_completed: reps.trim() === '' ? null : Number(reps),
-      load_kg: load.trim() === '' ? null : Number(load),
+      reps_completed: reps,
+      load_kg: load,
       rpe: null,
     };
     const parsed = GymSetLogInput.safeParse(candidate);
@@ -409,11 +416,11 @@ export function GymSessionLogger({
    * same reasoning as every other revise_* call site: a replayed revise cannot be told
    * apart from "already corrected" (lib/outbox.ts's own header). */
   const correctionMutation = useMutation({
-    mutationFn: async (input: { id: string; reps: string; load: string }) => {
+    mutationFn: async (input: { id: string; reps: number | null; load: number | null }) => {
       const result = await withWriteTimeout(
         reviseGymSetLog(createClient(), input.id, {
-          reps_completed: input.reps.trim() === '' ? null : Number(input.reps),
-          load_kg: input.load.trim() === '' ? null : Number(input.load),
+          reps_completed: input.reps,
+          load_kg: input.load,
           rpe: null,
         }),
       );
@@ -421,7 +428,7 @@ export function GymSessionLogger({
     },
     onSuccess: () => {
       setError(null);
-      setCorrecting(null);
+      closeCorrection();
       router.refresh();
     },
     onError: (err) => setError(toUserMessage(err, 'athlete')),
@@ -436,7 +443,7 @@ export function GymSessionLogger({
     },
     onSuccess: () => {
       setError(null);
-      // The session is closed; any leftover half-typed row is dead weight and
+      // The session is closed; any leftover adjustment is dead weight and
       // must not resurface if the athlete reopens this log.
       try {
         window.localStorage.removeItem(draftKey);
@@ -453,6 +460,149 @@ export function GymSessionLogger({
     onError: (err) => setError(toUserMessage(err, 'athlete')),
   });
 
+  /* The numbers the two blocks show and the footer writes: the correction's
+     while one is open, otherwise the active exercise's adjusted values. */
+  const cardDone = card ? (setsByExercise.get(card.programme_exercise_id) ?? []) : [];
+  const nextSetNumber = card ? cardDone.length + 1 : 0;
+  const showWeight = card ? (correcting ? true : weightFor(card) !== null) : false;
+  const weightShown = card ? (correcting ? corr.weight : weightFor(card)) : null;
+  const repsShown = card ? (correcting ? corr.reps : repsFor(card)) : null;
+  const rec = card ? recommendedFor(card) : null;
+  const recReps = card ? prescribedReps(card) : null;
+  const lastLogged = lastLoggedId ? (loggedSets.find((r) => r.id === lastLoggedId) ?? null) : null;
+  const lastLoggedExercise = lastLogged
+    ? (exercises.find((ex) => ex.programme_exercise_id === lastLogged.programme_exercise_id) ?? null)
+    : null;
+  const allLogged = doneCount >= totalSets;
+
+  function stepValue(kind: 'weight' | 'reps', delta: number) {
+    if (!card) return;
+    if (correcting) {
+      /* A value that was never logged stays "Not set" under a minus: there
+         is nothing to go below. A plus starts it from zero — measured: the
+         first cut let a minus turn "Not set" into a 0 kg load. */
+      setCorr((c) =>
+        kind === 'weight'
+          ? c.weight === null && delta < 0
+            ? c
+            : { ...c, weight: Math.max(0, Math.round(((c.weight ?? 0) + delta) * 100) / 100) }
+          : c.reps === null && delta < 0
+            ? c
+            : { ...c, reps: Math.max(0, (c.reps ?? 0) + delta) },
+      );
+      return;
+    }
+    if (kind === 'weight') bumpWeight(card, delta);
+    else bumpReps(card, delta);
+  }
+
+  const chipsFor = (ex: ResolvedExercise) => {
+    const done = setsByExercise.get(ex.programme_exercise_id) ?? [];
+    const isCard = card?.programme_exercise_id === ex.programme_exercise_id;
+    return (
+      <div className="gym-set-keys" role="list" aria-label={`Sets of ${ex.exercise_name}`}>
+        {Array.from({ length: ex.sets }, (_, i) => {
+          const setNumber = i + 1;
+          const loggedRow = done.find((s) => s.set_number === setNumber);
+          const isNext = !loggedRow && isCard && setNumber === done.length + 1 && !alreadyComplete;
+          if (loggedRow) {
+            /* Logged = the accent with a tick, and the correction target. */
+            return (
+              <button
+                key={setNumber}
+                type="button"
+                role="listitem"
+                className="gym-set-key"
+                data-logged=""
+                data-correcting={correcting === loggedRow.id ? '' : undefined}
+                aria-label={`Set ${setNumber} logged${correctedIds.has(loggedRow.id) ? ', corrected' : ''}, ${loggedRow.reps_completed ?? 'no'} reps at ${
+                  loggedRow.load_kg !== null ? `${loggedRow.load_kg} kg` : 'no load'
+                }. Correct it.`}
+                onClick={() => openCorrection(loggedRow)}
+              >
+                {'✓'}
+              </button>
+            );
+          }
+          /* Current = the accent tint with the ring; not reached = --faint on
+             --surf2. Neither is a control: no disabled attribute anywhere. */
+          return (
+            <span
+              key={setNumber}
+              role="listitem"
+              className="gym-set-key"
+              data-next={isNext ? '' : undefined}
+              aria-current={isNext ? 'step' : undefined}
+              aria-label={isNext ? `Set ${setNumber} of ${ex.sets}, next` : `Set ${setNumber} of ${ex.sets}, not reached`}
+            >
+              {setNumber}
+            </span>
+          );
+        })}
+      </div>
+    );
+  };
+
+  const numberBlock = (kind: 'weight' | 'reps') => {
+    if (!card) return null;
+    const value = kind === 'weight' ? weightShown : repsShown;
+    const step = kind === 'weight' ? card.weight_step_kg : 1;
+    const label = kind === 'weight' ? 'Weight' : 'Reps';
+    /* Going off the prescription is information, not an error: the coach's
+       number stays underneath as reference, with the difference in bold and
+       a real minus sign, in --muted. */
+    const reference =
+      kind === 'weight'
+        ? rec === null
+          ? loadLabel(card, timezone)
+          : value !== null && value !== rec
+            ? (
+                <>
+                  Prescribed {formatKg(rec)} kg · <b>{signed(value - rec)}</b>
+                </>
+              )
+            : `Prescribed ${formatKg(rec)} kg`
+        : recReps === null
+          ? 'No reps prescribed'
+          : value !== null && value !== recReps
+            ? (
+                <>
+                  Prescribed {recReps} · <b>{signed(value - recReps)}</b>
+                </>
+              )
+            : `Prescribed ${recReps}`;
+    return (
+      <div className="gl-num" data-kind={kind}>
+        <button
+          type="button"
+          className="gl-step"
+          onClick={() => stepValue(kind, -step)}
+          aria-label={`Decrease the ${kind} for ${card.exercise_name} by ${kind === 'weight' ? `${step} kg` : '1'}`}
+        >
+          &minus;
+        </button>
+        <div className="gl-num-mid">
+          <div className="gl-num-k">{label}</div>
+          {/* An absent value is words, at the words' size — never a dash,
+              never a zero. */}
+          <div className="gl-num-v num" data-words={value === null ? '' : undefined}>
+            {value === null ? 'Not set' : kind === 'weight' ? formatKg(value) : value}
+            {kind === 'weight' && value !== null ? <small>kg</small> : null}
+          </div>
+          <div className="gl-num-ref num">{reference}</div>
+        </div>
+        <button
+          type="button"
+          className="gl-step"
+          onClick={() => stepValue(kind, step)}
+          aria-label={`Increase the ${kind} for ${card.exercise_name} by ${kind === 'weight' ? `${step} kg` : '1'}`}
+        >
+          +
+        </button>
+      </div>
+    );
+  };
+
   return (
     <div
       style={{
@@ -463,26 +613,26 @@ export function GymSessionLogger({
         flexDirection: 'column',
       }}
     >
-      {/* ONE EYEBROW AND THE TITLE, per screens 09/10.
-       *
-       * THE CLOSE/TIMER LINE ABOVE THIS IS GONE, and it was defended in this
-       * file until today: "leaving a session and knowing how long you have been
-       * in it are both real, and a picture cannot show that they are missing."
-       * Half of that still holds and half of it does not.
-       *
-       * Close was redundant, and the new screenshots are what show it — the
-       * athlete tab bar is rendered on this route (src/app/(athlete)/layout.tsx
-       * mounts it under every athlete page, and 09/10 draw it with Gym lit), so
-       * there has always been a way out one row below the one Close occupied.
-       *
-       * The running clock is a real loss and is recorded as one. What replaces
-       * it is the eyebrow's own planned duration ("55 MIN"), which is the
-       * session's shape rather than the athlete's elapsed time in it. The
-       * once-a-second setInterval that drove it went with it rather than being
-       * left to re-render a component nothing displays. */}
+      {/* THE HEADER NEVER SCROLLS AWAY: one eyebrow, the title with Finish
+          early beside it (ATH-ADULT-10 C1 — dashed, neutral, 44px, in the
+          header while sets remain), and the running count with the clock.
+          The tab bar beneath the screen is the way out; there is no Close. */}
       <div className="gym-head">
         {sessionMeta ? <div className="gym-head-eyebrow">{sessionMeta}</div> : null}
-        <h1 className="gym-head-title">{sessionName}</h1>
+        <div className="gym-head-row2">
+          <h1 className="gym-head-title">{sessionName}</h1>
+          {!alreadyComplete && !allLogged ? (
+            <button
+              type="button"
+              className="btn-ghost gym-finish-early"
+              disabled={completeMutation.isPending}
+              onClick={() => completeMutation.mutate()}
+              aria-label={`Finish early · ${doneCount} of ${totalSets} sets`}
+            >
+              Finish early
+            </button>
+          ) : null}
+        </div>
         <div className="gym-progress">
           <div className="gym-progress-track">
             <div className="gym-progress-fill" style={{ width: `${pct}%` }} />
@@ -504,8 +654,6 @@ export function GymSessionLogger({
                 {' '}&middot; {waiting} waiting to send
               </>
             ) : null}
-            {/* On the progress row, not on a utility line of its own: the clock
-                is back without the Close/timer bar the reference removed. */}
             {!alreadyComplete && startedAt ? (
               <>
                 {' '}&middot; {now !== null ? elapsed(startedAt, now) : '·'}
@@ -632,307 +780,130 @@ export function GymSessionLogger({
             </>
           ) : null}
 
-          {(!alreadyComplete || showSets ? shownExercises : []).map((ex) => {
-            const done = setsByExercise.get(ex.programme_exercise_id) ?? [];
-            const isActive = ex.programme_exercise_id === activeExerciseId;
-            /* The prescription IS the prefill now, read at the moment a set
-               key is tapped (recommendedFor / reps_min) rather than copied into
-               a per-exercise draft first. The draft existed to hold what the
-               athlete typed into two inputs a set; there are no such inputs
-               any more. */
-            const nextSetNumber = done.length + 1;
-
-            return (
-              <div
-                key={ex.programme_exercise_id}
-                className="gym-ex-card"
-                data-active={isActive ? '' : undefined}
-              >
-                <div className="gym-ex-head">
-                  <div style={{ minWidth: 0 }}>
-                    <span className="nm">{ex.exercise_name}</span>
-                    <span className="scheme num">{schemeLine(ex, timezone)}</span>
-                  </div>
-                  {/* 23g's per-exercise pill. Three states, because the count
-                      only means something once there is something to count:
-                      nothing logged says how many are PRESCRIBED, part-done
-                      says how far through, finished says so in the good tone.
-                      "0 of 3" would be a progress reading of a thing not
-                      started, which is not the same statement. */}
-                  <span
-                    className={
-                      done.length === 0
-                        ? 'pill pill-neutral'
-                        : done.length >= ex.sets
-                          ? 'pill pill-good'
-                          : 'pill pill-warn'
-                    }
-                  >
-                    {done.length === 0 ? (
-                      <>
-                        <span className="num">{ex.sets}</span> {ex.sets === 1 ? 'set' : 'sets'}
-                      </>
-                    ) : (
-                      <>
-                        <span className="num">{done.length}</span> of{' '}
-                        <span className="num">{ex.sets}</span>
-                      </>
-                    )}
+          {/* THE LOGGER. One exercise at a time; every exercise once the
+              session is closed and "Correct a set" has been pressed, so a
+              logged chip is always reachable. */}
+          {!alreadyComplete || showSets ? (
+            <>
+              {/* The set that just landed, above the card, with its way back
+                  (the board's "Set 2 logged · 102.5 kg × 8 · Correct it"). */}
+              {!alreadyComplete && lastLogged && lastLoggedExercise && !correcting ? (
+                <div className="gl-strip" role="status">
+                  <span className="num">
+                    {lastLoggedExercise.exercise_name} set {lastLogged.set_number} logged ·{' '}
+                    {setWords(lastLogged.load_kg, lastLogged.reps_completed) || 'nothing recorded'}
                   </span>
+                  <button type="button" className="gl-strip-link" onClick={() => openCorrection(lastLogged)}>
+                    Correct it
+                  </button>
                 </div>
+              ) : null}
 
-                {/* 23g's SET KEYS. One box a set, tapped to log — not a row of
-                    reps and load inputs a set.
+              {(alreadyComplete && showSets ? exercises : card ? [card] : []).map((ex) => {
+                const done = setsByExercise.get(ex.programme_exercise_id) ?? [];
+                const isCard = card?.programme_exercise_id === ex.programme_exercise_id;
+                const position =
+                  correcting && correctingRow && isCard
+                    ? `Correcting set ${correctingRow.set_number} · was ${wasLine({ reps_completed: correctingRow.reps_completed, load_kg: correctingRow.load_kg })}`
+                    : done.length >= ex.sets
+                      ? `${ex.sets} of ${ex.sets} logged`
+                      : `Set ${done.length + 1} of ${ex.sets}${ex.rest_seconds ? ` · Rest ${ex.rest_seconds}s` : ''}`;
+                return (
+                  <div key={ex.programme_exercise_id} className="gl-card" data-active={isCard ? '' : undefined}>
+                    <div className="gl-card-head">
+                      <h2 className="gl-card-name">{ex.exercise_name}</h2>
+                      <span className="gl-card-pos num">{position}</span>
+                    </div>
+                    {chipsFor(ex)}
+                    {/* ATH-ADULT-11 C2 (2026-09-12): a corrected set says so
+                        where it is, with what it was — the superseded row,
+                        read by the page from the base table as My data does.
+                        The neutral marker in words; no bar, no second colour. */}
+                    {done.some((row) => correctedIds.has(row.id)) ? (
+                      <div className="gym-corrected-strip num">
+                        {done
+                          .filter((row) => correctedIds.has(row.id))
+                          .map((row) => {
+                            const c = corrections.find((x) => x.id === row.id);
+                            return c ? (
+                              <div key={row.id}>
+                                Set {row.set_number} corrected · was {wasLine(c.was)}
+                              </div>
+                            ) : null;
+                          })}
+                      </div>
+                    ) : null}
+                    {isCard && (correcting || !alreadyComplete) ? (
+                      <>
+                        {showWeight ? numberBlock('weight') : null}
+                        {!showWeight && rec === null && !correcting ? (
+                          <p className="gl-noload num">
+                            {ex.load_basis === 'none' ? 'Bodyweight · reps only' : loadLabel(ex, timezone)}
+                          </p>
+                        ) : null}
+                        {numberBlock('reps')}
+                      </>
+                    ) : null}
+                  </div>
+                );
+              })}
 
-                    What this changes about what is recorded, stated plainly
-                    because it is the reason this was not built the first two
-                    times it was asked for: a tap logs the PRESCRIBED reps and
-                    the weight shown below, rather than making the athlete type
-                    what they actually did. The prescription is right on the
-                    overwhelming majority of sets — that is what a prescription
-                    is — and the athlete is standing under a bar with cold hands.
-                    Nothing is lost, because a logged key stays tappable and
-                    re-opens the set for correction underneath (ADR-005's
-                    revise path, unchanged), so a set that went 3 reps instead
-                    of 5 is two taps from being right. Fast by default, exact on
-                    demand, instead of slow always. */}
-                <div className="gym-set-keys">
-                  {Array.from({ length: ex.sets }, (_, i) => {
-                    const setNumber = i + 1;
-                    const loggedRow = done.find((s) => s.set_number === setNumber);
-                    const isNext = !alreadyComplete && setNumber === nextSetNumber;
-                    return (
-                      <button
-                        key={setNumber}
-                        type="button"
-                        className="gym-set-key"
-                        data-logged={loggedRow ? '' : undefined}
-                        data-next={!loggedRow && isNext ? '' : undefined}
-                        aria-pressed={!!loggedRow}
-                        disabled={!loggedRow && (!isNext || logMutation.isPending)}
-                        aria-label={
-                          loggedRow
-                            ? `Set ${setNumber} logged${correctedIds.has(loggedRow.id) ? ', corrected' : ''}, ${loggedRow.reps_completed ?? 'no'} reps at ${
-                                loggedRow.load_kg !== null ? `${loggedRow.load_kg} kg` : 'no load'
-                              }. Correct it.`
-                            : `Log set ${setNumber} of ${ex.sets}, ${ex.exercise_name}`
-                        }
-                        onClick={() => {
-                          if (loggedRow) {
-                            openCorrection(loggedRow);
-                            return;
-                          }
-                          const input = buildSetInput(
-                            ex,
-                            setNumber,
-                            ex.reps_min !== null ? String(ex.reps_min) : '',
-                            weightFor(ex) !== null ? String(weightFor(ex)) : '',
-                          );
-                          if (!input) {
-                            setError('Something on this set did not check out. Try again.');
-                            return;
-                          }
-                          logMutation.mutate(input);
-                        }}
-                      >
-                        {loggedRow ? '\u2713' : setNumber}
-                      </button>
-                    );
-                  })}
+              {/* What is next, stated beneath the card, never behind a
+                  disclosure: one line when one exercise remains, rows with
+                  their prescription and count otherwise. */}
+              {!alreadyComplete && nextExercises.length === 1 && nextExercises[0] ? (
+                <p className="gl-then-line">
+                  <span className="gl-then-k">Then</span> <span className="nm">{nextExercises[0].exercise_name}</span>
+                  {schemeLine(nextExercises[0], timezone) ? (
+                    <span className="num"> · {schemeLine(nextExercises[0], timezone)}</span>
+                  ) : null}
+                </p>
+              ) : !alreadyComplete && nextExercises.length > 1 ? (
+                <>
+                  <p className="gl-then-k">Then</p>
+                  <div className="gl-then">
+                    {nextExercises.map((ex) => {
+                      const done = setsByExercise.get(ex.programme_exercise_id) ?? [];
+                      return (
+                        <div key={ex.programme_exercise_id} className="gl-then-row">
+                          <div style={{ minWidth: 0 }}>
+                            <div className="nm">{ex.exercise_name}</div>
+                            <div className="gl-then-sub num">{schemeLine(ex, timezone)}</div>
+                          </div>
+                          <span className="gl-then-count num">
+                            {done.length} of {ex.sets}
+                          </span>
+                        </div>
+                      );
+                    })}
+                  </div>
+                </>
+              ) : null}
+
+              {!alreadyComplete ? (
+                <div className="card" style={{ marginTop: 'var(--sp-14)' }}>
+                  <label>
+                    <span className="label">Session RPE (optional)</span>
+                    <input
+                      className="field"
+                      type="number"
+                      inputMode="numeric"
+                      min="1"
+                      max="10"
+                      value={sessionRpe}
+                      onChange={(e) => setSessionRpe(e.target.value)}
+                    />
+                  </label>
                 </div>
-
-                {/* ATH-ADULT-11 C2 (2026-09-12): a corrected set says so where
-                    it is, with what it was — the superseded row, read by the
-                    page from the base table as My data does. The neutral
-                    marker in words; no bar, no second colour. */}
-                {done.some((row) => correctedIds.has(row.id)) ? (
-                  <div className="gym-corrected-strip num">
-                    {done
-                      .filter((row) => correctedIds.has(row.id))
-                      .map((row) => {
-                        const c = corrections.find((x) => x.id === row.id);
-                        return c ? (
-                          <div key={row.id}>
-                            Set {row.set_number} corrected · was {wasLine(c.was)}
-                          </div>
-                        ) : null;
-                      })}
-                  </div>
-                ) : null}
-
-                {/* The correction, inline and only for the set being corrected.
-                    23g has no such row because nothing in a still needs
-                    correcting; removing it would have made a mis-logged set
-                    unfixable until the session was closed, since the correction
-                    screen only lists COMPLETED sessions. */}
-                {correctingRow && correctingRow.programme_exercise_id === ex.programme_exercise_id ? (
-                  <div className="gym-correct">
-                    <p className="gym-correct-k">
-                      Correcting set <span className="num">{correctingRow.set_number}</span>
-                    </p>
-                    <div className="gym-correct-fields">
-                      <label>
-                        <span className="label">Reps</span>
-                        <input
-                          className="field num"
-                          type="number"
-                          inputMode="numeric"
-                          value={correctionDrafts[correctingRow.id]?.reps ?? ''}
-                          onChange={(e) =>
-                            setCorrectionDrafts((d) => ({
-                              ...d,
-                              [correctingRow.id]: {
-                                reps: e.target.value,
-                                load: d[correctingRow.id]?.load ?? '',
-                              },
-                            }))
-                          }
-                        />
-                      </label>
-                      <label>
-                        <span className="label">Load (kg)</span>
-                        <input
-                          className="field num"
-                          type="number"
-                          step="0.5"
-                          inputMode="decimal"
-                          value={correctionDrafts[correctingRow.id]?.load ?? ''}
-                          onChange={(e) =>
-                            setCorrectionDrafts((d) => ({
-                              ...d,
-                              [correctingRow.id]: {
-                                reps: d[correctingRow.id]?.reps ?? '',
-                                load: e.target.value,
-                              },
-                            }))
-                          }
-                        />
-                      </label>
-                    </div>
-                    <div className="gym-correct-actions">
-                      <button
-                        type="button"
-                        className="btn-primary"
-                        disabled={correctionMutation.isPending}
-                        onClick={() =>
-                          correctionMutation.mutate({
-                            id: correctingRow.id,
-                            reps: correctionDrafts[correctingRow.id]?.reps ?? '',
-                            load: correctionDrafts[correctingRow.id]?.load ?? '',
-                          })
-                        }
-                      >
-                        Save correction
-                      </button>
-                      <button type="button" className="btn-ghost" onClick={() => setCorrecting(null)}>
-                        Cancel
-                      </button>
-                    </div>
-                    <p className="cap" style={{ margin: '8px 0 0' }}>
-                      The original is kept. My data marks the day corrected and shows what you
-                      first reported.
-                    </p>
-                  </div>
-                ) : null}
-
-                {/* 23g's weight row, and §9 rule 4 — an override never rewrites
-                    the parent. When the athlete has moved off the prescription
-                    BOTH numbers stay on screen: theirs as the value, the
-                    coach's as the note. */}
-                {(() => {
-                  const rec = recommendedFor(ex);
-                  const cur = weightFor(ex);
-                  if (cur === null) {
-                    return (
-                      <div className="gym-weight">
-                        <div className="gym-weight-label">
-                          <div className="k">{ex.load_basis === 'none' ? 'Bodyweight' : 'No load set'}</div>
-                          <div className="n">
-                            {ex.load_basis === 'none' ? 'no weight to set' : loadLabel(ex, timezone)}
-                          </div>
-                        </div>
-                      </div>
-                    );
-                  }
-                  const overridden = rec !== null && cur !== rec;
-                  /* The deviation as a signed figure with a real minus sign
-                     (09 D4): "prescribed 100 kg · +2.5" / "· −2.5". */
-                  const deviation =
-                    rec !== null && cur !== null ? `${cur - rec >= 0 ? '+' : '\u2212'}${Math.abs(cur - rec)}` : '';
-                  return (
-                    <div className="gym-weight">
-                      <div className="gym-weight-label">
-                        <div className="k">{overridden ? 'Your weight' : 'Recommended'}</div>
-                        <div className="n" data-warn={overridden ? '' : undefined}>
-                          {overridden ? (
-                            <>
-                              prescribed <span className="num">{rec}</span> kg · {deviation}
-                            </>
-                          ) : (
-                            'change it if it is not right today'
-                          )}
-                        </div>
-                      </div>
-                      <div className="gym-stepper">
-                        <button
-                          type="button"
-                          onClick={() => bumpWeight(ex, -ex.weight_step_kg)}
-                          aria-label={`Decrease the weight for ${ex.exercise_name} by ${ex.weight_step_kg} kg`}
-                        >
-                          &minus;
-                        </button>
-                        <span className="v num">
-                          {cur}
-                          <small>kg</small>
-                        </span>
-                        <button
-                          type="button"
-                          onClick={() => bumpWeight(ex, ex.weight_step_kg)}
-                          aria-label={`Increase the weight for ${ex.exercise_name} by ${ex.weight_step_kg} kg`}
-                        >
-                          +
-                        </button>
-                      </div>
-                    </div>
-                  );
-                })()}
-              </div>
-            );
-          })}
-
-          {hiddenExercises.length > 0 && (!alreadyComplete || showSets) ? (
-            <button
-              type="button"
-              className="gym-more"
-              onClick={() => setShowAllExercises(true)}
-              aria-expanded={false}
-            >
-              <span>
-                <span className="num">{hiddenExercises.length}</span> more &middot;{' '}
-                {hiddenExercises.map((ex) => ex.exercise_name).join(', ')}
-              </span>
-              <span className="chev" aria-hidden="true">
-                &rsaquo;
-              </span>
-            </button>
+              ) : null}
+            </>
           ) : null}
 
-          {!alreadyComplete ? (
-            <div className="card" style={{ marginTop: 'var(--sp-4)' }}>
-              <label>
-                <span className="label">Session RPE (optional)</span>
-                <input
-                  className="field"
-                  type="number"
-                  inputMode="numeric"
-                  min="1"
-                  max="10"
-                  value={sessionRpe}
-                  onChange={(e) => setSessionRpe(e.target.value)}
-                />
-              </label>
-            </div>
-          ) : (
+          {/* THE FOOTER: one primary, labelled with what it writes, at
+              --hit-lg; Save correction / Cancel while a correction is open
+              (ATH-ADULT-11 C1); "Finish session" once every set is logged;
+              the summary's own exits once the session is closed. */}
+          {alreadyComplete && !correcting ? (
             <div className="subm subm-stack">
               <p className="cap subm-caption">Sent to My data.</p>
               <Link href="/today" className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>
@@ -949,48 +920,61 @@ export function GymSessionLogger({
                 </button>
               ) : null}
             </div>
-          )}
-
-          {/* THE FINISH CONTROL, NO LONGER FLOATING — which is what the
-              changelog objects to, and as far as this goes.
-
-              It could not simply be deleted. This button holds the ONLY call to
-              completeMutation on the screen; without it an athlete can start a
-              session and never finish one, every session they open stays open
-              for ever, and `alreadyComplete` never becomes true for any of
-              them. The reference is a still of a session in progress and cannot
-              show that, in the same way it could not show a missing Close link.
-              So the sticky bar goes and the same button is rendered here, at the
-              end of the list, where a person who has finished their last set
-              arrives anyway.
-
-              "Finish early" keeps its wording when sets are outstanding. It is a
-              real thing athletes do and naming it plainly is what stops it
-              reading as an error. */}
-          {!alreadyComplete ? (
-            <>
-              {/* ATH-ADULT-10 (2026-09-12): finishing early is not shaped like
-                  logging a set. While sets are outstanding this is a dashed
-                  neutral outline — no fill, --muted — so the accent primary is
-                  reserved for the act that completes the work; once every set
-                  is logged, "Finish session" is the primary as before. Same
-                  place, same call: the header placement and the confirmation
-                  the board draws are recorded, not built. */}
+          ) : correcting && correctingRow ? (
+            <div className="subm">
+              <p className="cap subm-caption">
+                The original is kept. My data marks the session corrected and shows what you first logged.
+              </p>
               <button
                 type="button"
-                className={doneCount >= totalSets ? 'btn-primary' : 'btn-ghost gym-finish-early'}
-                style={{ width: '100%', marginTop: 'var(--sp-14)' }}
+                className="btn-primary gl-primary"
+                disabled={correctionMutation.isPending}
+                onClick={() => correctionMutation.mutate({ id: correctingRow.id, reps: corr.reps, load: corr.weight })}
+              >
+                {correctionMutation.isPending ? 'Saving…' : `Save correction · ${setWords(corr.weight, corr.reps) || 'no values'}`}
+              </button>
+              <button
+                type="button"
+                className="btn-ghost"
+                style={{ display: 'flex', justifyContent: 'center', width: '100%', marginTop: 'var(--sp-8)' }}
+                onClick={closeCorrection}
+              >
+                Cancel
+              </button>
+            </div>
+          ) : allLogged ? (
+            <div className="subm">
+              <p className="cap subm-caption">Every set is logged.</p>
+              <button
+                type="button"
+                className="btn-primary gl-primary"
                 disabled={completeMutation.isPending}
                 onClick={() => completeMutation.mutate()}
               >
-                {doneCount >= totalSets
-                  ? 'Finish session'
-                  : `Finish early · ${doneCount} of ${totalSets}`}
+                Finish session
               </button>
-              <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-8)' }}>
-                Sets save as you log them.
-              </p>
-            </>
+            </div>
+          ) : card ? (
+            <div className="subm">
+              <p className="cap subm-caption">Sets save as you log them.</p>
+              <button
+                type="button"
+                className="btn-primary gl-primary"
+                disabled={logMutation.isPending}
+                onClick={() => {
+                  const input = buildSetInput(card, nextSetNumber, repsFor(card), weightFor(card));
+                  if (!input) {
+                    setError('Something on this set did not check out. Try again.');
+                    return;
+                  }
+                  logMutation.mutate(input);
+                }}
+              >
+                {logMutation.isPending
+                  ? 'Saving…'
+                  : `Log set ${nextSetNumber}${setWords(weightFor(card), repsFor(card)) ? ` · ${setWords(weightFor(card), repsFor(card))}` : ''}`}
+              </button>
+            </div>
           ) : null}
         </div>
       </div>

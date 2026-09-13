@@ -6,6 +6,8 @@ import { dateInTz, enumLabel, formatDate, formatTime, mdExplainer, mdLabel } fro
 import { DUE_DELAY_MIN, rpeDueAt, rpeIsClosed } from '@/lib/rpeDue';
 import { rpeRowName } from '@/lib/todayRows';
 import { requireAthlete } from '@/lib/session';
+import { entryFormsOpen } from '@/lib/consentState';
+import { EntryLocked } from '@/components/EntryLocked/EntryLocked';
 import { RPE_OFF_ATHLETE } from '@/lib/rpeSetting';
 
 /* "Rate {session name}" since 2026-09-11 (ATH-ADULT-02, RPE decision 3). The
@@ -30,7 +32,9 @@ export default async function RpePage({
   params: Promise<{ sessionId: string }>;
 }) {
   const { sessionId } = await params;
-  const { db, orgId, athleteId, claims, timezone, collectsRpe } = await requireAthlete();
+  const { db, orgId, athleteId, claims, timezone, collectsRpe, consent } = await requireAthlete();
+  /* PATTERN-S9: open only while the athlete is in data. */
+  if (!entryFormsOpen(consent.state)) return <EntryLocked state={consent.state} title="Rate a session" closeLabel="Close the session rating" />;
 
   /* The RPE club setting (0118): off, the destination stays and says so —
      nothing to rate, nothing lost, the club's choice. */

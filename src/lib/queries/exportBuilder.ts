@@ -35,7 +35,8 @@ export type ExportAthlete = { id: string; first_name: string; last_name: string 
  *  count in this app already uses. */
 export async function fetchExportAthletes(db: Db, orgId: string, groupIds: readonly string[]): Promise<ExportAthlete[]> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
-  let query = db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club');
+  let query = db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club')
+    .eq('in_data', true) /* 0120: out of every data denominator — declined, withdrawn, undecided, guardian outstanding */;
   if (scope) query = query.in('id', scope);
   const { data, error } = await query.order('last_name');
   if (error) throw new Error(error.message);

@@ -87,7 +87,8 @@ export async function fetchTrainingLoadReport(
     .select('id, first_name, last_name')
     .eq('org_id', orgId)
     .is('deleted_at', null)
-    .neq('status', 'left_club');
+    .neq('status', 'left_club')
+    .eq('in_data', true) /* 0120: out of every data denominator — declined, withdrawn, undecided, guardian outstanding */;
   if (scope) athleteQuery = athleteQuery.in('id', scope);
   const { data: athletes, error: athleteErr } = await athleteQuery.order('last_name').order('first_name');
   if (athleteErr) throw new Error(athleteErr.message);

@@ -17,7 +17,7 @@ export default async function SquadPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, orgName, claims } = await requireStaff();
+  const { db, orgId, orgName, claims, timezone } = await requireStaff();
 
   // 01-roles-and-permissions.md (superseded) §2: admin gets `no` for "View squad
   // dashboard", and docs/20-route-map.md §2.3 lists /squad's own roles as
@@ -94,7 +94,7 @@ export default async function SquadPage({
           non-injury absence directly — illness, personal, academic, representative, or
           other — from an athlete&rsquo;s profile.
         </p>
-        <RosterTable orgId={orgId} groupIds={groupIds} initialRows={rows} />
+        <RosterTable orgId={orgId} groupIds={groupIds} timezone={timezone} initialRows={rows} />
       </section>
     </>
   );

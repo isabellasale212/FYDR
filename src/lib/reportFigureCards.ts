@@ -7,7 +7,7 @@
  * Pure; exercised by scripts/test-report-figure.ts. */
 
 import { complianceCountedLine } from '@/lib/rpeSetting';
-import { NOT_EXPECTED, availabilityExclusionsLine, exclusionsLine, rankedCoverageLine } from '@/lib/reportFigures';
+import { NOT_EXPECTED, availabilityExclusionsLine, exclusionsLine, notInDataLine, rankedCoverageLine } from '@/lib/reportFigures';
 
 export type ReportFigureCopy = {
   label: string;
@@ -31,6 +31,8 @@ export function complianceFigure(o: {
    *  which entry types it counted, because one club's denominator is not
    *  another's once RPE can be off. Default true for callers that predate it. */
   collectsRpe?: boolean;
+  /** 0120: athletes in scope out of data, by state; named in the exclusions. */
+  notInData?: { declined: number; withdrawn: number; undecided: number; guardianPending: number };
 }): ReportFigureCopy {
   const counting = o.summary.filter((s) => s.expected > 0);
   const expected = counting.reduce((n, s) => n + s.expected, 0);
@@ -45,7 +47,7 @@ export function complianceFigure(o: {
       o.athleteCount === 0
         ? `Nobody in this filter · ${o.rangeLabel.toLowerCase()}`
         : `${o.athleteCount} athlete${o.athleteCount === 1 ? '' : 's'} · ${o.rangeLabel.toLowerCase()} · ${counting.length} of ${o.summary.length} domains expected`,
-    exclusions: `${counted} ${exclusionsLine({ waivedAthletes: o.waivedAthletes, waivedDays: o.waivedDays, floored: o.floored })}`,
+    exclusions: `${counted} ${[notInDataLine(o.notInData ?? { declined: 0, withdrawn: 0, undecided: 0, guardianPending: 0 }), exclusionsLine({ waivedAthletes: o.waivedAthletes, waivedDays: o.waivedDays, floored: o.floored })].filter(Boolean).join(' ')}`,
   };
 }
 

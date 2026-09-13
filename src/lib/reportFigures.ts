@@ -13,6 +13,21 @@ export function exclusionsLine(o: { waivedAthletes: number; waivedDays: number; 
   return `${who} excluded on ${days} — a waiver is "was not asked", not "did not submit".`;
 }
 
+/** PATTERN-S9 3B (0120): the athletes in scope who are not in data — a
+ *  decline, a withdrawal, a decision not yet made, a guardian still answering
+ *  — are out of the denominator, and the figure says so by count and state
+ *  rather than letting "of 29" pass for a squad of 30. No judgement words. */
+export function notInDataLine(o: { declined: number; withdrawn: number; undecided: number; guardianPending: number }): string | null {
+  const parts: string[] = [];
+  if (o.declined > 0) parts.push(`${o.declined} declined`);
+  if (o.withdrawn > 0) parts.push(`${o.withdrawn} withdrew`);
+  if (o.guardianPending > 0) parts.push(`${o.guardianPending} waiting on a guardian`);
+  if (o.undecided > 0) parts.push(`${o.undecided} not yet decided`);
+  const n = o.declined + o.withdrawn + o.undecided + o.guardianPending;
+  if (n === 0) return null;
+  return `${n === 1 ? '1 athlete is' : `${n} athletes are`} not counted, having no data consent in force (${parts.join(', ')}).`;
+}
+
 /** Missing values as words — never a dash standing in for a count. */
 export const NOT_EXPECTED = 'Not expected';
 export const NONE_WAIVED = 'None';

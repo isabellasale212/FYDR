@@ -37,6 +37,7 @@ import { headerOwnerLine, headerRestrictionLine, headerSubLine, planLine } from 
 import { noWeighInLine } from '@/lib/nutritionNoWeighIn';
 import { requireStaff } from '@/lib/session';
 import { rpeOffLine } from '@/lib/rpeSetting';
+import { consentStateLabel } from '@/lib/consentState';
 import { isUuid } from '@/lib/uuid';
 import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, NUTRITION_EDIT, PROGRAMME_AUTHOR, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
 import { ReadOnlyOwner } from '@/components/ReadOnlyOwner/ReadOnlyOwner';
@@ -499,6 +500,18 @@ export default async function AthletePage({
           <h1>
             {athlete.first_name} {athlete.last_name}
           </h1>
+          {/* PATTERN-S9 3B (0120): the data-consent state, said on the
+              profile as it is on the squad list — with its date, no
+              judgement words. Nothing below changes shape; the panels read
+              what exists, which for an athlete out of data is nothing new. */}
+          {athlete.consent.state !== 'in_data' ? (
+            <p className="tiny num" data-consent={athlete.consent.state} style={{ marginTop: 'var(--sp-4)' }}>
+              {consentStateLabel(athlete.consent.state)}
+              {athlete.consent.at ? ` · ${formatDate(athlete.consent.at, timezone)}` : ''}
+              {athlete.consent.state === 'guardian_pending' && athlete.consent.guardianName ? ` · guardian ${athlete.consent.guardianName}` : ''}
+              {' · '}no new entries are recorded; every figure below reads what was recorded before.
+            </p>
+          ) : null}
         </div>
         <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           <PeriodSelector

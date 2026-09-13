@@ -11,6 +11,8 @@ import { todayIso } from '@/lib/format';
 import { fetchGymSetRevisionChains } from '@/lib/queries/entryRevisions';
 import { isUuid } from '@/lib/uuid';
 import { requireAthlete } from '@/lib/session';
+import { entryFormsOpen } from '@/lib/consentState';
+import { EntryLocked } from '@/components/EntryLocked/EntryLocked';
 
 export const metadata = { title: 'Gym session · Fydr' };
 
@@ -40,7 +42,10 @@ export default async function GymSessionPage({
      is ignored, not an error. */
   const logParam = typeof sp.log === 'string' && isUuid(sp.log) ? sp.log : undefined;
   const correctParam = typeof sp.correct === 'string' && isUuid(sp.correct) ? sp.correct : null;
-  const { db, orgId, athleteId, timezone } = await requireAthlete();
+  const { db, orgId, athleteId, timezone, consent } = await requireAthlete();
+  /* PATTERN-S9 (finding 3): gym logging is the athlete entering data about
+     themselves too — locked with the other three. */
+  if (!entryFormsOpen(consent.state)) return <EntryLocked state={consent.state} title="Gym session" closeLabel="Close the gym session" />;
 
   /* The name comes from resolve_my_programme_sessions, the same RPC the
      programme list uses, NOT from a direct read of programme_sessions. That

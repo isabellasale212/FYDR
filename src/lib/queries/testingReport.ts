@@ -123,7 +123,8 @@ export async function fetchTestingByAthlete(
   const [definitions, athletesRes] = await Promise.all([
     fetchTestDefinitions(db, orgId),
     (() => {
-      let q = db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club');
+      let q = db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club')
+    .eq('in_data', true) /* 0120: out of every data denominator — declined, withdrawn, undecided, guardian outstanding */;
       if (scope) q = q.in('id', scope);
       return q.order('last_name');
     })(),
@@ -233,7 +234,8 @@ export async function fetchTestByTest(
 
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
 
-  let athleteQuery = db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club');
+  let athleteQuery = db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club')
+    .eq('in_data', true) /* 0120: out of every data denominator — declined, withdrawn, undecided, guardian outstanding */;
   if (scope) athleteQuery = athleteQuery.in('id', scope);
   const athletesRes = await athleteQuery;
   if (athletesRes.error) throw new Error(athletesRes.error.message);
@@ -315,7 +317,8 @@ export async function fetchTestLongitudinal(
 ): Promise<LongitudinalPoint[]> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
 
-  let athleteQuery = db.from('athletes').select('id').eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club');
+  let athleteQuery = db.from('athletes').select('id').eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club')
+    .eq('in_data', true) /* 0120: out of every data denominator — declined, withdrawn, undecided, guardian outstanding */;
   if (scope) athleteQuery = athleteQuery.in('id', scope);
   const athletesRes = await athleteQuery;
   if (athletesRes.error) throw new Error(athletesRes.error.message);

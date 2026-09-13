@@ -295,7 +295,7 @@ export default async function ComplianceReportPage({
                   with — submitted of expected across the domains that expect
                   anything, the count before the percentage, the sample, the
                   exclusions. The per-domain breakdown follows it. */}
-              <ReportFigure {...complianceFigure({ summary: report.summary, athleteCount: report.athleteCount, rangeLabel: period.range.label, waivedAthletes, waivedDays, floored: belowSquadFloor(measured.length), collectsRpe })} />
+              <ReportFigure {...complianceFigure({ summary: report.summary, athleteCount: report.athleteCount, rangeLabel: period.range.label, waivedAthletes, waivedDays, floored: belowSquadFloor(measured.length), collectsRpe, notInData: report.notInData })} />
               <div className="card">
                 <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fit, minmax(140px, 1fr))', gap: 'var(--sp-16)' }}>
                   {report.summary.map((s) => (

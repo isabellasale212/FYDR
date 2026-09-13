@@ -1,3 +1,5 @@
+import { consentState, consentStateAt, type ConsentState } from '@/lib/consentState';
+import { isUnder18 } from '@/lib/format';
 import type {
   AthleteStatus,
   AvailabilityStatus,
@@ -24,6 +26,11 @@ export type SquadRow = {
   availability: AvailabilityStatus | 'unknown';
   restrictions: string[];
   group_ids: string[];
+  /** PATTERN-S9 (0120): the data-consent state — the squad list is the one
+   *  staff surface that keeps showing an athlete out of data, with the state
+   *  and its date beside the name ("no data consent · 13 Sept"). */
+  consent_state: ConsentState;
+  consent_at: string | null;
 };
 
 /** Morning wellness submissions per athlete over a trailing window, plus the
@@ -93,7 +100,7 @@ export async function fetchSquadList(
 
   let athleteQuery = db
     .from('athletes')
-    .select('id, first_name, last_name, position, squad_number, status')
+    .select('id, first_name, last_name, position, squad_number, status, date_of_birth, in_data, consent_given_at, consent_declined_at, consent_withdrawn_at')
     .eq('org_id', orgId)
     .is('deleted_at', null)
     .neq('status', 'left_club');
@@ -122,6 +129,8 @@ export async function fetchSquadList(
       availability: current?.status ?? 'unknown',
       restrictions: restrictionLine(current?.restrictions),
       group_ids: memberships.get(a.id) ?? [],
+      consent_state: consentState(a, isUnder18(a.date_of_birth)),
+      consent_at: consentStateAt(a, consentState(a, isUnder18(a.date_of_birth))),
     };
   });
 }
@@ -143,6 +152,17 @@ export type AthleteProfile = {
   /** The live group memberships' ids — for resolving what reaches this
    *  athlete by group (the nutrition rule's owner line, STAFF-SS-02-05 C5). */
   group_ids: string[];
+  /** PATTERN-S9 (0120): the data-consent record as the profile reads it. */
+  consent: {
+    state: ConsentState;
+    at: string | null;
+    isMinor: boolean;
+    health: 'given' | 'declined' | 'withdrawn' | 'undecided';
+    guardianName: string | null;
+    guardianEmail: string | null;
+    parentalMethod: string | null;
+    parentalRecordedAt: string | null;
+  };
   availability: CurrentAvailability | null;
   open_injuries: OpenInjury[];
 };
@@ -199,7 +219,7 @@ export async function fetchAthlete(
   const { data, error } = await db
     .from('athletes')
     .select(
-      'id, first_name, last_name, preferred_name, position, squad_number, date_of_birth, height_cm, dominant_side, status, joined_at, default_team_id',
+      'id, first_name, last_name, preferred_name, position, squad_number, date_of_birth, height_cm, dominant_side, status, joined_at, default_team_id, in_data, consent_given_at, consent_declined_at, consent_withdrawn_at, health_consent_given_at, health_consent_declined_at, health_consent_withdrawn_at, guardian_name, guardian_email, parental_consent_method, parental_consent_recorded_at',
     )
     .eq('org_id', orgId)
     .eq('id', athleteId)
@@ -250,6 +270,16 @@ export async function fetchAthlete(
     team_name: teamName,
     group_names: groupNames,
     group_ids: memberships.get(athleteId) ?? [],
+    consent: {
+      state: consentState(data, isUnder18(data.date_of_birth)),
+      at: consentStateAt(data, consentState(data, isUnder18(data.date_of_birth))),
+      isMinor: isUnder18(data.date_of_birth),
+      health: data.health_consent_declined_at ? 'declined' : data.health_consent_withdrawn_at ? 'withdrawn' : data.health_consent_given_at ? 'given' : 'undecided',
+      guardianName: data.guardian_name,
+      guardianEmail: data.guardian_email,
+      parentalMethod: data.parental_consent_method,
+      parentalRecordedAt: data.parental_consent_recorded_at,
+    },
     availability: availability[0] ?? null,
     open_injuries: injuries,
   };

@@ -60,6 +60,7 @@ export async function GET(request: Request) {
           waivedDays: report.byAthlete.reduce((n, a) => n + a.waivedCount, 0),
           floored: false,
           collectsRpe,
+          notInData: report.notInData,
         })}
       />
       <PdfTileRow>

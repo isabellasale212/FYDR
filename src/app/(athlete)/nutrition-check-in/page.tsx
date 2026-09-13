@@ -4,6 +4,8 @@ import { fetchCheckinForWeek } from '@/lib/queries/nutrition';
 import { mondayOf } from '@/lib/queries/schedule';
 import { addDays, formatDate, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
+import { entryFormsOpen } from '@/lib/consentState';
+import { EntryLocked } from '@/components/EntryLocked/EntryLocked';
 
 export const metadata = { title: 'Weekly check-in · Fydr' };
 
@@ -21,7 +23,9 @@ export default async function NutritionCheckInPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, athleteId, claims, timezone } = await requireAthlete();
+  const { db, orgId, athleteId, claims, timezone, consent } = await requireAthlete();
+  /* PATTERN-S9 (finding 3): the weekly check-in is locked with the other three. */
+  if (!entryFormsOpen(consent.state)) return <EntryLocked state={consent.state} title="Weekly nutrition check-in" closeLabel="Close the check-in" />;
   const params = await searchParams;
   const today = todayIso(timezone);
   const lastCompletedWeek = addDays(mondayOf(today), -7);

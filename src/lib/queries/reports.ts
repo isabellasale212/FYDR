@@ -1,3 +1,5 @@
+import { consentState } from '@/lib/consentState';
+import { isUnder18 } from '@/lib/format';
 import type { AppRole, ComplianceDomain, Json } from '@/lib/types/database';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchAllPaged } from './paged';
@@ -76,6 +78,11 @@ export type ComplianceReport = {
   byAthlete: ComplianceAthleteRow[];
   byDay: ComplianceDayCell[];
   athleteCount: number;
+  /** 0120: athletes in scope who are not in data, by state — the figure's
+   *  exclusions sentence names them ("1 athlete is not counted: no data
+   *  consent"), because a denominator that quietly shrank is a figure a
+   *  coach cannot read. */
+  notInData: { declined: number; withdrawn: number; undecided: number; guardianPending: number };
   fromDate: string;
   toDate: string;
 };
@@ -169,15 +176,38 @@ export async function fetchComplianceReport(
     .select('id, first_name, last_name')
     .eq('org_id', orgId)
     .is('deleted_at', null)
-    .neq('status', 'left_club');
+    .neq('status', 'left_club')
+    /* 0120 (PATTERN-S9 3B): an athlete not in data — declined, withdrawn,
+       undecided, a guardian still answering — is dropped from the compliance
+       denominator, never counted as a non-submitter. The generator writes
+       them no expectation; this keeps them off the row list too, so "24 of
+       30" reads "24 of 29". The injury report's roster below is availability,
+       an operational fact, and keeps everyone. */
+    .eq('in_data', true);
   if (scope) athleteQuery = athleteQuery.in('id', scope);
+  let outQuery = db
+    .from('athletes')
+    .select('id, date_of_birth, in_data, consent_given_at, consent_declined_at, consent_withdrawn_at')
+    .eq('org_id', orgId)
+    .is('deleted_at', null)
+    .neq('status', 'left_club')
+    .eq('in_data', false);
+  if (scope) outQuery = outQuery.in('id', scope);
 
-  const { data: athletes, error: athleteErr } = await athleteQuery.order('last_name');
+  const [{ data: athletes, error: athleteErr }, { data: outRows }] = await Promise.all([athleteQuery.order('last_name'), outQuery]);
   if (athleteErr) throw new Error(athleteErr.message);
   const athleteIds = (athletes ?? []).map((a) => a.id);
+  const notInData = { declined: 0, withdrawn: 0, undecided: 0, guardianPending: 0 };
+  for (const a of outRows ?? []) {
+    const st = consentState(a, isUnder18(a.date_of_birth));
+    if (st === 'declined') notInData.declined += 1;
+    else if (st === 'withdrawn') notInData.withdrawn += 1;
+    else if (st === 'guardian_pending') notInData.guardianPending += 1;
+    else if (st === 'undecided') notInData.undecided += 1;
+  }
 
   if (athleteIds.length === 0) {
-    return { summary: [], byAthlete: [], byDay: [], athleteCount: 0, fromDate, toDate };
+    return { summary: [], byAthlete: [], byDay: [], athleteCount: 0, notInData, fromDate, toDate };
   }
 
   /* PAGED, AND THE ONE MOST EXPOSED OF THE FOUR.
@@ -383,7 +413,7 @@ export async function fetchComplianceReport(
 
   const byDay = [...dayByKey.values()].sort((a, b) => a.date.localeCompare(b.date) || a.domain.localeCompare(b.domain));
 
-  return { summary, byAthlete, byDay, athleteCount: athleteIds.length, fromDate, toDate };
+  return { summary, byAthlete, byDay, athleteCount: athleteIds.length, notInData, fromDate, toDate };
 }
 
 function totalExpected(row: ComplianceAthleteRow): number {

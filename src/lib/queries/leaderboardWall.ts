@@ -210,7 +210,8 @@ export async function fetchLeaderboardWall(
     .select('id, first_name, last_name, position, date_of_birth')
     .eq('org_id', orgId)
     .is('deleted_at', null)
-    .neq('status', 'left_club');
+    .neq('status', 'left_club')
+    .eq('in_data', true) /* 0120: out of every data denominator — declined, withdrawn, undecided, guardian outstanding */;
   if (scope) athleteQuery = athleteQuery.in('id', scope);
   const { data: athleteRows, error: athleteErr } = await athleteQuery;
   if (athleteErr) throw new Error(athleteErr.message);

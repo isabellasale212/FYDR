@@ -4,6 +4,8 @@ import { fetchWellnessByAthlete, fetchWellnessDay } from '@/lib/queries/wellness
 import { fetchWellnessWithRevisions } from '@/lib/queries/entryRevisions';
 import { addDays, formatDate, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
+import { entryFormsOpen } from '@/lib/consentState';
+import { EntryLocked } from '@/components/EntryLocked/EntryLocked';
 
 export const metadata = { title: 'Morning check-in · Fydr' };
 
@@ -25,7 +27,10 @@ export default async function CheckInPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, athleteId, claims, timezone } = await requireAthlete();
+  const { db, orgId, athleteId, claims, timezone, consent } = await requireAthlete();
+  /* PATTERN-S9: the check-in is the athlete entering data about themselves —
+     open only while they are in data. */
+  if (!entryFormsOpen(consent.state)) return <EntryLocked state={consent.state} title="This morning" closeLabel="Close the check-in" />;
   const today = todayIso(timezone);
   const params = await searchParams;
   const requestedDate = typeof params.date === 'string' ? params.date : today;

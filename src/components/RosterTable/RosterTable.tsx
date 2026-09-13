@@ -8,11 +8,13 @@ import { createClient } from '@/lib/supabase/client';
 import { fetchSquadList, type SquadRow } from '@/lib/queries/squad';
 import { qk } from '@/lib/queries/keys';
 import { availabilityStatus } from '@/lib/status';
-import { BLANK, enumLabel } from '@/lib/format';
+import { BLANK, enumLabel, formatDate } from '@/lib/format';
+import { consentStateLabel } from '@/lib/consentState';
 
 type Props = {
   orgId: string;
   groupIds: readonly string[];
+  timezone: string;
   initialRows: SquadRow[];
 };
 
@@ -24,7 +26,7 @@ type Props = {
  * matching over the rows already fetched and deliberately does not go back to
  * the database: a 28 row squad does not need a round trip per keystroke.
  */
-export function RosterTable({ orgId, groupIds, initialRows }: Props) {
+export function RosterTable({ orgId, groupIds, timezone, initialRows }: Props) {
   const [term, setTerm] = useState('');
 
   const { data = initialRows } = useQuery({
@@ -104,6 +106,15 @@ export function RosterTable({ orgId, groupIds, initialRows }: Props) {
                     <Link href={`/squad/${row.id}`} className="nm">
                       {row.first_name} {row.last_name}
                     </Link>
+                    {/* PATTERN-S9 3B (0120): the state and its date beside the
+                        name, the one place an athlete out of data still shows.
+                        No judgement words; the date is the club's fact. */}
+                    {row.consent_state !== 'in_data' ? (
+                      <span className="tiny num" style={{ display: 'block' }} data-consent={row.consent_state}>
+                        {consentStateLabel(row.consent_state).toLowerCase()}
+                        {row.consent_at ? ` · ${formatDate(row.consent_at, timezone)}` : ''}
+                      </span>
+                    ) : null}
                   </td>
                   <td role="cell" className="sub">{row.position ?? BLANK}</td>
                   <td role="cell">

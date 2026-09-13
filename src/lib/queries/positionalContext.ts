@@ -212,7 +212,8 @@ async function fetchLiveAthletes(
       .select('id, position')
       .eq('org_id', orgId)
       .is('deleted_at', null)
-      .neq('status', 'left_club');
+      .neq('status', 'left_club')
+    .eq('in_data', true) /* 0120: out of every data denominator — declined, withdrawn, undecided, guardian outstanding */;
     if (ids !== undefined) q = q.in('id', [...ids]);
     return q.order('id').range(from, to);
   });

@@ -1,7 +1,7 @@
 /* PATTERN-S9 (Isabella, 2026-09-13): athlete consent, first run, install
  * teaching. Grows with each artboard's commit. Section 1 is the schema and the
  * legal gate; the rest pin the screens as they land. */
-import { readFileSync, existsSync } from 'node:fs';
+import { readFileSync } from 'node:fs';
 import { CONSENT_VERSION, LEGAL_PLACEHOLDERS } from '@/lib/legalPlaceholders';
 import { consentState, consentStateLabel, entryFormsOpen, maskEmail } from '@/lib/consentState';
 import { passwordRules, rulesMet, unmetLine } from '@/lib/passwordRules';
@@ -93,6 +93,56 @@ console.log('\n4. artboard 1 — invite received, setting a password');
   assert(/if \(minor && email\)/.test(route) && /needs a guardian’s name before they can be invited/.test(route) && /guardianEmail === email/.test(route), 'and the route requires it the moment an under-18 is invited, and refuses the athlete’s own address');
   const bulk = strip(read('src/app/(staff)/settings/users/bulk-invite/send/route.ts'));
   assert(/is under 18 and no guardian is recorded/.test(bulk) && /is under 18: add them with the Add athlete form/.test(bulk), 'the bulk invite refuses an under-18 with no guardian, by name');
+}
+
+console.log('\n5. artboard 2 — what staff can see, verified against the code');
+{
+  const vis = strip(read('src/lib/staffVisibility.ts'));
+  assert(/createAdminClient\(\)/.test(vis) && /\.eq\('org_id', orgId\)/.test(vis), 'the club\'s own staff, read for the athlete\'s own club');
+  assert(!/no body site|not where on your body/i.test(vis.replace(/ONE CLAIM ON THE BOARD[\s\S]*?Reported\./, '')) && /the body area of an open injury/.test(vis), 'the coach card does not promise a body-site boundary the product does not enforce today');
+  assert(/your diagnosis, your treatment notes, or your weight/.test(vis), 'the coach card leads with the boundary that IS enforced: no diagnosis, no treatment notes, no weight');
+  const page = strip(read('src/app/(athlete)/consent/staff/page.tsx'));
+  assert(/Step 2 of 3 · nothing decided yet/.test(page) && /data-emphasis/.test(page) && /nobody can change it — not you, not the club/.test(page) && /A day you do not answer stays empty/.test(page), 'the two facts already true are the one emphasised card');
+  assert(/\{total\} of \{total\} roles listed/.test(page), 'the roles count carries its denominator');
+  const tab = strip(read('src/components/AthleteTabBar/AthleteTabBar.tsx'));
+  assert(/pathname\.startsWith\('\/consent\/'\)\) return null/.test(tab), 'no tab bar inside the first run');
+  const session = strip(read('src/lib/session.ts'));
+  assert(/if \(mustDecide && !opts\.allowUndecided\) redirect\('\/consent\/staff'\)/.test(session), 'the gate: an undecided athlete is sent to the flow from every athlete page');
+  assert(/state === 'guardian_pending' && !guardianRequestSent/.test(session), 'a minor is undecided until the guardian link has been sent once');
+  // ADR-005, the immutability claim: no UPDATE policy on the two entry tables (010 asserts it live)
+  const rls = read('supabase/tests/010_rls_coverage_test.sql');
+  assert(/has NO update policy, corrections are new revision rows \(ADR-005\)/.test(rls) && /'wellness_entries', 'training_entries'/.test(rls), 'the immutability claim is what 010 asserts against the database');
+}
+
+console.log('\n6. artboard 3 — the decision, and what declining does');
+{
+  const blocks = strip(read('src/components/ConsentBlocks/ConsentBlocks.tsx'));
+  assert(/Performance data/.test(blocks) && /Health and injury data/.test(blocks) && /id="LEGAL-3A"/.test(blocks) && /id="LEGAL-3B"/.test(blocks) && /id="LEGAL-3C"/.test(blocks) && /id="LEGAL-3D"/.test(blocks), 'two blocks, four placeholders');
+  assert(/Saying no does not affect selection\./.test(blocks) && /Your club states this\. Fydr records your choice and cannot enforce what a coach does with it\./.test(blocks), 'the sentence and the caption that makes it honest');
+  const agree = blocks.indexOf('value="agree"'); const decline = blocks.indexOf('value="decline"');
+  assert(agree > 0 && decline > agree && (blocks.match(/className="consent-choice"/g) ?? []).length === 2 && !/btn-primary/.test(blocks) && !/ring-action/.test(blocks), 'two equal choices, agree then decline, no primary, no halo');
+  const route = strip(read('src/app/(athlete)/consent/decide/record/route.ts'));
+  assert(/db\.rpc\('record_data_consent', \{ p_decision: decision, p_version: CONSENT_VERSION \}\)/.test(route) && /redirect\(decision === 'agree' \? '\/check-in\?first=1' : '\/consent\/declined'\)/.test(route), 'one tap writes through the function; agree lands on the check-in, decline on the state screen');
+  assert(/guardian_decides/.test(route), 'a minor is sent to the guardian screen');
+  const declined = strip(read('src/app/(athlete)/consent/declined/page.tsx'));
+  assert(/Your data · recorded/.test(declined) && /You said no/.test(declined) && /id="LEGAL-3E"/.test(declined) && !/toast|Banner/.test(declined), 'declining is a screen state with the recorded date and time, LEGAL-3E, no toast');
+  assert(/never a zero/.test(declined) && /24 of 29/.test(declined), 'the club sees an em dash and 29');
+  for (const f of ['src/app/(athlete)/check-in/page.tsx', 'src/app/(athlete)/rpe/[sessionId]/page.tsx', 'src/app/(athlete)/gym/[sessionId]/page.tsx', 'src/app/(athlete)/nutrition-check-in/page.tsx']) {
+    assert(/if \(!entryFormsOpen\(consent\.state\)\) return <EntryLocked/.test(strip(read(f))), `${f.split('/').slice(-2).join('/')}: locked while out of data (all four forms, finding 3)`);
+  }
+  const today = strip(read('src/app/(athlete)/today/page.tsx'));
+  assert(/const todoItems = !formsOpen \? \[\] :/.test(today) && /lockedFormLine\(consent\.state\)/.test(today), 'Today lists no entry rows and says the state once');
+  const roster = strip(read('src/components/RosterTable/RosterTable.tsx'));
+  assert(/row\.consent_state !== 'in_data'/.test(roster) && /consentStateLabel\(row\.consent_state\)\.toLowerCase\(\)/.test(roster), 'the squad list shows the state and its date beside the name');
+  const reports = strip(read('src/lib/queries/reports.ts'));
+  assert(/notInData/.test(reports) && (reports.match(/\.eq\('in_data', true\)/g) ?? []).length === 1, 'the compliance denominator reads in_data and counts who is out, by state');
+  for (const f of ['src/lib/queries/analytics.ts', 'src/lib/queries/trainingLoadReport.ts', 'src/lib/queries/testingReport.ts', 'src/lib/queries/leaderboardWall.ts', 'src/lib/queries/positionalContext.ts', 'src/lib/queries/exportBuilder.ts']) {
+    assert(/\.eq\('in_data', true\)/.test(strip(read(f))), `${f.split('/').slice(-1)[0]}: a data denominator reads in_data`);
+  }
+  assert(!/\.eq\('in_data', true\)/.test(strip(read('src/lib/queries/availability.ts'))) && !/\.eq\('in_data', true\)/.test(strip(read('src/lib/queries/squad.ts'))), 'availability and the roster keep everyone — operational facts, not data consent');
+  assert(/not counted, having no data consent in force/.test(read('src/lib/reportFigures.ts')), 'the figure names who is out and why');
+  const spec = read('docs/athlete/screens/21-consent-first-run.md');
+  assert(/zero haloed primaries/.test(spec) && /not\s+a toast/.test(spec) && /all four/.test(spec) && /not made/.test(spec), '21-consent-first-run.md records the flow and the drift');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

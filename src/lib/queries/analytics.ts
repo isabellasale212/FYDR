@@ -95,7 +95,8 @@ export async function fetchAcwr(
       .select('id, first_name, last_name')
       .eq('org_id', orgId)
       .is('deleted_at', null)
-      .neq('status', 'left_club'),
+      .neq('status', 'left_club')
+    .eq('in_data', true) /* 0120: out of every data denominator — declined, withdrawn, undecided, guardian outstanding */,
     fetchGroupAthleteIds(db, orgId, groupIds),
     /* Paged, with a total order. 28 days across a 40-athlete squad is ~1,120
      * rows — already past the configured `max_rows = 1000`, which returns
@@ -202,7 +203,8 @@ export async function fetchWellnessTrend(
       .select('id, first_name, last_name')
       .eq('org_id', orgId)
       .is('deleted_at', null)
-      .neq('status', 'left_club'),
+      .neq('status', 'left_club')
+    .eq('in_data', true) /* 0120: out of every data denominator — declined, withdrawn, undecided, guardian outstanding */,
     fetchGroupAthleteIds(db, orgId, groupIds),
     /* Paged, with a total order. 56 days across a 40-athlete squad is ~2,240
      * rows — more than twice the configured `max_rows = 1000` ceiling, so this
@@ -491,7 +493,8 @@ export async function fetchBuilderAthletes(
       .select('id, first_name, last_name, position')
       .eq('org_id', orgId)
       .is('deleted_at', null)
-      .neq('status', 'left_club'),
+      .neq('status', 'left_club')
+    .eq('in_data', true) /* 0120: out of every data denominator — declined, withdrawn, undecided, guardian outstanding */,
     fetchGroupAthleteIds(db, orgId, groupIds),
   ]);
   if (athletesRes.error) throw new Error(athletesRes.error.message);
@@ -600,7 +603,8 @@ export async function fetchMetricSeries(
       .select('id, first_name, last_name')
       .eq('org_id', orgId)
       .is('deleted_at', null)
-      .neq('status', 'left_club'),
+      .neq('status', 'left_club')
+    .eq('in_data', true) /* 0120: out of every data denominator — declined, withdrawn, undecided, guardian outstanding */,
     fetchGroupAthleteIds(db, orgId, groupIds),
   ]);
   if (athletesRes.error) throw new Error(athletesRes.error.message);

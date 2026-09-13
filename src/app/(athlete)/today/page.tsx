@@ -29,6 +29,7 @@ import {
   todayIso,
 } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
+import { entryFormsOpen, lockedFormLine } from '@/lib/consentState';
 
 export const metadata = { title: 'Today · Fydr' };
 
@@ -78,7 +79,13 @@ export default async function TodayPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, athleteId, claims, timezone, firstName, collectsRpe } = await requireAthlete();
+  const { db, orgId, athleteId, claims, timezone, firstName, collectsRpe, consent } = await requireAthlete();
+  /* PATTERN-S9: an athlete not in data (declined, withdrawn, a guardian still
+     answering) is asked for nothing — the four forms are closed and the list
+     says so once, in their own words, instead of listing rows that would
+     refuse. The generator writes them no expectation from now; any already
+     written before the decision are not listed either. */
+  const formsOpen = entryFormsOpen(consent.state);
   /* ?submitted= still arrives from the entry forms; nothing reads it now
      (S6 A2). Awaited so the route stays dynamic on the query, as before. */
   await searchParams;
@@ -129,7 +136,7 @@ export default async function TodayPage({
      docs/screens/legacy/training-entry.md, which is not binding, so it is
      not shipped until Isabella decides. Its subtitle is when the session
      was — "Today 10:45", "Yesterday" — from rpeWhen, in club time. */
-  const todoItems = [
+  const todoItems = !formsOpen ? [] : [
     ...outstanding.map((item) => ({
       domain: item.domain,
       href: item.href,
@@ -309,10 +316,22 @@ export default async function TodayPage({
       <section aria-labelledby="todo-title">
         <h2 className="eyebrow today-sect todo-head" id="todo-title">
           <span>To do</span>
-          <span className="num">{todoItems.length > 0 ? `${todoItems.length} left` : 'None left'}</span>
+          <span className="num">{!formsOpen ? 'Closed' : todoItems.length > 0 ? `${todoItems.length} left` : 'None left'}</span>
         </h2>
         <div className="td-list">
-          {todoItems.length > 0 ? (
+          {!formsOpen ? (
+            <Link href={consent.state === 'guardian_pending' ? '/consent/guardian' : '/me/data-consent'} className="card td-row" data-entry-locked={consent.state}>
+              <span style={{ minWidth: 0 }}>
+                <span className="td-name" style={{ fontSize: '1.0625rem' }}>
+                  {consent.state === 'guardian_pending' ? 'Waiting on your guardian' : consent.state === 'withdrawn' ? 'You withdrew your consent' : 'You said no'}
+                </span>
+                <span className="td-sub">{lockedFormLine(consent.state)}</span>
+              </span>
+              <span className="chev td-chev" aria-hidden="true">
+                ›
+              </span>
+            </Link>
+          ) : todoItems.length > 0 ? (
             todoItems.map((item, index) => item.session ? (
               <TodayRpeRow
                 key={`${item.domain}-${index}`}

@@ -86,6 +86,19 @@ notification on, and can turn any notification off for the whole org.
 
 ### Athlete
 
+**Defaults, corrected 13 September 2026 (Children's Code default 2, Isabella):
+every notification a person may disable defaults to OFF — the prompts and
+reminders, the programme and session notices, test results, and the staff
+alerts and digests. The two P1 notices nobody may disable (availability changed,
+new privacy notice; for staff, flag escalation and injury reported) keep push
+and email on: they are notices, not reminders. Push on iOS already needs an
+install and a permission grant, so nobody received anything unasked regardless;
+the stored default now matches that. A `notification_preferences` row already
+holding an explicit choice is untouched — null means inherit, so only the
+inherited default moved. The "default on" cells in the tables below are the
+timing defaults as written in August; the on/off default is the rule above,
+held in `src/lib/notifications/catalogue.ts`.**
+
 | id | Trigger | Channel | Default timing | Can disable | Priority |
 |---|---|---|---|---|---|
 | `athlete.wellness.prompt` | A wellness expectation exists for today | Push, in-app | Org-configured, default 07:00 local | Yes | P2 |

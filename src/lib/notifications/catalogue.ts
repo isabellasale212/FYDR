@@ -12,7 +12,18 @@ import type { AppRole } from '@/lib/types/database';
  * point of notification_preferences.notification_id being free text
  * (migration 0008's own comment) rather than a foreign key into a
  * catalogue table.
- */
+ *
+ * CHILDREN'S CODE DEFAULT 2 (Isabella, 2026-09-13): reminders default OFF,
+ * for everybody. Every push that a person may disable now defaults to off —
+ * the prompts and reminders, the programme and session notices, test
+ * results, the staff flag alerts. The two P1 notices nobody may disable
+ * (availability changed, new privacy notice) keep their push and email on:
+ * they are notices, not reminders. A stored row is untouched — null means
+ * "inherit this default", so an explicit choice made before today stays a
+ * choice; only the inherited default moved. Push on iOS already needs an
+ * install and a permission grant, so this makes the stored intent match
+ * what actually reaches anyone. docs/08-notifications.md §2 records the
+ * same. */
 
 export type NotificationChannel = 'push' | 'email';
 
@@ -31,41 +42,41 @@ export type CatalogueEntry = {
 };
 
 export const ATHLETE_CATALOGUE: CatalogueEntry[] = [
-  { id: 'athlete.wellness.prompt', audience: 'athlete', label: 'Morning wellness prompt', trigger: 'A wellness entry is expected today', channels: ['push'], defaultOn: { push: true }, canDisable: true },
-  { id: 'athlete.wellness.nudge', audience: 'athlete', label: 'Wellness reminder', trigger: 'Wellness still outstanding a few hours later', channels: ['push'], defaultOn: { push: true }, canDisable: true },
-  { id: 'athlete.rpe.prompt', audience: 'athlete', label: 'Session rating prompt', trigger: 'A session you need to rate has ended', channels: ['push'], defaultOn: { push: true }, canDisable: true },
-  { id: 'athlete.rpe.nudge', audience: 'athlete', label: 'Session rating reminder', trigger: 'A session rating is still outstanding', channels: ['push'], defaultOn: { push: true }, canDisable: true },
+  { id: 'athlete.wellness.prompt', audience: 'athlete', label: 'Morning wellness prompt', trigger: 'A wellness entry is expected today', channels: ['push'], defaultOn: { push: false }, canDisable: true },
+  { id: 'athlete.wellness.nudge', audience: 'athlete', label: 'Wellness reminder', trigger: 'Wellness still outstanding a few hours later', channels: ['push'], defaultOn: { push: false }, canDisable: true },
+  { id: 'athlete.rpe.prompt', audience: 'athlete', label: 'Session rating prompt', trigger: 'A session you need to rate has ended', channels: ['push'], defaultOn: { push: false }, canDisable: true },
+  { id: 'athlete.rpe.nudge', audience: 'athlete', label: 'Session rating reminder', trigger: 'A session rating is still outstanding', channels: ['push'], defaultOn: { push: false }, canDisable: true },
   { id: 'athlete.nutrition.matchday', audience: 'athlete', label: 'Matchday fuelling reminder', trigger: 'The evening before a fixture', channels: ['push'], defaultOn: { push: false }, canDisable: true },
-  { id: 'athlete.nutrition.checkin', audience: 'athlete', label: 'Weekly nutrition check-in', trigger: 'The week has ended and you haven’t checked in', channels: ['push'], defaultOn: { push: true }, canDisable: true },
-  { id: 'athlete.programme.assigned', audience: 'athlete', label: 'New programme assigned', trigger: 'A gym or rehab programme starts', channels: ['push'], defaultOn: { push: true }, canDisable: true },
-  { id: 'athlete.programme.changed', audience: 'athlete', label: 'Programme changed', trigger: 'Your assigned programme is edited by staff', channels: ['push'], defaultOn: { push: true }, canDisable: true },
-  { id: 'athlete.rehab.assigned', audience: 'athlete', label: 'Rehab programme assigned', trigger: 'Medical assigns you a rehab programme', channels: ['push'], defaultOn: { push: true }, canDisable: true },
+  { id: 'athlete.nutrition.checkin', audience: 'athlete', label: 'Weekly nutrition check-in', trigger: 'The week has ended and you haven’t checked in', channels: ['push'], defaultOn: { push: false }, canDisable: true },
+  { id: 'athlete.programme.assigned', audience: 'athlete', label: 'New programme assigned', trigger: 'A gym or rehab programme starts', channels: ['push'], defaultOn: { push: false }, canDisable: true },
+  { id: 'athlete.programme.changed', audience: 'athlete', label: 'Programme changed', trigger: 'Your assigned programme is edited by staff', channels: ['push'], defaultOn: { push: false }, canDisable: true },
+  { id: 'athlete.rehab.assigned', audience: 'athlete', label: 'Rehab programme assigned', trigger: 'Medical assigns you a rehab programme', channels: ['push'], defaultOn: { push: false }, canDisable: true },
   { id: 'athlete.availability.changed', audience: 'athlete', label: 'Availability changed', trigger: 'Your availability status changes', channels: ['push', 'email'], defaultOn: { push: true, email: true }, canDisable: false },
-  { id: 'athlete.session.changed', audience: 'athlete', label: 'Session moved or cancelled', trigger: 'Today or tomorrow’s session changes', channels: ['push'], defaultOn: { push: true }, canDisable: true },
+  { id: 'athlete.session.changed', audience: 'athlete', label: 'Session moved or cancelled', trigger: 'Today or tomorrow’s session changes', channels: ['push'], defaultOn: { push: false }, canDisable: true },
   { id: 'athlete.flag.shared', audience: 'athlete', label: 'A flag was shared with you', trigger: 'Staff acknowledges a flag raised about you', channels: ['push'], defaultOn: { push: false }, canDisable: true, minorFloorOff: true },
-  { id: 'athlete.test.results', audience: 'athlete', label: 'Test results published', trigger: 'New test results are ready for you', channels: ['push'], defaultOn: { push: true }, canDisable: true },
+  { id: 'athlete.test.results', audience: 'athlete', label: 'Test results published', trigger: 'New test results are ready for you', channels: ['push'], defaultOn: { push: false }, canDisable: true },
   { id: 'athlete.compliance.weekly', audience: 'athlete', label: 'Weekly personal summary', trigger: 'Every Monday morning', channels: ['push'], defaultOn: { push: false }, canDisable: true, minorFloorOff: true },
   { id: 'athlete.leaderboard.weekly', audience: 'athlete', label: 'Weekly leaderboard', trigger: 'Every Monday morning', channels: ['push'], defaultOn: { push: false }, canDisable: true, minorFloorOff: true },
   { id: 'athlete.consent.required', audience: 'athlete', label: 'New privacy notice', trigger: 'A new privacy notice version is published', channels: ['push', 'email'], defaultOn: { push: true, email: true }, canDisable: false },
 ];
 
 export const STAFF_CATALOGUE: CatalogueEntry[] = [
-  { id: 'staff.flag.raised.high', audience: ['coach', 'medic', 'sport_scientist'], label: 'High-severity flag raised', trigger: 'A flag is created at high severity', channels: ['push'], defaultOn: { push: true }, canDisable: true },
-  { id: 'staff.flag.digest', audience: ['coach', 'medic', 'sport_scientist'], label: 'Flag digest', trigger: 'Medium or low severity flags pending', channels: ['push'], defaultOn: { push: true }, canDisable: true },
+  { id: 'staff.flag.raised.high', audience: ['coach', 'medic', 'sport_scientist'], label: 'High-severity flag raised', trigger: 'A flag is created at high severity', channels: ['push'], defaultOn: { push: false }, canDisable: true },
+  { id: 'staff.flag.digest', audience: ['coach', 'medic', 'sport_scientist'], label: 'Flag digest', trigger: 'Medium or low severity flags pending', channels: ['push'], defaultOn: { push: false }, canDisable: true },
   { id: 'staff.flag.escalation', audience: ['coach', 'medic', 'sport_scientist'], label: 'Flag escalation', trigger: 'A flag has gone 24h unacknowledged', channels: ['push', 'email'], defaultOn: { push: true, email: true }, canDisable: false },
-  { id: 'staff.availability.changed', audience: ['coach'], label: 'Availability changed', trigger: 'An athlete’s availability status changes', channels: ['push'], defaultOn: { push: true }, canDisable: true },
+  { id: 'staff.availability.changed', audience: ['coach'], label: 'Availability changed', trigger: 'An athlete’s availability status changes', channels: ['push'], defaultOn: { push: false }, canDisable: true },
   { id: 'staff.injury.reported', audience: ['medic'], label: 'Injury reported', trigger: 'An athlete self-reports, or staff raises a concern', channels: ['push'], defaultOn: { push: true }, canDisable: false },
-  { id: 'staff.injury.rtp_due', audience: ['medic'], label: 'Return-to-play date reached', trigger: 'An expected return date arrives, still open', channels: ['push'], defaultOn: { push: true }, canDisable: true },
-  { id: 'staff.restriction.conflict', audience: ['coach', 'medic'], label: 'Restriction conflict', trigger: 'A coach assigns work an athlete is restricted from', channels: ['push'], defaultOn: { push: true }, canDisable: true },
-  { id: 'staff.compliance.weekly', audience: ['coach', 'medic', 'sport_scientist'], label: 'Weekly compliance digest', trigger: 'Every Monday morning', channels: ['push', 'email'], defaultOn: { push: true, email: true }, canDisable: true },
-  { id: 'staff.compliance.low', audience: ['coach', 'sport_scientist'], label: 'Compliance below floor', trigger: 'Squad compliance stays below the org floor 3 days running', channels: ['push'], defaultOn: { push: true }, canDisable: true },
-  { id: 'staff.import.completed', audience: ['coach', 'medic'], label: 'Import completed', trigger: 'A GPS or data import you started finishes', channels: ['push'], defaultOn: { push: true }, canDisable: true },
-  { id: 'staff.import.failed', audience: ['coach', 'medic'], label: 'Import failed', trigger: 'A GPS or data import fails or rejects over 20% of rows', channels: ['push', 'email'], defaultOn: { push: true, email: true }, canDisable: true },
-  { id: 'staff.programme.divergence', audience: ['coach'], label: 'Programme divergence', trigger: 'An edit didn’t reach every assigned athlete', channels: ['push'], defaultOn: { push: true }, canDisable: true },
-  { id: 'staff.export.ready', audience: ['coach', 'medic', 'sport_scientist'], label: 'Export ready', trigger: 'A report you generated finishes', channels: ['push'], defaultOn: { push: true }, canDisable: true },
+  { id: 'staff.injury.rtp_due', audience: ['medic'], label: 'Return-to-play date reached', trigger: 'An expected return date arrives, still open', channels: ['push'], defaultOn: { push: false }, canDisable: true },
+  { id: 'staff.restriction.conflict', audience: ['coach', 'medic'], label: 'Restriction conflict', trigger: 'A coach assigns work an athlete is restricted from', channels: ['push'], defaultOn: { push: false }, canDisable: true },
+  { id: 'staff.compliance.weekly', audience: ['coach', 'medic', 'sport_scientist'], label: 'Weekly compliance digest', trigger: 'Every Monday morning', channels: ['push', 'email'], defaultOn: { push: false, email: false }, canDisable: true },
+  { id: 'staff.compliance.low', audience: ['coach', 'sport_scientist'], label: 'Compliance below floor', trigger: 'Squad compliance stays below the org floor 3 days running', channels: ['push'], defaultOn: { push: false }, canDisable: true },
+  { id: 'staff.import.completed', audience: ['coach', 'medic'], label: 'Import completed', trigger: 'A GPS or data import you started finishes', channels: ['push'], defaultOn: { push: false }, canDisable: true },
+  { id: 'staff.import.failed', audience: ['coach', 'medic'], label: 'Import failed', trigger: 'A GPS or data import fails or rejects over 20% of rows', channels: ['push', 'email'], defaultOn: { push: false, email: false }, canDisable: true },
+  { id: 'staff.programme.divergence', audience: ['coach'], label: 'Programme divergence', trigger: 'An edit didn’t reach every assigned athlete', channels: ['push'], defaultOn: { push: false }, canDisable: true },
+  { id: 'staff.export.ready', audience: ['coach', 'medic', 'sport_scientist'], label: 'Export ready', trigger: 'A report you generated finishes', channels: ['push'], defaultOn: { push: false }, canDisable: true },
   { id: 'staff.athlete.joined', audience: ['sport_scientist'], label: 'Athlete joined', trigger: 'An athlete accepts an invite', channels: [], defaultOn: {}, canDisable: true },
   { id: 'staff.consent.declined', audience: ['sport_scientist'], label: 'Privacy notice declined', trigger: 'An athlete declines the privacy notice at onboarding', channels: ['email'], defaultOn: { email: true }, canDisable: false },
-  { id: 'staff.integration.failing', audience: ['sport_scientist'], label: 'Integration failing', trigger: 'A vendor adapter fails for over 6 hours', channels: ['email'], defaultOn: { email: true }, canDisable: true },
+  { id: 'staff.integration.failing', audience: ['sport_scientist'], label: 'Integration failing', trigger: 'A vendor adapter fails for over 6 hours', channels: ['email'], defaultOn: { email: false }, canDisable: true },
   { id: 'staff.device_sync.stalled', audience: ['coach'], label: 'Device sync stalled', trigger: 'Athletes with device sync silent over 7 days', channels: [], defaultOn: {}, canDisable: true },
 ];
 

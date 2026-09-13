@@ -9,6 +9,11 @@ import type { AttentionRow } from '@/lib/queries/flags';
 type Props = {
   rows: AttentionRow[];
   openTotal: number;
+  /** PATTERN-S6 C8: the all-clear in the one grammar, built by the page
+   *  (lib/dashboardEmpty.ts's flagsAllClearLine) from the scope's size and
+   *  words — the count it is clear over, and the threshold it is measured
+   *  against. */
+  allClearLine: string;
   /** Distinct athletes behind those flags — the headline (STAFF-SS-01 A3). */
   athleteTotal: number;
   /** STAFF-SS-01 C2: who set the thresholds and when — the line that closes
@@ -45,7 +50,7 @@ function FlagIcon() {
  * One athlete open at a time. The point of the panel is triage across the
  * squad; several rows open at once turns it back into the scrolling list it
  * replaced. */
-export function DashboardFlagsPanel({ rows, openTotal, athleteTotal, awaitingAck, bySeverity, provenance, changedAtLabel, canEditThresholds }: Props) {
+export function DashboardFlagsPanel({ rows, openTotal, allClearLine, athleteTotal, awaitingAck, bySeverity, provenance, changedAtLabel, canEditThresholds }: Props) {
   /* "Thresholds set by Jane Pemberton · 24 Aug · Change ›" — the same stored
      date everywhere (the board's correction), linking to where they are set
      for a role that may change them, and stating them for one that may not. */
@@ -71,7 +76,7 @@ export function DashboardFlagsPanel({ rows, openTotal, athleteTotal, awaitingAck
     return (
       <div className="dash-flags-panel" data-empty="true">
         <FlagIcon />
-        <span className="dash-flags-summary">No open flags right now — none above a club threshold.</span>
+        <span className="dash-flags-summary">{allClearLine}</span>
         {thresholdsLine}
       </div>
     );

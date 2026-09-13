@@ -4,10 +4,12 @@ import { DashboardHeadlineStats } from '@/components/DashboardHeadlineStats/Dash
 import { DashboardLeadCard } from '@/components/DashboardLeadCard/DashboardLeadCard';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
-import { FIXTURE_RANGE_DAYS, fetchEffectiveToday, fetchGymToday, fetchHeadlineStats, fetchOutstandingTracks, fetchSaturdayReadiness, fetchSelectionReasons, fetchTimeline, fetchWeekStrip, fetchWeighInsToday, type SessionPip } from '@/lib/queries/dashboard';
+import { FIXTURE_RANGE_DAYS, fetchEffectiveToday, fetchGymToday, fetchHeadlineStats, fetchNearestSessionDay, fetchOutstandingTracks, fetchSaturdayReadiness, fetchSelectionReasons, fetchTimeline, fetchWeekStrip, fetchWeighInsToday, type SessionPip } from '@/lib/queries/dashboard';
+import { dayEmptyCopy, flagsAllClearLine, sessionAllClearLine } from '@/lib/dashboardEmpty';
+import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { attentionDomains, dashboardTiles, dashboardVersion, leadCardNames, needYouFoot, showsWeekStrip } from '@/lib/dashboardVersion';
 import { weekStripYields } from '@/lib/dashboardLead';
-import { fetchGroups } from '@/lib/queries/groups';
+import { fetchGroupAthleteIds, fetchGroups, fetchSquadSize } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
 import { addDays, formatDate, formatLongDate, matchdayWeekday, todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
@@ -158,7 +160,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
    * it seeded the whole account with a key no report accepts. Longer windows
    * live on Analytics, which has its own per-board controls. */
 
-  const [groups, stats, week, timeline, readiness, outstanding, provenance, gymToday, weighIns] = await Promise.all([
+  const [groups, stats, week, timeline, readiness, outstanding, provenance, gymToday, weighIns, scopeIds, squadSize] = await Promise.all([
     fetchGroups(db, orgId),
     fetchHeadlineStats(db, orgId, groupIds, effectiveToday, wallClockToday, timezone, attentionDomains(version)),
     fetchWeekStrip(db, orgId, groupIds, weekStart, effectiveToday, timezone),
@@ -173,7 +175,14 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
     /* The two tiles only the role versions draw — read only for them. */
     version === 'sc' ? fetchGymToday(db, orgId, groupIds, effectiveToday, timezone) : Promise.resolve(null),
     version !== 'full' ? fetchWeighInsToday(db, orgId, groupIds, effectiveToday) : Promise.resolve(null),
+    /* PATTERN-S6 C8: the scope's size, for the all-clear lines' "any of the N
+       athletes in …" — the filter's athletes when one is set, else the squad.
+       Two count reads, in the same batch. */
+    fetchGroupAthleteIds(db, orgId, groupIds),
+    fetchSquadSize(db, orgId),
   ]);
+  const scopeWords = groupIds.length === 0 ? 'the squad' : groupScopeLabel(groups, groupIds);
+  const scopeSize = scopeIds ? scopeIds.length : squadSize;
 
   /* The week strip's header line, derived from the strip's own days rather
    * than re-queried: the count is literally the number of activities rendered
@@ -206,6 +215,18 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
   const groupsQs = groupIds.length > 0 ? groupIds.join(',') : undefined;
   const isSelectedToday = selectedDay === effectiveToday;
   const selectedDayMd = week.find((d) => d.date === selectedDay)?.md ?? null;
+
+  /* PATTERN-S6 C8: the nearest day with a session, for the timeline's empty —
+     read on the empty path only, after the batch above, since it is needed
+     for nothing else. */
+  const nearestDay = timeline.length === 0 ? await fetchNearestSessionDay(db, orgId, selectedDay, timezone) : null;
+  const dayEmpty = dayEmptyCopy({
+    dayLabel: formatDate(selectedDay, timezone),
+    nearest: nearestDay ? { ...nearestDay, label: formatDate(nearestDay.date, timezone) } : null,
+    weekStart,
+    weekEnd,
+    groupsQs,
+  });
 
   const dayCaption = isSelectedToday
     ? `${formatDate(effectiveToday, timezone)} · ${timeline.length} session${timeline.length === 1 ? '' : 's'}${timeline.length > 0 ? ` · first at ${timeline[0]!.time}` : ''}`
@@ -424,6 +445,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         <DashboardFlagsPanel
           rows={stats.attentionRows}
           openTotal={stats.openFlags}
+          allClearLine={flagsAllClearLine({ inScope: scopeSize, scopeWords })}
           athleteTotal={stats.attentionAthletes}
           provenance={provenance}
           changedAtLabel={provenance ? formatDate(provenance.changedAt, timezone) : null}
@@ -446,9 +468,13 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           </div>
 
           {timeline.length === 0 ? (
-            <div className="card">
-              <p className="tiny">Nothing is scheduled for this day, for this filter.</p>
-            </div>
+            /* PATTERN-S6 C8: the one grammar — why, the nearest day on record,
+               what would fill it, one action to that day. Never "for this
+               filter": the filter narrows who is expected, not which sessions
+               exist (fetchTimetableDay). Bare, not inside .card — .empty draws
+               its own frame, and a frame in a frame is what the first render
+               showed. */
+            <EmptyState headingLevel={3} title={dayEmpty.title} body={dayEmpty.body} action={dayEmpty.action} />
           ) : (
             <div className="dash-timeline">
               {timeline.map((entry) => (
@@ -485,7 +511,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                       <div className="dash-clean">
                         <span className="dash-clean-check" aria-hidden="true">✓</span>
                         <span className="tiny" style={{ color: 'var(--muted)' }}>
-                          {entry.past ? 'Nothing was raised against this session.' : 'Nobody flagged and nothing outstanding for this one.'}
+                          {sessionAllClearLine({ expected: entry.expected, past: entry.past, scopeWords })}
                         </span>
                       </div>
                     ) : (

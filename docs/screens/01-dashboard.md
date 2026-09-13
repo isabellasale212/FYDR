@@ -213,8 +213,29 @@ dashboard can be sent to a colleague and they will see the same thing.
 
 **Loading.** The page renders when its data is ready. There is no partial state.
 
-**Empty.** Each region says so in words: nothing scheduled for this day for this
-filter; nobody carrying a restriction; no fixture scheduled.
+**Empty.** Each region says so in words, and the three that can be empty on a
+quiet day follow the one grammar (PATTERN-S6 C8, 13 September 2026;
+`lib/dashboardEmpty.ts`): what is empty, why, what would fill it, the nearest
+thing on record, "Nothing is missing", one action.
+
+- The day timeline: "Nothing scheduled for Tue 15 Sep. Nothing is missing — no
+  session is published for this day. The next session on record is Thu 17 Sep,
+  Team run. A session appears here the moment it is published on the schedule."
+  with one action — "Show Thu 17 Sep" when that day is inside the week strip,
+  "Open the schedule for Thu 1 Oct" when it is not; with nothing ahead, the most
+  recent day behind; with nothing on record at all, "Open the schedule". Never
+  "for this filter": the group filter narrows who is expected at a session, it
+  never removes a session from the day.
+- A session card with nobody flagged: "No flag against any of the 14 athletes
+  expected. Nothing is missing." ("was raised" once the session has passed);
+  with nobody expected under a filter, "Nobody in Forwards is expected at this
+  session. Nothing is missing — the filter is what is empty."
+- The flags panel: "No open flag on any of the 27 athletes in the squad — none
+  above a club threshold. Nothing is missing.", with the scope's own words under
+  a filter.
+
+Nobody carrying a restriction and no fixture scheduled are said in words as
+before.
 
 **Error.** A failed query surfaces as an error rather than an empty region, so a
 broken read is never mistaken for a quiet day.

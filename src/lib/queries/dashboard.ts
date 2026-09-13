@@ -1,7 +1,7 @@
 import { fetchCurrentAvailability, fetchNotFullyAvailable } from './availability';
 import { fetchDashboardAttention, type AttentionRow, type DashboardAttention } from './flags';
 import { fetchGroupAthleteIds, type Db } from './groups';
-import { fetchNextFixture, fetchWeekSessions, mondayOf, rangeBounds, type WeekSession } from './schedule';
+import { dayBounds, fetchNextFixture, fetchWeekSessions, mondayOf, rangeBounds, type WeekSession } from './schedule';
 import { fetchAllPaged } from './paged';
 import { fetchTimetableDay } from './timetable';
 import { anchorMdOffsetsToWeek, availabilityLabel, dateInTz, daysBetween, formatTime, matchdayWeekday, mdLabel, zonedTimeToUtcIso } from '../format';
@@ -550,6 +550,9 @@ export type TimelineEntry = {
   tone: SessionPip;
   past: boolean;
   affected: AffectedRow[];
+  /** PATTERN-S6 C8: the count the all-clear line is clean over, as a number
+   *  (`count` above is the "12 / 14" string the card draws). */
+  expected: number;
 };
 
 function initialsOf(first: string, last: string): string {
@@ -647,6 +650,7 @@ export async function fetchTimeline(
       count: `${expectedCount - flaggedCount} / ${expectedCount}`,
       countLabel: 'clean',
       countState,
+      expected: expectedCount,
       tone: s.session_type as SessionPip,
       // Real instants, straight comparison: a session is past when its
       // start has passed the real clock, never a re-composed wall time.
@@ -1192,4 +1196,45 @@ export async function fetchOutstandingTracks(
     });
   }
   return tracks;
+}
+
+/* PATTERN-S6 C8 (2026-09-13): the nearest day with a session, for the day
+ * timeline's empty — the next one after the selected day, else the most recent
+ * before it. Two single-row reads, only run when the day is empty (the page
+ * gates the call). Not filtered by group: the filter never removes a session
+ * from a day (fetchTimetableDay returns every session on the day and narrows
+ * who is expected), so the nearest day is the club's. Cancelled sessions
+ * count, as they do on the strip and the schedule. */
+export async function fetchNearestSessionDay(
+  db: Db,
+  orgId: string,
+  selectedDay: string,
+  timezone: string,
+): Promise<{ date: string; title: string; direction: 'next' | 'previous' } | null> {
+  const bounds = dayBounds(selectedDay, timezone);
+  const [nextRes, prevRes] = await Promise.all([
+    db
+      .from('sessions')
+      .select('title, starts_at')
+      .eq('org_id', orgId)
+      .is('deleted_at', null)
+      .gt('starts_at', bounds.to)
+      .order('starts_at', { ascending: true })
+      .limit(1)
+      .maybeSingle(),
+    db
+      .from('sessions')
+      .select('title, starts_at')
+      .eq('org_id', orgId)
+      .is('deleted_at', null)
+      .lt('starts_at', bounds.from)
+      .order('starts_at', { ascending: false })
+      .limit(1)
+      .maybeSingle(),
+  ]);
+  if (nextRes.error) throw new Error(nextRes.error.message);
+  if (prevRes.error) throw new Error(prevRes.error.message);
+  const pick = nextRes.data ? { row: nextRes.data, direction: 'next' as const } : prevRes.data ? { row: prevRes.data, direction: 'previous' as const } : null;
+  if (!pick) return null;
+  return { date: dateInTz(new Date(pick.row.starts_at), timezone), title: pick.row.title, direction: pick.direction };
 }

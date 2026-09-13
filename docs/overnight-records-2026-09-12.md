@@ -771,6 +771,15 @@ what a past set is compared against. That is **C1** and it is a migration.
 **C1 built 2026-09-13** (migration 0111): the snapshot on the logged set, carried by a
 correction, read by every comparison surface from the row; D2's dependency is met — the
 logger's correction reference reads the snapshot.
+**C7 read 2026-09-13.** The authored side was already on `/nutrition` (per-kg tiles, the
+100 kg sentence, the squad mean with n, the closing line) — Q7 answered from 0039/0083:
+protein, carbohydrate (three day types), fat and fluid rules at two decimals, all
+required; energy derived from the macros with an optional cap, not stored; fluid reaches
+the resolved target (`nutrition_targets.fluid_ml`) and the staff athlete page, not the
+athlete's meal-ideas screen. The resolved side's no-weigh-in behaviour is a decision (the
+sheet): the code serves the club's absolute default (§17.3), the board and
+`06-athlete-nutrition.md` say dashes. The profile card's contradiction is fixed
+(`lib/nutritionNoWeighIn.ts`).
 
 ---
 

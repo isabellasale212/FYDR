@@ -19,7 +19,14 @@ console.log('body weight');
 console.log('\nnutrition plan');
 {
   assert(/No plan assigned\. Targets are per kilogram, so a plan needs a weigh-in\./.test(page), 'no plan: the requirement, stated');
-  assert(/Targets are per kilogram, so this plan needs a weigh-in\./.test(page), 'a plan with no weigh-in to scale it: says so');
+  /* PATTERN-S5 C7 (2026-09-13): with no weigh-in the resolver serves the
+     club's absolute default (04-data-model §17.3), so the card used to say
+     "this plan needs a weigh-in" above numbers it was showing anyway. Now it
+     says what the numbers are. */
+  assert(!/Targets are per kilogram, so this plan needs a weigh-in\./.test(page), 'the contradiction is gone');
+  assert(/noWeighInLine\(\{ firstName: athlete\.first_name, sourceScope: nutrition\.source_scope \}\)/.test(page), 'a plan with no weigh-in says what the figures are and whose');
+  const words = readFileSync('src/lib/nutritionNoWeighIn.ts', 'utf8');
+  assert(/squad_default/.test(words) && /club default figures, not scaled to/.test(words) && /set as absolute targets, not scaled to/.test(words), 'the words: club default vs an absolute personal or group target');
 }
 console.log('\nflags');
 {

@@ -34,6 +34,7 @@ import { DEFAULT_RANGE, clampPeriod, resolveRange, type RangeKey } from '@/lib/p
 import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { headerOwnerLine, headerRestrictionLine, headerSubLine, planLine } from '@/lib/profileHeader';
+import { noWeighInLine } from '@/lib/nutritionNoWeighIn';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, NUTRITION_EDIT, PROGRAMME_AUTHOR, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
@@ -938,8 +939,11 @@ export default async function AthletePage({
                   No plan assigned. Targets are per kilogram, so a plan needs a weigh-in.
                 </p>
               ) : bodyWeight.latestKg === null ? (
+                /* PATTERN-S5 C7 (2026-09-13): the figures below are real —
+                   the resolver's absolute fallback — so say what they are
+                   rather than "needs a weigh-in" above them. */
                 <p className="cap" style={{ margin: '0 0 var(--sp-8)' }}>
-                  Targets are per kilogram, so this plan needs a weigh-in.
+                  {noWeighInLine({ firstName: athlete.first_name, sourceScope: nutrition.source_scope })}
                 </p>
               ) : null}
               <div className="pp-macro-tiles">

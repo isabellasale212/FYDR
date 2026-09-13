@@ -120,9 +120,13 @@ non-medic the card stops after the expected return.
 **Empty panels state the requirement, never a zero** (STAFF-SS-02-05 C8, 12 September
 2026): "No weigh-in recorded. A trend needs three weigh-ins." and the body-weight
 caption's "— a trend needs three weigh-ins" under three; "No plan assigned. Targets are
-per kilogram, so a plan needs a weigh-in." (or "…so this plan needs a weigh-in." when
-a plan has no weight to scale to); "No open flags for this athlete · n = 0."; the
-injury panel's "This is not the same as being cleared."
+per kilogram, so a plan needs a weigh-in." (or, when a plan is assigned but there is
+no weigh-in to scale it — PATTERN-S5 C7, 13 September 2026 — "No weigh-in on record,
+so these are the club default figures, not scaled to Kai. Targets are per kilogram; a
+weigh-in scales them.", since the resolver serves the club's absolute default in that
+case (04-data-model §17.3) and the card shows those numbers; "…set as absolute
+targets…" for a personal or group target); "No open flags for this athlete · n = 0.";
+the injury panel's "This is not the same as being cleared."
 
 **The programme link is the tell** (PATTERN-S5, 12 September 2026): "Edit this
 programme" / "Change plan" for a role that may author a programme

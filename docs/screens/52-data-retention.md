@@ -51,6 +51,11 @@ consequence again with one button, **Run retention**; nothing is written before 
 A6) with the counts per category and the athlete totals — never the ids or the
 names.
 
+**Below 900px the table is a stack of cards** (PATTERN-S8 C12, 13 September
+2026): each row a bordered card, each cell a labelled line carrying its column
+heading, the heading row hidden from sight but not from a screen reader, so
+nothing scrolls sideways at 375 and nothing is lost (`table.tbl.tbl-cards`).
+
 **The nightly retention reports.**
 
 ## 5. Every number on this page

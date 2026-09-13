@@ -36,6 +36,11 @@ search box finds a row by the reference. Append-only like every row here.
 Entries in time order, each naming the person who acted, their role at the time,
 the action, the kind of record, the athlete affected where relevant, and when.
 
+**Below 900px the table is a stack of cards** (PATTERN-S8 C12, 13 September
+2026): each row a bordered card, each cell a labelled line carrying its column
+heading, the heading row hidden from sight but not from a screen reader, so
+nothing scrolls sideways at 375 and nothing is lost (`table.tbl.tbl-cards`).
+
 **The filters** (PATTERN-S8 C7, 13 September 2026). At desktop: the kind chips
 (whatever kinds the club's log holds), then a card with From, To, Staff member (the
 person filter — every staff account, so "did Coach X ever touch this record" can be

@@ -53,8 +53,9 @@ export default async function RetentionPage() {
         <h2 className="card-title" id="schedule-title">
           The schedule
         </h2>
+        {/* PATTERN-S8 C12: cards below 900px. */}
         <div style={{ overflowX: 'auto' }}>
-        <table className="tbl">
+        <table className="tbl tbl-cards">
           <caption className="visually-hidden">Data retention schedule</caption>
           <thead>
             <tr>
@@ -67,13 +68,13 @@ export default async function RetentionPage() {
           <tbody>
             {RETENTION_SCHEDULE.map((row) => (
               <tr key={row.category}>
-                <td className="nm">
+                <td className="nm" data-label="Category">
                   {row.category}
                   {row.note ? <p className="tiny">{row.note}</p> : null}
                 </td>
-                <td className="sub">{row.retention}</td>
-                <td className="sub">{row.clockStartsOn}</td>
-                <td>{row.automated ? <span className="g-good">Yes</span> : <span className="sub">Preview only</span>}</td>
+                <td className="sub" data-label="Retention">{row.retention}</td>
+                <td className="sub" data-label="Clock starts">{row.clockStartsOn}</td>
+                <td data-label="Automated here">{row.automated ? <span className="g-good">Yes</span> : <span className="sub">Preview only</span>}</td>
               </tr>
             ))}
           </tbody>
@@ -97,7 +98,7 @@ export default async function RetentionPage() {
           <p className="cap">No nightly report has run yet. The next one runs at 02:15 UTC.</p>
         ) : (
           <div style={{ overflowX: 'auto' }}>
-          <table className="tbl">
+          <table className="tbl tbl-cards">
             <caption className="visually-hidden">Nightly retention reports</caption>
             <thead>
               <tr>
@@ -113,9 +114,9 @@ export default async function RetentionPage() {
             <tbody>
               {nightlyReports.map((r) => (
                 <tr key={r.occurredAt}>
-                  <td className="num sub">{formatDateTime(r.occurredAt, timezone)}</td>
-                  <td className="r num">{r.importBatchesEligible}</td>
-                  <td className="r num">{r.injuriesEligible}</td>
+                  <td className="num sub" data-label="When">{formatDateTime(r.occurredAt, timezone)}</td>
+                  <td className="r num" data-label="Import files eligible">{r.importBatchesEligible}</td>
+                  <td className="r num" data-label="Injuries eligible">{r.injuriesEligible}</td>
                 </tr>
               ))}
             </tbody>

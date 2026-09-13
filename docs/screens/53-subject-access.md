@@ -32,6 +32,11 @@ may read that. So the process needs both.
 Every request with the athlete, when it was made, what stage it has reached, and
 who is waiting on whom.
 
+**Below 900px the table is a stack of cards** (PATTERN-S8 C12, 13 September
+2026): each row a bordered card, each cell a labelled line carrying its column
+heading, the heading row hidden from sight but not from a screen reader, so
+nothing scrolls sideways at 375 and nothing is lost (`table.tbl.tbl-cards`).
+
 **One pattern with the athlete side** (PATTERN-S8 C10, 13 September 2026). The
 due date carries its words and tone from `sarDueWords` ("19 days left", warn
 inside 14 days, bad inside 7, "due today", "3 days overdue"); under the status

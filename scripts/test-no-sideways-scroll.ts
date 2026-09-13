@@ -14,9 +14,10 @@ const read = (p: string): string => readFileSync(p, 'utf8');
 console.log('the tables scroll inside their own container');
 {
   const sar = read('src/app/(staff)/settings/subject-access/page.tsx');
-  assert(/<div style=\{\{ overflowX: 'auto' \}\}>\s*<table className="tbl">/.test(sar), '/settings/subject-access: the table is wrapped');
+  // Repointed 2026-09-13 (PATTERN-S8 C12): the tables are card stacks below 900px (tbl-cards) inside the same wrapper.
+  assert(/<div style=\{\{ overflowX: 'auto' \}\}>\s*<table className="tbl tbl-cards">/.test(sar), '/settings/subject-access: the table is wrapped');
   const ret = read('src/app/(staff)/settings/retention/page.tsx');
-  assert((ret.match(/<div style=\{\{ overflowX: 'auto' \}\}>\s*<table className="tbl">/g) ?? []).length === 2, '/settings/retention: both tables are wrapped');
+  assert((ret.match(/<div style=\{\{ overflowX: 'auto' \}\}>\s*<table className="tbl tbl-cards">/g) ?? []).length === 2, '/settings/retention: both tables are wrapped');
 }
 
 console.log('\nthe ranking row fits a phone');

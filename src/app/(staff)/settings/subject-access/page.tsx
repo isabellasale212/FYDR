@@ -55,8 +55,9 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
           body="None have been opened. Start one from an athlete's own profile page."
         />
       ) : (
+        /* PATTERN-S8 C12: cards below 900px. */
         <div style={{ overflowX: 'auto' }}>
-        <table className="tbl">
+        <table className="tbl tbl-cards">
           <caption className="visually-hidden">Subject access requests</caption>
           <thead>
             <tr>
@@ -75,12 +76,12 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
               const due = sarDueWords(r.due_at, r.status as SarStatus);
               return (
                 <tr key={r.id}>
-                  <td className="nm">
+                  <td className="nm" data-label="Athlete">
                     {r.athlete_first_name} {r.athlete_last_name}
                   </td>
-                  <td className="num sub">{formatLongDate(r.requested_at, timezone)}</td>
-                  <td className="sub">{r.requested_by_name}</td>
-                  <td className="num sub">
+                  <td className="num sub" data-label="Requested">{formatLongDate(r.requested_at, timezone)}</td>
+                  <td className="sub" data-label="Requested by">{r.requested_by_name}</td>
+                  <td className="num sub" data-label="Due">
                     {formatLongDate(r.due_at, timezone)}
                     {due ? (
                       <span className={`sub ${due.tone === 'bad' ? 'g-bad' : due.tone === 'warn' ? 'g-warn' : ''}`} style={{ marginInlineStart: 6 }}>
@@ -88,13 +89,14 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
                       </span>
                     ) : null}
                   </td>
-                  <td>
+                  <td data-label="Status">
                     <Pill status={SAR_STATUS[r.status as keyof typeof SAR_STATUS] ?? SAR_STATUS.pending_review} />
                     <span className="tiny sar-next" style={{ display: 'block', marginTop: 'var(--sp-4)' }}>
                       {sarNextStep(r.status as SarStatus)}
                     </span>
                   </td>
                   <td className="r">
+                    {/* No label: the action is its own words. */}
                     {r.status === 'pending_review' && isMedical ? (
                       <Link href={`/settings/subject-access/${r.id}/review`} className="btn-ghost">
                         Review clinical notes →

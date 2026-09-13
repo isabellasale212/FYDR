@@ -153,8 +153,9 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
         />
       ) : (
         <>
+          {/* PATTERN-S8 C12: below 900px every row is a card of labelled lines. */}
           <div className="card" style={{ overflowX: 'auto' }}>
-            <table className="tbl">
+            <table className="tbl tbl-cards">
               <thead>
                 <tr>
                   <th>When</th>
@@ -167,13 +168,13 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
               <tbody>
                 {result.rows.map((r) => (
                   <tr key={r.id}>
-                    <td className="sub num">{formatDateTime(r.occurredAt, timezone)}</td>
-                    <td>
+                    <td className="sub num" data-label="When">{formatDateTime(r.occurredAt, timezone)}</td>
+                    <td data-label="Who">
                       {r.actorName ?? '—'}
                       {r.actorRole ? <span className="tiny" style={{ color: 'var(--faint)' }}> · {r.actorRole}</span> : null}
                     </td>
-                    <td className="num tiny">{r.action}</td>
-                    <td className="tiny">
+                    <td className="num tiny" data-label="Action">{r.action}</td>
+                    <td className="tiny" data-label="Entity">
                       {r.entityType}
                       {r.entityId ? <span style={{ color: 'var(--faint)' }}> · {r.entityId.slice(0, 8)}</span> : null}
                       {/* PATTERN-S6 C7 (0112): a denial row carries the
@@ -183,7 +184,7 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
                         <span className="num"> · {r.metadata.reference}{typeof r.metadata.path === 'string' && r.metadata.path ? ` · ${r.metadata.path}` : ''}</span>
                       ) : null}
                     </td>
-                    <td className="tiny">{r.athleteName ?? '—'}</td>
+                    <td className="tiny" data-label="Athlete">{r.athleteName ?? '—'}</td>
                   </tr>
                 ))}
               </tbody>

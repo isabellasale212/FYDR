@@ -1162,6 +1162,62 @@ table.tbl td {
   border-top: 1px solid var(--hair);
   vertical-align: middle;
 }
+/* PATTERN-S8 C12 (2026-09-13): a table becomes a stack of cards below 900px —
+   audit, retention, subject access. Each row is a bordered card; each cell a
+   label/value line, the label read from data-label (the column heading), so
+   nothing scrolls sideways at 375 and nothing is lost. The heading row is
+   visually hidden, not removed, so a screen reader still has the columns. */
+@media (max-width: 900px) {
+  table.tbl.tbl-cards,
+  table.tbl.tbl-cards tbody,
+  table.tbl.tbl-cards tr {
+    display: block;
+    width: 100%;
+  }
+  table.tbl.tbl-cards thead {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
+    clip: rect(0 0 0 0);
+    white-space: nowrap;
+  }
+  table.tbl.tbl-cards tr {
+    border: 1px solid var(--border);
+    border-radius: var(--r-control);
+    padding: var(--sp-8) var(--sp-12);
+    margin-top: var(--sp-10);
+    background: var(--surf);
+  }
+  /* The label sits above the value as a block, so a cell with several
+     children (a date and its days-left, a pill and its next step) keeps
+     them together beneath one label rather than scattering them. */
+  table.tbl.tbl-cards td {
+    display: block;
+    padding: var(--sp-6) 0;
+    border-top: none;
+    text-align: left;
+    overflow-wrap: anywhere;
+    white-space: normal;
+  }
+  table.tbl.tbl-cards td::before {
+    content: attr(data-label);
+    display: block;
+    margin-bottom: var(--sp-2);
+    font-size: var(--fs-11);
+    text-transform: uppercase;
+    letter-spacing: 0.09em;
+    color: var(--faint);
+    font-weight: 700;
+  }
+  table.tbl.tbl-cards td:not([data-label])::before,
+  table.tbl.tbl-cards td[data-label='']::before {
+    content: none;
+  }
+  table.tbl.tbl-cards td.r {
+    text-align: left;
+  }
+}
 /* An absent number in a My data table cell is the words "Not logged", in the
    absent-value ink (ATH-ADULT-13) — the same rule as .hist-value[data-missing]. */
 table.tbl td[data-missing] {

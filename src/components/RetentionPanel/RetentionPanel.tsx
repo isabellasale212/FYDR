@@ -90,7 +90,7 @@ export function RetentionPanel() {
 
       {preview && consequence ? (
         <>
-          <table className="tbl">
+          <table className="tbl tbl-cards">
             <caption className="visually-hidden">Retention preview counts</caption>
             <thead>
               <tr>
@@ -104,9 +104,9 @@ export function RetentionPanel() {
             <tbody>
               {preview.categories.map((c) => (
                 <tr key={c.category}>
-                  <td className="nm">{c.category}</td>
-                  <td className="r num">{c.count}</td>
-                  <td className="sub">{c.cutoffDescription}</td>
+                  <td className="nm" data-label="Category">{c.category}</td>
+                  <td className="r num" data-label="Rows affected">{c.count}</td>
+                  <td className="sub" data-label="Cutoff">{c.cutoffDescription}</td>
                 </tr>
               ))}
             </tbody>

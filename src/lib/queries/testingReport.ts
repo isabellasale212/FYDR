@@ -384,3 +384,29 @@ export async function fetchEarliestTestDate(db: Db, orgId: string): Promise<stri
   if (error) throw new Error(error.message);
   return data?.[0]?.test_date ?? null;
 }
+
+/** PATTERN-S6 C8 (2026-09-13): the most recent result on record for one test
+ *  across the athletes in scope, any period — so an empty window can name it
+ *  ("the last CMJ result was Sat 2 May") rather than say "never". Null when
+ *  no result exists at all. */
+export async function fetchLatestTestResultDate(
+  db: Db,
+  orgId: string,
+  groupIds: readonly string[],
+  testDefinitionId: string,
+): Promise<string | null> {
+  const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
+  if (scope && scope.length === 0) return null;
+  let q = db
+    .from('test_results')
+    .select('test_date')
+    .eq('org_id', orgId)
+    .eq('test_definition_id', testDefinitionId)
+    .order('test_date', { ascending: false })
+    .limit(1);
+  if (scope) q = q.in('athlete_id', scope);
+  const { data, error } = await q.maybeSingle();
+  if (error) throw new Error(error.message);
+  return data?.test_date ?? null;
+}
+

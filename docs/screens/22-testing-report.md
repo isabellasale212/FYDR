@@ -64,6 +64,18 @@ one, rather than showing an empty table with no explanation.
 
 ---
 
+**Empty states follow the one grammar** (PATTERN-S6 C8, 13 September 2026;
+`lib/staffEmpty.ts`). A test with no result in the window names the most recent
+one on record for the scope — "Nothing in the last 28 days. The squad's last test
+result was Sat 2 May, 134 days ago. It is still on record, just before the period
+chosen. A test result appears here once a member of staff enters one." — with
+one action, "Show this season" / "Show all on record", that widens the period
+and keeps the test and the filter; with none on record at all, "No test result
+on record for the squad. Nothing is missing…". A filter with no athletes reads
+the filter grammar; a club with no test defined reads "No test defined for the
+club yet. Nothing is missing — no test has been defined…" with "Define a test".
+Never "never".
+
 **Every figure carries its denominator, an exclusions sentence, and words for a
 missing value** (PATTERN-S7 C2, 13 September 2026; `lib/reportFigures.ts`). Under
 the by-test median, Q1 and Q3: "22 of 30 athletes have a result for this test in

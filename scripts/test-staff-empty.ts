@@ -17,6 +17,8 @@ console.log('1. the grammar');
   const outside = staffEmptyCopy({ domain: 'wellness', firstName: 'Dan', periodKey: 'month', rangeLabel: 'Last 28 days', latest: '2026-08-16', latestLabel: 'Sun 16 Aug', seasonStart: '2026-07-01', today: '2026-09-13' });
   assert(outside.title === 'Nothing in the last 28 days.', 'what is empty, with its window');
   assert(outside.body === "Dan's last morning check-in was Sun 16 Aug, 28 days ago. It is still on record, just before the period chosen. A morning check-in appears here the day it is submitted.", 'the most recent on record, that it is still there, and what would fill it');
+  const squad = staffEmptyCopy({ domain: 'testing', firstName: 'the squad', periodKey: 'month', rangeLabel: 'Last 28 days', latest: '2026-07-24', latestLabel: 'Fri 24 Jul', seasonStart: '2026-07-01', today: '2026-09-13' });
+  assert(/^The squad's last test result was Fri 24 Jul, 51 days ago\./.test(squad.body), 'a sentence about the squad starts with a capital');
   assert(outside.action?.period === 'season' && outside.action.label === 'Show this season', 'one action: widen to the smallest period that holds it');
   const older = staffEmptyCopy({ domain: 'gym', firstName: 'Dan', periodKey: 'season', rangeLabel: 'This season · 2026/27', latest: '2026-05-02', latestLabel: 'Sat 2 May', seasonStart: '2026-07-01', today: '2026-09-13' });
   assert(older.action?.period === 'all' && older.action.label === 'Show all on record', 'before the season: all on record');
@@ -73,6 +75,19 @@ console.log('\n5. the squad weekly report (2026-09-13)');
   assert(/loadFilterEmpty = filterEmptyCopy\(\{\s*what: 'athlete with GPS load',/.test(page) && /is still building the \$\{ACWR_CHRONIC_WINDOW_DAYS\}-day baseline\. Nothing is missing\./.test(page), 'the load table\'s two empties: the filter grammar, and the baseline said with its number');
   assert(!/'No athlete in this filter\.'/.test(page) && !/'No ratio computable yet\.'/.test(page), 'the old lines are gone');
   assert(/Nothing is missing/.test(read('docs/screens/21-squad-weekly-report.md')), 'the spec says so');
+}
+
+console.log('\n6. the testing report (2026-09-13)');
+{
+  const q = strip(read('src/lib/queries/testingReport.ts'));
+  assert(/export async function fetchLatestTestResultDate\(/.test(q) && /\.from\('test_results'\)[\s\S]{0,200}\.order\('test_date', \{ ascending: false \}\)/.test(q), 'the most recent result on record for a test, any period, in scope');
+  const page = strip(read('src/app/(staff)/reports/testing/page.tsx'));
+  assert(/fetchLatestTestResultDate\(db, orgId, groupIds, selectedTestId\)/.test(page) && /staffEmptyCopy\(\{\s*domain: 'testing',\s*firstName: scopeWords,/.test(page), 'the by-test empty names it, in the grammar');
+  assert(/title=\{byTestEmpty!\.title\}/.test(page) && /byTestEmpty!\.action\.period/.test(page), 'with the one action that widens the period and keeps the test and the filter');
+  assert(/athletesFilterEmpty = filterEmptyCopy\(\{ what: 'athlete', inScope: 0, scopeLabel: scopeWords, why: 'is on the roster' \}\)/.test(page), 'a filter with no athletes: the filter grammar');
+  assert(/No test defined for the club yet\./.test(page) && /Nothing is missing — no test has been defined/.test(page), 'no test defined: nothing is missing, where the data enters');
+  assert(!/No result recorded for this test in/.test(page) && !/No athletes in the current scope/.test(page), 'the old lines are gone');
+  assert(/one grammar/.test(read('docs/screens/22-testing-report.md')), 'the spec says so');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

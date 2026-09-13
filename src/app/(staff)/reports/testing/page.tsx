@@ -1,11 +1,13 @@
 import Link from 'next/link';
 import { belowSquadFloor } from '@/lib/smallSample';
 import { NOT_SHOWN, NO_RESULT, rankedCoverageLine } from '@/lib/reportFigures';
+import { filterEmptyCopy, staffEmptyCopy } from '@/lib/staffEmpty';
+import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { fetchGroups } from '@/lib/queries/groups';
-import { fetchTestByTest, fetchTestLongitudinal, fetchTestingByAthlete } from '@/lib/queries/testingReport';
+import { fetchTestByTest, fetchTestLongitudinal, fetchTestingByAthlete, fetchLatestTestResultDate } from '@/lib/queries/testingReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
@@ -51,12 +53,29 @@ export default async function TestingReportPage({ searchParams }: { searchParams
   const selectedDefinition = byAthlete.definitions.find((d) => d.id === requestedTestId) ?? byAthlete.definitions[0] ?? null;
   const selectedTestId = selectedDefinition?.id ?? null;
 
-  const [byTest, longitudinal] = selectedTestId
+  const [byTest, longitudinal, latestResultOnRecord] = selectedTestId
     ? await Promise.all([
         fetchTestByTest(db, orgId, groupIds, selectedTestId, reportWindow),
         fetchTestLongitudinal(db, orgId, groupIds, selectedTestId, reportWindow),
+        /* PATTERN-S6 C8: the most recent result on record for this test, any
+           period, so an empty window names it rather than "never". */
+        fetchLatestTestResultDate(db, orgId, groupIds, selectedTestId),
       ])
-    : [null, []];
+    : [null, [], null];
+  const scopeWords = groupIds.length === 0 ? 'the squad' : groupScopeLabel(groups, groupIds);
+  const athletesFilterEmpty = filterEmptyCopy({ what: 'athlete', inScope: 0, scopeLabel: scopeWords, why: 'is on the roster' });
+  const byTestEmpty = selectedDefinition
+    ? staffEmptyCopy({
+        domain: 'testing',
+        firstName: scopeWords,
+        periodKey: period.key,
+        rangeLabel: period.range.label,
+        latest: latestResultOnRecord,
+        latestLabel: latestResultOnRecord ? formatDate(latestResultOnRecord, timezone) : null,
+        seasonStart: period.season?.starts_on ?? null,
+        today: reportWindow.to,
+      })
+    : null;
 
   const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
   await recordReportView(db, orgId, claims.userId, actorRole, 'testing', {
@@ -88,12 +107,17 @@ export default async function TestingReportPage({ searchParams }: { searchParams
       ) : null}
 
       {byAthlete.definitions.length === 0 ? (
+        /* PATTERN-S6 C8: nothing on record for the club, and where the data
+           enters — the one action here is the definition, not a window. */
         <div className="empty">
-          <h2>No test defined yet</h2>
+          <h2>No test defined for the club yet.</h2>
           <p>
-            <Link href="/testing">Define a test</Link> before a report has anything to
-            show.
+            Nothing is missing — no test has been defined, so there is nothing to record against. A test appears
+            here once one is defined and a result entered.
           </p>
+          <Link href="/testing" className="btn-ghost empty-action">
+            Define a test
+          </Link>
         </div>
       ) : (
         /* The period scopes every tab, so it rides the tab row rather than a
@@ -172,11 +196,18 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                     Personal bests
                   </h2>
                   {byAthlete.rows.length === 0 ? (
-                    <p className="tiny" style={{ padding: 'var(--sp-16)' }}>
-                      {groupIds.length > 0
-                        ? `No athletes in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to see the whole squad.`
-                        : 'No athletes in this squad yet.'}
-                    </p>
+                    <div style={{ padding: 'var(--sp-16)' }}>
+                      {groupIds.length > 0 ? (
+                        <EmptyState
+                          headingLevel={3}
+                          title={athletesFilterEmpty.title}
+                          body={athletesFilterEmpty.body}
+                          action={{ href: `/reports/testing?period=${period.key}${selectedTestId ? `&test=${selectedTestId}` : ''}`, label: athletesFilterEmpty.action!.label }}
+                        />
+                      ) : (
+                        <EmptyState headingLevel={3} title="No athletes in this squad yet." body="Nothing is missing — the roster is empty. Athletes appear here once they are added to the squad." />
+                      )}
+                    </div>
                   ) : (
                     <div style={{ overflowX: 'auto' }}>
                       <table className="tbl" style={{ margin: '0 16px 16px', minWidth: 480 }}>
@@ -291,11 +322,23 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                            * looking for a data-entry problem that isn't
                            * there. The empty state names the window and the
                            * widest one available. */
-                          <p className="tiny" style={{ padding: 'var(--sp-16)' }}>
-                            {groupIds.length > 0
-                              ? `No result recorded for this test in ${period.range.label.toLowerCase()} for the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter, or widen the period to "All on record".`
-                              : `No result recorded for this test in ${period.range.label.toLowerCase()} — widen the period to "All on record" to check the club's whole history.`}
-                          </p>
+                          /* PATTERN-S6 C8 (2026-09-13): the grammar — the most
+                             recent result on record for this test and its
+                             date, and one action that widens the period to
+                             the smallest one holding it; nothing on record
+                             says so ("Nothing is missing"). */
+                          <div style={{ padding: 'var(--sp-16)' }}>
+                            <EmptyState
+                              headingLevel={3}
+                              title={byTestEmpty!.title}
+                              body={byTestEmpty!.body}
+                              action={
+                                byTestEmpty!.action
+                                  ? { href: `/reports/testing?period=${byTestEmpty!.action.period}${selectedTestId ? `&test=${selectedTestId}` : ''}${groupIds.length > 0 ? `&groups=${groupIds.join(',')}` : ''}`, label: byTestEmpty!.action.label }
+                                  : null
+                              }
+                            />
+                          </div>
                         ) : (
                           byTest.rows.map((r, i) => (
                             <div key={`${r.athlete_id}-${r.side ?? ''}`}>

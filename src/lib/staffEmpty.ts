@@ -60,9 +60,11 @@ export function staffEmptyCopy(input: {
     };
   }
   const when = domain === 'nutrition' ? `for the week of ${latestLabel ?? latest}` : `${latestLabel ?? latest}, ${agoLabel(daysAgo(latest, today))}`;
+  const whose = `${firstName}'s`;
   return {
     title: emptyTitle(rangeLabel),
-    body: `${firstName}'s last ${NOUN[domain]} was ${when}. It is still on record, just before the period chosen. ${FILLS[domain]}`,
+    /* A sentence starts with a capital, whoever it is about — "The squad's". */
+    body: `${whose.charAt(0).toUpperCase()}${whose.slice(1)} last ${NOUN[domain]} was ${when}. It is still on record, just before the period chosen. ${FILLS[domain]}`,
     action: widenTo(periodKey, latest, seasonStart),
   };
 }

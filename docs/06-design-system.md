@@ -1501,6 +1501,15 @@ Behaviour:
   renders a "Filtered to {groups} … Clear filter" caption directly under the chips — the
   visible reminder plus the real clear affordance, on every screen the filter can scope.
 - Changing the filter never navigates and never clears an in-progress form.
+- **An unresolvable group id clears out of the filter** (PATTERN-S8 D9 and §0ak, 13
+  September 2026, Isabella's ruling). Archiving a group sets `deleted_at` only and leaves
+  its memberships live, so a cookie or a shared link that still named an archived group
+  went on scoping every screen to that group's athletes while the chips could not show
+  it, and the scope line read "1 unknown group". Now `resolveGroupFilter` checks every
+  requested id, URL or cookie, against the live groups once per request and drops the
+  rest; the staff shell rewrites the cookie without them and says so once — "Filter
+  updated: Leadership was archived. Showing Whole squad." The scope label never names
+  an id it cannot name.
 
 | State | Behaviour |
 |---|---|

@@ -48,7 +48,8 @@ console.log('one cookie, one writer');
   assert(/writeGroupFilterCookie\(next\);[\s\S]*router\.push\(/.test(setGroups), 'and writes it before the navigation, so the next screen reads the new choice');
   assert(/from '\.\/groupFilterCookie'/.test(server) && !/const GROUP_FILTER_COOKIE = /.test(server), 'the server reader takes the cookie name from the same module — one name, three files');
   assert(!/cookies\(\)[\s\S]*\.set\(/.test(server) && !/\.set\(GROUP_FILTER_COOKIE/.test(server), 'and never writes it: a ?groups= link is a one-load override, not a sticky choice');
-  assert(/if \(value !== undefined\) return parseGroupParam\(value\);/.test(server), 'the URL wins whenever the key is present at all, including present-and-empty');
+  // Repointed 2026-09-13 (PATTERN-S8 D9): the same rule, now inside resolveGroupFilterDetailed.
+  assert(/const fromCookie = value === undefined;\s*const requested = fromCookie \? parseGroupParam\(\(await cookies\(\)\)\.get\(GROUP_FILTER_COOKIE\)\?\.value\) : parseGroupParam\(value\);/.test(server), 'the URL wins whenever the key is present at all, including present-and-empty');
   const walkAll = (d: string): string[] =>
     readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walkAll(join(d, e.name)) : /\.tsx?$/.test(e.name) ? [join(d, e.name)] : []);
   const others = ['src/components', 'src/app', 'src/lib'].flatMap(walkAll)

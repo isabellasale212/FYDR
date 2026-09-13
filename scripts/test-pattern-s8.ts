@@ -78,7 +78,8 @@ console.log('\nthe record and the sheet');
 {
   assert(/## PATTERN-S8 — Settings, users and club setup/.test(read('docs/overnight-records-2026-09-12.md')), 'the record');
   const sheet = read('docs/design-decisions-outstanding.md');
-  assert(/\| PATTERN-S8 \| C1 \|/.test(sheet) && /\| PATTERN-S8 \| D9 \|/.test(sheet), 'C and D rows on the sheet');
+  // Repointed 2026-09-13: D9 is built and struck (~~PATTERN-S8~~ | ~~D9~~); D8 stands in for the D rows.
+  assert(/\| PATTERN-S8 \| C1 \|/.test(sheet) && /\| PATTERN-S8 \| D8 \|/.test(sheet) && /\| ~~PATTERN-S8~~ \| ~~D9~~ \|/.test(sheet), 'C and D rows on the sheet');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

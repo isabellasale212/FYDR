@@ -65,7 +65,33 @@ export function groupScopeLabel(
   if (selectedIds.length === 0) return 'Whole squad';
   const selected = new Set(selectedIds);
   const named = groups.filter((g) => selected.has(g.id)).map((g) => g.name);
-  const unknown = selectedIds.filter((id) => !groups.some((g) => g.id === id)).length;
-  if (unknown > 0) named.push(unknown === 1 ? '1 unknown group' : `${unknown} unknown groups`);
+  /* PATTERN-S8 D9 (2026-09-13): an id this cannot name is not named — no
+     "1 unknown group". resolveGroupFilter drops unresolvable ids before any
+     page sees them, so this is the second lock, not the first. */
+  if (named.length === 0) return 'Whole squad';
   return named.join(' + ');
+}
+
+/** PATTERN-S8 D9 + §0ak (2026-09-13): the requested ids against the live
+ *  groups. An id that is not a live group — archived since the cookie or the
+ *  link was written — is dropped; what remains is the scope. When the live
+ *  set could not be read (null) nothing is dropped: never guess at a scope. */
+export function dropUnresolvable(requested: readonly string[], live: ReadonlySet<string> | null): { groupIds: string[]; dropped: string[] } {
+  if (!live) return { groupIds: [...requested], dropped: [] };
+  return {
+    groupIds: requested.filter((id) => live.has(id)),
+    dropped: requested.filter((id) => !live.has(id)),
+  };
+}
+
+/** The one sentence the shell says when it has rewritten a stale cookie. */
+export function staleFilterLine(o: { droppedNames: readonly string[]; scopeLabel: string }): string {
+  const names = o.droppedNames.filter((n) => n.trim().length > 0);
+  const what =
+    names.length === 0
+      ? 'a group that no longer exists was removed from it'
+      : names.length === 1
+        ? `${names[0]} was archived`
+        : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]} were archived`;
+  return `Filter updated: ${what}. Showing ${o.scopeLabel}.`;
 }

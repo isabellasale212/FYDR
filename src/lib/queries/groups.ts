@@ -106,6 +106,16 @@ function compareGroups(a: Pick<GroupRow, 'name' | 'group_type' | 'sort_order'>, 
   );
 }
 
+/** PATTERN-S8 D9 (2026-09-13): names for ids the filter dropped, archived or
+ *  not, for the shell's "Filter updated: Leadership was archived" sentence.
+ *  The only groups read that does not exclude deleted_at, on purpose. */
+export async function fetchGroupNames(db: Db, orgId: string, ids: readonly string[]): Promise<Map<string, string>> {
+  if (ids.length === 0) return new Map();
+  const { data, error } = await db.from('groups').select('id, name').eq('org_id', orgId).in('id', [...ids]);
+  if (error) throw new Error(error.message);
+  return new Map((data ?? []).map((g) => [g.id, g.name]));
+}
+
 export async function fetchGroups(db: Db, orgId: string): Promise<Group[]> {
   const { data, error } = await db
     .from('groups')

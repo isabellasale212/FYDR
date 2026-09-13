@@ -83,6 +83,11 @@ function TabIcon({ name }: { name: (typeof TABS)[number]['icon'] }) {
 export function AthleteTabBar() {
   const pathname = usePathname();
 
+  /* PATTERN-S9: the first run (artboards 2, 3 and 4A) is a sequence — "Step 2
+     of 3", "Step 3 of 3" — and every tab would only send an undecided athlete
+     straight back into it. No bar until the decision is recorded. */
+  if (pathname === '/consent' || pathname.startsWith('/consent/')) return null;
+
   return (
     <nav className="athlete-tabbar" aria-label="Main">
       {TABS.map((tab) => {

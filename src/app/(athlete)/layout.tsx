@@ -18,7 +18,9 @@ export default async function AthleteLayout({
 }: {
   children: React.ReactNode;
 }) {
-  await requireAthlete();
+  /* The shell only; each page decides for itself, and the consent flow's
+     own pages must render for an undecided athlete (PATTERN-S9). */
+  await requireAthlete({ allowUndecided: true });
 
   return (
     <div className="phone">

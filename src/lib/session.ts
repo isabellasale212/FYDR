@@ -77,6 +77,11 @@ export type AthleteContext = {
     health: { givenAt: string | null; declinedAt: string | null; withdrawnAt: string | null };
     guardianName: string | null;
     guardianEmailMasked: string | null;
+    /** A minor: the guardian link has been sent at least once. */
+    guardianRequestSent: boolean;
+    /** True when the first run has not been completed — the shell sends the
+     *  athlete to /consent/staff. */
+    mustDecide: boolean;
   };
 };
 
@@ -320,7 +325,14 @@ export async function requirePlatformStaff(): Promise<StaffContext> {
   return ctx;
 }
 
-export async function requireAthlete(): Promise<AthleteContext> {
+/** PATTERN-S9: the first run. An athlete with no decision recorded is sent to
+ *  the flow (artboard 2, then 3A or 4A) from every athlete page except the
+ *  flow's own — the shell and the consent pages pass `allowUndecided`. A
+ *  minor is "undecided" until the guardian link has been sent once; after
+ *  that the app opens with the entry forms locked (4A: "not locked out of
+ *  the app, only out of the entry forms"). Declined and withdrawn open the
+ *  app the same way. */
+export async function requireAthlete(opts: { allowUndecided?: boolean } = {}): Promise<AthleteContext> {
   const { supabase, claims, orgId } = await base();
   if (!isAthlete(claims)) redirect('/dashboard');
   if (!claims.athleteId) redirect('/login?e=no-roles');
@@ -342,6 +354,13 @@ export async function requireAthlete(): Promise<AthleteContext> {
   const isMinor = age === null || age < 18;
   const row = athlete.data;
   const state = row ? consentState(row, isMinor) : 'undecided';
+  let guardianRequestSent = false;
+  if (state === 'guardian_pending') {
+    const { count } = await supabase.from('guardian_consent_requests').select('id', { count: 'exact', head: true }).eq('athlete_id', claims.athleteId);
+    guardianRequestSent = (count ?? 0) > 0;
+  }
+  const mustDecide = state === 'undecided' || (state === 'guardian_pending' && !guardianRequestSent);
+  if (mustDecide && !opts.allowUndecided) redirect('/consent/staff');
 
   return {
     db: supabase,
@@ -362,6 +381,8 @@ export async function requireAthlete(): Promise<AthleteContext> {
       health: { givenAt: row?.health_consent_given_at ?? null, declinedAt: row?.health_consent_declined_at ?? null, withdrawnAt: row?.health_consent_withdrawn_at ?? null },
       guardianName: row?.guardian_name ?? null,
       guardianEmailMasked: row?.guardian_email ? maskEmail(row.guardian_email) : null,
+      guardianRequestSent,
+      mustDecide,
     },
   };
 }

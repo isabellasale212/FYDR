@@ -134,9 +134,41 @@ create table athletes (
   left_at         date,
   consent_given_at timestamptz,
   consent_version  text,
+  -- PATTERN-S9 (0120). Two records, only one named: consent_given_at/consent_version stay
+  -- (lawful basis open — docs/decisions/lawful-basis-open.md) and gain a decline and a
+  -- withdrawal; the health record is named now (Article 9). in_data is what every data
+  -- denominator reads. guardian_* is captured at invite for an under-18.
+  consent_declined_at          timestamptz,
+  consent_withdrawn_at         timestamptz,
+  health_consent_given_at      timestamptz,
+  health_consent_version       text,
+  health_consent_declined_at   timestamptz,
+  health_consent_withdrawn_at  timestamptz,
+  guardian_name                text,
+  guardian_email               text,
+  in_data boolean generated always as (consent_given_at is not null and consent_declined_at is null and consent_withdrawn_at is null) stored,
   created_at      timestamptz not null default now(),
   updated_at      timestamptz not null default now(),
   deleted_at      timestamptz
+);
+
+-- PATTERN-S9 (0120): the guardian's tokenised page. The token is never stored — its sha256
+-- is; read and written only through guardian_request_by_token / guardian_decide.
+create table guardian_consent_requests (
+  id uuid primary key, org_id uuid not null, athlete_id uuid not null,
+  guardian_name text not null, guardian_email text not null, token_hash text not null unique,
+  version text not null, sent_at timestamptz not null, sent_by uuid, expires_at timestamptz not null,
+  decided_at timestamptz, decision text check (decision in ('agree', 'decline'))
+);
+
+-- PATTERN-S9 (0121): how each athlete's app is running, for the reachability figure. No
+-- device identifier. One row per athlete per (platform, display_mode); the athlete's own
+-- beacon writes it through record_athlete_device.
+create table athlete_devices (
+  id uuid primary key, org_id uuid not null, athlete_id uuid not null,
+  platform text not null check (platform in ('ios','android','desktop','other')),
+  display_mode text not null check (display_mode in ('standalone','browser')),
+  push_supported boolean not null default false, first_seen_at timestamptz not null, last_seen_at timestamptz not null
 );
 ```
 
@@ -2335,6 +2367,8 @@ alter table athletes
 
 create type parental_consent_method as enum
   ('club_registration_form','written_confirmation','in_person','not_required');
+-- + 'guardian_link' (0120): the guardian answered on the tokenised page, recorded_by null.
+-- "There is no parent login" stays true: the page is a single-use link with no account.
 ```
 
 **No `is_minor`, no `age_group`, no `is_academy` column.** Age grade is a `groups` concern

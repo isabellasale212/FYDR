@@ -146,6 +146,17 @@ else's board.
 
 ## 3. Under 18 players
 
+**Since 14 September 2026 (PATTERN-S9, migration 0120):** an athlete under 18 on
+the club's record does not decide about their own data — a guardian does, on a
+tokenised page emailed to the address the club holds, or offline with the sport
+scientist recording it and its method. The athlete sees the guardian's name and
+a masked address and is never asked for either; no date of birth is shown or
+requested anywhere ("under 18 on the club's record" is all either screen says).
+Until the guardian answers the athlete is not locked out of the app, only out
+of the four entry forms, and is out of every staff denominator. The athlete's
+own say is LEGAL-4A's question; they are asked in their own name at 18.
+`docs/athlete/screens/21-consent-first-run.md`.
+
 | Protection | Built | Citation |
 |---|---|---|
 | Age is known and derived, never stored twice | Yes | `athlete_age_years()`, `0010_helper_functions_and_triggers.sql:336` |

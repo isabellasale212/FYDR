@@ -47,9 +47,9 @@ reporting, not a licence to improvise.
   controls. Decided 12 September 2026.
 - **Role gates must hold at the database**, not only in the UI. Learned twice
   the hard way: the last-admin guard, and the GPS tier gate.
-- **Body site and side coach-visibility is NOT yet decided.** Recommended as a
-  club setting defaulting to off. Until Isabella rules, it is an open item
-  (PATTERN-S3 C8), not a rule.
+- **Body site and side are not coach-visible.** A club setting, defaulting to
+  off. A body area plus a restriction line is a diagnosis in two pieces.
+  Decided by Isabella, 13 September 2026, closing PATTERN-S3 C8.
 
 ## Interaction
 

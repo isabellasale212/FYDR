@@ -21,6 +21,7 @@ strategy and a current-state page, and points here for everything else.
 | What are the binding rules for an agent session? | `../CLAUDE.md` |
 | What rules does every screen follow? | `decisions/design-constitution.md` |
 | What happens when a club downgrades? | `decisions/premium-downgrade.md` |
+| What did Isabella decide on 13 September? | `decisions/decision-batch-2026-09-13.md` |
 | What changed in the design handover? | `design-programme-corrections-2026-09-13.md` |
 
 ## The layers, and which beats which

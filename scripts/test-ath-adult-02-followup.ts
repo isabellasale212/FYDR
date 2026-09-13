@@ -77,7 +77,9 @@ console.log('\n3. athlete cards take the existing 9px token; staff cards do not'
      2026-09-12); the athlete card radius travels with it. */
   assert(/border-radius:\s*var\(--r-toggle\)/.test(rule('.gl-card')), '.gl-card (the gym logger\'s exercise card, athlete-only) too');
   assert(/border-radius:\s*var\(--r-card\)/.test(rule('.card')), 'the global .card stays --r-card for the staff app');
-  for (const sel of ['.pp-banner', '.dash-week', '.dash-stat-expand', '.report-card']) {
+  /* .pp-banner was absorbed into the profile's status header (.pp-hero, a
+     .card — STAFF-SS-02-05 C1, 2026-09-13), which keeps .card's radius. */
+  for (const sel of ['.dash-week', '.dash-stat-expand', '.report-card']) {
     assert(/border-radius:\s*var\(--r-card\)/.test(rule(sel)), `${sel} (staff) stays --r-card`);
   }
   const inCard = rule('.card > .subm');

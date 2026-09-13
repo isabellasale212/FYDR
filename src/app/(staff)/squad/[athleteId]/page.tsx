@@ -29,10 +29,11 @@ import {
   fetchTrainingWithRevisions,
   fetchWellnessWithRevisions,
 } from '@/lib/queries/entryRevisions';
-import { addDays, enumLabel, formatDate, formatNumber, initials, ordinal, todayIso } from '@/lib/format';
+import { addDays, formatDate, formatNumber, initials, ordinal, todayIso } from '@/lib/format';
 import { DEFAULT_RANGE, clampPeriod, resolveRange, type RangeKey } from '@/lib/period';
 import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
+import { headerOwnerLine, headerRestrictionLine, headerSubLine, planLine } from '@/lib/profileHeader';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, NUTRITION_EDIT, PROGRAMME_AUTHOR, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
@@ -539,25 +540,11 @@ export default async function AthletePage({
       ) : null}
 
       <div className="pp-col">
-        {programme ? (
-          <div className="pp-banner">
-            <div className="pp-banner-left">
-              <span className="pp-banner-eyebrow">Development plan</span>
-              <span className="pp-banner-title">{programme.name}</span>
-            </div>
-            <span className="num sub">
-              {programme.weekTotal !== null
-                ? `week ${programme.weekNow} of ${programme.weekTotal}`
-                : `week ${programme.weekNow}`}
-              {programme.endsOn ? ` · ends ${formatDate(programme.endsOn, timezone)}` : ''}
-            </span>
-            <Link href={`/programmes/${programme.programmeId}`} className="btn-ghost-pill accent">
-              {canAuthorProgramme ? 'Change plan' : 'View plan'}
-            </Link>
-          </div>
-        ) : null}
-
-        <section className="card pp-card" aria-labelledby="pp-name">
+        {/* STAFF-SS-02-05 C1 (2026-09-13): the status header — the one
+            emphasised card on the screen, absorbing the development-plan bar
+            (its line and link are the card's last row) and the bio row. The
+            four lines are lib/profileHeader.ts's. */}
+        <section className="card pp-card pp-hero" aria-labelledby="pp-name">
           <PlayerProfileBio
             orgId={orgId}
             athleteId={athlete.id}
@@ -592,26 +579,36 @@ export default async function AthletePage({
                 </div>
               </div>
             }
-            availabilityLine={
-              athlete.availability && athlete.availability.status !== 'available' ? (
-                <p className="sub" style={{ margin: '2px 0 0' }}>
-                  {/* Restrictions shown ahead of reason_category, same priority order and
-                   * same enumLabel-joined format as AvailabilityBanner.tsx uses for the
-                   * athlete's own Today page (integration-audit majors, Bug 2). Before this,
-                   * this page rendered only reason_category + note and never the restriction
-                   * list at all, even for real athletes with real restrictions (e.g. "no
-                   * contact / no scrummaging / running 80% volume / gym lower modified") —
-                   * a coach had to open the separate linked injury record to see what the
-                   * athlete's own app already showed them front and centre. */}
-                  {athlete.availability.restrictions && athlete.availability.restrictions.length > 0
-                    ? athlete.availability.restrictions.map(enumLabel).join(' · ')
-                    : athlete.availability.reason_category
-                      ? enumLabel(athlete.availability.reason_category)
-                      : 'No reason recorded'}
-                  {athlete.availability.note ? ` — ${athlete.availability.note}` : ''}
-                </p>
-              ) : null
-            }
+            subLine={headerSubLine({ position: athlete.position, squadNumber: athlete.squad_number, groupNames: athlete.group_names })}
+            /* Restrictions ahead of the reason, the same order AvailabilityBanner
+               uses on the athlete's own Today page; the expected return from the
+               linked open injury (the coach-safe injuries row, never the clinical
+               record). */
+            restrictionLine={headerRestrictionLine(
+              {
+                status: athlete.availability?.status ?? 'unknown',
+                restrictions: athlete.availability?.restrictions ?? [],
+                reason: athlete.availability?.reason_category ?? null,
+                note: athlete.availability?.note ?? null,
+                expectedReturn: activeInjury?.expected_return ?? null,
+              },
+              timezone,
+            )}
+            ownerLine={headerOwnerLine(
+              {
+                status: athlete.availability?.status ?? 'unknown',
+                injuryLinked: availabilityRow?.injury_id !== null && availabilityRow?.injury_id !== undefined,
+                setByName: availabilityRow?.set_by ? (ownerNames.get(availabilityRow.set_by) ?? null) : null,
+                setOn: availabilityRow?.effective_from ?? null,
+              },
+              timezone,
+            )}
+            planLine={planLine(
+              programme ? { name: programme.name, weekNow: programme.weekNow, weekTotal: programme.weekTotal, endsOn: programme.endsOn } : null,
+              timezone,
+            )}
+            planHref={programme ? `/programmes/${programme.programmeId}` : null}
+            planLabel={canAuthorProgramme ? 'Change plan' : 'View plan'}
             ageDisplay={emDash(profile.age)}
             weightDisplay={
               !canSeeBodyMass ? null : bodyWeight.latestKg !== null ? `${formatNumber(bodyWeight.latestKg, 1)} kg` : EM_DASH

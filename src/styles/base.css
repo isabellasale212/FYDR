@@ -4355,40 +4355,53 @@ img.me-avatar {
   color: var(--muted);
 }
 
-/* -------- §3 Development plan banner -------- */
-.pp-banner {
-  background: var(--wash-accent-soft);
-  border: 1px solid rgb(var(--accent-rgb) / 0.3);
-  border-radius: var(--r-card);
-  padding: var(--sp-14) var(--sp-20);
-  display: grid;
-  grid-template-columns: minmax(0, 1fr) auto auto;
-  gap: var(--sp-18);
-  align-items: center;
+/* -------- §3 The status header — STAFF-SS-02-05 C1 (2026-09-13) --------
+   The one emphasised card on the profile: the board's --blue-100 / --blue-200
+   mapped onto the wash family as ATH-ADULT-04 did (B1). It absorbed the
+   development-plan bar (.pp-banner, retired) and carries the bio row; the
+   plan's line and link are its last row. */
+.pp-hero {
+  background: var(--wash-accent);
+  border: 1px solid var(--border-accent-soft);
+  box-shadow: var(--shadow);
 }
-.pp-banner-left {
+.pp-hero-sub {
+  margin: var(--sp-6) 0 0;
+  font-size: var(--fs-13);
+  font-weight: 600;
+  color: var(--muted);
+}
+.pp-hero-rest {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-13);
+  color: var(--text);
+  text-wrap: pretty;
+}
+/* The owner line: the eyebrow treatment, B3's nearest existing token. */
+.pp-hero-owner {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-11);
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.pp-hero .pp-detail-row {
+  border-top: 1px solid var(--border-accent-soft);
+}
+.pp-hero-plan-row {
   display: flex;
   align-items: center;
-  gap: var(--sp-12);
+  justify-content: space-between;
+  gap: var(--sp-14);
   flex-wrap: wrap;
-  min-width: 0;
+  margin-top: var(--sp-14);
+  padding-top: var(--sp-12);
+  border-top: 1px solid var(--border-accent-soft);
 }
-.pp-banner-eyebrow {
-  font-size: var(--fs-11);
-  font-weight: 700;
-  letter-spacing: 0.12em;
-  text-transform: uppercase;
-  color: var(--accent-text);
-}
-.pp-banner-title {
-  font-size: var(--fs-15);
-  font-weight: 700;
-}
-@media (max-width: 700px) {
-  .pp-banner {
-    grid-template-columns: 1fr;
-    justify-items: start;
-  }
+.pp-hero-plan {
+  font-size: var(--fs-12);
+  color: var(--muted);
 }
 
 /* -------- §4 Profile header card -------- */
@@ -7525,8 +7538,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 
   .card,
   .banner,
-  .pp-card,
-  .pp-banner {
+  .pp-card {
     box-shadow: none !important;
     border: 1px solid var(--border-strong) !important;
     break-inside: avoid;

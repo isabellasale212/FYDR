@@ -44,8 +44,24 @@ mistake looks like a broken page even though no data crossed the boundary
 
 ## 4. What you see
 
-**A header** with the athlete's name, squad number, position and age, and a pill
-showing whether they are available.
+**The status header** — the one emphasised card on the screen (STAFF-SS-02-05
+C1, 13 September 2026; the accent wash and its soft border, B1's mapping of the
+board's tint). The initials, the name and the availability pill in the
+dashboard's words and tones; under them the sub line "Flanker · #7 · Forwards,
+Rehab" (position · jersey · groups, a missing part said); the restriction line —
+what a coach acts on, never a protocol or a diagnosis: "No contact · No collision
+drills. Expected return to full training Mon 21 Sept." (the return from the
+linked open injury's coach-safe row), an absence as "Academic — Exams this week,
+back Monday 24th", and no status as "No restriction recorded. Not counted as
+available and not counted as out."; then the owner line, "Set by medical staff ·
+Ruth Callaghan · Fri 11 Sept" (an injury-linked row is the medic's; any other row
+"Set by coaching staff"; nothing recorded reads "Set by medical staff · nothing
+recorded"). The domain chips (Nutrition, Wellness, Gym), Edit and today's
+wellness dial sit on the name row as before. Then the bio row (Position, Jersey,
+Height, Age, Hand, Weight — the coach's without Weight, C9), and last the
+development-plan line the old bar carried — "Development plan · In-Season max ·
+week 2 of 4 · ends Tue 29 Sept", or "Development plan · none assigned" — with
+its "View plan" / "Change plan" link. The separate plan bar is gone.
 
 **Biographical details.** The facts about the person: position, squad number, and
 so on. Editable by a coach.

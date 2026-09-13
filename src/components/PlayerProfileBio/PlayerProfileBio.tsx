@@ -2,6 +2,7 @@
 
 import { BlockedButton } from '@/components/BlockedButton/BlockedButton';
 import { useState, type ReactNode, type FormEvent } from 'react';
+import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
 import { updateAthleteBio } from '@/lib/queries/squad';
@@ -33,7 +34,18 @@ type Props = {
   nameBlock: ReactNode;
   domainChips: ReactNode;
   wellnessMini: ReactNode;
-  availabilityLine: ReactNode | null;
+  /** STAFF-SS-02-05 C1 (2026-09-13): the status header's four lines, said by
+   *  lib/profileHeader.ts — the sub line under the name ("Flanker · #7 ·
+   *  Forwards, Rehab"), the restriction line (what a coach acts on, and the
+   *  expected return), the owner line ("Set by medical staff · Ruth
+   *  Callaghan · Fri 11 Sept") and the development-plan line the old bar
+   *  carried, now the card's last row beside its link. */
+  subLine: string;
+  restrictionLine: string | null;
+  ownerLine: string;
+  planLine: string;
+  planHref: string | null;
+  planLabel: string;
   /** Never editable here — computed from date_of_birth, not a stored field. */
   ageDisplay: string;
   /** Never editable here — BodyWeightPanel, right below on this same page,
@@ -80,7 +92,12 @@ export function PlayerProfileBio({
   nameBlock,
   domainChips,
   wellnessMini,
-  availabilityLine,
+  subLine,
+  restrictionLine,
+  ownerLine,
+  planLine,
+  planHref,
+  planLabel,
   ageDisplay,
   weightDisplay,
   initialPosition,
@@ -169,7 +186,9 @@ export function PlayerProfileBio({
         {wellnessMini}
       </div>
 
-      {availabilityLine}
+      <p className="pp-hero-sub">{subLine}</p>
+      {restrictionLine ? <p className="pp-hero-rest">{restrictionLine}</p> : null}
+      <p className="pp-hero-owner">{ownerLine}</p>
 
       {editing ? (
         <form onSubmit={onSubmit} className="pp-detail-row" aria-label="Edit athlete details">
@@ -291,6 +310,15 @@ export function PlayerProfileBio({
           ) : null}
         </div>
       )}
+
+      <div className="pp-hero-plan-row">
+        <span className="num pp-hero-plan">{planLine}</span>
+        {planHref ? (
+          <Link href={planHref} className="btn-ghost-pill accent">
+            {planLabel}
+          </Link>
+        ) : null}
+      </div>
     </>
   );
 }

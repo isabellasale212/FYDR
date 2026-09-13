@@ -59,7 +59,7 @@ console.log('\nthe read');
 {
   const q = strip(read('src/lib/queries/programmes.ts'));
   assert(/export async function fetchPersonalBestsBefore\(/.test(q), 'fetchPersonalBestsBefore exists');
-  assert(/\.lt\('entry_date', beforeDate\)/.test(q) && /\.eq\('status', 'complete'\)/.test(q), 'over complete sessions strictly before the date');
+  assert(/if \(o\.beforeDate\) q = q\.lt\('entry_date', o\.beforeDate\);/.test(q) && /\.eq\('status', 'complete'\)/.test(q) && /fetchWorkingSets\(db, orgId, athleteId, \{ exerciseIds, fromDate: null, beforeDate, toDate: null \}\)/.test(q), 'over complete sessions strictly before the date (the shared working-set read since 12 C5, 2026-09-13)');
   assert(/\.eq\('is_warmup', false\)[\s\S]{0,80}\.gt\('load_kg', 0\)[\s\S]{0,40}\.gt\('reps_completed', 0\)/.test(q), 'working sets only — the same definition as the coach\'s band');
   assert(/beats\(candidate, prev\)/.test(q), 'the best is decided by the one rule in lib/gymSummary.ts');
 }

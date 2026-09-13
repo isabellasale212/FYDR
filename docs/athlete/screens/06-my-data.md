@@ -221,6 +221,17 @@ Built from the "ATH-ADULT-12-13 · FINAL" board, A items only — the rest is in
 - **The hero figure is 48px** (`--fs-48`, a token that exists), from 38.
 - **A history row is at least 44px.**
 
+**The gym hero is the best lift** (ATH-ADULT-12 C5, 13 September 2026): "102.5
+kg" with "Back squat best · × 5 · Sat 5 Sept" and "up 5 kg on your best before
+Mon 17 Aug" — MET-040's best working set for the lift with the most working sets
+in the chosen period, against the best before the period (the board's "this
+block" read against the screen's own window, which is the comparison the tab
+already makes; the line says which). Down is said as down, the same load with
+more reps as more reps, an equal best as equal, and a lift with no earlier best
+is "the first Back squat logged" — never called a best. Over an empty period the
+headline is words — "Nothing logged · in this period" — never "0 sets logged";
+the four-week Sessions card keeps its own stated span beneath.
+
 **Prior values in the wash, the latest in the accent** (ATH-ADULT-12 B2, 13
 September 2026, once D7 was accepted): on the gym weeks the completed prior
 weeks are `--wash-accent-strong` — the board's `--blue-200` mapped onto the

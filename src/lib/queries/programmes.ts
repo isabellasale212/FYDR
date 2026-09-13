@@ -1794,30 +1794,32 @@ export async function fetchBestSetLoadsForAthletes(
  *  what they beat and when, not a band. Ties are decided by lib/gymSummary's
  *  `beats`: heavier load, then more reps; a later equal set does not replace
  *  an earlier one, so the date shown is the first time the best was hit. */
-export async function fetchPersonalBestsBefore(
+/** The working sets (MET-040's rule: live, not a warm-up, load and reps
+ *  above zero) of the athlete's COMPLETE sessions in a date window, each
+ *  with its session's day. Shared by the two bests reads below so the rule
+ *  is written once. `exerciseIds` null means every exercise. */
+async function fetchWorkingSets(
   db: Db,
   orgId: string,
   athleteId: string,
-  exerciseIds: readonly string[],
-  beforeDate: string,
-): Promise<Map<string, PriorBest>> {
-  if (exerciseIds.length === 0) return new Map();
+  o: { exerciseIds: readonly string[] | null; fromDate: string | null; beforeDate: string | null; toDate: string | null },
+): Promise<{ exercise_id: string; load_kg: number; reps_completed: number; entry_date: string }[]> {
   type SessionRow = { id: string | null; entry_date: string | null };
-  const sessions = await fetchAllPaged<SessionRow>((from, to) =>
-    db
+  const sessions = await fetchAllPaged<SessionRow>((from, to) => {
+    let q = db
       .from('gym_session_logs_current')
       .select('id, entry_date')
       .eq('org_id', orgId)
       .eq('athlete_id', athleteId)
-      .eq('status', 'complete')
-      .lt('entry_date', beforeDate)
-      .order('entry_date')
-      .order('id')
-      .range(from, to),
-  );
+      .eq('status', 'complete');
+    if (o.fromDate) q = q.gte('entry_date', o.fromDate);
+    if (o.toDate) q = q.lte('entry_date', o.toDate);
+    if (o.beforeDate) q = q.lt('entry_date', o.beforeDate);
+    return q.order('entry_date').order('id').range(from, to);
+  });
   const dateByLog = new Map<string, string>();
-  for (const s of sessions) if (s.id !== null && s.entry_date !== null) dateByLog.set(s.id, s.entry_date);
-  if (dateByLog.size === 0) return new Map();
+  for (const sess of sessions) if (sess.id !== null && sess.entry_date !== null) dateByLog.set(sess.id, sess.entry_date);
+  if (dateByLog.size === 0) return [];
 
   const logIds = [...dateByLog.keys()];
   const chunks: string[][] = [];
@@ -1826,34 +1828,69 @@ export async function fetchPersonalBestsBefore(
   type SetRow = { gym_session_log_id: string | null; exercise_id: string | null; load_kg: number | null; reps_completed: number | null };
   const perChunk = await Promise.all(
     chunks.map((chunk) =>
-      fetchAllPaged<SetRow>((from, to) =>
-        db
+      fetchAllPaged<SetRow>((from, to) => {
+        let q = db
           .from('gym_set_logs_current')
           .select('gym_session_log_id, exercise_id, load_kg, reps_completed')
           .eq('org_id', orgId)
           .eq('is_warmup', false)
           .gt('load_kg', 0)
           .gt('reps_completed', 0)
-          .in('gym_session_log_id', chunk)
-          .in('exercise_id', [...exerciseIds])
-          .order('gym_session_log_id')
-          .order('id')
-          .range(from, to),
-      ),
+          .in('gym_session_log_id', chunk);
+        if (o.exerciseIds) q = q.in('exercise_id', [...o.exerciseIds]);
+        return q.order('gym_session_log_id').order('id').range(from, to);
+      }),
     ),
   );
 
   /* Walk the sessions in date order so an equal best keeps its first date. */
-  const rows = perChunk.flat().filter(
-    (r): r is SetRow & { gym_session_log_id: string; exercise_id: string; load_kg: number; reps_completed: number } =>
-      r.gym_session_log_id !== null && r.exercise_id !== null && r.load_kg !== null && r.reps_completed !== null,
-  );
-  rows.sort((a, b) => (dateByLog.get(a.gym_session_log_id) ?? '').localeCompare(dateByLog.get(b.gym_session_log_id) ?? ''));
+  const rows = perChunk
+    .flat()
+    .filter(
+      (r): r is SetRow & { gym_session_log_id: string; exercise_id: string; load_kg: number; reps_completed: number } =>
+        r.gym_session_log_id !== null && r.exercise_id !== null && r.load_kg !== null && r.reps_completed !== null,
+    )
+    .map((r) => ({ exercise_id: r.exercise_id, load_kg: r.load_kg, reps_completed: r.reps_completed, entry_date: dateByLog.get(r.gym_session_log_id) ?? '' }));
+  rows.sort((a, b) => a.entry_date.localeCompare(b.entry_date));
+  return rows;
+}
+
+export async function fetchPersonalBestsBefore(
+  db: Db,
+  orgId: string,
+  athleteId: string,
+  exerciseIds: readonly string[],
+  beforeDate: string,
+): Promise<Map<string, PriorBest>> {
+  if (exerciseIds.length === 0) return new Map();
+  const rows = await fetchWorkingSets(db, orgId, athleteId, { exerciseIds, fromDate: null, beforeDate, toDate: null });
   const out = new Map<string, PriorBest>();
   for (const r of rows) {
-    const candidate = { load_kg: r.load_kg, reps: r.reps_completed, entry_date: dateByLog.get(r.gym_session_log_id) ?? beforeDate };
+    const candidate = { load_kg: r.load_kg, reps: r.reps_completed, entry_date: r.entry_date || beforeDate };
     const prev = out.get(r.exercise_id);
     if (prev === undefined || beats(candidate, prev)) out.set(r.exercise_id, candidate);
+  }
+  return out;
+}
+
+/** ATH-ADULT-12 C5 (2026-09-13): the best working set per exercise INSIDE a
+ *  period, with how many working sets the exercise had — My data's gym hero
+ *  picks its lift by the count and compares the best with
+ *  fetchPersonalBestsBefore(from). The same MET-040 rule, the same read. */
+export async function fetchBestSetsInPeriod(
+  db: Db,
+  orgId: string,
+  athleteId: string,
+  fromDate: string,
+  toDate: string,
+): Promise<Map<string, { best: PriorBest; sets: number }>> {
+  const rows = await fetchWorkingSets(db, orgId, athleteId, { exerciseIds: null, fromDate, beforeDate: null, toDate });
+  const out = new Map<string, { best: PriorBest; sets: number }>();
+  for (const r of rows) {
+    const candidate = { load_kg: r.load_kg, reps: r.reps_completed, entry_date: r.entry_date || fromDate };
+    const prev = out.get(r.exercise_id);
+    if (prev === undefined) out.set(r.exercise_id, { best: candidate, sets: 1 });
+    else out.set(r.exercise_id, { best: beats(candidate, prev.best) ? candidate : prev.best, sets: prev.sets + 1 });
   }
   return out;
 }

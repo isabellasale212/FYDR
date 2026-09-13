@@ -1499,9 +1499,14 @@ Any request to make readiness rankable should be refused with that sentence.
 with "Best before today 100 kg × 8 · 21 Aug" beneath it.
 
 **Surfaces.** Athlete app (the gym session summary, ATH-ADULT-09 C6, 12
-September 2026). The staff app's positional band on the athlete's gym page reads
-the same working-set rule for its heaviest-load comparison
-(`fetchBestSetLoadsForAthletes`), without the reps or the date.
+September 2026; and My data's gym hero, ATH-ADULT-12 C5, 13 September 2026 —
+"102.5 kg · Back squat best · × 5 · Sat 5 Sept · up 5 kg on your best before
+Mon 17 Aug": the same rule twice, the best inside the chosen period and the best
+before it, for the lift with the most working sets in the period). The staff
+app's positional band on the athlete's gym page reads the same working-set rule
+for its heaviest-load comparison (`fetchBestSetLoadsForAthletes`), without the
+reps or the date. One read, `fetchWorkingSets` in `src/lib/queries/programmes.ts`,
+carries the rule for both athlete surfaces.
 
 **What it means.** The best single working set an athlete has logged for one
 exercise: the heaviest load, and at the same load, the more reps. A "new best"

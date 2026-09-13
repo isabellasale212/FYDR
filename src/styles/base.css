@@ -1784,6 +1784,17 @@ body:has(.phone) {
    This corrects a flex: 1 1 auto that shipped here: it stopped the value
    wrapping, which was the bug, but it did it by handing the meta column every
    spare pixel, which is the defect the spec is naming. */
+/* ATH-ADULT-12 C5 (2026-09-13): words in the hero's number slot — "Nothing
+   logged" — at the caption size, not the figure's; the same move the logger's
+   number block makes for "Not set". */
+.rd-value-words {
+  font-size: var(--fs-20);
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  white-space: normal;
+  color: var(--text);
+}
 .rd-meta {
   text-align: right;
   min-width: 0;

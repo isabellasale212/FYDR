@@ -1104,5 +1104,32 @@ change, so the next request, not the next page load · D8 the checklist's "thres
 default" needs a marker the rows do not carry · D9 what a saved report does when its group is
 archived.
 
-**Built:** A1–A7. **Recorded:** B1–B4, C1–C13, D1–D9.
+**D5, read 2026-09-13.** There is no revoke control: `lib/queries/userManagement.ts`'s own
+header records "resend-invite and revoke UI remain unbuilt". An invitation is
+`auth.admin.generateLink({ type: 'invite' })` (`lib/invite.ts`) — a single-use Supabase
+token that expires on the project's email-OTP expiry (a dashboard setting, not in the repo;
+one hour by default) — and nothing in the app invalidates one early. The nearest existing
+action, deactivating the account on the Users screen, does not stop the link: `verifyOtp`
+still succeeds and a session is created, but the access-token hook (0010) issues that
+session a token with no org and no roles for a `deactivated` user, so the first request
+after the link lands on nothing. So "kills the link at once" is not literally true today;
+"grants nothing at once" is. A true revoke is `auth.admin.deleteUser` on an invitee who has
+never signed in (the app's user row soft-deleted with it) — small, behind the Users screen's
+existing status write. Stated on the sheet; not built (S8's C/D rows wait).
+
+**D9, read 2026-09-13.** There is no saved-report entity anywhere — no table, no query, no
+route; "saved report" is the board's word for a link or the sticky filter. What persists a
+report's scope is the `fydr-group-filter` cookie (§0ak) and `?groups=` links, and archiving
+a group sets `groups.deleted_at` only (`archiveGroup`): its memberships stay live, so a
+cookie or link that still names an archived group keeps scoping every multi-athlete screen
+to that group's athletes while the chip row (which excludes archived groups) cannot show it
+and `groupScopeLabel` names it "1 unknown group". Observed on scratch with Leadership
+(archived 6 Aug): `?groups=52f775ca…` scopes the testing report and the dashboard to it and
+labels it "1 unknown group". That is the silent sticky filter S4 named, arriving by a
+different door. The board's rule — revert to the whole squad and say so — is right for this;
+the fix is in `resolveGroupFilter` (drop ids that are not live groups; clear the cookie
+when it held any) plus the one sentence in the chip row. Small. Stated on the sheet; not
+built (S8's rows wait).
+
+**Built:** A1–A7. **Recorded:** B1–B4, C1–C13, D1–D9. **Read and answered:** D5, D9.
 

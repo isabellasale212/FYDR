@@ -140,6 +140,9 @@ export type AthleteProfile = {
   joined_at: string | null;
   team_name: string | null;
   group_names: string[];
+  /** The live group memberships' ids — for resolving what reaches this
+   *  athlete by group (the nutrition rule's owner line, STAFF-SS-02-05 C5). */
+  group_ids: string[];
   availability: CurrentAvailability | null;
   open_injuries: OpenInjury[];
 };
@@ -246,6 +249,7 @@ export async function fetchAthlete(
     joined_at: data.joined_at,
     team_name: teamName,
     group_names: groupNames,
+    group_ids: memberships.get(athleteId) ?? [],
     availability: availability[0] ?? null,
     open_injuries: injuries,
   };

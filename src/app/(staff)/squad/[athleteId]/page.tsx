@@ -35,7 +35,10 @@ import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
-import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, PROGRAMME_AUTHOR, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, NUTRITION_EDIT, PROGRAMME_AUTHOR, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
+import { ReadOnlyOwner } from '@/components/ReadOnlyOwner/ReadOnlyOwner';
+import { fetchRules, resolveRuleForAthlete } from '@/lib/queries/nutritionRules';
+import { fetchUserNames } from '@/lib/queries/users';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
@@ -346,6 +349,10 @@ export default async function AthletePage({
      wholesale would have taken the weigh-in HISTORY away from a coach. */
   const canSeeWeighIns = hasAnyRole(claims.roles, ALL_STAFF);
   const canLogWeighIn = hasAnyRole(claims.roles, WEIGH_IN_EDIT);
+  /* STAFF-SS-02-05 C9 (decided 2026-09-12): the coach does not see body mass
+     at all — the whole Body weight card is absent, not locked. Withheld
+     panels are absent and nothing counts them (the board's rule). */
+  const canSeeBodyMass = hasAnyRole(claims.roles, BODY_MASS_VIEW);
   const weighIns = canSeeWeighIns ? await fetchBodyCompositionEntries(db, orgId, athleteId) : [];
   /* The staff-set body-mass target range (migration 0060). Gated on the SAME two
    * roles for the same reason as the weigh-in controls above: body_mass_target_ranges
@@ -443,6 +450,23 @@ export default async function AthletePage({
      reason behind them. */
   const currentAvailability = await fetchCurrentAvailability(db, orgId, [athlete.id]);
   const currentRestrictions = currentAvailability[0]?.restrictions ?? [];
+  /* STAFF-SS-02-05 C5 (2026-09-12): a read-only panel ends with its owner.
+     Who set the nutrition rule that reaches this athlete (personal > group >
+     org default, the resolver nutrition already uses) and who set the current
+     availability, named through one small users read. */
+  const canEditNutrition = hasAnyRole(claims.roles, NUTRITION_EDIT);
+  const nutritionRule = canEditNutrition
+    ? null
+    : resolveRuleForAthlete(await fetchRules(db, orgId), athlete.id, athlete.group_ids);
+  const availabilityRow = currentAvailability[0] ?? null;
+  const ownerNames = await fetchUserNames(db, orgId, [nutritionRule?.rule.created_by ?? null, availabilityRow?.set_by ?? null]);
+  const availabilitySetBy =
+    availabilityRow && availabilityRow.injury_id
+      ? {
+          name: availabilityRow.set_by ? (ownerNames.get(availabilityRow.set_by) ?? null) : null,
+          date: formatDate(availabilityRow.effective_from, timezone),
+        }
+      : null;
   const spark = sparklinePaths(
     bodyWeight.history,
     liveTargetRange
@@ -589,7 +613,9 @@ export default async function AthletePage({
               ) : null
             }
             ageDisplay={emDash(profile.age)}
-            weightDisplay={bodyWeight.latestKg !== null ? `${formatNumber(bodyWeight.latestKg, 1)} kg` : EM_DASH}
+            weightDisplay={
+              !canSeeBodyMass ? null : bodyWeight.latestKg !== null ? `${formatNumber(bodyWeight.latestKg, 1)} kg` : EM_DASH
+            }
             initialPosition={athlete.position}
             initialSquadNumber={athlete.squad_number}
             initialHeightCm={athlete.height_cm}
@@ -723,8 +749,15 @@ export default async function AthletePage({
               programmeStatus={programmeStatus}
               restrictions={currentRestrictions}
               canEditClinical={hasAnyRole(claims.roles, CLINICAL_ONLY)}
+              availabilitySetBy={availabilitySetBy}
               timezone={timezone}
             />
+
+            {/* PATTERN-S3 C7 (2026-09-12): every change on record, one row per
+                change, for anyone who can read the availability line. */}
+            <Link href={`/squad/${athlete.id}/availability`} className="btn-ghost-pill" style={{ padding: '8px 16px', alignSelf: 'flex-start' }}>
+              Availability history &rsaquo;
+            </Link>
 
             {/* Logging an injury is separate from the card above: the card shows
                 the current one, this creates a new record, and §3.2 gives that
@@ -755,6 +788,16 @@ export default async function AthletePage({
                   userId={claims.userId}
                   athleteId={athlete.id}
                   athleteName={`${athlete.first_name} ${athlete.last_name}`}
+                  /* A non-injury absence this form could end: no injury link, a
+                     real non-injury reason (the coach's update policy, 0068,
+                     excludes a row with reason 'injury'), and not Available. */
+                  currentAbsence={
+                    !!availabilityRow &&
+                    availabilityRow.injury_id === null &&
+                    availabilityRow.reason_category !== null &&
+                    availabilityRow.reason_category !== 'injury' &&
+                    availabilityRow.status !== 'available'
+                  }
                 />
               </section>
             ) : null}
@@ -878,9 +921,17 @@ export default async function AthletePage({
                 <h2 className="card-title" id="pp-nutrition-title">
                   Nutrition plan
                 </h2>
-                <Link href="/nutrition" className="btn-ghost">
-                  Edit
-                </Link>
+                {/* C5: Edit only for a role that may (NUTRITION_EDIT); a reader
+                    gets View and the owner well at the panel's end. */}
+                {canEditNutrition ? (
+                  <Link href="/nutrition" className="btn-ghost">
+                    Edit
+                  </Link>
+                ) : (
+                  <Link href="/nutrition" className="btn-ghost">
+                    View
+                  </Link>
+                )}
               </div>
               {/* An empty panel states the requirement, never a zero
                   (STAFF-SS-02-05 C8, 2026-09-12): the targets are per
@@ -928,8 +979,23 @@ export default async function AthletePage({
                   </p>
                 </div>
               </div>
+              {!canEditNutrition ? (
+                <ReadOnlyOwner
+                  owner="the nutritionist or the sport scientist"
+                  name={nutritionRule?.rule.created_by ? (ownerNames.get(nutritionRule.rule.created_by) ?? null) : null}
+                  date={nutritionRule ? formatDate(nutritionRule.rule.effective_from, timezone) : null}
+                  note={
+                    nutritionRule?.source === 'group'
+                      ? `Set for ${nutritionRule.rule.group_name ?? 'the group'}, not for this athlete alone.`
+                      : nutritionRule?.source === 'org_default'
+                        ? 'The club default; nothing set for this athlete or their group.'
+                        : undefined
+                  }
+                />
+              ) : null}
             </section>
 
+            {canSeeBodyMass ? (
             <section className="card pp-card" aria-labelledby="pp-weight-title">
               <div className="pp-weight-top">
                 <div>
@@ -1051,6 +1117,7 @@ export default async function AthletePage({
                 targetRanges={targetRanges}
               />
             </section>
+            ) : null}
           </div>
         </div>
 

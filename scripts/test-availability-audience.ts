@@ -30,10 +30,12 @@ console.log('\nboth forms step through it');
     const f = strip(read(p));
     const name = p.split('/').slice(-1)[0];
     assert(/const \[confirming, setConfirming\] = useState\(false\)/.test(f), `${name}: a confirming step`);
-    assert(/onClick=\{\(\) => setConfirming\(true\)\}/.test(f), 'the button opens it, not the write');
+    /* The coach's absence form (PATTERN-S3 C5) sets which act it is opening
+       (record / end) before it opens the step; the medic's opens it directly. */
+    assert(/onClick=\{\(\) => setConfirming\(true\)\}/.test(f) || /setEnding\(false\);\s*setConfirming\(true\);/.test(f), 'the button opens it, not the write');
     assert(/<AvailabilityAudience/.test(f) && f.includes(linked), `renders the audience (${linked})`);
     assert(/onConfirm=\{\(\) => mutation\.mutate\(\)\}/.test(f), 'Confirm is the write');
-    assert(/onBack=\{\(\) => setConfirming\(false\)\}/.test(f), 'Back returns to the form');
+    assert(/onBack=\{\(\) => setConfirming\(false\)\}/.test(f) || /onBack=\{\(\) => \{\s*setConfirming\(false\);\s*setEnding\(false\);/.test(f), 'Back returns to the form');
     assert(/athleteName: string/.test(f), 'and the form knows the athlete\'s name');
   }
   for (const p of ['src/app/(staff)/injuries/[injuryId]/page.tsx', 'src/app/(staff)/squad/[athleteId]/page.tsx']) {

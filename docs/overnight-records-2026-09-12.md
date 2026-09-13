@@ -679,3 +679,93 @@ what a past set is compared against. That is **C1** and it is a migration.
 - **D1** PATTERN-S3's Approved pill for a rehab proposal appearing as an assignment — with S3 C6 (proposal states, ⚠ migration). **D2** ATH-ADULT-09's "Prescribed 100 kg · +2.5" reference line depends on C1 — the logger's rebuild (09 C1, approved) should read the snapshot when it exists.
 
 **Built:** A1, A7. **Recorded:** C1–C10, D1–D2 — appended to the decision sheet.
+
+---
+
+## PATTERN-S6 — System states: offline, failed, empty, done
+
+**Source.** `docs/designs/PATTERN-S6-final/` — board "PATTERN-S6 · FINAL" (12 artboards:
+seven athlete phone, four staff desktop, one staff phone), `notes.md`, the prompt. Screens:
+Today (`OutboxFlusher`), the entry forms, the gym logger, My data's empty states, the
+schedule, the staff empty states, the permission-denied page. Landed 2026-09-12 (`00a3145`).
+
+**The board's own frame.** Step 1 asks nine questions "before building". Answered here from
+the code, so the record and the sheet carry the facts; nothing that needs a decision is built.
+
+### Step 1, answered from the code
+
+1. **Outbox retry:** on load of Today and on the browser's `online` event (`OutboxFlusher`),
+   and since ATH-ADULT-09 C4 from the gym logger for its own session. No backoff, no
+   schedule, no attempt count. **Nothing is ever abandoned** and the athlete is never told
+   otherwise — see 2.
+2. **Queue limits:** none — no cap, no expiry (`lib/outbox.ts`). A weekly check-in queued
+   for a week whose three-week write window has since closed
+   (`nutrition_checkins_athlete_insert`, 0012) is refused by the policy on every retry, for
+   ever, silently: it counts as "1 entry saved on this phone" indefinitely. **A real gap** —
+   the board's "too late to send" state needs a rule (C10).
+3. **§0aa:** closed 2026-09-12 before this board landed (`75c6a6e`, and the shared
+   `lib/gymOutboxFlush.ts` since `84b258e`): the gym branch performs the targeted lookup, a
+   different-numbers collision is marked and shown on Today with "Use my numbers" / "Keep
+   what is showing". The board's frame shows the gym item queued only, which matches.
+4. **Session length:** the JWT expires after 30 minutes (`supabase/config.toml`
+   `jwt_expiry = 1800`) with refresh-token rotation, so an open form is refreshed under the
+   athlete and a mid-form expiry is the refresh failing (signal gone at the wrong moment).
+   **Nothing preserves a part-filled entry form across re-authentication** — the gym logger
+   keeps its per-exercise drafts in `localStorage` (`draftKey`), the three `.subm` forms
+   keep nothing. Frames 5–6 are C3.
+5. **Staff writes:** not queued, none of them. **Post-pilot by Isabella's decision
+   2026-09-12** ("Staff app offline… accepted as a limitation for the pilot and stated
+   plainly to the club"). Which are safe to queue (typed forms) and which are not (a drag)
+   is the board's own split and is recorded with C4/C5 for then.
+6. **Queued availability:** n/a today (5). The clinical-conflict question (a coach's held
+   Unavailable meeting a medic's later value) goes with C4 as a decision.
+7. **Permission denials:** not logged. `audit_log` records sign-ins, writes and reads of
+   clinical rows; a route refusal (`requireStaff` / a role gate) redirects or 404s and writes
+   nothing, so there is no reference an admin could look up (C7 needs a log — ⚠ migration).
+8. **Live regions:** on the athlete surface `role="status"` appears in 19 files and
+   `role="alert"` in 77 (`src/app/(athlete)` + `src/components`), one per banner or error
+   rather than one per surface; Today alone renders one `status` (the waiting line) and one
+   `alert` per conflict. The one-region-per-surface rule is a restructure (C9).
+9. **Reconnect detection:** the `online` event and page load. There is no success message
+   today, so nothing can fire twice; A1 below adds one and keys it to the flush that sent
+   (state, not event), so a second `online` with nothing to send shows nothing.
+
+### A
+
+| # | Change | Before | After |
+|---|---|---|---|
+| A1 | A send that worked changes the count, in place, once | the waiting line disappears when the queue empties; nothing says the entries went | the same `role="status"` region reads "3 entries sent at 12:04. Nothing is waiting." after a flush that sent, as a plain `--surf` card with a tick; absent on the next load; not a toast, not dismissible |
+| A2 | Success is never a toast on Today | `?submitted=` after each entry form showed a Toast ("Wellness submitted · queued, syncs on signal") over a to-do list that had already lost the row | the Toast is gone from Today; the list changing is the answer, the waiting line says what is held. The forms' redirects are unchanged (the protected queue-then-Today behaviour) |
+| A3 | The failure sentence is the entry-form board's | "Couldn't save — check your signal and try again. Your answer is still here." | "That did not send — check your signal and try again. Your answer is still here." (ATH-ADULT-03's approved words, the instruction kept) |
+
+### B
+
+| # | Board token | Nearest existing | Used for |
+|---|---|---|---|
+| B1 | `--pill-good` fill / `--on-good` ink for the waiting line | `--wash-good` / `--border-good` / `--text` (the 01/02 banners' pair) | the waiting line as a good-tone card rather than a tiny grey line: held is a promise kept, not a warning |
+| B2 | `role="alert"` on `--pill-bad` / `--on-bad` for a conflict | `--wash-bad` / `--border-bad`, `.g-bad` glyph | the conflict notice — a lost answer, not a caution — instead of the `--warn` border it had since §0aa |
+| B3 | `--surf` card for the sent line | `.banner` on `--surf` | with A1 |
+| — | `--blue-100` / `--blue-200` emphasised empty card | `--wash-accent` / `--border-accent-soft` (`.after-card`) | with 12 C6 and C8 |
+
+### C
+
+- **C1 The queue screen** ("Waiting to send": oldest first, each row what it is, its denominator, the local time it was saved; header "4 entries · 5 writes"; no spinners, no per-item retry; the conflict notice inside it; "Nothing is waiting" with the last send time) and **"See what is waiting" under the count on Today** — a new athlete route; the QueueRow shape (D3). Medium.
+- **C2 Today's gym row carries its queued count** ("6 of 12 sets · 2 waiting to send") — the outbox read per session on Today; small, with C1.
+- **C3 Session expiry mid-form** ("You have been signed out, so that did not send. Your six answers are still here." / "Sign in and send" / back to the same sheet, same scroll, every answer set, "Signed in as Conor…") — a form hold across re-authentication that nothing has today (Step 1 · 4), and a sign-in return path. Medium–large. ⚠ decision (where the hold lives).
+- **C4 Staff typed writes queue** with "Saved on this phone · sends when you have signal. Nobody else can see this until you have signal.", the staff queue sorted time-critical first with a "When it sends" consequence line, raising a flag offline — **POST-PILOT by decision 2026-09-12** (staff offline). Recorded for then, with the clinical-conflict question (Step 1 · 6). ⚠ decision.
+- **C5 A drag on the grid disabled offline** with the footer reason; "+ Session" / "+ Fixture" live and queued; Week templates disabled — with C4, post-pilot.
+- **C6 A failed live write undoes itself** on the schedule: the block returns, the attempted slot stays as a dashed ghost "Did not save", the notice names both times and the athletes affected, Try again the one control. Online failure, not offline — in scope now; the schedule's move path. Medium.
+- **C7 Permission denied** ("This is not available to you. It may not exist, or your role may not include it. Nothing more can be said about it here." + signed-in identity and what the role covers + a reference code + Back to dashboard) — the copy is small; the reference needs denials logged (Step 1 · 7). ⚠ migration for the log.
+- **C8 Staff empty states to the one grammar** ("No check-ins from Academy in the last 7 days." / why / what would fill it / "Academy has 23 check-ins on record, the most recent on Fri 22 Aug." / "Nothing is missing from the record." / "Widen to last 28 days" + "Whole squad instead") — a sweep, each screen needing a most-recent-on-record read. Medium per screen. The athlete's My data version is **ATH-ADULT-12 C6** (approved, next).
+- **C9 One `role="status"` and one `role="alert"` region per surface**, written on transition only, keyed by state — an audit (19 / 77 files today) then a restructure. Medium.
+- **C10 Retry schedule, queue limits, "too late to send"** — decide: a check-in past its write window is refused for ever and counted as waiting for ever today (Step 1 · 2). ⚠ decision; recommend: an item refused by policy (42501 / a WITH CHECK) is marked "could not be sent — the week has closed" and shown once, like a conflict, with Discard.
+
+### D
+
+- **D1** `--pill-offline` / `--on-offline` — an offline tone that is not warn. New token; staff offline is post-pilot, so not now.
+- **D2** `--line-dashed-failed` — a dashed ghost for a write that did not land, distinct from S4's "not yet" ghost. New token; with C6 (or C6 uses the existing dashed `--border-strong` and says so in words).
+- **D3** `QueueRow` — a component with three slots (what, denominator, time saved) plus the staff consequence line. Composed from existing tokens; with C1.
+- **D4** Today's "This morning is answered" card (frames 1 and 3) is ATH-ADULT-02's, not this board's; Today drops the row today. Not built here.
+- **D5** Reduced motion — nothing in these states animates; nothing to build.
+
+**Built:** A1–A3, B1–B2 (B3 with A1). **Recorded:** C1–C10, D1–D5 — appended to the decision sheet.

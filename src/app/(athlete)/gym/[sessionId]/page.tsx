@@ -8,6 +8,7 @@ import {
   startOrGetSessionLog,
 } from '@/lib/queries/programmes';
 import { todayIso } from '@/lib/format';
+import { fetchGymSetRevisionChains } from '@/lib/queries/entryRevisions';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'Gym session · Fydr' };
@@ -58,6 +59,17 @@ export default async function GymSessionPage({
 
   const loggedSets = await fetchLoggedSets(db, gymSessionLogId);
   const totalSets = exercises.reduce((sum, ex) => sum + ex.sets, 0);
+  /* ATH-ADULT-11 C2: the session's revision chains, so a corrected set can
+     say what it was ("Set 1 corrected · was 100 kg × 8"). The base table,
+     as My data reads it since §0v — the superseded row is the point. Each
+     live set that is itself a revision, with the values it replaced. */
+  const chains = await fetchGymSetRevisionChains(db, orgId, gymSessionLogId);
+  const corrections = chains
+    .filter((c) => c.priorRevisions.length > 0)
+    .map((c) => {
+      const was = c.priorRevisions[c.priorRevisions.length - 1] ?? null;
+      return { id: c.current.id, was: { reps_completed: was?.reps_completed ?? null, load_kg: was?.load_kg ?? null } };
+    });
   /* ATH-ADULT-09 C6: the summary's "Best before today" (MET-040) — read only
      once the session is complete, over the sessions before today's date. */
   const priors =
@@ -89,6 +101,7 @@ export default async function GymSessionPage({
       startedAt={startedAt}
       completedAt={completedAt}
       priorBests={priorBests}
+      corrections={corrections}
       totalSets={totalSets}
       exercises={exercises}
       loggedSets={loggedSets}

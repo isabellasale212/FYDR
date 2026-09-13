@@ -12,8 +12,12 @@ header comment named as missing.
 
 ## 3. What you see
 
-The date as the heading, with a "Corrected" pill beside it when any set has a
-prior revision (§0v). Then, since ATH-ADULT-13 (12 September 2026), **a two-up
+An eyebrow above the heading — "Gym · Lower A · complete" (ATH-ADULT-13 C1,
+12 September 2026): the domain, the programme session's name through the
+athlete-safe RPC, and the log's status in a word. The date as the heading,
+with a "Corrected" pill beside it when any set has a prior revision (§0v); the
+gym history list's row carries the same pill (C3), off the live sets'
+`revision_of`. Then, since ATH-ADULT-13 (12 September 2026), **a two-up
 hero card**: "Total volume" — the live sets' tonnage as a 48px figure with "kg"
 as its unit, over "N sets across M exercises" (or "N sets · recomputed after a
 correction" when a set was revised; true, because 0045's `revise_gym_set_log`
@@ -28,9 +32,11 @@ load, and a "Correct" button per row. **An absent reps or load reads "Not
 logged"**, never a dash and never a zero. Beneath the table: "A correction keeps
 the original. Corrections stay open on a finished session."
 
-When a set was corrected, the "What you reported" card lists each corrected
-set's prior values in words ("8 reps at 100 kg → now 8 reps at 102.5 kg";
-"8 reps, load not logged" when a value was absent).
+When a set was corrected, the "What you reported" card opens with "Set 1 was
+corrected on Fri 14 Aug. Both values are kept on record." (C3 — the date is the
+correction row's own `logged_at`) and lists each corrected set's prior values
+in words ("8 reps at 100 kg → now 8 reps at 102.5 kg"; "8 reps, load not
+logged" when a value was absent).
 
 ## 4. What the athlete enters here
 
@@ -100,10 +106,10 @@ recommendation per item is `docs/overnight-records-2026-09-12.md`:
   reported"; "Not rated" for a missing session RPE.
 - **The footer note** is the board's two sentences.
 
-Recorded, not built: the eyebrow "Gym · Lower A · complete" (the read selects
-neither the programme session's name nor `status`); tapping a row to correct
-with the logger's panel and a Save correction / Cancel footer; the per-row
-"Corrected · was 100 kg × 8" marker and the "Corrected" pill on the history
-list (no per-session revised flag on the list read; the 3px bar has no pattern
-here); "4 of 6 shown" on a small phone; no tab bar on this screen (a shell
-decision). §0v's "What you reported" card stays as built.
+Built later the same day: the eyebrow (C1) and the history list's "Corrected"
+pill with the dated sentence on the detail (C3). Recorded, not built: tapping a
+row to correct with the logger's panel and a Save correction / Cancel footer
+(C2, with 09 C1); the per-row "Corrected · was 100 kg × 8" marker (D1, folds
+the card once C2 lands; the 3px bar is declined); "4 of 6 shown" on a small
+phone and no tab bar on this screen (both declined). §0v's "What you reported"
+card stays as built.

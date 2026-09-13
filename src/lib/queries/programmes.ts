@@ -1166,6 +1166,9 @@ export type GymSessionSummary = {
   session_rpe: number | null;
   total_volume_kg: number | null;
   set_count: number;
+  /** ATH-ADULT-13 C3: at least one live set is a correction — the history
+   *  row's Corrected pill. Off the live sets' revision_of, no extra read. */
+  corrected: boolean;
 };
 
 /** Session names come from resolve_my_programme_sessions (already athlete-safe, security
@@ -1224,10 +1227,10 @@ export async function fetchRecentGymSessions(
   if (rows.length === 0) return [];
 
   const [sets, sessions] = await Promise.all([
-    fetchAllPaged<{ gym_session_log_id: string | null }>((pageFrom, pageTo) =>
+    fetchAllPaged<{ gym_session_log_id: string | null; revision_of: string | null }>((pageFrom, pageTo) =>
       db
         .from('gym_set_logs_current')
-        .select('gym_session_log_id')
+        .select('gym_session_log_id, revision_of')
         .in('gym_session_log_id', rows.map((r) => r.id))
         .order('gym_session_log_id')
         .order('id')
@@ -1237,9 +1240,11 @@ export async function fetchRecentGymSessions(
   ]);
 
   const countByLog = new Map<string, number>();
+  const correctedLogs = new Set<string>();
   for (const s of sets) {
     if (!s.gym_session_log_id) continue;
     countByLog.set(s.gym_session_log_id, (countByLog.get(s.gym_session_log_id) ?? 0) + 1);
+    if (s.revision_of !== null) correctedLogs.add(s.gym_session_log_id);
   }
   const nameBySessionId = new Map(sessions.map((s) => [s.session_id, s.session_name]));
 
@@ -1251,6 +1256,7 @@ export async function fetchRecentGymSessions(
     session_rpe: r.session_rpe,
     total_volume_kg: r.total_volume_kg,
     set_count: countByLog.get(r.id) ?? 0,
+    corrected: correctedLogs.has(r.id),
   }));
 }
 
@@ -1311,15 +1317,32 @@ export async function fetchGymSessionSetDetails(
 export async function fetchGymSessionLog(
   db: Db,
   gymSessionLogId: string,
-): Promise<{ id: string; entry_date: string; session_rpe: number | null; comment: string | null } | null> {
+): Promise<{
+  id: string;
+  entry_date: string;
+  session_rpe: number | null;
+  comment: string | null;
+  /* ATH-ADULT-13 C1: the detail's eyebrow — "Gym · Lower A · complete". The
+     name is resolved by the caller through resolve_my_programme_sessions
+     (the athlete has no select on programme_sessions). */
+  status: GymLogStatus | null;
+  programme_session_id: string | null;
+} | null> {
   const { data, error } = await db
     .from('gym_session_logs_current')
-    .select('id, entry_date, session_rpe, comment')
+    .select('id, entry_date, session_rpe, comment, status, programme_session_id')
     .eq('id', gymSessionLogId)
     .maybeSingle();
   if (error) throw new Error(error.message);
   if (!data || data.id === null || data.entry_date === null) return null;
-  return { id: data.id, entry_date: data.entry_date, session_rpe: data.session_rpe, comment: data.comment };
+  return {
+    id: data.id,
+    entry_date: data.entry_date,
+    session_rpe: data.session_rpe,
+    comment: data.comment,
+    status: data.status,
+    programme_session_id: data.programme_session_id,
+  };
 }
 
 export type AthleteAssignment = {

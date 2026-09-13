@@ -58,9 +58,29 @@ field, *"Coach visible. Describe the restriction, not the injury. Do not name a
 diagnosis or a protocol."* — the hint travels with the one free-text field that
 leaves the clinical circle (PATTERN-S3).
 
+**The coach's form is an absence form** (PATTERN-S3 C5, 12 September 2026):
+"Record an absence" — the reason first, as chips (illness, personal, academic,
+representative, other), then the availability words with **Available withheld**
+("an absence that leaves an athlete fully available is not a record"), the note
+("Visible to the athlete and to all staff. This is not a medical record — do not
+describe symptoms."), and a well saying what an absence does not carry: no injury
+record, no site, no diagnosis, no return to play stage, no row on the injury
+board, and medical staff are not notified. "Record absence" is the primary; while
+a non-injury absence is open, "Mark available again" ends it — the Available row
+through the same confirmed step. From/Until dates and the "Already recorded"
+list are recorded, not built: the read model has no scheduled interval, and the
+list is the availability history (PATTERN-S3 C7). Permissions are the database's,
+unchanged: coach and sport scientist for a non-injury row, the medic
+unconditionally.
+
+**Availability history** (PATTERN-S3 C7, 12 September 2026): "Availability
+history ›" under the injury card opens `/squad/[athleteId]/availability` —
+every change on record, one row per change, newest first, with a CSV. See
+`63-availability-history.md`.
+
 **Before an availability change lands, the form says who will read what**
-(PATTERN-S3 / STAFF-SS-02-05 C4, 12 September 2026): pressing "Update availability"
-opens a step listing the athlete by name (the status word, restrictions, expected
+(PATTERN-S3 / STAFF-SS-02-05 C4, 12 September 2026): pressing "Record absence"
+(or "Update availability" on the medic's form) opens a step listing the athlete by name (the status word, restrictions, expected
 return, the injury record except the clinical notes), the coaches and the S&C by
 role (the status word, the restriction line, the reason category, your note —
 never a diagnosis, a mechanism or a protocol stage) and medical staff and the sport
@@ -109,7 +129,25 @@ range drawn behind it, so today reads against their history rather than against
 the squad.
 
 **Body weight.** Recent weights, the trend, and the agreed target range where one
-is set. A weigh in can be logged here.
+is set. A weigh in can be logged here. **The coach does not see body mass at all**
+(STAFF-SS-02-05 C9, decided 12 September 2026): for a role outside
+`BODY_MASS_VIEW` (sport scientist, S&C, nutritionist, medic) the whole card is
+absent — no heading, no lock, no buttons — as is the Body mass card on the
+athlete nutrition page and the body-mass column of the wellness export. A coach
+who also holds one of those roles sees it; roles are unions.
+
+**Read-only panels name their owner** (STAFF-SS-02-05 C5, 12 September 2026). A
+panel a role reads but cannot change ends with a well — an uppercase line
+"Read-only · set by medical staff" / "Read-only · set by the nutritionist or the
+sport scientist" and one sentence naming the person and the date — rather than a
+dimmed control: disabled is for a control you could have used. Today: the Injury
+card for anyone but the medic when the current availability is injury-linked
+(who set it, when, and that a coach may still record a non-injury absence from
+the Availability panel); the Nutrition plan panel for a role outside
+`NUTRITION_EDIT`, which also offers "View" rather than "Edit" (the rule that
+reaches the athlete — personal, group or club default — its author and its
+effective date). Recorded, not built: the programme block's owner line (the
+assignment carries no author).
 
 **The clinical record. Medics only.** Diagnosis, mechanism, severity, tissue
 type, imaging, referral, clinical notes and treatment plan. Nobody else sees this
@@ -140,8 +178,8 @@ creates a new record and marks the old one superseded rather than overwriting it
 
 | Element and label | Where it sits | What happens when used | Where it takes you | What it writes | Permission | Confirmation | Disabled or hidden when |
 |---|---|---|---|---|---|---|---|
-| Set availability | Availability card | Records a new availability status with reason and restrictions | Stays here | A new availability record; the previous one is closed | Coach, medic, sport scientist | Yes, the form must be submitted | Hidden from S&C and nutritionist |
-| Log a weigh in | Body weight card | Records a weight for a date | Stays here | A new body weight record | Coach, medic, sport scientist | Form submission | Hidden from others |
+| Record an absence / Mark available again | Availability card (the coach's and sport scientist's absence form) | Records a non-injury absence — reason, Modified or Unavailable, a note — or ends the open one | Stays here | A new availability record; the previous one is closed | Coach, sport scientist (the medic's own form sits on the injury record) | Yes — the who-will-read-what step | Hidden from S&C and nutritionist |
+| Log a weigh in | Body weight card | Records a weight for a date | Stays here | A new body weight record | Sport scientist, S&C, nutritionist, medic (`WEIGH_IN_EDIT`) | Form submission | The card itself is absent for the coach (`BODY_MASS_VIEW`, 12 September 2026) |
 | Edit biographical details | Bio card | Changes position, squad number and similar | Stays here | Updates the athlete record | **Coach only** | Form submission | Hidden from everyone else, medics included |
 | Correct an entry | Corrections panel | Supersedes a submitted entry with a new one | Stays here | A new entry marked as the live one; the old marked superseded. **Never an overwrite** | Coach, medic, sport scientist | Form submission | Hidden from others |
 | Wellness, Gym, Nutrition chips | Domain chips | Opens that domain for this athlete | `/squad/[athleteId]/wellness` and siblings | Nothing | Coach or medic today | None | Never |

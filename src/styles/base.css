@@ -3961,6 +3961,16 @@ a.hist-row:focus-visible {
    The reference's own disclosure row, "1 more · Nordic curl". A control, so
    --r-control like every other one; the reference draws it square-cornered and
    it is not one of the athlete pills. */
+/* ATH-ADULT-11 C2 (12 Sept 2026): "Set 1 corrected · was 100 kg × 8" under
+   the set keys — the neutral corrected marker in words, --muted, one line a
+   set. Flush with the keys and the weight row (the card pads its children
+   itself). */
+.gym-corrected-strip {
+  padding: var(--sp-8) 0 0;
+  font-size: var(--fs-12);
+  color: var(--muted);
+  line-height: 1.5;
+}
 /* ---------- the session summaries, ATH-ADULT-09 C6 / 10 C3 (12 Sept 2026) ----------
    Session complete and Finished early, on the logger once the session is
    closed. The totals at --fs-48 (the two numbers the board sets the logging
@@ -5608,6 +5618,7 @@ img.me-avatar {
 }
 .dash-flags-panel[data-empty='true'] {
   display: flex;
+  flex-wrap: wrap;
   align-items: center;
   gap: var(--sp-10);
   padding: var(--sp-12) var(--sp-16);
@@ -5666,8 +5677,22 @@ img.me-avatar {
 }
 .dash-flags-pills {
   display: flex;
+  flex-wrap: wrap;
   gap: var(--sp-8);
   margin-top: var(--sp-6);
+}
+/* STAFF-SS-01 A3 (12 Sept 2026): on a phone the header's scope span stood on
+   the pills; it joins the meta line there instead. */
+.dash-flags-scope-inline {
+  display: none;
+}
+@media (max-width: 767px) {
+  .dash-flags-head-scope {
+    display: none;
+  }
+  .dash-flags-scope-inline {
+    display: inline;
+  }
 }
 /* Pushed right by the text block's own growth rather than a margin on itself,
    so it stays on the first line's optical row at every width. */
@@ -5714,6 +5739,23 @@ img.me-avatar {
 }
 .dash-flags-summary {
   font-size: var(--fs-13);
+}
+/* STAFF-SS-01 C2 (12 Sept 2026): the line that closes the panel —
+   "Thresholds set by Jane Pemberton · 24 Aug · Change ›". */
+.dash-flags-thresholds {
+  margin: 0;
+  padding: var(--sp-10) var(--sp-20) var(--sp-14);
+  font-size: var(--fs-12);
+  color: var(--faint);
+}
+.dash-flags-panel[data-empty='true'] .dash-flags-thresholds {
+  flex-basis: 100%;
+  padding: var(--sp-6) 0 0;
+}
+.dash-flags-thresholds a {
+  color: var(--accent-text);
+  font-weight: 600;
+  white-space: nowrap;
 }
 .dash-flags-list {
   display: flex;
@@ -9861,6 +9903,70 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .tbl tr[data-availability='unavailable'] {
   background: rgb(var(--bad-rgb) / 0.07);
 }
+/* STAFF-SS-02-05 C2 / B4 (12 Sept 2026): the squad list on a phone. Each row
+   a 60px grid against the 34px measured — the name is the link, the position
+   beneath it, the pill right across both, the restriction line on the row —
+   with the header row and the squad number not drawn. Desktop keeps the
+   five measured columns and both washes above. The washes stay on the row
+   (they are on the tr). */
+@media (max-width: 767px) {
+  .roster thead {
+    display: none;
+  }
+  .roster tr {
+    display: grid;
+    grid-template-columns: minmax(0, 1fr) auto;
+    column-gap: var(--sp-12);
+    align-items: center;
+    min-height: 60px;
+    padding: var(--sp-10) var(--sp-16);
+    border-top: 1px solid var(--hair);
+  }
+  .roster tbody tr:first-child {
+    border-top: 0;
+  }
+  /* table.tbl td's own hairline and padding are the desktop cell's;
+     the phone row draws one line per row, on the tr. Specificity matches
+     the base rule (table.tbl td) and the shell's 44px floor rule for .nm
+     (.main table.tbl .nm), which is why both are spelled out. */
+  table.tbl.roster td {
+    display: block;
+    padding: 0;
+    border: 0;
+  }
+  table.tbl.roster td.r {
+    display: none;
+  }
+  .main table.tbl.roster td a.nm {
+    display: inline-flex;
+    align-items: center;
+    min-height: 44px;
+    margin-block: 0;
+    padding-block: 0;
+    font-size: var(--fs-16);
+    font-weight: 700;
+    color: var(--accent-text);
+  }
+  .roster td:nth-child(3) {
+    margin-top: calc(-1 * var(--sp-8));
+    font-size: var(--fs-13);
+    color: var(--muted);
+  }
+  .roster td:nth-child(4) {
+    grid-column: 2;
+    grid-row: 1 / span 2;
+    justify-self: end;
+  }
+  .roster-restrictions {
+    grid-column: 1 / -1;
+    margin-top: var(--sp-4);
+    font-size: var(--fs-13);
+    color: var(--text);
+  }
+  table.tbl.roster td.roster-restrictions[data-empty] {
+    display: none;
+  }
+}
 
 /* Training report: the board and the athlete rail, side by side. 1.55/1 is the
    design's own split — the board carries six columns of figures and needs the
@@ -13062,11 +13168,32 @@ a.hist-row:active { background: var(--surf-sunken); }
     border-radius: var(--r-control);
   }
   .ph-tab-glyph {
+    position: relative;
     display: inline-flex;
     align-items: center;
     justify-content: center;
     width: 23px;
     height: 23px;
+  }
+  /* STAFF-SS-01 C3 (12 Sept 2026): the Flags slot's count — athletes with an
+     open flag, the dashboard panel's own number — a small filled count on
+     the glyph's corner in the accent with --on-accent ink (the one pair the
+     system guarantees at 4.5:1 in both themes; --bad has no ink token and
+     white on it measures 3.1:1). A count, not a warning. */
+  .ph-count-mark {
+    position: absolute;
+    top: -6px;
+    right: -10px;
+    min-width: 18px;
+    height: 18px;
+    padding: 0 var(--sp-4);
+    border-radius: var(--r-full);
+    background: var(--accent);
+    color: var(--on-accent);
+    font-size: var(--fs-11);
+    font-weight: 700;
+    line-height: 18px;
+    text-align: center;
   }
   .ph-tab-glyph .ic {
     width: 20px;
@@ -13228,6 +13355,55 @@ a.hist-row:active { background: var(--surf-sunken); }
   color: var(--muted);
 }
 
+/* ATH-ADULT-12 C6 (12 Sept 2026), to PATTERN-S6's empty-state grammar: the
+   empty period on My data as the emphasised card (the wash pair
+   .after-card uses — the board's --blue-100 / --blue-200), what is empty
+   and its window as the title, the last entry and what fills it as the
+   body, one full-width secondary action that changes the period. */
+.empty-period {
+  background: var(--wash-accent);
+  border: 1px solid var(--border-accent-soft);
+  border-radius: var(--r-toggle);
+  padding: var(--sp-16) var(--sp-18);
+}
+.empty-period-title {
+  margin: 0;
+  font-size: var(--fs-16);
+  font-weight: 700;
+  line-height: 1.3;
+}
+.empty-period-body {
+  margin: var(--sp-8) 0 0;
+  font-size: var(--fs-13);
+  color: var(--muted);
+  line-height: 1.5;
+}
+.empty-period-action {
+  display: flex;
+  justify-content: center;
+  width: 100%;
+  min-height: 44px;
+  margin-top: var(--sp-12);
+}
+/* PATTERN-S6 (12 Sept 2026): the outbox's one status region on Today and
+   its conflict notice. Waiting is a promise kept — the good pair the 01/02
+   banners use; sent is information, a plain surface; a conflict is a lost
+   answer — the bad pair, not warn. Nothing here animates. */
+.outbox-waiting {
+  background: var(--wash-good);
+  border-color: var(--border-good);
+  color: var(--text);
+}
+.outbox-sent {
+  background: var(--surf);
+  border-color: var(--border);
+  color: var(--text);
+}
+.outbox-conflict {
+  background: var(--wash-bad);
+  border-color: var(--border-bad);
+  color: var(--text);
+}
 /* Who will read what, before an availability change lands
    (AvailabilityAudience, 2026-09-12): a --surf2 well with the three readers
    as rows, then Confirm (the write) and Back. */
@@ -13273,6 +13449,52 @@ a.hist-row:active { background: var(--surf-sunken); }
   text-decoration: none;
 }
 
+/* PATTERN-S3 C5 (12 Sept 2026): what an absence does not carry, as a well on
+   the coach's absence form — the same surf2-in-border well. */
+.absence-well {
+  margin-top: var(--sp-14);
+  padding: var(--sp-10) var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: var(--r-control);
+  background: var(--surf2);
+}
+.absence-well-k {
+  margin: 0;
+  font-size: var(--fs-11);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.absence-well-v {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-13);
+  color: var(--muted);
+  line-height: 1.45;
+}
+/* STAFF-SS-02-05 C5 (12 Sept 2026): a read-only panel ends with its owner —
+   the well treatment above, an uppercase line and a sentence, nothing dimmed. */
+.ro-owner {
+  margin-top: var(--sp-12);
+  padding: var(--sp-10) var(--sp-12);
+  border: 1px solid var(--border);
+  border-radius: var(--r-control);
+  background: var(--surf2);
+}
+.ro-owner-k {
+  margin: 0;
+  font-size: var(--fs-11);
+  font-weight: 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--muted);
+}
+.ro-owner-v {
+  margin: var(--sp-4) 0 0;
+  font-size: var(--fs-13);
+  color: var(--muted);
+  line-height: 1.45;
+}
 /* A value the programme builder reads rather than writes (PATTERN-S5 A1):
    sits where a field would, at the field's height, with no frame. */
 .pb-reads-only {

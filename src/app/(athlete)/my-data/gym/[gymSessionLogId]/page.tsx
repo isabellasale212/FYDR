@@ -1,7 +1,7 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
 import { GymSessionSetsList } from '@/components/GymSessionSetsList/GymSessionSetsList';
-import { fetchGymSessionLog, fetchGymSessionSetDetails } from '@/lib/queries/programmes';
+import { fetchGymSessionLog, fetchGymSessionSetDetails, fetchMyProgrammeSessions } from '@/lib/queries/programmes';
 import { fetchGymSetRevisionChains } from '@/lib/queries/entryRevisions';
 import { formatDate, formatNumber } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
@@ -28,11 +28,18 @@ export default async function GymSessionHistoryPage({
 }: {
   params: Promise<{ gymSessionLogId: string }>;
 }) {
-  const { db, orgId, timezone } = await requireAthlete();
+  const { db, orgId, athleteId, timezone } = await requireAthlete();
   const { gymSessionLogId } = await params;
 
   const session = await fetchGymSessionLog(db, gymSessionLogId);
   if (!session) notFound();
+  /* ATH-ADULT-13 C1 (2026-09-12): the eyebrow names the session and its
+     state — "Gym · Lower A · complete" — through the same athlete-safe RPC
+     the history list uses for the name. */
+  const mine = session.programme_session_id
+    ? ((await fetchMyProgrammeSessions(db, athleteId)).find((r) => r.session_id === session.programme_session_id) ?? null)
+    : null;
+  const statusWord = session.status === 'complete' ? 'complete' : session.status === 'abandoned' ? 'abandoned' : 'in progress';
 
   const sets = await fetchGymSessionSetDetails(db, gymSessionLogId);
   const totalVolume = sets.reduce((sum, s) => sum + (s.reps_completed ?? 0) * (s.load_kg ?? 0), 0);
@@ -52,13 +59,19 @@ export default async function GymSessionHistoryPage({
   return (
     <>
       <div className="hd">
-        <h1 className="d">{formatDate(session.entry_date, timezone)}</h1>
+        {/* .hd lays its children out in a row; the eyebrow and the date stack
+            inside one block so the date keeps its width (measured: the eyebrow
+            beside the h1 wrapped "Sat 12 Sept" onto three lines). */}
+        <div style={{ minWidth: 0 }}>
+          <p className="eyebrow">
+            Gym{mine?.session_name ? ` · ${mine.session_name}` : ''} · {statusWord}
+          </p>
+          <h1 className="d">{formatDate(session.entry_date, timezone)}</h1>
+        </div>
         {corrected.length > 0 ? (
           /* Same pill, same words, same place as the wellness and RPE history rows in
              my-data/page.tsx — this is the marker an athlete is told to look for. */
-          <span className="pill pill-neutral" style={{ marginInlineStart: 8 }}>
-            Corrected
-          </span>
+          <span className="pill pill-neutral">Corrected</span>
         ) : null}
       </div>
       {/* ATH-ADULT-13 (2026-09-12): the summary line is the hero. The two
@@ -127,9 +140,17 @@ export default async function GymSessionHistoryPage({
           <h2 className="card-title" id="gym-corrected-title">
             What you reported
           </h2>
+          {/* ATH-ADULT-13 C3 (2026-09-12): when each set was corrected, and
+              that both values are kept — the date is the correction row's own
+              logged_at. */}
           <p className="cap" style={{ marginTop: 0 }}>
-            {corrected.length === 1 ? 'One set was' : `${corrected.length} sets were`}{' '}
-            corrected after being logged. The original is kept and is shown here.
+            {corrected
+              .map(
+                (c) =>
+                  `Set ${c.current.set_number} was corrected${c.current.logged_at ? ` on ${formatDate(c.current.logged_at, timezone)}` : ''}.`,
+              )
+              .join(' ')}{' '}
+            Both values are kept on record.
           </p>
           <ol className="cap" style={{ margin: '4px 0 0', paddingInlineStart: 18 }}>
             {corrected.map((c) => (

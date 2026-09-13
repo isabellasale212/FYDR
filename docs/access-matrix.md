@@ -114,6 +114,18 @@ open it. See section 4.1.
 | Nutrition targets | VECD | V | V | V | VECD |
 | New nutrition target | VC | X | X | X | VC |
 | Body mass target ranges | VEC | V | V | V | VEC |
+| Body mass (weigh-ins, the latest figure, the trend, the export columns) | V | **X** | V | V | V |
+
+**The coach does not see body mass at all** — decided by Isabella 12 September
+2026 (STAFF-SS-02-05 C9, Q27 of the data-architecture briefing). The set is
+`BODY_MASS_VIEW` in `src/lib/access.ts` (sport scientist, S&C, nutritionist,
+medic — exactly the roles that may log a weigh-in). The athlete profile's Body
+weight card and the athlete nutrition page's Body mass card are absent for the
+coach; the wellness export drops its body-mass column and the body composition
+export is refused. Hiding UI only: the athlete's own morning check-in carries
+`body_mass_kg` on `wellness_entries`, which the coach can still read at the
+database — gating that column at RLS is the other half, recorded on the
+decision sheet.
 
 ### 3.4 Analysis
 

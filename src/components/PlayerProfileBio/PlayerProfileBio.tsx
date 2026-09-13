@@ -39,7 +39,9 @@ type Props = {
   /** Never editable here — BodyWeightPanel, right below on this same page,
    *  is the real logged-history flow for this number; this form is not a
    *  second way to set it. */
-  weightDisplay: string;
+  /** Null when the reader may not see body mass (BODY_MASS_VIEW — the coach,
+   *  STAFF-SS-02-05 C9): the Weight cell is absent, not blank. */
+  weightDisplay: string | null;
   initialPosition: string | null;
   initialSquadNumber: number | null;
   initialHeightCm: number | null;
@@ -238,10 +240,12 @@ export function PlayerProfileBio({
               ))}
             </select>
           </div>
-          <div className="pp-detail-cell">
-            <div className="l">Weight</div>
-            <div className="v">{weightDisplay}</div>
-          </div>
+          {weightDisplay !== null ? (
+            <div className="pp-detail-cell">
+              <div className="l">Weight</div>
+              <div className="v">{weightDisplay}</div>
+            </div>
+          ) : null}
 
           <div style={{ gridColumn: '1 / -1', display: 'flex', alignItems: 'center', gap: 'var(--sp-12)', marginTop: 'var(--sp-6)' }}>
             {error ? (
@@ -279,10 +283,12 @@ export function PlayerProfileBio({
             <div className="l">Hand</div>
             <div className="v">{initialDominantSide ? (HAND_LABEL[initialDominantSide] ?? EM_DASH) : EM_DASH}</div>
           </div>
-          <div className="pp-detail-cell">
-            <div className="l">Weight</div>
-            <div className="v">{weightDisplay}</div>
-          </div>
+          {weightDisplay !== null ? (
+            <div className="pp-detail-cell">
+              <div className="l">Weight</div>
+              <div className="v">{weightDisplay}</div>
+            </div>
+          ) : null}
         </div>
       )}
     </>

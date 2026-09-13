@@ -155,10 +155,34 @@ export const INJURY_PROGRAMME_PROPOSER = ['strength_conditioning'] as const;
  *
  *  The coach is the only staff role excluded. Decided 2026-09-06.
  *
- *  READING a weigh-in is a different question and stays open to every staff
- *  role: body mass is not injury data, and the athlete profile is V or better in
- *  all five columns. The page keeps the two apart. */
+ *  READING a weigh-in is a different question — BODY_MASS_VIEW below, which
+ *  since 2026-09-12 excludes the coach too. The page keeps the two apart. */
 export const WEIGH_IN_EDIT = [
+  'sport_scientist',
+  'strength_conditioning',
+  'nutritionist',
+  'medic',
+] as const;
+
+/** Who may SEE an athlete's body mass — the weigh-ins, the latest figure, the
+ *  trend, the nutrition page's mass card, the export columns.
+ *
+ *  Decided by Isabella 2026-09-12 (STAFF-SS-02-05 C9; Q27 of the
+ *  data-architecture briefing): the coach does not see body mass at all —
+ *  the section as well as the three buttons. The paragraph above this set
+ *  used to say reading stayed open to every staff role; that is the rule
+ *  this replaces. A coach reads availability, restrictions and load; body
+ *  mass is a conversation for the S&C, the nutritionist and the medic, and
+ *  a number a coach can see is a number a coach comments on.
+ *
+ *  Every role that may log a weigh-in may see one, so this is WEIGH_IN_EDIT
+ *  exactly; kept as its own name because the two questions are different
+ *  and the next role added to one need not join the other. Roles are unions:
+ *  a coach who also holds sport scientist sees it. Hiding UI only — the
+ *  athlete's own check-in carries body_mass_kg on wellness_entries, which
+ *  the coach can still read at the database; gating the column at RLS is
+ *  recorded on the decision sheet as the other half. */
+export const BODY_MASS_VIEW = [
   'sport_scientist',
   'strength_conditioning',
   'nutritionist',

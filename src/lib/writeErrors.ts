@@ -102,8 +102,10 @@ const SENTENCES = {
   duplicate: 'This looks like it was already saved. Refresh to check before sending it again.',
   connectionStaff:
     'That didn’t save — the connection dropped or timed out. Check your connection and try again.',
+  /* PATTERN-S6 A3 (2026-09-12): ATH-ADULT-03's approved words for a send
+     that failed, with the instruction kept. */
   connectionAthlete:
-    'Couldn’t save — check your signal and try again. Your answer is still here.',
+    'That did not send — check your signal and try again. Your answer is still here.',
   defaultStaff: 'That didn’t save. Try again in a moment.',
   defaultAthlete: 'Couldn’t save. Try again in a moment — your answer is still here.',
 } as const;

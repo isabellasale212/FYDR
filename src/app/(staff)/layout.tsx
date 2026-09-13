@@ -4,6 +4,7 @@ import { StaffPhoneShell } from '@/components/StaffPhoneShell/StaffPhoneShell';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { fetchGroups } from '@/lib/queries/groups';
+import { fetchOpenFlagAthleteCount } from '@/lib/queries/flags';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 
@@ -22,6 +23,10 @@ export default async function StaffLayout({
      resolve their own scope from the URL and the cookie as before. */
   const [groups, groupIds] = await Promise.all([fetchGroups(db, orgId), resolveGroupFilter(undefined)]);
   const groupLabel = groupScopeLabel(groups, groupIds);
+  /* STAFF-SS-01 C3: the Flags tab badge — distinct athletes with an open
+     flag in the active group scope, the number the dashboard's attention
+     panel headlines. One lean read per staff page load. */
+  const flagsBadge = await fetchOpenFlagAthleteCount(db, orgId, groupIds);
 
   return (
     <div className="app">
@@ -39,6 +44,7 @@ export default async function StaffLayout({
         premium={isPremium(tier)}
         previewingTier={previewingTier}
         groupLabel={groupLabel}
+        flagsBadge={flagsBadge}
       />
       <main className="main" id="main">
         <BackButton />

@@ -6,6 +6,8 @@ import type {
   InjuryStatus,
 } from '@/lib/types/database';
 import { fetchGroupAthleteIds, type Db } from './groups';
+import { fetchAllPaged } from './paged';
+import type { AvailabilityLedgerRow } from '@/lib/availabilityHistory';
 import { restrictionLine } from '@/lib/restrictions';
 
 /* Availability, as a coach may read it.
@@ -16,6 +18,8 @@ import { restrictionLine } from '@/lib/restrictions';
  * CONTRACT.md rule 3, ADR-007. */
 
 export type CurrentAvailability = {
+  /** Who set it and when — the read-only owner line (STAFF-SS-02-05 C5). */
+  set_by: string | null;
   athlete_id: string;
   status: AvailabilityStatus;
   restrictions: string[] | null;
@@ -67,7 +71,7 @@ export async function fetchCurrentAvailability(
   let q = db
     .from('availability')
     .select(
-      'athlete_id, status, restrictions, reason_category, injury_id, effective_from, note',
+      'athlete_id, status, restrictions, reason_category, injury_id, effective_from, note, set_by',
     )
     .eq('org_id', orgId)
     .is('effective_to', null);
@@ -77,6 +81,25 @@ export async function fetchCurrentAvailability(
   const { data, error } = await q;
   if (error) throw new Error(error.message);
   return data ?? [];
+}
+
+/** Every availability row for one athlete, oldest first — the ledger the
+ *  history screen reads (PATTERN-S3 C7). No window: the record is the
+ *  record. Paged, because a club three seasons deep with a busy medic
+ *  writes more rows than one page holds; `id` breaks ties. Read through
+ *  availability_staff_select, which every staff role has (0074). */
+export async function fetchAvailabilityLedger(db: Db, orgId: string, athleteId: string): Promise<AvailabilityLedgerRow[]> {
+  const rows = await fetchAllPaged<AvailabilityLedgerRow>((from, to) =>
+    db
+      .from('availability')
+      .select('id, status, restrictions, reason_category, injury_id, effective_from, effective_to, set_by, note')
+      .eq('org_id', orgId)
+      .eq('athlete_id', athleteId)
+      .order('effective_from', { ascending: true })
+      .order('id')
+      .range(from, to),
+  );
+  return rows;
 }
 
 export async function fetchOpenInjuries(

@@ -94,5 +94,38 @@ console.log('\nD3. "Ready for {matchday}" only when the fixture is within 14 day
   assert(/FIXTURE_RANGE_DAYS|14 days/.test(read('docs/screens/01-dashboard.md')), '01-dashboard.md records the range');
 }
 
+console.log('\nA3 / C3. the attention panel counts athletes, and the Flags tab badge shows the same number (2026-09-12)');
+{
+  const flags = strip(read('src/lib/queries/flags.ts'));
+  assert(/athleteTotal: number;/.test(flags) && /athleteTotal: athleteIds\.length/.test(flags), 'fetchDashboardAttention counts distinct athletes over every open flag, not the rendered rows');
+  assert(/export async function fetchOpenFlagAthleteCount\(/.test(flags) && /new Set\(rows\.map\(\(r\) => r\.athlete_id\)\)\.size/.test(flags), 'fetchOpenFlagAthleteCount is the same count, read lean for the badge');
+  const panel = strip(read('src/components/DashboardFlagsPanel/DashboardFlagsPanel.tsx'));
+  assert(/<span className="dash-flags-count">\{athleteTotal\}<\/span>/.test(panel) && /athlete\{athleteTotal === 1 \? '' : 's'\}/.test(panel) && /need\$\{athleteTotal === 1 \? 's' : ''\} attention · \$\{openTotal\} open flag/.test(panel), 'the headline is "5 athletes", the meta "need attention · 12 open flags · …"');
+  assert(/top \{rows\.length\} of \{athleteTotal\} athletes/.test(panel) && /dash-flags-scope-inline/.test(panel), 'the scope says "top 5 of 8 athletes" — in the header on desktop, on the meta line on a phone');
+  assert(/\.dash-flags-pills\s*\{[^}]*flex-wrap:\s*wrap/.test(read('src/styles/base.css')), 'the priority pills wrap on a phone');
+  const layout = strip(read('src/app/(staff)/layout.tsx'));
+  assert(/fetchOpenFlagAthleteCount\(db, orgId, groupIds\)/.test(layout) && /flagsBadge=\{flagsBadge\}/.test(layout), 'the layout reads the count for the active group filter and hands it to the phone shell');
+  const shell = strip(read('src/components/StaffPhoneShell/StaffPhoneShell.tsx'));
+  assert(/row\.route === '\/flags' && flagsBadge > 0/.test(shell) && /className="ph-count-mark num"/.test(shell), 'the Flags tab carries the badge when the count is above zero');
+  assert(/`Flags, \$\{flagsBadge\} athlete\$\{flagsBadge === 1 \? '' : 's'\} need\$\{flagsBadge === 1 \? 's' : ''\} attention`/.test(shell), 'and says what the number is');
+  const css = read('src/styles/base.css');
+  assert(/\.ph-count-mark\s*\{[^}]*background:\s*var\(--bad\)[^}]*color:\s*var\(--on-bad\)/.test(css) || /\.ph-count-mark\s*\{[^}]*background:\s*var\(--accent\)/.test(css), 'the badge is a small filled count on the glyph');
+  const spec = read('docs/screens/01-dashboard.md');
+  assert(/counts \*\*athletes\*\*/.test(spec) && /Flags slot carries the same number/.test(spec), '01-dashboard.md describes the athlete count and the badge');
+}
+
+console.log('\nC2 (the thresholds line). "Thresholds set by Jane Pemberton · 24 Aug · Change ›" closes the attention panel (2026-09-12)');
+{
+  const th = strip(read('src/lib/queries/thresholds.ts'));
+  assert(/export async function fetchThresholdProvenance\(/.test(th) && /order\('updated_at', \{ ascending: false \}\)/.test(th) && /created_by/.test(th), 'fetchThresholdProvenance: the most recently changed active threshold, who created it, when');
+  const panel = strip(read('src/components/DashboardFlagsPanel/DashboardFlagsPanel.tsx'));
+  assert(/provenance: ThresholdProvenance \| null;/.test(panel) || /provenance\?: ThresholdProvenance \| null;/.test(panel), 'the panel takes the provenance');
+  assert(/className="dash-flags-thresholds"/.test(panel) && /Thresholds set by \{provenance\.setBy \?\? 'the club defaults'\}/.test(panel.replace(/\s+/g, ' ')) && /Change &rsaquo;|Change ›/.test(panel), 'the line: "Thresholds set by {name} · {date} · Change ›"');
+  assert(/canEditThresholds \? \(/.test(panel) || /href="\/settings\/thresholds"/.test(panel), '"Change" links to where they are set');
+  const dash = strip(read('src/app/(staff)/dashboard/page.tsx'));
+  assert(/fetchThresholdProvenance\(db, orgId\)/.test(dash) && /provenance=\{/.test(dash) && /canEditThresholds=\{hasAnyRole\(claims\.roles, THRESHOLD_EDIT\)\}/.test(dash), 'the dashboard reads it once and says who may change them');
+  assert(/one stored date everywhere/i.test(read('src/lib/queries/thresholds.ts')) || /same stored date/i.test(read('src/lib/queries/thresholds.ts')), 'the read states the one-date rule');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

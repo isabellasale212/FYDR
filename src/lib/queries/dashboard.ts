@@ -252,6 +252,9 @@ export type HeadlineStats = {
    *  alone needed, so the panel costs nothing this function wasn't already
    *  paying for. */
   attentionRows: AttentionRow[];
+  /** Distinct athletes with an open flag (STAFF-SS-01 A3) — the panel's
+   *  headline and the Flags tab badge. */
+  attentionAthletes: number;
   toMatchdayDays: number | null;
   opponent: string | null;
   sessionsLeft: number;
@@ -390,6 +393,7 @@ export async function fetchHeadlineStats(
     awaitingAckFlags: attention.awaitingAck,
     flagsBySeverity: attention.bySeverity,
     attentionRows: attention.rows,
+    attentionAthletes: attention.athleteTotal,
     toMatchdayDays,
     fixtureId: fixture?.id ?? null,
     opponent: fixture?.opponent ?? null,

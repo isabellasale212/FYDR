@@ -213,6 +213,11 @@ export type DashboardAttention = {
   /** All open flags in scope (OPEN_FLAG_STATUSES) — the same number /flags
    *  reports as its list length. */
   openTotal: number;
+  /** STAFF-SS-01 A3 (2026-09-12): how many ATHLETES those flags belong to —
+   *  the panel's headline ("5 athletes need attention") and the Flags tab
+   *  badge, one number read two ways (fetchOpenFlagAthleteCount below). A
+   *  coach talks to people, not to flags. */
+  athleteTotal: number;
   /** Of those, still raised/notified — the number that actually needs a
    *  coach's click this morning. */
   awaitingAck: number;
@@ -220,6 +225,22 @@ export type DashboardAttention = {
    *  the panel's summary line and /flags can never disagree. */
   bySeverity: Record<FlagSeverity, number>;
 };
+
+/** The Flags tab badge (STAFF-SS-01 C3): distinct athletes with an open flag
+ *  in the active group scope — the same number the dashboard's attention
+ *  panel headlines, read lean (one paged column) for every staff page load.
+ *  Paged for the reason fetchDashboardAttention gives: the open set grows
+ *  without bound in a club that is not triaging. */
+export async function fetchOpenFlagAthleteCount(db: Db, orgId: string, groupIds: readonly string[]): Promise<number> {
+  const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
+  if (scope && scope.length === 0) return 0;
+  const rows = await fetchAllPaged<{ athlete_id: string }>((pageFrom, pageTo) => {
+    let q = db.from('flags').select('athlete_id').eq('org_id', orgId).in('status', [...OPEN_FLAG_STATUSES]).order('id');
+    if (scope) q = q.in('athlete_id', scope);
+    return q.range(pageFrom, pageTo);
+  });
+  return new Set(rows.map((r) => r.athlete_id)).size;
+}
 
 export async function fetchDashboardAttention(
   db: Db,
@@ -270,6 +291,7 @@ export async function fetchDashboardAttention(
   const empty: DashboardAttention = {
     rows: [],
     openTotal: 0,
+    athleteTotal: 0,
     awaitingAck: 0,
     bySeverity: { low: 0, medium: 0, high: 0 },
   };
@@ -372,7 +394,13 @@ export async function fetchDashboardAttention(
     });
   }
 
-  return { rows, openTotal: prioritised.length, awaitingAck, bySeverity };
+  return {
+    rows,
+    openTotal: prioritised.length,
+    athleteTotal: athleteIds.length,
+    awaitingAck,
+    bySeverity,
+  };
 }
 
 /* ---------------------------------------------------------------------------

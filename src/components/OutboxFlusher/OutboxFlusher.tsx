@@ -194,6 +194,13 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
   const router = useRouter();
   const [pending, setPending] = useState(0);
   const [conflicts, setConflicts] = useState<ConflictItem[]>([]);
+  /* PATTERN-S6 A1 (2026-09-12): a send that worked changes the count in
+     place, once — "3 entries sent at 12:04. Nothing is waiting." in the same
+     status region the waiting line used, then gone on the next load. Set
+     only by a flush that sent something, so it is keyed to the state (what
+     landed), not to the event: a second `online` with nothing to send shows
+     nothing, and it can never appear twice for one send. Never a toast. */
+  const [sentAt, setSentAt] = useState<{ count: number; at: string } | null>(null);
 
   useEffect(() => {
     let cancelled = false;
@@ -308,7 +315,13 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
       const after = snapshot(timezone);
       setPending(after.pendingCount);
       setConflicts(after.conflicts);
-      if (sent > 0) router.refresh();
+      if (sent > 0) {
+        setSentAt({
+          count: sent,
+          at: new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: timezone }).format(new Date()),
+        });
+        router.refresh();
+      }
     }
 
     void flush();
@@ -354,18 +367,21 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
     }
   }
 
-  if (pending === 0 && conflicts.length === 0) return null;
+  if (pending === 0 && conflicts.length === 0 && sentAt === null) return null;
 
   return (
     <>
+      {/* PATTERN-S6 B2: a conflict is a lost answer, not a caution — the bad
+          tone, not warn. "Discard this one" / "Keep what is showing" stay
+          ghost controls inside the notice and nowhere else. */}
       {conflicts.map((c) => (
         <p
           key={`${c.domain}-${c.id}`}
-          className="banner"
+          className="banner outbox-conflict"
           role="alert"
-          style={{ marginBottom: 'var(--sp-12)', borderColor: 'var(--warn)' }}
+          style={{ marginBottom: 'var(--sp-12)' }}
         >
-          <span className="g g-warn" aria-hidden="true">
+          <span className="g g-bad" aria-hidden="true">
             !
           </span>
           <span>
@@ -402,12 +418,32 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
           </span>
         </p>
       ))}
+      {/* ONE status region, whichever line it carries: the waiting count
+          (B1, the good-tone card — held is a promise kept, not a warning;
+          the sentence is unchanged) or, after a flush that sent, the sent
+          line (A1, a plain --surf card: information, not a state). With
+          nothing waiting and nothing just sent there is no region at all —
+          the screen does not offer an empty list. */}
       {pending > 0 ? (
-        <p className="tiny" role="status">
-          <span aria-hidden="true">☁ </span>
-          <span className="num">{pending}</span> entr
-          {pending === 1 ? 'y is' : 'ies are'} saved on this phone and will send when
-          you have signal.
+        <p className="banner outbox-waiting" role="status" style={{ marginBottom: 'var(--sp-12)' }}>
+          <span className="g g-good" aria-hidden="true">
+            ☁
+          </span>
+          <span>
+            <span className="num">{pending}</span> entr
+            {pending === 1 ? 'y is' : 'ies are'} saved on this phone and will send when
+            you have signal.
+          </span>
+        </p>
+      ) : sentAt ? (
+        <p className="banner outbox-sent" role="status" style={{ marginBottom: 'var(--sp-12)' }}>
+          <span className="g g-good" aria-hidden="true">
+            ✓
+          </span>
+          <span>
+            <span className="num">{sentAt.count}</span> entr{sentAt.count === 1 ? 'y' : 'ies'} sent at{' '}
+            <span className="num">{sentAt.at}</span>. Nothing is waiting.
+          </span>
         </p>
       ) : null}
     </>

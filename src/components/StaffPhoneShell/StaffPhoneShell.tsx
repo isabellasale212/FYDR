@@ -43,6 +43,9 @@ type Props = {
    *  squad" or the group names. Read by the layout from the same cookie the
    *  chips write (§0ak), so the bar and the chips cannot disagree. */
   groupLabel: string;
+  /** STAFF-SS-01 C3: athletes with an open flag in the active scope — the
+   *  Flags slot's badge, the dashboard panel's headline number. */
+  flagsBadge?: number;
 };
 
 /* The bar's glyphs: the sidebar's own for the rows it carries; a flag for
@@ -65,7 +68,7 @@ function glyphFor(route: string): React.ReactNode {
   return SIDEBAR.find((r) => r.route === route)?.icon ?? FLAG_ICON;
 }
 
-export function StaffPhoneShell({ roles, fullName, orgName, premium, previewingTier = false, groupLabel }: Props) {
+export function StaffPhoneShell({ roles, fullName, orgName, premium, previewingTier = false, groupLabel, flagsBadge = 0 }: Props) {
   const pathname = usePathname();
   const [open, setOpen] = useState(false);
   const moreRef = useRef<HTMLButtonElement>(null);
@@ -119,9 +122,18 @@ export function StaffPhoneShell({ roles, fullName, orgName, premium, previewingT
               className="ph-tab"
               aria-current={active ? 'page' : undefined}
               data-active={active ? '' : undefined}
+              /* STAFF-SS-01 C3: the Flags slot carries the count of athletes
+                 with an open flag — the dashboard panel's headline number —
+                 and says what it is. */
+              aria-label={
+                row.route === '/flags' && flagsBadge > 0
+                  ? `Flags, ${flagsBadge} athlete${flagsBadge === 1 ? '' : 's'} need${flagsBadge === 1 ? 's' : ''} attention`
+                  : undefined
+              }
             >
               <span className="ph-tab-glyph" aria-hidden="true">
                 {glyphFor(row.route)}
+                {row.route === '/flags' && flagsBadge > 0 ? <span className="ph-count-mark num">{flagsBadge}</span> : null}
               </span>
               {row.label}
             </Link>

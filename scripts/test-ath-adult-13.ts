@@ -98,9 +98,30 @@ console.log('\nwhat this flow did NOT change');
   assert(/Corrected/.test(page), 'the Corrected pill stays');
 }
 
+console.log('\nC1. the eyebrow "Gym · Lower A · complete" (2026-09-12)');
+{
+  const q = strip(read('src/lib/queries/programmes.ts'));
+  const fn = q.slice(q.indexOf('export async function fetchGymSessionLog('), q.indexOf('\nexport ', q.indexOf('export async function fetchGymSessionLog(') + 10));
+  assert(/select\('id, entry_date, session_rpe, comment, status, programme_session_id'\)/.test(fn), 'fetchGymSessionLog selects status and the programme session');
+  assert(/fetchMyProgrammeSessions\(db, athleteId\)/.test(page), 'the page names the session through the athlete-safe RPC, as the list does');
+  assert(/<p className="eyebrow">\s*Gym(\s|&middot;|·|\{)/.test(page) && /statusWord/.test(page), 'the eyebrow reads "Gym · {session} · complete" above the date');
+}
+
+console.log('\nC3. Corrected on the history list, and "Set 1 was corrected on Fri 14 Aug. Both values are kept on record." on the detail');
+{
+  const q = strip(read('src/lib/queries/programmes.ts'));
+  const fn = q.slice(q.indexOf('export async function fetchRecentGymSessions('), q.indexOf('\nexport ', q.indexOf('export async function fetchRecentGymSessions(') + 10));
+  assert(/select\('gym_session_log_id, revision_of'\)/.test(fn) && /corrected: correctedLogs\.has\(r\.id\)/.test(fn), 'the list read carries a per-session corrected flag off the live sets\' revision_of');
+  const md = strip(read('src/app/(athlete)/my-data/page.tsx'));
+  assert(/s\.corrected \? \(\s*<span className="pill pill-neutral"[^>]*>\s*Corrected/.test(md), 'the gym history row carries the neutral Corrected pill');
+  assert(/was corrected\$\{c\.current\.logged_at \? ` on \$\{formatDate\(/.test(page) && /Both values are kept on record\./.test(page), 'the detail says when each set was corrected and that both values are kept');
+  assert(!/corrected after being logged\. The original is kept and is shown here\./.test(page), 'the old caption is gone');
+}
+
 console.log('\nthe spec');
 {
   const spec = read('docs/athlete/screens/09-one-gym-session-logged.md');
+  assert(/Both values are kept on record/.test(spec) && /eyebrow/.test(spec), 'and the eyebrow and the corrected sentence');
   assert(/Back to gym history/.test(spec) && /Total volume/.test(spec) && /Not logged/.test(spec), '09-one-gym-session-logged.md describes the hero, the words and the footer');
 }
 

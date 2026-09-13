@@ -11,6 +11,8 @@ import { enumLabel, formatDate } from '@/lib/format';
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { availabilityFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
+import { TableShell } from '@/components/TableShell/TableShell';
+
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 import {
@@ -239,7 +241,15 @@ export default async function InjuryAvailabilityReportPage({
                   </div>
                 </div>
 
-                <div className="card cmpl-table">
+                {/* PATTERN-S7 C1: the table shell — the order the query
+                    gives (unavailable, then modified, then unknown) said in
+                    the header, with the count over the roster. */}
+                <TableShell
+                  title="Not fully available today"
+                  sort="Unavailable first, then modified, then no medical entry"
+                  count={`${report.current.length} of ${report.summary.athleteCount} athletes`}
+                  className="cmpl-table"
+                >
                   {/* Said out loud now that the period control can read
                       "This season" or "All on record" beside it. This list is
                       NOT windowed and must not become so: fetchNotFullyAvailable
@@ -355,7 +365,7 @@ export default async function InjuryAvailabilityReportPage({
                       </p>
                     </>
                   )}
-                </div>
+                </TableShell>
               </>
             ),
           },

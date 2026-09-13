@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { NOT_EXPECTED, exclusionsLine, submittedLine } from '@/lib/reportFigures';
 import { squadComplianceFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
+import { TableShell } from '@/components/TableShell/TableShell';
+
 import { belowSquadFloor } from '@/lib/smallSample';
 import { AttentionRow } from '@/components/AttentionRow/AttentionRow';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
@@ -273,15 +275,10 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
         </section>
 
         <div className="sw-side">
-          <section className="card" aria-labelledby="load-title">
-            <div className="sw-card-head">
-              <h2 className="ath-card-title" id="load-title">
-                Load
-              </h2>
-              <span className="sw-card-meta">
-                {report.tiles.acwr.computable} of {report.athleteCount} computable
-              </span>
-            </div>
+          {/* PATTERN-S7 C1: the table shell — the load rows are not a ranking
+              (no sort line); the count is the computable ACWRs over the squad,
+              the meta the card head already said. */}
+          <TableShell title="Load" titleId="load-title" sort={null} count={`${report.tiles.acwr.computable} of ${report.athleteCount} computable`}>
             {/* The suppressed majority, said in the card rather than left to be
                 inferred from a table of dashes. An ACWR estimated from too few
                 days is worse than none, so those figures are WITHHELD, not
@@ -331,7 +328,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
                 </p>
               </>
             )}
-          </section>
+          </TableShell>
 
           <section className="card" aria-labelledby="avail2-title">
             <div className="sw-card-head">

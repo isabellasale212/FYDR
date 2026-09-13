@@ -15,6 +15,8 @@ import { periodCaveat, periodParamsFrom, periodSticky } from '@/lib/reportPeriod
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { complianceFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
+import { TableShell } from '@/components/TableShell/TableShell';
+
 import { requireReport } from '@/lib/session';
 import type { AppRole } from '@/lib/types/database';
 
@@ -349,7 +351,14 @@ export default async function ComplianceReportPage({
                   </p>
                 </div>
 
-                <div className="card cmpl-table">
+                {/* PATTERN-S7 C1: the table shell — the sort order the footer
+                    already states, now in the header too, with the count. */}
+                <TableShell
+                  title="By athlete"
+                  sort="Worst first — the athlete to chase is at the top"
+                  count={`${report.byAthlete.length} of ${report.athleteCount} athletes`}
+                  className="cmpl-table"
+                >
                   {report.byAthlete.length === 0 ? (
                     <p className="tiny" style={{ padding: '0 0 14px' }}>
                       No athletes in this filter.
@@ -434,7 +443,7 @@ export default async function ComplianceReportPage({
                       </div>
                     </>
                   )}
-                </div>
+                </TableShell>
               </>
             ),
           },

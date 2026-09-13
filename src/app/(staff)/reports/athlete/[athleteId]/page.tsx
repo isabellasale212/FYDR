@@ -16,6 +16,8 @@ import { availabilityStatus, SEVERITY_STATUS } from '@/lib/status';
 import { athleteDefinition } from '@/lib/reportCatalogue';
 import { athleteComplianceFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
+import { TableShell } from '@/components/TableShell/TableShell';
+
 import { requireReport } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
@@ -672,10 +674,10 @@ export default async function AthleteReportPage({
                   </div>
                 </div>
 
-                <section className="card flush" aria-labelledby="tests-title">
-                  <h2 className="card-title" id="tests-title" style={{ padding: '16px 16px 0' }}>
-                    Testing
-                  </h2>
+                {/* PATTERN-S7 C1: the table shell. Not a ranking — one athlete's
+                    tests — so no sort line; the count is the tests with a
+                    result. */}
+                <TableShell title="Testing" titleId="tests-title" sort={null} count={`${report.gymAndTesting.tests.length} test${report.gymAndTesting.tests.length === 1 ? '' : 's'} with a result`} className="flush">
                   {report.gymAndTesting.tests.length === 0 ? (
                     <div style={{ padding: 'var(--sp-16)' }}>
                       <EmptyState headingLevel={3} title={testsEmpty.title} body={testsEmpty.body} />
@@ -710,7 +712,7 @@ export default async function AthleteReportPage({
                       </tbody>
                     </table>
                   )}
-                </section>
+                </TableShell>
               </div>
             ),
           },

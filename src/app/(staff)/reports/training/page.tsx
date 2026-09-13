@@ -3,6 +3,7 @@ import { clubEmptyCopy, filterEmptyCopy } from '@/lib/staffEmpty';
 import { NO_BEST_YET, NO_GPS, NOT_SET, RESULT_NOT_ENTERED } from '@/lib/reportFigures';
 import { boardFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
+import { TableShell } from '@/components/TableShell/TableShell';
 import { belowSquadFloor } from '@/lib/smallSample';
 import Link from 'next/link';
 import { Dial } from '@/components/Dial/Dial';
@@ -501,9 +502,11 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                 {...boardFigure({ onBoard: board.rows.length, inScope: scopeSize, session: `v ${selected.opponent}`, dateLabel: formatDate(selected.date, timezone), noun: 'played', floored: false })}
               />
             </div>
-            <div className="card">
-              <h2 className="card-title">Board</h2>
-              <div className="tr-board" style={{ marginTop: 'var(--sp-10)' }}>
+            {/* PATTERN-S7 C1: the table shell — by unit, most distance
+                first, said in the header, with the count the figure above
+                carries. */}
+            <TableShell title="Board" sort="By unit, then the most distance first" count={`${board.rows.length} of ${scopeSize} athletes`}>
+              <div className="tr-board">
                 <div className="tr-board-inner match">
                   <div
                     className="tr-board-row"
@@ -537,7 +540,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                   ))}
                 </div>
               </div>
-            </div>
+            </TableShell>
           </>
         )}
       </>
@@ -761,9 +764,10 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
               {...boardFigure({ onBoard: board.rows.length, inScope: scopeSize, session: selected.title, dateLabel: formatDate(selected.date, timezone), noun: 'athletes', floored: heatFloored })}
             />
           </div>
-          <div className="card">
-            <h2 className="card-title">Board</h2>
-            <div className="tr-board" style={{ marginTop: 'var(--sp-10)' }}>
+          {/* PATTERN-S7 C1: the table shell — by unit, most distance first,
+              said in the header, with the count the figure above carries. */}
+          <TableShell title="Board" sort="By unit, then the most distance first" count={`${board.rows.length} of ${scopeSize} athletes`}>
+            <div className="tr-board">
               <div className="tr-board-inner">
                 <div
                   className="tr-board-row"
@@ -840,7 +844,7 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
                 })}
               </div>
             </div>
-          </div>
+          </TableShell>
             </div>
             <div className="tr-lower-rail">
               <div className="card" style={{ marginTop: 'var(--sp-14)' }}>

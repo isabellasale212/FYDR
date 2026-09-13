@@ -3,6 +3,8 @@ import { belowSquadFloor } from '@/lib/smallSample';
 import { NOT_SHOWN, NO_RESULT } from '@/lib/reportFigures';
 import { testCoverageFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
+import { TableShell } from '@/components/TableShell/TableShell';
+
 import { filterEmptyCopy, staffEmptyCopy } from '@/lib/staffEmpty';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
@@ -342,10 +344,16 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                         </div>
                       </div>
 
-                      <section className="card flush" aria-labelledby="ranking-title">
-                        <h2 className="card-title" id="ranking-title" style={{ padding: '16px 16px 0' }}>
-                          {byTest.definition.name} &mdash; ranked
-                        </h2>
+                      {/* PATTERN-S7 C1: the table shell — best first in the
+                          test's own direction, said in the header, with the
+                          count over those in scope. */}
+                      <TableShell
+                        title={`${byTest.definition.name} — ranked`}
+                        titleId="ranking-title"
+                        sort={`${byTest.definition.higher_is_better ? 'Highest' : 'Lowest'} first — the best result in this test's own direction`}
+                        count={`${byTest.rows.length} of ${byAthlete.rows.length} athletes`}
+                        className="flush"
+                      >
                         {byTest.rows.length === 0 ? (
                           /* "…yet" was true when the read was all-time. It is
                            * not true of a bounded one: an empty ranking now
@@ -389,7 +397,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                             </div>
                           ))
                         )}
-                      </section>
+                      </TableShell>
 
                       <section className="card flush" aria-labelledby="longitudinal-title">
                         <h2 className="card-title" id="longitudinal-title" style={{ padding: '16px 16px 0' }}>

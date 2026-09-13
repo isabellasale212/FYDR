@@ -14,6 +14,7 @@ import { ageFrom, enumLabel, formatDate, formatNumber } from '@/lib/format';
 import { NO_RESULT } from '@/lib/reportFigures';
 import { availabilityStatus, SEVERITY_STATUS } from '@/lib/status';
 import { athleteDefinition } from '@/lib/reportCatalogue';
+import { reportRoleNote } from '@/lib/reportRoleNote';
 import { athleteComplianceFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
 import { TableShell } from '@/components/TableShell/TableShell';
@@ -258,6 +259,13 @@ export default async function AthleteReportPage({
       <div className="card rhead-definition" style={{ marginBottom: 'var(--sp-14)' }}>
         <p>{athleteDefinition({ athlete: `${athlete.first_name} ${athlete.last_name}`, start: formatDate(report.from, timezone), end: formatDate(report.to, timezone) })}</p>
       </div>
+      {/* PATTERN-S7 C10: the role note — what this reader sees of the injury
+          detail, composed here because this report's header is its own. */}
+      {reportRoleNote('athlete', claims.roles) ? (
+        <p className="tiny rhead-rolenote" style={{ margin: 'calc(-1 * var(--sp-6)) 0 var(--sp-14)' }}>
+          {reportRoleNote('athlete', claims.roles)}
+        </p>
+      ) : null}
 
       {/* The period scopes every tab, so it rides the tab row rather than a
           row of its own above it. */}

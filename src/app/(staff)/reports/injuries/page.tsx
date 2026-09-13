@@ -9,6 +9,7 @@ import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { enumLabel, formatDate } from '@/lib/format';
 import { reportDefinition } from '@/lib/reportCatalogue';
+import { reportRoleNote } from '@/lib/reportRoleNote';
 import { availabilityFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
 import { TableShell } from '@/components/TableShell/TableShell';
@@ -139,6 +140,8 @@ export default async function InjuryAvailabilityReportPage({
           title: 'Injury & availability',
           /* PATTERN-S7 C1: the catalogue's sentence, above the numbers. */
           definition: reportDefinition('injuries') ?? undefined,
+          /* PATTERN-S7 C10: what this role sees of the clinical detail. */
+          roleNote: reportRoleNote('injuries', claims.roles),
           sub: (
             <div className="rhead-sub">
               {isMedical ? (

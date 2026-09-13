@@ -13248,6 +13248,46 @@ main:has(.rhead) > .back-btn > :first-child {
   font-size: var(--fs-14);
   color: var(--text);
 }
+/* PATTERN-S7 C10 (2026-09-13): the role note, one line under the definition. */
+.rhead-rolenote {
+  margin: var(--sp-8) 0 0;
+  color: var(--muted);
+}
+/* PATTERN-S7 C11 (2026-09-13): the training board's phone note — drawn on a
+   phone only; the board itself stays a desktop layout. */
+.tr-phone-note {
+  display: none;
+  margin: var(--sp-6) 0 0;
+  color: var(--muted);
+}
+@media (max-width: 767px) {
+  .tr-phone-note {
+    display: block;
+  }
+}
+/* PATTERN-S7 C11 (2026-09-13): on a phone the exports sit first under the
+   title — the eyebrow-and-actions row moves below the h1 by order alone.
+   The header becomes a column flex so `order` applies; every child keeps
+   its own margins. Desktop is untouched. */
+@media (max-width: 767px) {
+  .rhead {
+    display: flex;
+    flex-direction: column;
+  }
+  .rhead > * {
+    order: 3;
+  }
+  .rhead > .rhead-chips {
+    order: 0;
+  }
+  .rhead > .rhead-title {
+    order: 1;
+  }
+  .rhead > .rhead-eyerow {
+    order: 2;
+    margin-top: var(--sp-8);
+  }
+}
 /* PATTERN-S7 C1 (2026-09-13): the one emphasised figure a report leads with.
    The surface is .pp-hero's (the wash family — the system's --blue-100/200),
    the value at --fs-48 semi with tabular figures (.num). Label, count with

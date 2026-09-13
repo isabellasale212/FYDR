@@ -13,6 +13,7 @@ import { mondayOf } from '@/lib/queries/schedule';
 import { complianceAnchor, complianceQuery, resolveCompliancePeriod } from './period';
 import { periodCaveat, periodParamsFrom, periodSticky } from '@/lib/reportPeriod.server';
 import { reportDefinition } from '@/lib/reportCatalogue';
+import { reportRoleNote } from '@/lib/reportRoleNote';
 import { complianceFigure } from '@/lib/reportFigureCards';
 import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
 import { TableShell } from '@/components/TableShell/TableShell';
@@ -193,6 +194,8 @@ export default async function ComplianceReportPage({
           /* PATTERN-S7 C1: the catalogue's sentence, above the numbers; the
              same words go into the print view and both exports' headers. */
           definition: reportDefinition('compliance') ?? undefined,
+          /* PATTERN-S7 C10: the nutritionist's one-domain view, said. */
+          roleNote: reportRoleNote('compliance', claims.roles),
           sub: (
             <div className="rhead-sub">
               <p className="eyebrow" style={{ marginBottom: 'var(--sp-10)' }}>

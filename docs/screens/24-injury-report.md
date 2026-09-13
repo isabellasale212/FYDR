@@ -41,6 +41,14 @@ they are expected back, and where injuries are happening, over the period and gr
 chosen." — a `--surf` card under the scope line; it prints with the page and is the
 first line of the CSV and the line under the PDF's title.
 
+**The role note is on the report** (PATTERN-S7 C10, 13 September 2026;
+`lib/reportRoleNote.ts`, from `access.ts`'s own sets): one line under the definition.
+The medic reads "Medical: you see the diagnosis and the clinical columns. Coaches, the
+sport scientist and S&C do not — they read the status, the restriction and the expected
+return."; every other role reads "Status, restriction and expected return only. The
+diagnosis and the clinical detail are the medic's and are not on this report for your
+role." A withheld column is still absent, not announced; the note says whose it is.
+
 **One emphasised figure leads the Current page** (PATTERN-S7 C1, 13 September 2026;
 `components/ReportFigure`, `lib/reportFigureCards.ts`): "Available now", the count
 before the percentage ("20 of 30" then "67%"), the sample ("30 athletes on today's

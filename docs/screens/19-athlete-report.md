@@ -42,6 +42,12 @@ the shared header's `--surf` card, composed in this page under the period line
 because this report's header is its own; it prints with the page and is the first
 line of the CSV and the line under the PDF's title.
 
+**The role note is on the report** (PATTERN-S7 C10, 13 September 2026): under the
+definition, the medic reads that the injury detail is theirs to see and every other role
+reads availability and the restriction line only; the nutritionist reads that availability
+is a status without injury detail and that body mass is theirs; coaches, the sport
+scientist and S&C read that the injury detail is the medic's.
+
 **A header** with the athlete's name and the period, and a breadcrumb back.
 
 **A period selector.**

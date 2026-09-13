@@ -40,11 +40,19 @@ export type ReportHeaderProps = {
    *  under the scope line, above the numbers. The same sentence goes into
    *  the print view (this card prints) and the exports' headers. */
   definition?: string;
+  /** PATTERN-S7 C10 (2026-09-13): the role note — what this reader sees
+   *  that another role does not, or what is withheld and whose it is —
+   *  under the definition. Null where the report reads the same for every
+   *  role that can open it. lib/reportRoleNote.ts builds it from access.ts. */
+  roleNote?: string | null;
 };
 
 /** The one header the six report screens share, built to
  *  CHANGELOG-headers-spec.md. Five rows, in this order: Back, group chips,
- *  eyebrow with actions, title, tabs with the period.
+ *  eyebrow with actions, title, tabs with the period. On a phone (PATTERN-S7
+ *  C11, 2026-09-13) the eyebrow-and-actions row moves to directly under the
+ *  title — the exports first, because the pitch-side use of a report is to
+ *  send the PDF — by CSS order on .rhead alone; nothing else reflows.
  *
  *  Why the group chips are in here rather than left where they were. The
  *  design puts them above the eyebrow, which is a real change of meaning as
@@ -65,6 +73,7 @@ export function ReportHeader({
   period,
   sub,
   definition,
+  roleNote,
 }: ReportHeaderProps) {
   const router = useRouter();
   const pathname = usePathname();
@@ -129,6 +138,7 @@ export function ReportHeader({
           <p>{definition}</p>
         </div>
       ) : null}
+      {roleNote ? <p className="tiny rhead-rolenote">{roleNote}</p> : null}
 
       {tabs || tabsNode || period ? (
         <div className="rhead-tabrow">

@@ -310,9 +310,17 @@ export default async function TrainingReportPage({ searchParams }: { searchParam
          null for both, and the header draws nothing for null. */
       definition={reportDefinition('training') ?? undefined}
       sub={
-        <p className="eyebrow rhead-sub">
-          {`${orgName} · ${mode === 'training' ? 'Training' : 'Match day'} · ${groupScopeLabel(groups, groupIds)}`}
-        </p>
+        <>
+          <p className="eyebrow rhead-sub">
+            {`${orgName} · ${mode === 'training' ? 'Training' : 'Match day'} · ${groupScopeLabel(groups, groupIds)}`}
+          </p>
+          {/* PATTERN-S7 C11 (2026-09-13): the board stays a desktop layout;
+              its phone reading is the PDF. Drawn on a phone only (.tr-phone-
+              note), under the exports which C11 puts first there. */}
+          <p className="tiny tr-phone-note">
+            This board is laid out for a desktop. On a phone, read it as the PDF — Export PDF is above.
+          </p>
+        </>
       }
       actions={
         <>

@@ -49,6 +49,13 @@ attendance and the team allocation, not who played or minutes). The shell's slot
 in place and draws nothing for none; the builder's earlier drafted sentence is
 withdrawn.
 
+**Exports first under the title on a phone; the board's phone reading is the PDF**
+(PATTERN-S7 C11, 13 September 2026). Below 768px the shared header puts the
+eyebrow-and-exports row directly under the title (CSS order on `.rhead`, desktop
+untouched), and this report adds one line under its scope line, drawn on a phone only:
+"This board is laid out for a desktop. On a phone, read it as the PDF — Export PDF is
+above." The board itself does not reflow.
+
 **The header is one template shared by all five reports** (and specified in
 `CHANGELOG-headers-spec.md`). Five rows, always in this order:
 

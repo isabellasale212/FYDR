@@ -94,6 +94,11 @@ actually has, over the period and group chosen." — a `--surf` card under the s
 line, capped at 100ch; it prints with the page and is the first line of the CSV
 and the line under the PDF's title.
 
+**The role note is on the report** (PATTERN-S7 C10, 13 September 2026): the nutritionist
+reads "Nutritionist: the nutrition domain only. Wellness, session RPE and gym are not
+shown to this role." under the definition; every other role, for whom the report reads
+the same, sees no note.
+
 **One emphasised figure leads the Summary** (PATTERN-S7 C1, 13 September 2026;
 `components/ReportFigure`, `lib/reportFigureCards.ts`): "Submitted of expected", the
 count with its denominator before the percentage ("8 of 380" then "2%"), summed over

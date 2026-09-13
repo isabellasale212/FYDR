@@ -39,9 +39,13 @@ accounts · matching "okon"". When nothing matches, the list card says so once,
 with the way out — "No account matches — coaches · invited, not yet signed in.
 Clear the filters to see all 37." and a **Clear filters** button.
 
-Then every account with their name, email, linked athlete, last seen date, role
-toggles and status. At desktop each account is one row: name and email, the
-role chips, the status pill and Deactivate. **Below 768px the same row is a
+Then every account with their name, email, linked athlete, last seen date, its
+roles and its status. **Roles are stated on the row as facts, not toggled
+there** (since 13 September 2026, PATTERN-S8 C4): the chips are read-only and
+a **Change roles** link (44px) opens the account's own page at `#roles`, where
+the change previews what it grants and removes before Save roles. At desktop
+each account is one row: name and email, the role chips and the link, the
+status pill and Deactivate. **Below 768px the same row is a
 stacked card** — name and email, the chips wrapping, then status and the
 action on one line — so nothing scrolls sideways at 375 (`.um-row`).
 
@@ -68,7 +72,8 @@ only; the code keeps the complete list and lets the chip separate them.
 
 **Granting roles is where the nutritionist rule can be lost.** Permissions add up,
 so a nutritionist granted any second role sees what that role sees, injury
-information included. **Nothing on this screen says so.** Decision D-25.
+information included. Since 13 September 2026 the role-change preview on the
+account's page says so before the button (D-25, `docs/screens/49-user-detail.md`).
 
 **Creating a user writes an audit entry naming who granted what.** That is not
 optional bookkeeping: it is what makes role grants defensible later.
@@ -89,7 +94,7 @@ duplicate email says so in those words rather than as a database message.
 ## 9. Open issues
 
 - **This belongs to admin today.** Decision D-07.
-- **Nothing warns about combining the nutritionist role with another.** Decision
-  D-25.
+- ~~Nothing warns about combining the nutritionist role with another. Decision
+  D-25.~~ The role-change preview does, since 13 September 2026 (C4).
 - **There is no way to create an athlete record**, only to link an account to one
   that already exists. Decision D-16.

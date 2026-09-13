@@ -10,13 +10,14 @@ import {
   type UnlinkedAthlete,
   type UserAuditRow,
   type UserDetail,
-  ROLE_REFUSALS,
   roleToggleRefusal,
 } from '@/lib/queries/userManagement';
 import type { RemoveMfaFactorResult } from '@/app/(staff)/settings/users/[userId]/mfa/route';
 import { Pill } from '@/components/Pill/Pill';
+import { BlockedButton } from '@/components/BlockedButton/BlockedButton';
 import { USER_STATUS } from '@/lib/status';
-import { formatDate, formatDateTime, enumLabel } from '@/lib/format';
+import { formatDate, formatDateTime } from '@/lib/format';
+import { ROLE_CHANGE_EFFECT, ROLE_WORDS, capabilitiesFor, roleChangePreview } from '@/lib/roleGrants';
 import type { AppRole } from '@/lib/types/database';
 
 /* The tick boxes this panel offers. Missing both new roles, so neither could
@@ -41,23 +42,11 @@ type Props = {
   mfaFactor: { id: string; created_at: string } | null;
 };
 
-/** screens/user-management.md's own "WHAT THIS USER CAN SEE" panel, from
- *  01-roles-and-permissions.md (superseded) §2's permission matrix, reduced to the
- *  wireframe's own five rows. Roles are additive, so this is a plain OR
- *  across whatever roles are held, not a lookup keyed to one role — the
- *  same "union of permissions" rule the wireframe states in words
- *  ("This user has the union of Coach and Medical permissions"). */
-function permissionSummary(roles: readonly AppRole[]): { label: string; yes: boolean }[] {
-  const has = (r: AppRole) => roles.includes(r);
-  const anyStaffRole = has('coach') || has('medic') || has('sport_scientist');
-  return [
-    { label: 'Squad performance data', yes: has('coach') || has('medic') },
-    { label: 'Clinical detail', yes: has('medic') },
-    { label: 'Availability, set', yes: has('medic') },
-    { label: 'Users and billing', yes: has('sport_scientist') },
-    { label: 'Own data only', yes: !anyStaffRole },
-  ];
-}
+/* PATTERN-S8 C4 (2026-09-13): "What this user can see" and the change
+ * preview are both lib/roleGrants.ts — access.ts's sets with a sentence
+ * each — so the list a sport scientist reads is the list the gates use.
+ * The old four-role summary ("Users and billing", coach-or-medic as "squad
+ * performance data") is gone; it predated the five-role model. */
 
 const AUDIT_ACTION_LABEL: Record<string, string> = {
   'user.created': 'Account created',
@@ -69,20 +58,24 @@ const AUDIT_ACTION_LABEL: Record<string, string> = {
 
 /** The detail screen screens/user-management.md's own wireframe draws,
  *  reduced against what this build's auth layer actually has — see this
- *  file's page.tsx for the specific cuts. Role toggles apply immediately
- *  per click, the same as the Users list's own inline row, rather than
- *  the wireframe's batched checkboxes-plus-Save: this build already
- *  shipped and tested the immediate version on the list screen, and a
- *  second, differently-timed edit pattern on the same data one click away
- *  would be a real inconsistency, not a faithful rendering of the
- *  wireframe's intent. */
+ *  file's page.tsx for the specific cuts.
+ *
+ *  PATTERN-S8 C4 (2026-09-13): role chips no longer write on click. A chip
+ *  moves a PENDING set; while pending differs from held, a preview card in
+ *  the same card as the button says what the change grants and removes
+ *  (lib/roleGrants.ts, from access.ts's sets), the rules it trips, and when
+ *  it takes effect; Save roles writes, Cancel drops it. The immediate
+ *  toggle the list used to share is gone from the list too — it now states
+ *  roles as facts and sends changes here. */
 export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezone, user, history, unlinkedAthletes, isSelf, sportScientistCount, mfaFactor }: Props) {
   const router = useRouter();
-  const [roles, setRoles] = useState(user.roleGrants.map((g) => g.role).sort());
+  const [roles, setRoles] = useState<AppRole[]>(user.roleGrants.map((g) => g.role).sort());
+  /* C4: the set the chips show; written only by Save roles. */
+  const [pending, setPending] = useState<AppRole[]>(user.roleGrants.map((g) => g.role).sort());
   const [status, setStatus] = useState(user.status);
   const [athleteName, setAthleteName] = useState(user.athlete_name);
   const [linkChoice, setLinkChoice] = useState('');
-  const [busyRole, setBusyRole] = useState<AppRole | null>(null);
+  const [busyRoles, setBusyRoles] = useState(false);
   const [busyStatus, setBusyStatus] = useState(false);
   const [busyLink, setBusyLink] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -92,16 +85,22 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
 
   const invitedRow = [...history].reverse().find((h) => h.action === 'user.created');
 
-  async function toggleRole(role: AppRole) {
+  function togglePending(role: AppRole) {
+    setPending((p) => (p.includes(role) ? p.filter((r) => r !== role) : [...p, role]).sort());
+  }
+
+  const preview = roleChangePreview(roles, pending);
+
+  async function saveRoles() {
+    if (!preview) return;
     const db = createClient();
-    const next = roles.includes(role) ? roles.filter((r) => r !== role) : [...roles, role];
-    setBusyRole(role);
+    setBusyRoles(true);
     setError(null);
-    const { error: err, primaryOk } = await setUserRoles(db, orgId, currentUserId, currentActorRole, user.id, next);
-    setBusyRole(null);
+    const { error: err, primaryOk } = await setUserRoles(db, orgId, currentUserId, currentActorRole, user.id, pending);
+    setBusyRoles(false);
     if (err) setError(err);
     if (!primaryOk) return;
-    setRoles(next.sort());
+    setRoles([...pending]);
     router.refresh();
   }
 
@@ -180,64 +179,113 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
 
       <div className="profile-grid">
         <div className="stack">
-          <section className="card" aria-labelledby="roles-title">
+          <section className="card" aria-labelledby="roles-title" id="roles">
             <h2 className="card-title" id="roles-title">
               Roles
             </h2>
             <div className="chiprow">
               {ALL_ROLES.map((role) => {
                 /* §0ae: the database refuses a self-grant of medic and the
-                   removal of the last sport scientist. The chip stops people
-                   hitting that; the refusal itself is the trigger's. */
+                   removal of the last sport scientist. The chip says so on
+                   tap (BlockedButton), never a title; the refusal itself is
+                   the trigger's. */
                 const refusal = roleToggleRefusal(role, roles.includes(role), isSelf, sportScientistCount);
+                const blocked = status === 'deactivated' ? 'This account is deactivated. Reactivate it before changing its roles.' : refusal;
                 return (
-                  <button
+                  <BlockedButton
                     key={role}
-                    type="button"
                     className="squad-chip"
-                    aria-pressed={roles.includes(role)}
-                    disabled={busyRole === role || status === 'deactivated' || refusal !== null}
-                    title={refusal ?? undefined}
-                    onClick={() => toggleRole(role)}
+                    aria-pressed={pending.includes(role)}
+                    blocked={blocked !== null || busyRoles}
+                    reason={blocked ?? 'Saving…'}
+                    onClick={() => togglePending(role)}
                   >
-                    {enumLabel(role)}
-                  </button>
+                    {ROLE_WORDS[role]}
+                  </BlockedButton>
                 );
               })}
             </div>
-            {isSelf ? (
+            {preview ? (
+              <div className={`card rc-preview${preview.loses.length > 0 ? ' rc-preview-removes' : ''}`} role="region" aria-live="polite" aria-labelledby="rc-heading">
+                <p className="nm" id="rc-heading">
+                  {preview.heading}: {preview.sentence}
+                </p>
+                {preview.gains.length > 0 ? (
+                  <>
+                    <p className="cap rc-sub">Grants</p>
+                    <ul className="rc-list">
+                      {preview.gains.map((g) => (
+                        <li key={g}>
+                          <span className="g g-good" aria-hidden="true">
+                            +
+                          </span>{' '}
+                          {g}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : null}
+                {preview.loses.length > 0 ? (
+                  <>
+                    <p className="cap rc-sub">Removes</p>
+                    <ul className="rc-list">
+                      {preview.loses.map((l) => (
+                        <li key={l}>
+                          <span className="g g-bad" aria-hidden="true">
+                            −
+                          </span>{' '}
+                          {l}
+                        </li>
+                      ))}
+                    </ul>
+                  </>
+                ) : null}
+                {preview.warnings.map((w) => (
+                  <p className="tiny rc-warn" key={w}>
+                    {w}
+                  </p>
+                ))}
+                <p className="cap">{ROLE_CHANGE_EFFECT}</p>
+                <div className="chiprow rc-actions">
+                  <button type="button" className="btn-primary" disabled={busyRoles} onClick={saveRoles}>
+                    {busyRoles ? 'Saving…' : 'Save roles'}
+                  </button>
+                  <button type="button" className="btn-ghost" disabled={busyRoles} onClick={() => setPending([...roles])}>
+                    Cancel
+                  </button>
+                </div>
+              </div>
+            ) : (
               <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
-                {roleToggleRefusal('medic', roles.includes('medic'), true, sportScientistCount) ? `${ROLE_REFUSALS.selfMedic} ` : ''}
-                {roleToggleRefusal('sport_scientist', roles.includes('sport_scientist'), true, sportScientistCount) ? ROLE_REFUSALS.lastAdmin : ''}
+                Roles add up: this person has the union of every role shown. Tap a role to see what changing it would grant and remove; nothing is saved until you press Save roles.
               </p>
-            ) : null}
-            <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
-              Roles are additive. This user has the union of every ticked role&apos;s permissions.
-            </p>
+            )}
             <ul className="tiny" style={{ marginTop: 'var(--sp-8)', paddingLeft: 'var(--sp-18)' }}>
               {user.roleGrants.map((g) => (
                 <li key={g.role}>
-                  {enumLabel(g.role)} — granted {formatDate(g.granted_at, timezone)}
+                  {ROLE_WORDS[g.role]} — granted {formatDate(g.granted_at, timezone)}
                   {g.granted_by_name ? `, ${g.granted_by_name}` : ''}
                 </li>
               ))}
             </ul>
-            <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
-              Removing a role does not force a log-out on other devices — if access must end
-              immediately, deactivate the account instead.
-            </p>
           </section>
 
           <section className="card" aria-labelledby="see-title">
             <h2 className="card-title" id="see-title">
               What this user can see
             </h2>
-            {permissionSummary(roles).map((row) => (
-              <div className="kv" key={row.label}>
-                <span className="sub">{row.label}</span>
-                <span className={row.yes ? 'g-good' : 'sub'}>{row.yes ? 'Yes' : 'No'}</span>
-              </div>
-            ))}
+            {capabilitiesFor(roles).length === 0 ? (
+              <p className="tiny">Nothing in the staff app{roles.includes('athlete') ? ' — the athlete app for their own record only' : ''}.</p>
+            ) : (
+              <ul className="rc-list">
+                {capabilitiesFor(roles).map((c) => (
+                  <li key={c.key}>{c.label}</li>
+                ))}
+              </ul>
+            )}
+            <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
+              Computed from the roles held now, as the union of every one of them — the same sets every screen&apos;s gate reads.
+            </p>
           </section>
 
           <section className="card" aria-labelledby="danger-title">

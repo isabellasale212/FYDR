@@ -4,9 +4,10 @@ import { useState } from 'react';
 import Link from 'next/link';
 import { useRouter } from 'next/navigation';
 import { createClient } from '@/lib/supabase/client';
-import { linkAthleteToUser, setUserRoles, setUserStatus, type UnlinkedAthlete, type UserWithRoles, roleToggleRefusal } from '@/lib/queries/userManagement';
+import { linkAthleteToUser, setUserStatus, type UnlinkedAthlete, type UserWithRoles } from '@/lib/queries/userManagement';
+import { ROLE_WORDS } from '@/lib/roleGrants';
 import { Pill } from '@/components/Pill/Pill';
-import { enumLabel, formatDate } from '@/lib/format';
+import { formatDate } from '@/lib/format';
 import { USER_STATUS } from '@/lib/status';
 import { EMPTY_FILTER, ROLE_FILTERS, STATUS_FILTERS, filterUsers, isFiltered, userFilterSummary, type UserFilter } from '@/lib/userFilters';
 import type { AppRole } from '@/lib/types/database';
@@ -42,10 +43,6 @@ export function UserManagementPanel({ orgId, currentUserId, currentActorRole, ti
 
   const filtered = filterUsers(users, filter);
   const summary = userFilterSummary({ shown: filtered.length, total: users.length, filter });
-  /* The count the last-admin rule is about (§0ae): sport_scientist rows in
-     the org — one per user here, since roles is a set per user. Read off the
-     same list the rows render from, so it moves when a grant does. */
-  const sportScientistCount = users.reduce((n, u) => n + (u.roles.includes('sport_scientist') ? 1 : 0), 0);
 
   function refresh() {
     router.refresh();
@@ -141,7 +138,6 @@ export function UserManagementPanel({ orgId, currentUserId, currentActorRole, ti
               orgId={orgId}
               user={u}
               isSelf={u.id === currentUserId}
-              sportScientistCount={sportScientistCount}
               currentUserId={currentUserId}
               currentActorRole={currentActorRole}
               timezone={timezone}
@@ -331,7 +327,7 @@ function CreateUserForm({
         <div className="chiprow">
           {ALL_ROLES.map((role) => (
             <button key={role} type="button" className="squad-chip" aria-pressed={roles.has(role)} onClick={() => toggleRole(role)}>
-              {enumLabel(role)}
+              {ROLE_WORDS[role]}
             </button>
           ))}
         </div>
@@ -365,7 +361,6 @@ function UserRow({
   orgId,
   user,
   isSelf,
-  sportScientistCount,
   currentUserId,
   currentActorRole,
   timezone,
@@ -377,7 +372,6 @@ function UserRow({
   orgId: string;
   user: UserWithRoles;
   isSelf: boolean;
-  sportScientistCount: number;
   currentUserId: string;
   currentActorRole: AppRole;
   timezone: string;
@@ -386,7 +380,6 @@ function UserRow({
   onChanged: (next: UserWithRoles) => void;
   onLinked: (athleteId: string) => void;
 }) {
-  const [busyRole, setBusyRole] = useState<AppRole | null>(null);
   const [busyStatus, setBusyStatus] = useState(false);
   const [linkChoice, setLinkChoice] = useState('');
   const [busyLink, setBusyLink] = useState(false);
@@ -405,18 +398,6 @@ function UserRow({
     onLinked(linkChoice);
     onChanged({ ...user, athlete_id: linkChoice, athlete_name: athlete ? `${athlete.first_name} ${athlete.last_name}` : null });
     setLinkChoice('');
-  }
-
-  async function toggleRole(role: AppRole) {
-    const db = createClient();
-    const next = user.roles.includes(role) ? user.roles.filter((r) => r !== role) : [...user.roles, role];
-    setBusyRole(role);
-    setError(null);
-    const { error: err, primaryOk } = await setUserRoles(db, orgId, currentUserId, currentActorRole, user.id, next);
-    setBusyRole(null);
-    if (err) setError(err);
-    if (!primaryOk) return;
-    onChanged({ ...user, roles: next.sort() });
   }
 
   async function toggleStatus() {
@@ -446,26 +427,20 @@ function UserRow({
               {user.last_seen_at ? ` · last seen ${formatDate(user.last_seen_at, timezone)}` : ''}
             </p>
           </div>
+          {/* PATTERN-S8 C4 (2026-09-13): roles are stated here as facts and
+              changed on the account's own page, where the change previews
+              what it grants and removes before Save roles. The inline
+              toggles wrote on click with no preview, which C4 rules out. */}
           <div className="chiprow um-roles">
-            {ALL_ROLES.map((role) => {
-              /* §0ae: the database refuses a self-grant of medic and the
-                 removal of the last sport scientist; the chip stops people
-                 hitting that. */
-              const refusal = roleToggleRefusal(role, user.roles.includes(role), isSelf, sportScientistCount);
-              return (
-                <button
-                  key={role}
-                  type="button"
-                  className="squad-chip"
-                  aria-pressed={user.roles.includes(role)}
-                  disabled={busyRole === role || user.status === 'deactivated' || refusal !== null}
-                  title={refusal ?? undefined}
-                  onClick={() => toggleRole(role)}
-                >
-                  {enumLabel(role)}
-                </button>
-              );
-            })}
+            {user.roles.length === 0 ? <span className="tiny">No role</span> : null}
+            {user.roles.map((role) => (
+              <span key={role} className="chip-static">
+                {ROLE_WORDS[role]}
+              </span>
+            ))}
+            <Link href={`/settings/users/${user.id}#roles`} className="btn-ghost um-change">
+              Change roles
+            </Link>
           </div>
           <div className="um-status">
             <Pill status={USER_STATUS[user.status]} />

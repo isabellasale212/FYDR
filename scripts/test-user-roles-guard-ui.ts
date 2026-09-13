@@ -34,13 +34,16 @@ console.log('\nboth panels use it, and the pages supply the count');
   const detail = read('src/components/UserDetailPanel/UserDetailPanel.tsx');
   const list = read('src/components/UserManagementPanel/UserManagementPanel.tsx');
   const page = read('src/app/(staff)/settings/users/[userId]/page.tsx');
-  for (const [name, src] of [['UserDetailPanel', detail], ['UserManagementPanel', list]] as const) {
-    assert(/roleToggleRefusal\(role, /.test(src), `${name} asks roleToggleRefusal for every chip`);
-    assert(/disabled=\{busyRole === role \|\| [^}]*refusal !== null\}/.test(src), `${name} disables the chip on a refusal`);
-    assert(/title=\{refusal \?\? undefined\}/.test(src), `${name} says why in the chip's title`);
-  }
+  /* PATTERN-S8 C4 (2026-09-13): the list no longer toggles roles — it
+     states them and links to the account page — so only the detail panel
+     asks the rule; and a refused chip is a BlockedButton (aria-disabled,
+     the reason on tap or focus), never `disabled` + `title`, which the
+     constitution rules out. */
+  assert(/roleToggleRefusal\(role, /.test(detail), 'UserDetailPanel asks roleToggleRefusal for every chip');
+  assert(/blocked=\{blocked !== null \|\| busyRoles\}/.test(detail) && /reason=\{blocked \?\? 'Saving…'\}/.test(detail), 'UserDetailPanel blocks the chip on a refusal and says why on tap');
+  assert(!/title=\{refusal/.test(detail) && !/disabled=\{busyRole === role/.test(detail), 'never in a title, never the disabled attribute');
+  assert(!/roleToggleRefusal|setUserRoles/.test(list) && /chip-static/.test(list), 'UserManagementPanel states roles and does not write them');
   assert(/fetchSportScientistCount\(db, orgId\)/.test(page) && /sportScientistCount=\{sportScientistCount\}/.test(page), 'the detail page counts sport_scientist rows and passes the count');
-  assert(/u\.roles\.includes\('sport_scientist'\)/.test(list) && /sportScientistCount=\{sportScientistCount\}/.test(list), 'the list panel derives the count from the same list its rows render from');
 }
 
 console.log('\nsetUserRoles says it first');

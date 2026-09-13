@@ -5318,6 +5318,48 @@ img.me-avatar {
     justify-content: space-between;
   }
 }
+/* PATTERN-S8 C4 (2026-09-13): the role-change preview — in the same card as
+   the button, warn border while the change only grants, bad border once it
+   removes something (the board's "preview card: --bad border for permanent,
+   --warn for reversible" — a removal is reversible here, but it is the one
+   that closes doors, so it carries the stronger edge). */
+.rc-preview {
+  margin-top: var(--sp-12);
+  border-color: var(--border-warn);
+  background: var(--wash-warn);
+}
+.rc-preview-removes {
+  border-color: var(--border-bad);
+  background: var(--wash-bad);
+}
+.rc-sub {
+  margin-top: var(--sp-10);
+  margin-bottom: var(--sp-4);
+}
+.rc-list {
+  margin: 0;
+  padding-left: var(--sp-18);
+  font-size: var(--fs-13);
+  line-height: 1.45;
+}
+.rc-list li + li {
+  margin-top: var(--sp-4);
+}
+/* Inside the preview the glyph is the marker. */
+.rc-preview .rc-list {
+  list-style: none;
+  padding-left: 0;
+}
+.rc-warn {
+  margin-top: var(--sp-10);
+  color: var(--text);
+}
+.rc-actions {
+  margin-top: var(--sp-12);
+}
+.um-change {
+  min-height: 44px;
+}
 /* PATTERN-S8 A1 (2026-09-13): Log out is a button, set apart from the lists,
    with the session it ends named beside it. */
 .set-logout-form {

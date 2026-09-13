@@ -4,8 +4,9 @@ import { acwrSuppressedLabel } from '@/lib/acwr';
 import { fetchAthleteReport } from '@/lib/queries/athleteReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { enumLabel, formatDate, formatNumber } from '@/lib/format';
-import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { athleteDefinition } from '@/lib/reportCatalogue';
+import { athleteComplianceFigure } from '@/lib/reportFigureCards';
 import { requireReport } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
@@ -54,6 +55,16 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
           against, and "ACWR" under "This season" invites exactly the wrong
           conclusion. The ratio is defined as trailing 7:28 (lib/acwr.ts) and
           no period selection changes it. */}
+      {/* PATTERN-S7 C1: the same figure the screen leads with. */}
+      <PdfFigure
+        {...athleteComplianceFigure({
+          met: report.summary.compliance.met,
+          expected: report.summary.compliance.expected,
+          waived: report.summary.compliance.waived,
+          firstName: athlete.first_name,
+          rangeLabel: period.label,
+        })}
+      />
       <PdfTileRow>
         <PdfTile label="Compliance, this period" value={compliancePct === null ? '—' : `${compliancePct}%`} />
         <PdfTile label="Open flags" value={String(openFlags.length)} tone={openFlags.length > 0 ? 'warn' : undefined} />

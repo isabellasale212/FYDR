@@ -49,6 +49,36 @@ and the card already says it in three numbers. **MET-015 (week load so far)
 stays on the lead card's tail line** rather than moving to Analytics, because
 it is useful next to selection. Closes STAFF-SS-01 D8.
 
+**B5. Panel order on the athlete profile: one order, one exception.** The sport
+scientist's panel order is used for every role, with **Body weight raised above
+Flags for the S&C and the nutritionist**. Four bespoke orders would be better
+per role and worse to maintain, because every new panel would then need five
+decisions instead of one. Closes STAFF-SS-02-05 C4 and unblocks C3.
+
+**B6. A session that has been rated opens READ-ONLY**, with the reason said out
+loud: "This session has been rated by 14 athletes. Ratings are tied to its date
+and duration, so it cannot be changed. Cancel it and create a new one if it did
+not happen as planned." The rating neither follows nor detaches, because a
+session that can move under its rating makes every load figure in the product
+retroactively arguable. Accepted cost: a coach who typed 60 minutes and meant 90
+must cancel and recreate. Closes PATTERN-S4 C4.
+
+**B7. Applying a week template REPLACES the week**, with the consequence named
+before the button: "This will remove 4 sessions already in this week and add 9
+from the template." Merge produces weeks nobody intended (two Tuesday gym
+sessions, a duplicate matchday, athletes expected twice) and is very hard to
+explain afterwards because nothing shows which session came from where. This is
+one of the few places a confirmation earns its keep, so the warning must be
+genuinely clear. Closes PATTERN-S4 C7 and answers Q5's merge-or-replace.
+
+**B8. Today lists the athlete's gym session as a row**, with its count: "6 of 12
+sets · 2 waiting to send". Today is the athlete's whole day or it is not worth
+opening, and an athlete who sees nothing about their gym session on the one
+screen that tells them what to do will reasonably conclude there is nothing to
+do. It also gives the offline queue a visible home, which matters now the outbox
+is a real feature rather than a hidden mechanism. Accepted cost: a genuinely new
+query, as the page's own comment notes. Closes PATTERN-S6 C2.
+
 ## Related decisions made the same day
 
 - Scope is v1: `scope.md`.

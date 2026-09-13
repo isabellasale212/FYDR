@@ -5,7 +5,7 @@
  * system's is the wash family (.pp-hero's surface) at --fs-48. One report a
  * commit; §2 grows with each. */
 import { readFileSync } from 'node:fs';
-import { availabilityFigure, boardFigure, complianceFigure } from '@/lib/reportFigureCards';
+import { athleteComplianceFigure, availabilityFigure, boardFigure, complianceFigure } from '@/lib/reportFigureCards';
 
 let failed = 0;
 function assert(cond: boolean, msg: string) {
@@ -94,6 +94,24 @@ console.log('\n4. training and match: on the board of those in scope');
   const pdf = strip(read('src/app/(staff)/reports/training/pdf/route.tsx'));
   assert((pdf.match(/<PdfFigure \{\.\.\.boardFigure\(\{/g) ?? []).length === 2, 'and both PDFs');
   assert(/one emphasised figure/i.test(read('docs/screens/23-training-report.md')), 'the spec says so');
+}
+
+console.log('\n5. the athlete report: met of expected');
+{
+  const f = athleteComplianceFigure({ met: 24, expected: 30, waived: 2, firstName: 'Dan', rangeLabel: 'Last 28 days' });
+  assert(f.label === 'Submitted of expected' && f.count === '24 of 30' && f.value === '80%', 'the count before the percentage');
+  assert(f.sample === 'Dan · last 28 days · every domain expected of them', 'the sample: who, over what, across what');
+  assert(f.exclusions === '2 waived days are excluded — a waiver is "was not asked", not "did not submit".', 'waived days as the exclusions');
+  const none = athleteComplianceFigure({ met: 10, expected: 10, waived: 0, firstName: 'Dan', rangeLabel: 'Last 7 days' });
+  assert(none.exclusions === 'Nothing is excluded — no day was waived.' && none.value === '100%', 'nothing excluded, said');
+  const nothing = athleteComplianceFigure({ met: 0, expected: 0, waived: 0, firstName: 'Kai', rangeLabel: 'Last 7 days' });
+  assert(nothing.count === 'Nothing expected' && nothing.value === 'Not expected', 'nothing expected: words');
+  const page = strip(read('src/app/(staff)/reports/athlete/[athleteId]/page.tsx'));
+  assert(/<ReportFigure\s[\s\S]{0,40}\{\.\.\.athleteComplianceFigure\(\{/.test(page) && page.indexOf('athleteComplianceFigure({') < page.indexOf('className="ath-summary-grid"'), 'the card leads the Summary page');
+  assert(!/ath-stat-label">Compliance/.test(page), 'and the identity row no longer carries the stat — one figure, one place');
+  const pdf = strip(read('src/app/(staff)/reports/athlete/[athleteId]/pdf/route.tsx'));
+  assert(/<PdfFigure\s[\s\S]{0,40}\{\.\.\.athleteComplianceFigure\(/.test(pdf), 'and the PDF leads with it');
+  assert(/one emphasised figure/i.test(read('docs/screens/19-athlete-report.md')), 'the spec says so');
 }
 
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);

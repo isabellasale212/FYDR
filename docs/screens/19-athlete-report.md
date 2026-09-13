@@ -62,6 +62,14 @@ date of the most recent record, so a coach can see how current the picture is.
 
 ---
 
+**One emphasised figure leads the Summary** (PATTERN-S7 C1, 13 September 2026;
+`components/ReportFigure`, `lib/reportFigureCards.ts`): "Submitted of expected" — met
+of expected across every domain expected of this athlete, the count before the
+percentage ("24 of 30" then "80%"), the sample ("Dan · last 28 days · every domain
+expected of them"), then the waived days as the exclusions in a full sentence, or
+"Nothing is excluded — no day was waived." The compliance stat that sat at the end of the
+identity row moved into it; the PDF leads with the same figure.
+
 **An empty card follows the one grammar** (PATTERN-S6 C8, 13 September 2026;
 `lib/staffEmpty.ts`, the staff twin of My data's 12 C6): the Wellness card with
 nothing in the window reads "Nothing in the last 28 days." — "Dan's last morning

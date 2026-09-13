@@ -93,3 +93,20 @@ export function boardFigure(o: {
     exclusions: o.floored ? `${exclusions} Fewer than five have data, so shading is off; the numbers are unchanged.` : exclusions,
   };
 }
+
+/** The athlete report: one athlete's compliance — met of expected across the
+ *  domains, the count before the percentage, the athlete and the period as
+ *  the sample, their waived days as the exclusions. */
+export function athleteComplianceFigure(o: { met: number; expected: number; waived: number; firstName: string; rangeLabel: string }): ReportFigureCopy {
+  const pct = o.expected > 0 ? Math.round((100 * o.met) / o.expected) : null;
+  return {
+    label: 'Submitted of expected',
+    count: o.expected > 0 ? `${o.met} of ${o.expected}` : o.waived > 0 ? 'Nothing expected' : 'Nothing expected',
+    value: pct === null ? NOT_EXPECTED : `${pct}%`,
+    sample: `${o.firstName} · ${o.rangeLabel.toLowerCase()} · every domain expected of them`,
+    exclusions:
+      o.waived > 0
+        ? `${o.waived} waived ${o.waived === 1 ? 'day is' : 'days are'} excluded — a waiver is "was not asked", not "did not submit".`
+        : 'Nothing is excluded — no day was waived.',
+  };
+}

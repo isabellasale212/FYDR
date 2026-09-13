@@ -11,9 +11,11 @@ import { acwrInsufficiencyNote, acwrSuppressedLabel } from '@/lib/acwr';
 import { fetchAthleteReport } from '@/lib/queries/athleteReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { ageFrom, enumLabel, formatDate, formatNumber } from '@/lib/format';
-import { NOT_EXPECTED, NO_RESULT, submittedLine } from '@/lib/reportFigures';
+import { NO_RESULT } from '@/lib/reportFigures';
 import { availabilityStatus, SEVERITY_STATUS } from '@/lib/status';
 import { athleteDefinition } from '@/lib/reportCatalogue';
+import { athleteComplianceFigure } from '@/lib/reportFigureCards';
+import { ReportFigure } from '@/components/ReportFigure/ReportFigure';
 import { requireReport } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
@@ -99,7 +101,7 @@ export default async function AthleteReportPage({
   const report = await fetchAthleteReport(db, orgId, athleteId, timezone, { from: period.from, to: period.to });
   if (!report) notFound();
 
-  const { athlete, compliancePct, openFlags, currentProgrammes } = report.summary;
+  const { athlete, openFlags, currentProgrammes } = report.summary;
   /* PATTERN-S6 C8: the wellness card's empty state names the most recent
      check-in on record, any period — the same read the athlete's own My data
      makes for its empty period (12 C6). */
@@ -228,21 +230,11 @@ export default async function AthleteReportPage({
             </span>
           ) : null}
         </span>
-        {/* Carried over from the summary tiles this card replaced rather than
-            dropped with them: cross-domain compliance is a different question
-            from the Wellness card's own "days submitted", and it was the one
-            headline figure the design's identity row had no home for. */}
-        <span style={{ marginLeft: 'auto', textAlign: 'right' }}>
-          <span className="ath-stat-label">Compliance</span>
-          <span className="ath-stat-value" style={{ fontSize: 'var(--fs-20)' }}>
-            {compliancePct === null ? NOT_EXPECTED : `${compliancePct}%`}
-          </span>
-          {/* PATTERN-S7 C2 (2026-09-13): the figure's denominator and its
-              exclusions — "24 of 30 submitted · 2 waived", then the period. */}
-          <span className="tiny" style={{ display: 'block', color: 'var(--faint)' }}>
-            {submittedLine({ submitted: report.summary.compliance.met, expected: report.summary.compliance.expected, waived: report.summary.compliance.waived })} · {period.label.toLowerCase()}
-          </span>
-        </span>
+        {/* The cross-domain compliance figure stood at the end of this row
+            (carried over from the summary tiles the card replaced) until
+            PATTERN-S7 C1, 2026-09-13: it is now the report's one emphasised
+            figure card, leading the Summary page below, with its
+            denominator, sample and exclusions in full. */}
       </div>
 
       <div style={{ display: 'flex', gap: 'var(--sp-16)', alignItems: 'center', marginBottom: 'var(--sp-14)', flexWrap: 'wrap' }}>
@@ -287,6 +279,18 @@ export default async function AthleteReportPage({
             label: 'Summary',
             content: (
               <div className="stack">
+                {/* PATTERN-S7 C1: the one emphasised figure — met of expected
+                    across every domain expected of this athlete, the count
+                    before the percentage, their waived days as the exclusions. */}
+                <ReportFigure
+                  {...athleteComplianceFigure({
+                    met: report.summary.compliance.met,
+                    expected: report.summary.compliance.expected,
+                    waived: report.summary.compliance.waived,
+                    firstName: athlete.first_name,
+                    rangeLabel: period.label,
+                  })}
+                />
                 <div className="ath-summary-grid">
                   <section className="card" aria-labelledby="sum-wellness">
                     <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--sp-12)' }}>

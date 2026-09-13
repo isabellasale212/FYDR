@@ -104,8 +104,9 @@ console.log('\n7. the athlete report — the sixth');
   const q = strip(read('src/lib/queries/athleteReport.ts'));
   assert(/compliance: \{ pct: number \| null; met: number; expected: number; waived: number \};/.test(q) && /return \{ pct: expected > 0 \? Math\.round\(\(100 \* met\) \/ expected\) : null, met, expected, waived \};/.test(q), 'the compliance tally carries met, expected and waived');
   const page = strip(read('src/app/(staff)/reports/athlete/[athleteId]/page.tsx'));
-  assert(/submittedLine\(\{ submitted: report\.summary\.compliance\.met, expected: report\.summary\.compliance\.expected, waived: report\.summary\.compliance\.waived \}\)/.test(page), 'the compliance figure carries "24 of 30 submitted · 2 waived"');
-  assert(/compliancePct === null \? NOT_EXPECTED/.test(page), 'nothing expected is "Not expected"');
+  // Repointed 2026-09-13 (PATTERN-S7 C1): the figure moved into the emphasised card (athleteComplianceFigure), which carries the same denominator and the same word for nothing expected.
+  assert(/athleteComplianceFigure\(\{\s*met: report\.summary\.compliance\.met,\s*expected: report\.summary\.compliance\.expected,\s*waived: report\.summary\.compliance\.waived,/.test(page), 'the compliance figure carries "24 of 30 submitted · 2 waived"');
+  assert(/value: pct === null \? NOT_EXPECTED/.test(strip(read('src/lib/reportFigureCards.ts'))), 'nothing expected is "Not expected"');
   assert(/'Building baseline'/.test(page) && /'Nothing submitted'/.test(page) && /'No comparison'/.test(page) && /'None assigned'/.test(page) && /NO_RESULT/.test(page), 'the words for a missing value — a load tile "Building baseline" (its own 21-day floor), the latest wellness "Nothing submitted", a test "No result" / "No comparison", a programme "None assigned"');
   assert(!/\bBLANK\b/.test(page) && (page.match(/'—'/g) ?? []).length === 0, 'no dash on the athlete report');
   assert(/Building baseline/.test(read('docs/screens/19-athlete-report.md')), 'the spec says so');

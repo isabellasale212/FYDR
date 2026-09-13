@@ -65,6 +65,7 @@ Deep links arriving from push are shell namespaced (`/staff/...`, `/athlete/...`
 | # | Page | Route | Spec file | Shell | Roles | Parent |
 |---|---|---|---|---|---|---|
 | 1 | Today | `/today` | `screens/today.md` | athlete phone | athlete | none |
+| 1 | Waiting to send | `/today/waiting` | `docs/athlete/screens/19-waiting-to-send.md` | athlete phone | athlete | `/today` |
 | 2 | Morning check-in | `/check-in` | `screens/wellness-entry.md` | athlete phone | athlete | `/today` |
 | 5 | How hard was it | `/rpe/:sessionId` | `screens/training-entry.md` | athlete phone | athlete | `/today` |
 | 45 | Weekly protein question | `/nutrition-check-in` | `screens/nutrition-checkin.md` | athlete phone | athlete | `/today` |

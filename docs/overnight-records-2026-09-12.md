@@ -870,6 +870,8 @@ the code, so the record and the sheet carry the facts; nothing that needs a deci
 - **D5** Reduced motion — nothing in these states animates; nothing to build.
 
 **Built:** A1–A3, B1–B2 (B3 with A1). **Recorded:** C1–C10, D1–D5 — appended to the decision sheet.
+**C1 and D3 built 2026-09-13**: the queue screen at `/today/waiting` and its row (the
+app's `.hist-row`, not a new component); C9 audited and its one violation fixed (below).
 
 ### C9 audit — live regions per surface (2026-09-13)
 

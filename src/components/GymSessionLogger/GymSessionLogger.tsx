@@ -45,6 +45,9 @@ type Props = {
    *  It does not: "55 MIN" is what the session is meant to take, and an athlete
    *  forty minutes into it has no way to know that from the plan. */
   startedAt: string | null;
+  /** The log's entry date (YYYY-MM-DD in the org's timezone) — PATTERN-S6 C1
+   *  queues it with each set so the waiting screen can name the day. */
+  entryDate: string;
   /** When the session was finished — the "52 min" on the summary. */
   completedAt: string | null;
   /** MET-040 before today, per exercise, read by the page only for a
@@ -126,6 +129,7 @@ export function GymSessionLogger({
   sessionName,
   sessionMeta,
   startedAt,
+  entryDate,
   completedAt,
   priorBests,
   corrections,
@@ -334,7 +338,9 @@ export function GymSessionLogger({
       await withWriteTimeout(submitGymSetLog(createClient(), orgId, input));
     },
     onMutate: (input) => {
-      enqueueGymSetLog(input);
+      /* PATTERN-S6 C1: queued with what the queue screen needs to name it
+         offline — "Gym · Upper B · Sun 13 Sept · 2 sets of 12 logged". */
+      enqueueGymSetLog(input, { name: sessionName, total_sets: totalSets, entry_date: entryDate });
     },
     onSuccess: (_void, input) => {
       dequeueGymSetLog(input.id);

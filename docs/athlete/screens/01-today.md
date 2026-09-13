@@ -176,6 +176,10 @@ still return here, and the to-do list losing its row is the success — the
 "Wellness submitted · queued, syncs on signal" toast that used to sit over it is
 gone.
 
+**"See what is waiting"** (PATTERN-S6 C1, 13 September 2026): under the waiting
+count's sentence, the one route to the queue screen
+(`19-waiting-to-send.md`, `/today/waiting`), absent with nothing waiting.
+
 **The same day submitted twice from two devices** (§0aa): a conflict is shown
 inside one `role="alert"` region — one region for every conflict on the screen,
 so two arriving in one flush are announced once, not twice (PATTERN-S6 C9,

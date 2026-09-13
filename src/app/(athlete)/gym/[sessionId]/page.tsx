@@ -113,6 +113,7 @@ export default async function GymSessionPage({
           .join(' · ') || null
       }
       startedAt={startedAt}
+      entryDate={entryDate ?? todayIso(timezone)}
       completedAt={completedAt}
       priorBests={priorBests}
       corrections={corrections}

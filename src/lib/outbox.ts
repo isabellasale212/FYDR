@@ -65,6 +65,11 @@ export type PendingNutritionCheckin = {
 export type PendingGymSetLog = {
   input: GymSetLogInput;
   queuedAt: string;
+  /** PATTERN-S6 C1 (2026-09-13): what the queue screen needs to name the
+   *  entry offline — the session's name, its total prescribed sets and the
+   *  log's date — captured by the logger at enqueue. Absent on a set queued
+   *  before this existed; the screen then names it plainly. */
+  session?: { name: string; total_sets: number; entry_date: string };
   /** See PendingWellness's conflictAt comment. Gym joined the other three on
    *  2026-09-12 (§0aa): OutboxFlusher looks the slot up on a duplicate-key
    *  error and flags the item only when a DIFFERENT set is live there. */
@@ -223,9 +228,9 @@ export function markNutritionCheckinConflict(id: string): void {
  * instead. Corrections (revise_gym_set_log) are not queued here, same reasoning as every
  * other revise_* RPC in this file's own header comment. */
 
-export function enqueueGymSetLog(input: GymSetLogInput): void {
+export function enqueueGymSetLog(input: GymSetLogInput, session?: PendingGymSetLog['session']): void {
   const items = read<PendingGymSetLog>(GYM_SET_KEY).filter((item) => item.input.id !== input.id);
-  items.push({ input, queuedAt: new Date().toISOString() });
+  items.push({ input, queuedAt: new Date().toISOString(), ...(session ? { session } : {}) });
   write(GYM_SET_KEY, items);
 }
 
@@ -270,4 +275,36 @@ export function markGymSetClosed(id: string, naming: NonNullable<PendingGymSetLo
         : item,
     ),
   );
+}
+
+/* PATTERN-S6 C1 (2026-09-13): when this phone last sent, for the queue
+ * screen's empty state ("Nothing is waiting. Last sent at 12:04 today — 3
+ * entries."). Written by OutboxFlusher after a flush that sent something;
+ * one small record beside the queues, same storage, same failure posture. */
+const LAST_SENT_KEY = 'fydr-outbox-last-sent';
+
+export type LastSent = { count: number; at: string };
+
+export function recordLastSent(v: LastSent): void {
+  if (typeof window === 'undefined') return;
+  try {
+    window.localStorage.setItem(LAST_SENT_KEY, JSON.stringify(v));
+  } catch {
+    /* Same as write(): the send itself has happened; losing the note is not
+       worth an error the athlete sees. */
+  }
+}
+
+export function lastSent(): LastSent | null {
+  if (typeof window === 'undefined') return null;
+  try {
+    const raw = window.localStorage.getItem(LAST_SENT_KEY);
+    if (!raw) return null;
+    const parsed: unknown = JSON.parse(raw);
+    if (!parsed || typeof parsed !== 'object') return null;
+    const v = parsed as Partial<LastSent>;
+    return typeof v.count === 'number' && typeof v.at === 'string' ? { count: v.count, at: v.at } : null;
+  } catch {
+    return null;
+  }
 }

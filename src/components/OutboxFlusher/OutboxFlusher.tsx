@@ -1,5 +1,7 @@
 'use client';
 
+import Link from 'next/link';
+
 import { useEffect, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import {
@@ -17,6 +19,7 @@ import {
   type PendingNutritionCheckin,
   type PendingTraining,
   type PendingWellness,
+  recordLastSent,
 } from '@/lib/outbox';
 import { submitWellnessEntry, fetchWellnessDay } from '@/lib/queries/wellness';
 import { submitTrainingEntry, fetchTrainingEntryForSession } from '@/lib/queries/training';
@@ -168,11 +171,14 @@ function snapshot(timezone: string): { pendingCount: number; conflicts: Conflict
       }),
   ];
 
+  /* Entries, not writes (PATTERN-S6 C1, 2026-09-13): a gym session's queued
+     sets are one entry however many there are — the count here is the count
+     the queue screen heads with ("4 entries · 5 writes"), so the two agree. */
   const pendingCount =
     wellness.filter((item) => !item.conflictAt).length +
     training.filter((item) => !item.conflictAt).length +
     nutrition.filter((item) => !item.conflictAt).length +
-    gym.filter((item) => !item.conflictAt).length;
+    new Set(gym.filter((item) => !item.conflictAt).map((item) => item.input.gym_session_log_id)).size;
 
   return { pendingCount, conflicts };
 }
@@ -322,6 +328,8 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
           count: sent,
           at: new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: timezone }).format(new Date()),
         });
+        /* PATTERN-S6 C1: the queue screen's empty state names the last send. */
+        recordLastSent({ count: sent, at: new Date().toISOString() });
         router.refresh();
       }
     }
@@ -461,6 +469,11 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
             <span className="num">{pending}</span> entr
             {pending === 1 ? 'y is' : 'ies are'} saved on this phone and will send when
             you have signal.
+            {/* PATTERN-S6 C1 (2026-09-13): the only route to the queue screen,
+                under the count, absent with nothing waiting. */}
+            <Link href="/today/waiting" className="linklike" style={{ display: 'block', marginTop: 'var(--sp-4)' }}>
+              See what is waiting
+            </Link>
           </span>
         </p>
       ) : sentAt ? (

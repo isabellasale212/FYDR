@@ -64,7 +64,8 @@ console.log('\nthe record and the sheet');
   const rec = read('docs/overnight-records-2026-09-12.md');
   assert(/## PATTERN-S6 — System states/.test(rec) && /### Step 1, answered from the code/.test(rec), 'the S6 record answers Step 1');
   const sheet = read('docs/design-decisions-outstanding.md');
-  assert(/\| PATTERN-S6 \| C10 \|/.test(sheet) && /\| PATTERN-S6 \| D3 \|/.test(sheet), 'C1–C10 and D1–D3 are on the sheet');
+  // Repointed 2026-09-13: D3 is struck with C1 (built), so its row reads ~~PATTERN-S6~~ | ~~D3~~.
+  assert(/\| PATTERN-S6 \| C10 \|/.test(sheet) && /\| ~~PATTERN-S6~~ \| ~~D3~~ \|/.test(sheet), 'C1–C10 and D1–D3 are on the sheet');
   const spec = read('docs/athlete/screens/01-today.md');
   assert(/Nothing is waiting/.test(spec), '01-today.md describes the sent line');
 }

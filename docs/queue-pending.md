@@ -150,3 +150,48 @@ something that will not exist tomorrow.
 > - State the measured value before and after for every contrast and tap-target
 >   fix, in both themes.
 > - Report drift: anything you could not fix within these rules, and why.
+
+---
+
+## ABSOLUTE LAST: design system conformance pass
+
+**Added by Isabella 13 September 2026. Runs AFTER the accessibility sweep, and
+only once the final build is complete and nothing further is changing.**
+
+**Read this first, because it looks like something that was cancelled.** On 13
+September Isabella cancelled a restyle of four pages. That cancellation stands:
+the LOOK of the product is settled and is not up for revision. This pass is a
+different thing. It brings every page onto the design system's VALUES without
+changing how anything looks: the 9px corner radius she chose, and every other
+token for type, spacing, colour and hit targets. Conformance, not taste.
+
+It runs last because conformance only holds if nothing changes after it.
+
+> # Design system conformance pass. Whole product.
+>
+> Bring every page onto `src/styles/tokens.css`. This is not a redesign and not
+> a relayout. The look is settled. Where a literal value already matches its
+> token, replace the literal with the token. Where it does not match, replace it
+> with the token anyway ONLY if the visible difference is imperceptible; if the
+> change would be visible, report it and stop on that instance.
+>
+> **In scope:** corner radius to the 9px token, spacing steps, type sizes and
+> weights, colour, hit targets, borders and shadows. Every literal hex, rgb, px
+> or rem value for anything a token covers.
+>
+> **Out of scope, and do not touch:** layout, copy, data, queries, logic, which
+> data a role sees, and the four colour meanings on the leaderboard and
+> nutrition pages (rank tint, flag badges, deviation bars, neutral status text),
+> which must stay distinguishable. `docs/decisions/design-constitution.md` is
+> the reference.
+>
+> **Report before building, and stop.** Every literal value, by file and line,
+> with the token it maps to, the current value, the token's value, and whether
+> the difference is visible. Group by page. Flag anything with no token rather
+> than inventing one.
+>
+> **Verify.** Before and after screenshots of every page at 1440 and 390, in
+> both themes. One commit per page. Report drift: anything that could not be
+> brought onto a token and why.
+>
+> Scratch database only. No production, no `db:push`, no Vercel.

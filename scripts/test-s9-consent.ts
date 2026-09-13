@@ -145,5 +145,36 @@ console.log('\n6. artboard 3 — the decision, and what declining does');
   assert(/zero haloed primaries/.test(spec) && /not\s+a toast/.test(spec) && /all four/.test(spec) && /not made/.test(spec), '21-consent-first-run.md records the flow and the drift');
 }
 
+console.log('\n7. artboard 4 — under 18: the athlete, the guardian, the staff side');
+{
+  const a = strip(read('src/app/(athlete)/consent/guardian/page.tsx'));
+  assert(/Step 3 of 3 · waiting on a guardian/.test(a) && /consent\.guardianEmailMasked/.test(a) && !/guardian_email\b/.test(a), '4A shows the guardian masked, from the club\'s record');
+  assert(/does not ask you for your date of birth/.test(a) && !/date_of_birth|ageFrom\(/.test(a), 'no date of birth shown or asked');
+  assert(/1 of 1 guardian contacted/.test(a) && /Send the link again/.test(a) && /report-problem\?about=guardian/.test(a) && /id="LEGAL-4A"/.test(a), 'the count, the re-send, the "not my guardian" row to a person, LEGAL-4A');
+  assert(/gym logging and the weekly nutrition check-in stay closed/.test(a), 'all four forms named as closed (finding 3)');
+  const staff = strip(read('src/app/(athlete)/consent/staff/page.tsx'));
+  assert(/consent\.isMinor && !consent\.guardianRequestSent \? \(\s*<form method="post" action="\/consent\/guardian\/send"/.test(staff), 'a minor\'s "Read the choice" is the first send, as a form post');
+  const send = strip(read('src/app/(athlete)/consent/guardian/send/route.ts'));
+  assert(/sendGuardianLink\(/.test(send) && /actorRole: 'athlete'/.test(send), 'the send route goes through one path, as the athlete');
+  const lib = strip(read('src/lib/guardianConsent.ts'));
+  assert(/db\.rpc\('request_guardian_consent'/.test(lib) && /new URL\(`\/guardian\/\$\{row\.token\}`, o\.origin\)/.test(lib) && /never shown to the athlete|is the guardian's/.test(read('src/lib/guardianConsent.ts')), 'the token goes into the email and nowhere else');
+  const g = strip(read('src/app/guardian/[token]/page.tsx'));
+  assert(/rpc\('guardian_request_by_token'/.test(g) && !/from\('guardian_consent_requests'\)/.test(g) && !/requireAthlete|requireStaff/.test(g), '4B reads by token through the function only, with no session');
+  assert(/under 18 on the club’s record/.test(g) && !/date_of_birth/.test(g), '"under 18 on the club\'s record" and nothing more precise');
+  assert((g.match(/sameAs="same wording as the athlete screen"/g) ?? []).length === 4, 'LEGAL-3A, 3B, 3C and 3D by reference');
+  assert(/Saying no does not affect selection\./.test(g) && /The club states this; Fydr records the answer\./.test(g), 'the same sentence, the club speaking');
+  const ga = g.indexOf('value="agree"'), gd = g.indexOf('value="decline"');
+  assert(ga > 0 && gd > ga && !/btn-primary/.test(g), 'two equal choices, agree then decline, zero haloed primaries');
+  assert(/This link is not recognised/.test(g) && /This link has expired/.test(g) && /You agreed\./.test(g), 'unknown, expired and answered states');
+  const gr = strip(read('src/app/guardian/[token]/decide/route.ts'));
+  assert(/rpc\('guardian_decide'/.test(gr), 'the answer writes through guardian_decide');
+  const card = strip(read('src/components/GuardianCard/GuardianCard.tsx'));
+  assert(/answered by the guardian on the link/.test(card) && /recorded from the club registration form/.test(card) && /recorded in person/.test(card), 'the staff card says which route was used');
+  const sr = strip(read('src/app/(staff)/squad/[athleteId]/guardian/route.ts'));
+  assert(/hasAnyRole\(claims\.roles, SETTINGS_ADMIN\)/.test(sr) && /parental_consent_recorded_by: claims\.userId/.test(sr) && /'club_registration_form', 'written_confirmation', 'in_person'/.test(sr), 'the offline route is the sport scientist\'s, one value of parental_consent_method, recorded_by named');
+  const tpl = read('src/lib/email/templates.ts');
+  assert(/guardianConsentEmail/.test(tpl) && !/consent to the processing|lawful basis|legitimate interest/i.test(tpl), 'the email carries no legal wording');
+}
+
 console.log(`\n${failed === 0 ? 'all passed' : `${failed} failed`}`);
 if (failed > 0) process.exit(1);

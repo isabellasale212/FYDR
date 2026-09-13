@@ -22,13 +22,12 @@ export function ConsentBlocks(o: {
         <p className="s">{o.sub}</p>
       </div>
 
-      {o.error ? (
-        <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>
-          {o.error}
-        </p>
-      ) : null}
-
       <div className="stack">
+        {o.error ? (
+          <p className="form-error" role="alert" style={{ margin: 0 }}>
+            {o.error}
+          </p>
+        ) : null}
         <section className="card" aria-labelledby="block-1">
           <p className="eyebrow" style={{ marginBottom: 'var(--sp-4)' }}>Block 1</p>
           <h2 className="card-title" id="block-1">

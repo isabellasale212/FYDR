@@ -38,8 +38,10 @@ import { noWeighInLine } from '@/lib/nutritionNoWeighIn';
 import { requireStaff } from '@/lib/session';
 import { rpeOffLine } from '@/lib/rpeSetting';
 import { consentStateLabel } from '@/lib/consentState';
+import { GuardianCard } from '@/components/GuardianCard/GuardianCard';
+import { fetchLatestGuardianRequest } from '@/lib/guardianConsent';
 import { isUuid } from '@/lib/uuid';
-import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, NUTRITION_EDIT, PROGRAMME_AUTHOR, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, NUTRITION_EDIT, PROGRAMME_AUTHOR, SETTINGS_ADMIN, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
 import { ReadOnlyOwner } from '@/components/ReadOnlyOwner/ReadOnlyOwner';
 import { fetchRules, resolveRuleForAthlete } from '@/lib/queries/nutritionRules';
 import { fetchUserNames } from '@/lib/queries/users';
@@ -431,6 +433,7 @@ export default async function AthletePage({
   ]);
 
   const { athlete, athleticism, acwr, wellnessRating, headerWellness, programme, nutrition, bodyWeight } = profile;
+  const guardianRequest = athlete.consent.isMinor ? await fetchLatestGuardianRequest(db, athleteId) : null;
 
   /* The clinical record is fetched ONLY for a medic. Not fetched-then-hidden:
      clinical_medical_only (0012) would return nothing to anyone else anyway, so
@@ -540,6 +543,12 @@ export default async function AthletePage({
           />
         </div>
       </div>
+
+      {/* PATTERN-S9 artboard 4, staff side: for an athlete under 18, the
+          guardian the club holds and the state of the consent decision. */}
+      {athlete.consent.isMinor ? (
+        <GuardianCard athlete={athlete} latest={guardianRequest} isAdmin={hasAnyRole(claims.roles, SETTINGS_ADMIN)} timezone={timezone} notice={typeof sp.guardian === 'string' ? sp.guardian : null} />
+      ) : null}
 
       {/* The scope sentence is gone at the club's request. The two facts it
           also carried are NOT the same thing and survive on their own: a

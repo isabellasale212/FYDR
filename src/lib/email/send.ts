@@ -1,6 +1,6 @@
 import 'server-only';
 import { getEmailProvider } from './provider';
-import { inviteEmail, type InviteEmailData } from './templates';
+import { guardianConsentEmail, inviteEmail, type GuardianConsentEmailData, type InviteEmailData } from './templates';
 import type { Db } from '@/lib/queries/groups';
 import type { AppRole } from '@/lib/types/database';
 
@@ -89,5 +89,36 @@ export async function sendInviteEmail(
     },
   });
 
+  return { delivered: result.delivered, error: result.error };
+}
+
+/** PATTERN-S9: send the guardian's link. The request row and the token come
+ *  from request_guardian_consent (0120), which the caller has already run;
+ *  this sends and audits (guardian_consent.email_sent / _not_sent), never
+ *  writing the link into the audit row — the token is single use and the
+ *  audit log is read by staff. */
+export async function sendGuardianConsentEmail(
+  db: Db,
+  orgId: string,
+  actorId: string | null,
+  actorRole: AppRole | null,
+  athleteId: string,
+  requestId: string,
+  recipientEmail: string,
+  data: GuardianConsentEmailData,
+): Promise<InviteEmailResult> {
+  const provider = getEmailProvider();
+  const { subject, text, html } = guardianConsentEmail(data);
+  const result = await provider.send({ to: recipientEmail, subject, text, html });
+  await db.from('audit_log').insert({
+    org_id: orgId,
+    actor_id: actorId,
+    actor_role: actorRole,
+    action: result.delivered ? 'guardian_consent.email_sent' : 'guardian_consent.email_not_sent',
+    entity_type: 'guardian_consent_request',
+    entity_id: requestId,
+    athlete_id: athleteId,
+    metadata: { provider: provider.name, from: result.from ?? null, delivered: result.delivered, error: result.error },
+  });
   return { delivered: result.delivered, error: result.error };
 }

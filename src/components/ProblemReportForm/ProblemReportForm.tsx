@@ -13,7 +13,15 @@ const CATEGORIES = [
   { value: 'other', label: 'Something else' },
 ] as const;
 
-type Props = { orgId: string; athleteId: string; userId: string };
+type Props = {
+  orgId: string;
+  athleteId: string;
+  userId: string;
+  /** PATTERN-S9 4A: "This is not my guardian — tell the club" lands here with
+   *  the message started, because the club needs to know what the report is
+   *  about and the athlete should not have to explain the route. */
+  initialBody?: string;
+};
 
 /** 03-flows.md §6 / roadmap screen 36. A category chip row (optional — see
  *  migration 0040's own reasoning: "didn't say" is a real answer, not
@@ -28,10 +36,10 @@ type Props = { orgId: string; athleteId: string; userId: string };
  *  not a bare literal in a maxLength that quietly ate the difference. */
 const BODY_MAX_CHARS = 1000;
 
-export function ProblemReportForm({ orgId, athleteId, userId }: Props) {
+export function ProblemReportForm({ orgId, athleteId, userId, initialBody = '' }: Props) {
   const router = useRouter();
-  const [category, setCategory] = useState<ProblemReportInputType['category']>(null);
-  const [body, setBody] = useState('');
+  const [category, setCategory] = useState<ProblemReportInputType['category']>(initialBody ? 'other' : null);
+  const [body, setBody] = useState(initialBody);
   const over = body.length > BODY_MAX_CHARS;
   const [error, setError] = useState<string | null>(null);
 

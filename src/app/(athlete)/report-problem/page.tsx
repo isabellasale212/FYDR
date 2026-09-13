@@ -58,7 +58,12 @@ export default async function ReportProblemPage({
 
       {toastMessage ? <Toast message={toastMessage} clearHref="/report-problem" /> : null}
 
-      <ProblemReportForm orgId={orgId} athleteId={athleteId} userId={claims.userId} />
+      <ProblemReportForm
+        orgId={orgId}
+        athleteId={athleteId}
+        userId={claims.userId}
+        initialBody={params.about === 'guardian' ? 'The guardian on my record is not my guardian. ' : ''}
+      />
 
       <section aria-labelledby="my-reports-title">
         <h2 className="sect" id="my-reports-title">

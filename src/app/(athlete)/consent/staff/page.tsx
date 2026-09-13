@@ -79,11 +79,23 @@ export default async function ConsentStaffPage() {
         </p>
       </div>
 
-      <div className="subm">
-        <Link href={next} className="btn-primary btn-commit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
-          Read the choice
-        </Link>
-      </div>
+      {/* A minor's "Read the choice" is a form post: it sends the guardian
+          the link (an act, not a side effect of opening a page) and lands on
+          4A. An adult's is a link to 3A. Once a link has been sent the minor
+          goes straight to 4A. */}
+      {consent.isMinor && !consent.guardianRequestSent ? (
+        <form method="post" action="/consent/guardian/send" className="subm">
+          <button type="submit" className="btn-primary btn-commit">
+            Read the choice
+          </button>
+        </form>
+      ) : (
+        <div className="subm">
+          <Link href={next} className="btn-primary btn-commit" style={{ display: 'flex', alignItems: 'center', justifyContent: 'center', textDecoration: 'none' }}>
+            Read the choice
+          </Link>
+        </div>
+      )}
     </>
   );
 }

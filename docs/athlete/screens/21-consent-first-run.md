@@ -87,6 +87,59 @@ to them."). A "Settings › Your data" row, then "Go to Today" (56px). After a
 withdrawal the same screen reads "You withdrew" and the retention card says
 entries submitted before withdrawing are left as they are pending LEGAL-3E.
 
+**Artboard 4A, `/consent/guardian` — A guardian answers this one.** For an
+athlete under 18 on the club's record. A minor's "Read the choice" on
+artboard 2 is a form post that sends the guardian the link (an act, not a
+side effect of opening a page) and lands here. Eyebrow "Step 3 of 3 · waiting
+on a guardian"; "Sent {date, time} · no answer yet"; the guardian's name and
+**masked** address from the club's record (`b***@***.com`), never asked for
+("The club holds them as your guardian contact. They have a link to the same
+two blocks you have just read — the same words, nothing extra."); **What you
+can do meanwhile** (not locked out; all four forms closed "because filling one
+in is the thing being agreed to"); **Your own say** with `LEGAL-4A`; "1 of 1
+guardian contacted"; **Send the link again** (56px, a form post — the earlier
+link still works until it expires); **"This is not my guardian — tell the
+club"** (a 44px row to `/report-problem?about=guardian` with the message
+started — a person, not a screen); "Fydr does not ask you for their address,
+and does not ask you for your date of birth. Both come from the club's
+record." No date of birth is shown or requested. With no guardian recorded the
+screen says so and nothing can be sent. Once the guardian answers, the athlete
+lands on Today (agreed) or the declined screen.
+
+**Artboard 4B, `/guardian/[token]` — the guardian, on the emailed link.** A
+web page with no account, outside both shells, reading and writing through
+`guardian_request_by_token` and `guardian_decide` alone (anon-callable; the
+token's sha256 is what is stored; seven-day expiry; single use). The wordmark,
+"No account needed", "{Club} · link expires {date}", "For {guardian}, about
+{first name}", "{first name} is under 18 on the club's record, so this decision
+is yours. {first name} has read the same two blocks." — under 18 and nothing
+more precise. The two blocks condensed, each with `LEGAL-3A` / `LEGAL-3B` shown
+**by reference** ("same wording as the athlete screen") so a reviewer can
+confirm the strings match; **What {first name} sees of your answer** (your
+name, your decision and the date; not this page); the sentence "Saying no does
+not affect selection." with "The club states this; Fydr records the answer."
+and `LEGAL-3C`; the same two equal 56px choices, zero haloed primaries; the
+version line and `LEGAL-3D`. The answer lands on the athlete's own columns as
+the guardian's — `parental_consent_method = guardian_link`, no staff member
+recorded — with an audit row carrying no actor and the guardian's name. After
+answering the page reads "You agreed." / "You said no." with the recorded time;
+an expired link says so and records nothing; an unrecognised token says so.
+The email (`lib/email/templates.ts` `guardianConsentEmail`) is plain words
+with no legal wording; the link is never shown to the athlete or to staff.
+
+**The staff side (not drawn; needed).** On the athlete profile, for an athlete
+under 18, a **Guardian** card: the guardian the club holds (full name and
+address — staff, not the athlete), the decision's state and how it was taken
+("answered by the guardian on the link" / "recorded from the club
+registration form" / "recorded in person" …), and for the sport scientist
+three form posts to `/squad/[id]/guardian`: save the guardian, send (or
+re-send) the link, and **record a decision the guardian gave offline** with its
+method — the other route Isabella kept, one value of `parental_consent_method`
+each, `parental_consent_recorded_by` naming the staff member. Every action is
+audited (`athlete.guardian_recorded`, `guardian_consent.requested`,
+`guardian_consent.email_sent` / `_not_sent`,
+`guardian_consent.recorded_offline_agreed` / `_declined`).
+
 **What a decision changes, athlete side.** Out of data (declined, withdrawn,
 guardian outstanding), Today's To do reads "Closed" with one row in the
 athlete's own words ("You said no — … Settings › Your data" / "Waiting on
@@ -116,6 +169,7 @@ attendees and the roster count are operational facts and keep everyone.
 
 | Field | As worded | Type | Validation | On invalid | Stored | Editable | Who sees it |
 |---|---|---|---|---|---|---|---|
+| Send them the link / Send the link again (4A) | the button | one tap | `request_guardian_consent` — a minor with a guardian recorded | "The link could not be sent" / "no guardian contact recorded" | a `guardian_consent_requests` row (the hash, the expiry) and audit rows | — | The guardian (the email), staff (the profile card) |
 | The decision | "I agree to both blocks" / "I do not agree" | one tap | `record_data_consent(decision, version)` — the only path onto the columns from an athlete session; a minor is refused ("a guardian answers this one") | "That did not save. Nothing was recorded — try again." | `consent_given_at` or `consent_declined_at` + `consent_version`, the same on the health record, `parental_consent_method = not_required`, an audit row (`consent.agreed` / `consent.declined`, by athlete) | Yes — Settings › Your data (the withdrawal row) | The club: the state and its date on the squad list, the profile, the audit trail |
 
 ## 5. Every number shown

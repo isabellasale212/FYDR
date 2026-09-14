@@ -14,7 +14,7 @@ addresses.
 
 | Role | Can reach the page | What they can see | What they can change | Fields hidden or masked | Tier required | Where this is enforced |
 |---|---|---|---|---|---|---|
-| Sport scientist | Yes | All seven | Nothing | None | Base, with one card marked Premium | Route guard, `src/lib/session.ts:69` |
+| Sport scientist | Yes | All eight on Premium; seven on Basic (the GPS report is absent) | Nothing | None | Base | Route guard, `src/lib/session.ts:69` |
 | Coach | Yes | All seven | Nothing | None | Same | Same |
 | Medic | Yes | All seven | Nothing | None | Same | Same |
 | S&C | Yes | All seven | Nothing | None | Same | Same |
@@ -83,8 +83,12 @@ and **"About one athlete, session or test"** — Athlete report, Testing.
 | Squad weekly | The squad's week on one page | Base |
 | Testing | Test results and personal bests | Base |
 
-The Premium card is marked as Premium rather than hidden, so a club on the Base
-package can see that the report exists and what it would give them.
+**The GPS report card is absent on the Basic package** (D-20 without exception,
+Isabella, 15 September 2026). Until then it was dimmed and badged "Premium" so a
+Basic club could see the report existed — the locked-destination pattern she
+rejected: a wholly premium destination is absent from navigation and refuses at
+the URL through the denied screen, logged; the Settings plan page is the one
+place a club learns what Premium contains.
 
 ---
 
@@ -101,7 +105,7 @@ None. The hub displays no figures of its own.
 | Compliance card | The grid | Opens the compliance report | `/reports/compliance` | Nothing | Coach, medic, sport scientist, S&C, nutritionist | None | Never |
 | Injury and availability card | The grid | Opens the injury report | `/reports/injuries` | Nothing | Everyone except the nutritionist | None | **Should be hidden from the nutritionist. Not built** |
 | Training load card | The grid | Opens the Training load report | `/reports/training-load` | Nothing | As the report (not the nutritionist) | None | Never; with session RPE off the line says so |
-| GPS report card | The grid | Opens the GPS report | `/reports/gps` | Nothing | As the report | None | Marked Premium on the Base package; clickable, and the page shows the plan gate |
+| GPS report card | The grid | Opens the GPS report | `/reports/gps` | Nothing | As the report | None | **Absent on the Basic package** (D-20); the URL refuses through the denied screen |
 | Athlete report card | The grid | Opens the athlete picker | `/reports/athlete` | Nothing | As the report | None | Never |
 | Squad weekly card | The grid | Opens the squad weekly report | `/reports/squad` | Nothing | As the report | None | Never |
 | Testing card | The grid | Opens the testing report | `/reports/testing` | Nothing | As the report | None | Never |
@@ -149,7 +153,7 @@ worst mark the Premium card wrongly.
 sees all seven cards marked unavailable to them, with the reason, rather than being
 turned away or sent down links that refuse.
 
-**Wrong tier.** The training report card is marked Premium.
+**Wrong tier.** The GPS report card is absent; seven cards remain.
 
 **Offline.** Not handled.
 
@@ -158,5 +162,5 @@ turned away or sent down links that refuse.
 ## 9. Open issues
 
 - **The nutritionist should not see the injury card.** Decision D-01.
-- **UNVERIFIED: whether the Premium card is clickable on the Base package**, and
-  what a coach sees if it is. Files searched: `src/app/(staff)/reports/page.tsx`.
+- ~~UNVERIFIED: whether the Premium card is clickable on the Base package.~~ It
+  is not drawn (15 September 2026); verified as Marlow Vale's sport scientist.

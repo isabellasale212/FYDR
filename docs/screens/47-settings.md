@@ -129,8 +129,11 @@ only" beside it.
   (on Premium, the same figures with "if the club ever leaves Premium…"; with
   none, "This club holds no GPS records."), and that kept does not mean kept
   forever — GPS records age under the club's normal retention on any plan,
-  with the link to Data retention. The `PlanGate` pages (the GPS report, the
-  imports) send their "See what Premium contains" here.
+  with the link to Data retention. The GPS report and the imports area — wholly
+  premium destinations — are absent from navigation on Basic and refuse at the
+  URL through the denied screen (D-20 without exception, 15 September 2026);
+  the region card a premium region inside a base page shows (`PlanGateCard`)
+  sends "See what Premium contains" here.
 - **`/settings/profile`** — eyebrow "Settings · You". Profile (name, club, role
   as words), avatar upload, the profile edit form, then under `#password` the
   change-password form and two-factor enrolment.

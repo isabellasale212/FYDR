@@ -66,14 +66,22 @@ export function settingsGroups(o: {
       key: 'data',
       title: 'Data',
       rows: [
-        {
-          key: 'imports',
-          label: 'Vendor imports',
-          sub: !o.canImport ? 'Sport scientist only' : o.onPremium ? 'Catapult, STATSports and Polar GPS files' : 'Premium — GPS files are on the Premium plan',
-          href: o.canImport ? '/settings/imports' : null,
-          count: !o.canImport ? null : o.onPremium ? n(o.counts.importBatches, 'file') : 'Premium',
-          countTone: o.canImport && !o.onPremium ? 'neutral' : undefined,
-        },
+        /* D-20 without exception (15 Sept 2026): a wholly premium destination
+           is absent from navigation for a Basic club — the row is not drawn
+           at all, not closed with a badge. The plan page names what Premium
+           contains. Spread as a conditional element so the hub's row list
+           reads the same shape for the roles that see the row. */
+        ...(o.onPremium
+          ? [
+              {
+                key: 'imports',
+                label: 'Vendor imports',
+                sub: !o.canImport ? 'Sport scientist only' : 'Catapult, STATSports and Polar GPS files',
+                href: o.canImport ? '/settings/imports' : null,
+                count: !o.canImport ? null : n(o.counts.importBatches, 'file'),
+              },
+            ]
+          : []),
         { key: 'exports', label: 'Exports', sub: o.canExport ? 'Pick what, pick who, pick when, get a CSV' : 'Sport scientist, coach, S&C or medic only', href: o.canExport ? '/settings/exports' : null, count: null },
         { key: 'audit', label: 'Audit log', sub: o.isAdmin ? 'Who did what, and when' : 'Sport scientist only', href: o.isAdmin ? '/settings/audit' : null, count: o.counts.auditRecent === null ? null : `${fmt(o.counts.auditRecent)} in 90 days` },
       ],

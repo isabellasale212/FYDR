@@ -138,7 +138,10 @@ console.log('\nnothing about the staff gate regressed');
     /isPremium\(tier\)/.test(staffDetail) || /gpsMetricBlocked/.test(staffDetail),
     'the staff detail page still gates GPS boards on tier',
   );
-  assert(/PlanGate/.test(staffDetail), 'and still does it with a PlanGate');
+  /* 15 Sept 2026: the locked PAGE (PlanGate) went with D-20 without exception;
+     a board is a region of Leaderboards, so its page keeps its frame and shows
+     the card (PlanGateCard) in place of the ranking. */
+  assert(/PlanGateCard/.test(staffDetail) && !/<PlanGate\b/.test(staffDetail), 'and does it with the region card, never a locked page');
   const create = strip(readFileSync('src/app/(staff)/leaderboards/new/page.tsx', 'utf8'));
   assert(
     /isPremium\(tier\)/.test(create) && /gps\./.test(create),

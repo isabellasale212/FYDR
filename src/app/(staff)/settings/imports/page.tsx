@@ -1,11 +1,10 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { GpsImportForm } from '@/components/GpsImportForm/GpsImportForm';
-import { PlanGate } from '@/components/PlanGate/PlanGate';
 import { countImportBatches, fetchHeldRows, fetchImportRoster, fetchRecentImportBatches } from '@/lib/queries/gpsImport';
 import { HeldRowsPanel } from '@/components/HeldRowsPanel/HeldRowsPanel';
 import { formatDateTime } from '@/lib/format';
-import { requireStaff } from '@/lib/session';
+import { requireStaff, refuse } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import { GPS_IMPORT, hasAnyRole } from '@/lib/access';
 
@@ -31,15 +30,11 @@ export default async function ImportsPage({ searchParams }: { searchParams: Sear
   const { db, orgId, claims, tier, timezone } = await requireStaff();
   if (!hasAnyRole(claims.roles, GPS_IMPORT)) redirect('/settings');
 
-  if (!isPremium(tier)) {
-    return (
-      <PlanGate
-        featureName="GPS exports"
-        body="Importing vendor GPS files and exporting the parsed records is a Premium feature. Basic clubs work from wellness, gym and nutrition entries."
-        metadata="Premium · Catapult, STATSports, Polar CSV · audited exports"
-      />
-    );
-  }
+  /* D-20 without exception (Isabella, 15 September 2026): a wholly premium
+     destination is gone for a Basic club — absent from the Settings hub,
+     refused at the URL through the denied screen, logged. The Settings plan
+     page is where a club learns what Premium contains. */
+  if (!isPremium(tier)) await refuse(db, 'imports_premium', '/settings/imports');
 
   const params = await searchParams;
   const showAll = params.all === '1';

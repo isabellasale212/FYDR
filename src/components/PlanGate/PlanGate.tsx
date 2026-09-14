@@ -1,45 +1,18 @@
 import Link from 'next/link';
 import type { CSSProperties } from 'react';
 
-type Props = {
-  featureName: string;
-  body: string;
-  metadata: string;
-};
+/* SETTINGS-SPEC.md §6 described a locked page rendered instead of a real
+ * screen when the club's tier is Basic. That page is gone (below). What is
+ * here is the CARD — the premium region inside a base page — and the two
+ * links it carries: "See what Premium contains" goes to the plan page, the
+ * one place; "Switch to Premium" never existed as a button because the
+ * product is sold, not self-served (12-product-tiers.md §7.2). */
 
-/* SETTINGS-SPEC.md §6. Rendered instead of a real screen when the org's
- * tier is Basic and the destination is gated — the real, live gate, not a
- * mockup of one: lib/tier.ts's isPremium() decides whether this renders,
- * and the two real call sites are /reports/training and /settings/imports,
- * the two features 12-product-tiers.md §3.1 and this spec both name as
- * Premium (the Training report needs GPS records, GPS import is how they
- * arrive).
- *
- * "Switch to Premium" does not flip the tier — see lib/tier.ts's own
- * header and orgDetails.ts's: 12-product-tiers.md §7.2 is explicit this
- * product is sold, not self-served, so there is no button anywhere in
- * this build that lets a club change its own tier. The spec's own §7
- * "Notes for production" already anticipates this: "This prototype
- * toggles instantly so the gating can be demonstrated; production needs a
- * confirmation step." This build goes one step further, matching the
- * decision already recorded elsewhere in this codebase: production needs
- * a sales conversation, not a confirmation step, so the button is real —
- * it goes to Settings, where the real plan comparison lives — rather than
- * a fake "instant upgrade" affordance this app doesn't actually offer. */
-export function PlanGate({ featureName, body, metadata }: Props) {
-  return (
-    <>
-      <div className="topbar">
-        <div className="page-head">
-          <p className="eyebrow">Premium feature</p>
-          <h1>{featureName}</h1>
-        </div>
-      </div>
-
-      <PlanGateCard body={body} metadata={metadata} style={{ maxWidth: 680, marginTop: 'var(--sp-20)' }} />
-    </>
-  );
-}
+/* PlanGate — the locked-destination PAGE — went on 15 September 2026 (D-20
+ * without exception: a wholly premium destination is absent from navigation
+ * and refuses at the URL; the Settings plan page is where a club learns what
+ * Premium contains). PlanGateCard below is the other half of the rule, the
+ * card a premium REGION inside a base page shows, and stays. */
 
 /* The locked panel on its own, without the page heading PlanGate wraps it in.
  *

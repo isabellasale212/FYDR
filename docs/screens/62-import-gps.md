@@ -21,8 +21,13 @@ puts GPS data in.
 | Nutritionist | **No** | Nothing | Nothing | The whole page | **Premium** | Same line |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard |
 
-**The upload route refuses on the Base package with a sentence**, not an empty
-result: *GPS import is a Premium feature, and this club is on Basic.*
+**On the Basic package the whole area is gone** (D-20 without exception, 15
+September 2026): the Vendor imports row is absent from the Settings hub, the
+page and the template download refuse through the denied screen and are logged
+(`imports_premium`); the upload and held-row routes, which answer fetches,
+still refuse with the sentence *GPS import is a Premium feature, and this club
+is on Basic.* No locked page: the Settings plan page is where a club learns what
+Premium contains.
 
 **Verified access, from the code.** This page's real gates, in the order they run, are: `requireStaff()` at `src/app/(staff)/settings/imports/page.tsx:29`; a **coach or medical** check at `src/app/(staff)/settings/imports/page.tsx:30`, which redirects; a product package check at `src/app/(staff)/settings/imports/page.tsx:32`; a product package check at `src/app/(staff)/settings/imports/page.tsx:34`. Above them sits the middleware (`src/lib/supabase/middleware.ts:84`) and beneath them row level security.
 
@@ -119,7 +124,7 @@ it.
 
 ## 8. States
 
-**Base package.** Refused with a sentence explaining what the feature is.
+**Basic package.** Absent from the hub; the denied screen at the URL.
 **Header mismatch.** Nothing imported, the header named as the problem.
 **Valid header, no rows.** Says the file has a valid header but no data.
 **Partial success.** The normal case: accepted and rejected counts, with every

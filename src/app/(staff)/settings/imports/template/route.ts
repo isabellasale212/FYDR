@@ -1,6 +1,6 @@
 import { csvResponse, toCsv } from '@/lib/csv';
 import { GPS_IMPORT_HEADERS } from '@/lib/queries/gpsImport';
-import { premiumOnlyResponse, requireStaff } from '@/lib/session';
+import { requireStaff, refuse } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import { GPS_IMPORT, hasAnyRole } from '@/lib/access';
 
@@ -9,17 +9,16 @@ import { GPS_IMPORT, hasAnyRole } from '@/lib/access';
  *  file from a spreadsheet instead. See lib/queries/gpsImport.ts's header for
  *  why there is no vendor-mapping UI in this build to do this automatically. */
 export async function GET() {
-  const { claims, tier } = await requireStaff();
+  const { db, claims, tier } = await requireStaff();
 
   /* Same pair of checks as the page and the upload route: this is the template
      for a Premium importer, so it is not a thing a Basic club has any use for,
      and it is not a thing a role without a write path onto gps_records has any
      use for either. No athlete data in it, which is exactly why it was missed —
      "harmless" is not the same as "in this plan". */
-  if (!hasAnyRole(claims.roles, GPS_IMPORT)) {
-    return premiumOnlyResponse('The GPS import template');
-  }
-  if (!isPremium(tier)) return premiumOnlyResponse('GPS import');
+  if (!hasAnyRole(claims.roles, GPS_IMPORT)) await refuse(db, 'imports', '/settings/imports');
+  /* D-20 without exception (15 September 2026): the denied screen, logged. */
+  if (!isPremium(tier)) await refuse(db, 'imports_premium', '/settings/imports');
 
   const example = {
     'Player Name': 'Jamie Barnes',

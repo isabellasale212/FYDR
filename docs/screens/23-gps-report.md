@@ -185,6 +185,11 @@ produce one, so the screen labels its absence instead of inventing it.
 
 ## 8. States
 
+**Basic package.** Gone (D-20 without exception, 15 September 2026): absent from
+the reports index, refused at the URL through the denied screen and logged
+(`gps_report_premium`); the CSV and PDF routes refuse the same way. No locked
+page: the Settings plan page is where a club learns what Premium contains.
+
 **Loading.** Renders when ready.
 
 **Not enough history.** A session with no earlier sessions of the same title

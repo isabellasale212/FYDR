@@ -214,13 +214,17 @@ export default async function ReportsPage() {
             {g.title}
           </h2>
       <div style={{ display: 'grid', gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))', gap: 'var(--sp-14)' }}>
-        {REPORTS.filter((r) => r.about === g.about).map((r) => {
-          const locked = r.premiumGated && !onPremium;
-          /* Gated is 0.62 opacity plus a badge, never hidden — light-theme
-             handoff §9. This card already did exactly that with a literal
-             0.62 before the handoff named the rule; --o-gated is the same
-             number, now stated once in tokens.css. */
-          const gatedOpacity = locked ? 'var(--o-gated)' : 1;
+        {/* D-20 without exception (Isabella, 15 September 2026): a wholly
+            premium report is ABSENT from this index for a Basic club — not
+            dimmed, not badged. The light-theme handoff's §9 "gated is 0.62
+            opacity plus a badge, never hidden" was the earlier position and
+            gave way to D-20 (13–14 September): a locked destination is the
+            teaser Isabella rejected; the Settings plan page is where a club
+            learns what Premium contains. --o-gated stays in tokens.css for
+            the region cards. */}
+        {REPORTS.filter((r) => r.about === g.about && !(r.premiumGated && !onPremium)).map((r) => {
+          const locked = false;
+          const gatedOpacity = 1;
           const open = canOpen(r.key);
           return r.available && r.href && open ? (
             <Link

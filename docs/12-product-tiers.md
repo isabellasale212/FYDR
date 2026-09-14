@@ -751,6 +751,14 @@ client check must be a mirror of it rather than the thing itself. This is the sa
 > holds on any plan, so the plan page can say "kept and returns with Premium" to a club whose
 > staff cannot read the table. `supabase/tests/810_premium_plan_page_and_gaps_test.sql`.
 >
+> **D-20 without exception, 15 September 2026** (Isabella, ruling on the builder's sheet
+> row): the GPS report and the imports area refuse at the URL on Basic through the denied
+> screen, logged, and are absent from the reports index and the Settings hub — the same
+> treatment as analytics. The locked-destination page (`PlanGate`) is gone; the region card
+> (`PlanGateCard`) stays for a premium region inside a base page (the athlete report's GPS
+> section, a GPS board's page). The light-theme handoff's §9 "gated is 0.62 opacity plus a
+> badge, never hidden" was the earlier position and gives way to D-20.
+>
 > **Still application-layer, on purpose:**
 > - **The analytics bar chart** — a drawing of gym and wellness data every club holds.
 >   There is no premium row to hide, only a premium view.

@@ -10,7 +10,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
-import { PlanGate } from '@/components/PlanGate/PlanGate';
+import { PlanGateCard } from '@/components/PlanGate/PlanGate';
 import { CLINICAL_ONLY, LEADERBOARD_EDIT, hasAnyRole } from '@/lib/access';
 import { isRpeMetric, rpeOffLine } from '@/lib/rpeSetting';
 
@@ -78,13 +78,29 @@ export default async function LeaderboardDetailPage({
      Basic. leaderboards/new refuses to create one and names this exact hole in
      its own header. Gated rather than notFound(): the board is real and the
      club owns it, it is the plan that stopped including the metric. */
+  /* D-20's second half (15 September 2026): a board is a REGION of the
+     Leaderboards destination, which every club has, so on Basic the board's
+     page keeps its frame and shows the card in place of the ranking — never
+     a locked-destination page, which Isabella rejected. The plan page is
+     where a club learns what Premium contains. */
   if (board.metric_key.startsWith('gps.') && !isPremium(tier)) {
     return (
-      <PlanGate
-        featureName="GPS leaderboards"
-        body="This board ranks a GPS metric, and GPS is part of the Premium plan. The board and its results are still here — they are not shown while the club is on Basic."
-        metadata="Premium · GPS metrics · board rankings and exports"
-      />
+      <>
+        <div className="topbar">
+          <div className="page-head">
+            <p className="eyebrow">
+              <Link href="/leaderboards">Leaderboards</Link> · {board.name}
+            </p>
+            <h1>{board.name}</h1>
+          </div>
+        </div>
+        <PlanGateCard
+          heading="This board ranks a GPS measure"
+          body="GPS is part of the Premium plan. The board and its results are still here — they are not shown while the club is on Basic, and nothing has been deleted. Settings › Plan lists what Premium contains."
+          metadata="Premium · GPS measures · board rankings and exports"
+          style={{ maxWidth: 680 }}
+        />
+      </>
     );
   }
 

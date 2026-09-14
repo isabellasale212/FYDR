@@ -16,7 +16,7 @@ import { formatDate, todayIso } from '@/lib/format';
 import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { boardFigure } from '@/lib/reportFigureCards';
-import { premiumOnlyResponse, requireReport } from '@/lib/session';
+import { requireReport, refuse } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 
@@ -42,7 +42,8 @@ export async function GET(request: Request) {
   const { db, orgId, orgName, claims, timezone, tier } = await requireReport('gps');
   /* Same reasoning as the CSV route beside this one: the page gates, the URL
      did not, and a PDF is the whole board rather than a summary of it. */
-  if (!isPremium(tier)) return premiumOnlyResponse('The training report');
+  /* D-20 without exception (15 September 2026): the denied screen, logged. */
+  if (!isPremium(tier)) await refuse(db, 'gps_report_premium', '/reports/gps');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the PDF resolves the sticky
   // filter cookie exactly as the on-screen report does (audit S4), and the

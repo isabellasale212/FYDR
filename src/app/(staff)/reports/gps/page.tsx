@@ -9,7 +9,6 @@ import Link from 'next/link';
 import { Dial } from '@/components/Dial/Dial';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ReportHeader } from '@/components/ReportHeader/ReportHeader';
-import { PlanGate } from '@/components/PlanGate/PlanGate';
 import { ReportSelectNav } from '@/components/ReportSelectNav/ReportSelectNav';
 import { TrainingScatter } from '@/components/TrainingScatter/TrainingScatter';
 import { TrainingSparkline } from '@/components/TrainingSparkline/TrainingSparkline';
@@ -39,7 +38,7 @@ import { addDays, formatDate, mdLabel } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { reportDefinition } from '@/lib/reportCatalogue';
-import { requireReport } from '@/lib/session';
+import { requireReport, refuse } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 import { ExportDialog } from '@/components/ExportDialog/ExportDialog';
@@ -260,15 +259,11 @@ function pctMaxBand(pct: number | null): number | null {
 export default async function GpsReportPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, claims, tier, timezone } = await requireReport('gps');
 
-  if (!isPremium(tier)) {
-    return (
-      <PlanGate
-        featureName="GPS report"
-        body="The per-athlete GPS board for one session. It needs GPS records, which arrive through the Premium import."
-        metadata="Premium · GPS data import · heat-mapped session board"
-      />
-    );
-  }
+  /* D-20 without exception (Isabella, 15 September 2026): a wholly premium
+     destination is gone for a Basic club — absent from the reports index,
+     refused at the URL through the denied screen, logged. No upsell page: the
+     Settings plan page is where a club learns what Premium contains. */
+  if (!isPremium(tier)) await refuse(db, 'gps_report_premium', '/reports/gps');
 
   const sp = await searchParams;
   const groupIds = await resolveGroupFilter(sp.groups);

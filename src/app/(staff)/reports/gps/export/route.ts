@@ -10,7 +10,7 @@ import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { reportDefinition } from '@/lib/reportCatalogue';
-import { premiumOnlyResponse, requireReport } from '@/lib/session';
+import { requireReport, refuse } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 import { exportAuditMetadata, exportCaption, type ExportDescriptor } from '@/lib/exportDescriptor';
@@ -27,7 +27,8 @@ export async function GET(request: Request) {
   const { db, orgId, claims, timezone, tier, fullName } = await requireReport('gps');
   /* The page this exports refuses on Basic (reports/training/page.tsx), but a
      route handler is reachable by URL whether or not a button was drawn. */
-  if (!isPremium(tier)) return premiumOnlyResponse('The training report');
+  /* D-20 without exception (15 September 2026): the denied screen, logged. */
+  if (!isPremium(tier)) await refuse(db, 'gps_report_premium', '/reports/gps');
   const url = new URL(request.url);
   // resolveGroupFilter, not parseGroupParam: the export resolves the sticky
   // filter cookie exactly as the on-screen report does (audit S4), and each

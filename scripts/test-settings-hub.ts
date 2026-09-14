@@ -23,14 +23,25 @@ console.log('1. the four groups, as data');
   assert(by('groups').count === '5 groups' && by('thresholds').count === '12 active' && by('users').count === '6 active accounts' && by('sar').count === '1 open' && by('imports').count === '3 files' && by('audit').count === '1,988 in 90 days' && by('plan').count === 'Premium' && by('account').count === 'Two-factor on', 'every row that has a count carries it with its noun');
   const coach = settingsGroups({ roles: ['coach'], isAdmin: false, canExport: true, canImport: false, onPremium: false, previewingTier: false, tierWord: 'Basic', counts: { groups: 5, thresholds: 12, users: null, sarOpen: null, importBatches: null, auditRecent: null }, mfa: 'off' });
   const crow = (k: string) => coach.flatMap((c) => c.rows).find((r) => r.key === k)!;
-  assert(crow('users').href === null && /Sport scientist only/.test(crow('users').sub) && crow('retention').href === null && crow('audit').href === null && crow('imports').href === null && /Sport scientist only/.test(crow('imports').sub), 'a coach\'s closed rows state their reason in the row, no dead link');
+  /* The coach's club here is Basic, so the imports row is absent (D-20); a
+     Premium club's coach sees it closed with its reason (asserted below). */
+  assert(crow('users').href === null && /Sport scientist only/.test(crow('users').sub) && crow('retention').href === null && crow('audit').href === null, 'a coach\'s closed rows state their reason in the row, no dead link');
+  const premiumCoach = settingsGroups({ roles: ['coach'], isAdmin: false, canExport: true, canImport: false, onPremium: true, previewingTier: false, tierWord: 'Premium', counts: { groups: 5, thresholds: 12, users: null, sarOpen: null, importBatches: null, auditRecent: null }, mfa: 'off' });
+  const pcrow = premiumCoach.flatMap((c) => c.rows).find((r) => r.key === 'imports')!;
+  assert(pcrow.href === null && /Sport scientist only/.test(pcrow.sub), 'a Premium club\'s coach sees the imports row closed with its reason');
   assert(crow('exports').href === '/settings/exports' && crow('groups').href === '/settings/groups' && crow('thresholds').href === '/settings/thresholds', 'and opens what a coach may');
   const medic = settingsGroups({ roles: ['medic'], isAdmin: false, canExport: true, canImport: false, onPremium: true, previewingTier: false, tierWord: 'Premium', counts: { groups: 5, thresholds: 12, users: null, sarOpen: 2, importBatches: null, auditRecent: null }, mfa: 'required' });
   const mrow = (k: string) => medic.flatMap((c) => c.rows).find((r) => r.key === k)!;
   assert(mrow('sar').href === '/settings/subject-access' && mrow('sar').count === '2 open' && mrow('account').count === 'Two-factor required' && mrow('account').countTone === 'warn', 'the medic opens subject access; two-factor required reads as a warning');
   const basicImporter = settingsGroups({ roles: ['sport_scientist'], isAdmin: false, canExport: true, canImport: true, onPremium: false, previewingTier: false, tierWord: 'Basic', counts: { groups: 5, thresholds: 12, users: null, sarOpen: null, importBatches: null, auditRecent: null }, mfa: 'off' });
-  const brow = basicImporter.flatMap((c) => c.rows).find((r) => r.key === 'imports')!;
-  assert(brow.href === '/settings/imports' && brow.count === 'Premium' && /Premium — GPS files are on the Premium plan/.test(brow.sub), 'a Basic importer sees the row, badged Premium, and the page behind it states the plan (D-20: a region, not a vanished destination)');
+  /* D-20 without exception (15 Sept 2026): the imports area is a wholly
+     premium destination, so the row is ABSENT for a Basic club — not badged.
+     The plan page is where the club learns what Premium contains. */
+  const brow = basicImporter.flatMap((c) => c.rows).find((r) => r.key === 'imports');
+  assert(brow === undefined, 'a Basic importer sees no Vendor imports row at all (D-20: a wholly premium destination is absent from navigation)');
+  const premiumImporter = settingsGroups({ roles: ['sport_scientist'], isAdmin: false, canExport: true, canImport: true, onPremium: true, previewingTier: false, tierWord: 'Premium', counts: { groups: 5, thresholds: 12, users: null, sarOpen: null, importBatches: 3, auditRecent: null }, mfa: 'off' });
+  const prow = premiumImporter.flatMap((c) => c.rows).find((r) => r.key === 'imports')!;
+  assert(prow.href === '/settings/imports' && prow.count === '3 files', 'a Premium importer opens it');
   const preview = settingsGroups({ roles: ['sport_scientist'], isAdmin: true, canExport: true, canImport: true, onPremium: false, previewingTier: true, tierWord: 'Basic', counts: { groups: 0, thresholds: 0, users: 0, sarOpen: 0, importBatches: null, auditRecent: 0 }, mfa: 'off' });
   assert(/Previewing Basic — the real plan is Premium/.test(preview[0]!.rows[0]!.sub) && preview[0]!.rows[0]!.countTone === 'warn', 'a preview is never mistaken for the real plan');
 }

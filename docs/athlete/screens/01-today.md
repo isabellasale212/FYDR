@@ -32,6 +32,16 @@ screen used to pass before the first actionable row):
    ground, not in a card (moved up from item 5 on 12 September 2026 so the
    shape of the week is read before the list; To do's first row stays inside
    an 812px screen, measured at 367px).
+3a. **"Your status changed"** (`StatusToldCard`, PATTERN-S3 C1, migration
+   0122, 13 September 2026) — the one emphasised card on this screen, only
+   while the availability row in force was set by staff and the athlete has
+   not yet opened their status screen for it (`availability.athlete_seen_at`
+   is null). The status word as the title, "Set by {name}, {role} · {when}",
+   and one 56px action, **See what it means**, to `/me/status`. No timer and
+   no dismiss: it stays on every visit until the status screen has been
+   opened once, then never returns for that row. A return to available after
+   an injury is a change too and is told the same way. Decided 2026-09-12:
+   the card takes the emphasis while unread.
 4. **What you owe**, as a to-do list. This is the screen's real job. Always
    rendered: with nothing outstanding the slot holds one row reading "You're
    up to date" and the count reads "None left".
@@ -190,6 +200,7 @@ stated here rather than left to be rediscovered:
 | A to-do item | The list | Opens the entry screen for that item | `/check-in`, `/nutrition-check-in`, `/gym/[id]` | nothing | no | the item is not owed |
 | A number on the rating row | The rating row's CR-10 grid | Sends the rating for that session with its scheduled minutes | stays here; the row becomes the receipt | `training_entries` (through the outbox) | **no — one tap**; the coach corrects a wrong one | the rating is not owed, or was sent |
 | "change or add a note" | The rating row's line | Opens the full rating screen | `/rpe/[id]` | nothing | no | the rating was sent, or the session has no scheduled length (then the whole row hands over: "Rate on the next screen") |
+| See what it means | The "Your status changed" card | Opens the status screen, which marks the row seen | `/me/status` | `availability.athlete_seen_at` (on arrival, through `mark_availability_seen`) | no | the row has been seen, or was not set by staff |
 | Report a problem | Below the list | Opens the problem form | `/report-problem` | nothing | no | never |
 | Tab bar | Fixed, bottom | Switches tab | the tab | nothing | no | never |
 

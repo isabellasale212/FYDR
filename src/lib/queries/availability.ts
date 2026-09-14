@@ -27,12 +27,16 @@ export type CurrentAvailability = {
   injury_id: string | null;
   effective_from: string;
   note: string | null;
+  /** PATTERN-S3 C1 (0122): when the athlete first opened their status screen
+   *  while this row was in force; null = told on Today, not yet read. */
+  athlete_seen_at: string | null;
 };
 
 export type OpenInjury = {
   id: string;
   athlete_id: string;
-  body_area: BodyArea;
+  /** Null for a coach while the club's setting is off (0122, the view). */
+  body_area: BodyArea | null;
   side: BodySide | null;
   onset_date: string;
   expected_return: string | null;
@@ -75,7 +79,7 @@ export async function fetchCurrentAvailability(
   let q = db
     .from('availability')
     .select(
-      'athlete_id, status, restrictions, reason_category, injury_id, effective_from, note, set_by',
+      'athlete_id, status, restrictions, reason_category, injury_id, effective_from, note, set_by, athlete_seen_at',
     )
     .eq('org_id', orgId)
     .is('effective_to', null);
@@ -112,7 +116,10 @@ export async function fetchOpenInjuries(
   athleteIds: string[] | null,
 ): Promise<OpenInjury[]> {
   let q = db
-    .from('injuries')
+    /* 0122 (PATTERN-S3 C8): injuries_staff, the view that masks body_area and
+       side to null for a coach unless the club's setting is on; the two
+       columns are not readable at the table any more. The rows are the same. */
+    .from('injuries_staff')
     /* `status` added 2026-09-08 for the athlete's availability banner: it is the
        injury's recovery stage (open / rehab / return_to_play) and without it the
        athlete is told they are restricted but never how far along they are. The
@@ -126,7 +133,9 @@ export async function fetchOpenInjuries(
 
   const { data, error } = await q;
   if (error) throw new Error(error.message);
-  return data ?? [];
+  /* A view's columns are nullable in the generated types; the base table's
+     are not, and the view selects rows the table has. Narrowed once here. */
+  return (data ?? []).filter((r): r is typeof r & { id: string; athlete_id: string; onset_date: string; status: NonNullable<typeof r.status> } => r.id !== null && r.athlete_id !== null && r.onset_date !== null && r.status !== null);
 }
 
 type ScopedAthlete = {

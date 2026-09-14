@@ -124,6 +124,13 @@ export const INJURY_ACCESS = [
   'strength_conditioning',
 ] as const;
 
+/** Who reads the body area and side of an injury whatever the club's setting
+ *  says (0122, PATTERN-S3 C8): the medic, the sport scientist and the S&C.
+ *  A coach reads them only while organisations.coach_sees_injury_site is on.
+ *  Mirrors injury_site_visible() in the database, which is what enforces it;
+ *  this set only decides what a caption may claim. */
+export const SITE_ALWAYS = ['medic', 'sport_scientist', 'strength_conditioning'] as const;
+
 /** Who proposes gym work against an open injury rather than assigning it.
  *
  *  The S&C, alone. An assignment made by this role for an athlete with an open

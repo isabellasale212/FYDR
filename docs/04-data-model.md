@@ -84,6 +84,9 @@ create table organisations (
   country_code  char(2) not null default 'GB',
   tier          subscription_tier not null default 'core',   -- core | performance
   settings      jsonb not null default '{}'::jsonb,
+  coach_sees_injury_site boolean not null default false, -- 0122 (PATTERN-S3 C8): whether a coach reads injuries.body_area
+                                                     -- and .side. Off by default; enforced by the injuries_staff view and
+                                                     -- injury_site_visible(), not by the screens. Sport scientist's switch.
   collects_rpe  boolean not null default true,      -- 0118: the RPE club setting. Off: generate_compliance_expectations
                                                     -- writes no training_rpe row and every dependent surface says so
                                                     -- (docs/decisions/absence-rule.md). Ratings already recorded stay.
@@ -769,7 +772,11 @@ create table injuries (
   id                uuid primary key default gen_random_uuid(),
   org_id            uuid not null references organisations(id),
   athlete_id        uuid not null references athletes(id),
-  -- Non-clinical: visible to coaching staff
+  -- Non-clinical, but since 0122 (PATTERN-S3 C8) NOT coach-visible by default: SELECT on the table is
+  -- granted to authenticated by column, without these two; every signed-in reader gets them through
+  -- the injuries_staff view, which returns them for the medic, the sport scientist and the S&C, for
+  -- the athlete's own row, and for a coach only while organisations.coach_sees_injury_site is on.
+  -- Null through the view means withheld, never unrecorded. Inserts and updates are unchanged.
   body_area         body_area not null,
   side              body_side,
   onset_date        date not null,
@@ -812,6 +819,9 @@ create table availability (
   effective_to   timestamptz,
   set_by         uuid not null references users(id),
   note           text,                            -- non-clinical, coach-visible
+  athlete_seen_at timestamptz,                    -- 0122 (PATTERN-S3 C1): when the athlete first opened /me/status while
+                                                   -- this row was in force; null = told on Today, not yet read.
+                                                   -- mark_availability_seen() writes it, the athlete's own open row only.
   created_at     timestamptz not null default now()
 );
 ```

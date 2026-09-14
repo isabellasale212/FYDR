@@ -143,27 +143,33 @@ export type InjuryForReview = {
  *  this safe for a medical caller, the same reliance this build's other
  *  clinical read (fetchInjuryClinical) already has. */
 export async function fetchInjuriesForReview(db: Db, orgId: string, athleteId: string, requestId: string): Promise<InjuryForReview[]> {
+  /* 0122 (PATTERN-S3 C8): body_area is not readable at the injuries table any
+     more — injuries_staff is where a signed-in reader gets it (the medic
+     always; the view has no relation to embed injury_clinical through, so
+     the clinical rows are a second read by injury id). */
   const [injuriesRes, reviewsRes] = await Promise.all([
-    db
-      .from('injuries')
-      .select('id, body_area, onset_date, injury_clinical(diagnosis, mechanism, clinical_notes, treatment_plan)')
-      .eq('org_id', orgId)
-      .eq('athlete_id', athleteId),
+    db.from('injuries_staff').select('id, body_area, onset_date').eq('org_id', orgId).eq('athlete_id', athleteId),
     db.from('sar_clinical_reviews').select('injury_id, decision, reason').eq('org_id', orgId).eq('sar_request_id', requestId),
   ]);
   if (injuriesRes.error) throw new Error(injuriesRes.error.message);
   if (reviewsRes.error) throw new Error(reviewsRes.error.message);
+  const injuries = (injuriesRes.data ?? []).filter((i): i is typeof i & { id: string; onset_date: string } => i.id !== null && i.onset_date !== null);
+  const clinicalRes = injuries.length === 0
+    ? { data: [], error: null }
+    : await db.from('injury_clinical').select('injury_id, diagnosis, mechanism, clinical_notes, treatment_plan').eq('org_id', orgId).in('injury_id', injuries.map((i) => i.id));
+  if (clinicalRes.error) throw new Error(clinicalRes.error.message);
+  const clinicalByInjury = new Map((clinicalRes.data ?? []).map((c) => [c.injury_id, c]));
 
   const decisionByInjury = new Map((reviewsRes.data ?? []).map((r) => [r.injury_id, r]));
 
-  return (injuriesRes.data ?? [])
-    .filter((i) => i.injury_clinical !== null)
+  return injuries
+    .filter((i) => clinicalByInjury.has(i.id))
     .map((i) => {
-      const clinical = i.injury_clinical!;
+      const clinical = clinicalByInjury.get(i.id)!;
       const decision = decisionByInjury.get(i.id);
       return {
         injury_id: i.id,
-        body_area: i.body_area,
+        body_area: i.body_area ?? 'unrecorded',
         onset_date: i.onset_date,
         diagnosis: clinical.diagnosis,
         mechanism: clinical.mechanism,

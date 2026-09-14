@@ -44,7 +44,12 @@ that nobody has yet turned into an injury record or dismissed. A coach does not
 see this panel at all, and its absence is not announced to them.
 
 **The injury list**, one row per injury, in the limited view: athlete, body area,
-side, onset date, status, and expected return.
+side, onset date, status, and expected return. **For a coach, the body area and
+side are withheld while the club's setting is off** (`/settings/club#injury-site`,
+migration 0122, off by default, PATTERN-S3 C8): the site reads "Injury" and the
+side is absent. The database masks the two columns through the `injuries_staff`
+view and does not grant them at the table, so no screen can show them by
+mistake.
 
 ---
 

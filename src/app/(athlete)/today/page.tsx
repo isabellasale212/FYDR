@@ -5,6 +5,8 @@ import { InjuryClinical } from '@/components/InjuryClinical/InjuryClinical';
 import { OutboxFlusher } from '@/components/OutboxFlusher/OutboxFlusher';
 import { TodayRpeRow } from '@/components/TodayRpeRow/TodayRpeRow';
 import { InstallCard } from '@/components/InstallCard/InstallCard';
+import { StatusToldCard } from '@/components/StatusToldCard/StatusToldCard';
+import { fetchStaffName } from '@/lib/queries/staffName';
 import { fetchAthleteAvailability } from '@/lib/queries/availability';
 import { fetchAthleteInjuryClinical } from '@/lib/queries/athleteInjuryClinical';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
@@ -169,6 +171,7 @@ export default async function TodayPage({
      says the status and what they may do, in the card's own words, and
      links down to the card, which keeps every line it had. Available shows
      nothing here: an all-clear does not need to interrupt. */
+  const setByName = availability.current && availability.current.athlete_seen_at === null ? await fetchStaffName(orgId, availability.current.set_by) : null;
   const availState = availabilityStatus(availability.current?.status ?? null);
   const availTone = availability.current?.status === 'unavailable' ? 'bad' : 'warn';
   const availSummary =
@@ -313,6 +316,13 @@ export default async function TodayPage({
           })}
         </div>
       </section>
+
+      {/* PATTERN-S3 C1 (0122): told once about a status change. Emphasised
+          while the open row is unseen and was set by staff; gone the first
+          time the status screen is opened. */}
+      {availability.current && availability.current.athlete_seen_at === null && availability.current.set_by ? (
+        <StatusToldCard status={availability.current.status} setBy={setByName} setAt={availability.current.effective_from} timezone={timezone} />
+      ) : null}
 
       {firstCheckInJustSent ? <InstallCard /> : null}
 

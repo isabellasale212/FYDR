@@ -420,11 +420,19 @@ const ENUM_LABELS: Record<string, string> = {
  *  phrase that is not the one on the coach's screen is exactly the confusion
  *  docs/metrics-parity.md exists to prevent. Structurally typed so both the
  *  staff row and the athlete's leaner one satisfy it. */
-export function bodyAreaPhrase(injury: { body_area: string; side: string | null | undefined }): string {
+/** "Left knee". Null body_area is the site WITHHELD — a coach reading through
+ *  injuries_staff while the club's setting is off (0122, PATTERN-S3 C8) —
+ *  and reads as the word for that, never as a blank the reader could take
+ *  for "no site". */
+export function bodyAreaPhrase(injury: { body_area: string | null; side: string | null | undefined }): string {
+  if (!injury.body_area) return SITE_WITHHELD;
   const area = enumLabel(injury.body_area);
   if (!injury.side) return area;
   return `${enumLabel(injury.side)} ${area.toLowerCase()}`;
 }
+
+/** What a coach reads where the site would be, while the club withholds it. */
+export const SITE_WITHHELD = 'Injury';
 
 export function enumLabel(value: string | null | undefined): string {
   if (!value) return BLANK;

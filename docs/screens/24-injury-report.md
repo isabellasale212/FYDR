@@ -112,7 +112,7 @@ injuries' onset and return dates, so an athlete with no recorded status counts
 as available; the denominator is today's roster × the period's days, so a
 mid-period joiner is counted for the whole window — both said, neither
 corrected in the number (MET-013's own formula). A missing value is words: "Not
-measured" for the figure, "No position set", "Site not recorded", "Return not
+measured" for the figure, "No position set", "No injury on file" / "Site withheld", "Return not
 known" on a row — never a dash.
 
 **Days lost and new injuries are counts, not calculated metrics**, and have no
@@ -120,7 +120,12 @@ registry entries.
 
 **Everything on this page is the limited view.** Body area, side, onset, expected
 return, status and restrictions. The diagnosis is not here and cannot be reached
-from here.
+from here. **For a coach, the body area and side are withheld while the club's
+setting is off** (`/settings/club#injury-site`, migration 0122, off by default,
+PATTERN-S3 C8): an injury-linked row reads "Site withheld" (a row with no
+injury behind it — illness, a personal absence — reads "No injury on file"),
+and the days-lost-by-site panel carries one "Withheld" bucket. The database masks the two columns
+(`injuries_staff`); the page prints what it is given.
 
 ---
 

@@ -29,7 +29,10 @@ groups rather than as a list of individuals.
 A header with the group filter, then a board of rehab groups, each holding the
 athletes assigned to it, in the limited injury view: body area **and side**,
 restrictions, and expected return, never a diagnosis. Plus each athlete's rehab
-phase, which is what this board exists to manage.
+phase, which is what this board exists to manage. **For a coach the body area
+and side are withheld while the club's setting is off** (`/settings/club#injury-site`,
+migration 0122, off by default, PATTERN-S3 C8): the row reads "Injury", the
+caption says so, and the database — not this screen — does the masking.
 
 **DECIDED by Isabella, 2026-09-09: restrictions are rendered on the member row.**
 Not a new requirement — this section has always said so — but for the whole life

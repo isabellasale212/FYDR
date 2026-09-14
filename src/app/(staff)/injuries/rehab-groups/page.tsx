@@ -130,7 +130,8 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
           decided on 2026-09-09 to render them, and the row now does, so this
           caption names them again. */}
       <p className="cap">
-        Availability, body area and side, restrictions, expected return, and rehab phase
+        Availability, body area and side (withheld from a coach while the club&rsquo;s
+        injury-site setting is off), restrictions, expected return, and rehab phase
         &mdash; the limited injury view a shared phase cannot be managed without. No
         diagnosis, no clinical notes, not even for medical, on this screen.
       </p>

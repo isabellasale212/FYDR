@@ -615,7 +615,7 @@ export async function fetchInjuryAvailabilityReport(
    * no error and no short page to notice. */
   const injuries = await fetchAllPaged((from, to) => {
     let q = db
-      .from('injuries')
+      .from('injuries_staff') /* 0122: the site-masking view */
       .select('id, athlete_id, body_area, onset_date, actual_return, status')
       .eq('org_id', orgId)
       .is('deleted_at', null)
@@ -623,7 +623,11 @@ export async function fetchInjuryAvailabilityReport(
       .or(`actual_return.is.null,actual_return.gte.${fromDate}`);
     if (athleteIds.length > 0) q = q.in('athlete_id', athleteIds);
     return q.order('onset_date').order('id').range(from, to);
-  });
+  }).then((rows) =>
+    /* The view's columns are nullable in the generated types; the table's
+       are not, and the view selects rows the table has. Narrowed once. */
+    rows.filter((r): r is typeof r & { id: string; athlete_id: string; onset_date: string; status: NonNullable<typeof r.status> } => r.id !== null && r.athlete_id !== null && r.onset_date !== null && r.status !== null),
+  );
 
   // An injury with no actual_return yet is still open — "as of today" for
   // this report's purposes. Every real caller already passes the org's own
@@ -677,7 +681,7 @@ export async function fetchInjuryAvailabilityReport(
         const week = mondayOfIso(cursor);
         weekTotals.set(week, (weekTotals.get(week) ?? 0) + 1);
 
-        const site = i.body_area ?? 'unrecorded';
+        const site = i.body_area ?? 'withheld';
         siteTotals.set(site, (siteTotals.get(site) ?? 0) + 1);
         const unit = byId.get(i.athlete_id)?.position ?? 'No position set';
         unitTotals.set(unit, (unitTotals.get(unit) ?? 0) + 1);
@@ -732,7 +736,8 @@ export async function fetchInjuryAvailabilityReport(
     const counts = new Map<string, number>();
     for (const i of relevant) {
       if (i.onset_date < fromDate || i.onset_date > toDate) continue;
-      counts.set(i.body_area, (counts.get(i.body_area) ?? 0) + 1);
+      const site = i.body_area ?? 'withheld';
+      counts.set(site, (counts.get(site) ?? 0) + 1);
     }
     clinical = {
       byBodyAreaOfNewInjuries: [...counts.entries()]

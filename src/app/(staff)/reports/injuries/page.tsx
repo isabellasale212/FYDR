@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { NOT_MEASURED, NO_POSITION, RETURN_NOT_KNOWN, SITE_NOT_RECORDED, availabilityExclusionsLine } from '@/lib/reportFigures';
+import { NOT_MEASURED, NO_POSITION, RETURN_NOT_KNOWN, SITE_NOT_RECORDED, SITE_WITHHELD_WORD, availabilityExclusionsLine } from '@/lib/reportFigures';
 import { CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
@@ -341,7 +341,9 @@ export default async function InjuryAvailabilityReportPage({
                                   <span className="inj-site">
                                     {row.body_area
                                       ? `${enumLabel(row.body_area)}${row.side ? ` · ${enumLabel(row.side)}` : ''}`
-                                      : SITE_NOT_RECORDED}
+                                      : row.injury_id
+                                        ? SITE_WITHHELD_WORD
+                                        : SITE_NOT_RECORDED}
                                   </span>
                                   <span className="inj-can">{canDo}</span>
                                   <span className="inj-back">
@@ -447,7 +449,7 @@ export default async function InjuryAvailabilityReportPage({
                   {report.byAthlete.slice(0, 8).map((a) => (
                     <div key={a.athlete_id} className="cmpl-row" style={{ gridTemplateColumns: 'minmax(0, 1fr) 110px minmax(0, 1.4fr) 76px' }}>
                       <span className="cmpl-name">{a.name}</span>
-                      <span className="inj-site">{a.bodyArea ? enumLabel(a.bodyArea) : SITE_NOT_RECORDED}</span>
+                      <span className="inj-site">{a.bodyArea ? enumLabel(a.bodyArea) : SITE_WITHHELD_WORD}</span>
                       <span className="cmpl-track">
                         <span
                           className="cmpl-fill"

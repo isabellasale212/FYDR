@@ -14,6 +14,7 @@ import {
   AVAILABILITY_EDIT,
   BODY_MASS_VIEW,
   CLINICAL_ONLY,
+  SITE_ALWAYS,
   ENTRY_CORRECTION,
   FLAG_EDIT_ANY_DOMAIN,
   GPS_IMPORT,
@@ -64,6 +65,7 @@ export const CAPABILITIES: readonly Capability[] = [
   { key: 'analytics', label: 'Analytics', roles: ANALYTICS },
   { key: 'gps', label: 'GPS imports', roles: GPS_IMPORT },
   { key: 'settings_admin', label: 'Users, the audit log, data retention, subject access release and club details', roles: SETTINGS_ADMIN },
+  { key: 'injury_site', label: "Where an injury is: the body site and side, whatever the club's coach setting says", roles: SITE_ALWAYS },
   { key: 'clinical', label: 'Clinical detail: diagnosis, mechanism, severity, treatment notes, and the clinical review of a subject access request', roles: CLINICAL_ONLY },
 ];
 

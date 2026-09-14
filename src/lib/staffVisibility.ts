@@ -20,14 +20,12 @@ import type { AppRole } from '@/lib/types/database';
  *   - A day not answered is an expectation with no entry; every compliance
  *     figure prints the count over the number asked (lib/reportFigures).
  *
- * ONE CLAIM ON THE BOARD IS NOT TRUE TODAY AND IS NOT MADE HERE: "no body
- * site and no side" for the coach. The injuries list, the availability line
- * and the injury report show a coach the body area and side of an open injury
- * (INJURY_ACCESS admits the coach to the limited view, which carries them).
- * Isabella's decision (13 September 2026): body site and side become
- * not-coach-visible behind a club setting defaulting to off — built with the
- * injury cluster (PATTERN-S3), after which the coach card takes the board's
- * wording. Until then the card says what is enforced. Reported. */
+ * The board's "no body site and no side" for the coach is enforced since
+ * 0122 (PATTERN-S3 C8): the injuries_staff view masks both unless the club's
+ * setting `coach_sees_injury_site` is on, and the columns are not readable at
+ * the table. The coach card is worded from that setting — the board's wording
+ * while it is off, and the honest wider one while a club has turned it on —
+ * so the card says what is enforced for this club, never a general claim. */
 
 export type StaffVisibility = { cards: StaffVisibilityCard[]; people: number };
 
@@ -50,8 +48,8 @@ const ROLE_WORD: Record<string, string> = {
 
 const SEES: Record<string, { sees: string; doesNotSee: string }> = {
   coach: {
-    sees: 'your morning check-in answers, your session ratings, your gym logs, whether you are available to train with one line saying what you cannot do this week, and the body area of an open injury.',
-    doesNotSee: 'your diagnosis, your treatment notes, or your weight. Those stay with the physiotherapist.',
+    sees: 'your morning check-in answers, your session ratings, your gym logs, and whether you are available to train with one line saying what you cannot do this week.',
+    doesNotSee: 'your diagnosis, your treatment notes, the body site or side of an injury, or your weight. Those stay with the physiotherapist.',
   },
   medic: {
     sees: 'what the coach sees, and the clinical record as well: diagnosis, body site and side, treatment notes, and the dates.',
@@ -71,6 +69,12 @@ const SEES: Record<string, { sees: string; doesNotSee: string }> = {
   },
 };
 
+/** The coach card when the club has turned the site setting on (0122). */
+const COACH_SEES_SITE = {
+  sees: 'your morning check-in answers, your session ratings, your gym logs, whether you are available to train with one line saying what you cannot do this week, and the body area and side of an open injury — this club has chosen to show the coach where an injury is.',
+  doesNotSee: 'your diagnosis, your treatment notes, or your weight. Those stay with the physiotherapist.',
+};
+
 const ORDER: AppRole[] = ['coach', 'medic', 'sport_scientist', 'strength_conditioning', 'nutritionist'];
 
 export async function fetchStaffVisibility(orgId: string): Promise<StaffVisibility> {
@@ -78,10 +82,12 @@ export async function fetchStaffVisibility(orgId: string): Promise<StaffVisibili
      session cannot read other users' rows, and the names of their own club's
      staff are the point of the screen. */
   const admin = createAdminClient();
-  const [users, roles] = await Promise.all([
+  const [users, roles, org] = await Promise.all([
     admin.from('users').select('id, full_name').eq('org_id', orgId).eq('status', 'active').is('deleted_at', null),
     admin.from('user_roles').select('user_id, role').eq('org_id', orgId),
+    admin.from('organisations').select('coach_sees_injury_site').eq('id', orgId).maybeSingle(),
   ]);
+  const coachSeesSite = org.data?.coach_sees_injury_site === true;
   const nameById = new Map((users.data ?? []).map((u) => [u.id, u.full_name]));
   const byRole = new Map<string, string[]>();
   for (const r of roles.data ?? []) {
@@ -96,7 +102,8 @@ export async function fetchStaffVisibility(orgId: string): Promise<StaffVisibili
     if (!names || names.length === 0) continue;
     names.forEach((n) => people.add(n));
     const who = names.length === 1 ? names[0]! : `${names.slice(0, -1).join(', ')} and ${names[names.length - 1]}`;
-    cards.push({ role, roleWord: ROLE_WORD[role] ?? role, who, sees: SEES[role]!.sees, doesNotSee: SEES[role]!.doesNotSee });
+    const words = role === 'coach' && coachSeesSite ? COACH_SEES_SITE : SEES[role]!;
+    cards.push({ role, roleWord: ROLE_WORD[role] ?? role, who, sees: words.sees, doesNotSee: words.doesNotSee });
   }
   return { cards, people: people.size };
 }

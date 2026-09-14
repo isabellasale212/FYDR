@@ -50,7 +50,7 @@ console.log('\n3. the injury report — the second');
   const page = strip(read('src/app/(staff)/reports/injuries/page.tsx'));
   assert(/availabilityExclusionsLine\(\{ notRecorded: report\.summary\.notRecorded, joinedInPeriod: report\.summary\.joinedInPeriod \}\)/.test(page), 'the page says them under the figures');
   assert(/\{report\.summary\.availabilityPct === null \? NOT_MEASURED : report\.summary\.availabilityPct\}/.test(page), 'a missing availability figure is words');
-  assert(/\{row\.position \?\? NO_POSITION\}/.test(page) && /\{row\.expected_return \? formatDate\(row\.expected_return, timezone\) : RETURN_NOT_KNOWN\}/.test(page) && /\{a\.bodyArea \? enumLabel\(a\.bodyArea\) : SITE_NOT_RECORDED\}/.test(page), 'position, expected return and site in words');
+  assert(/\{row\.position \?\? NO_POSITION\}/.test(page) && /\{row\.expected_return \? formatDate\(row\.expected_return, timezone\) : RETURN_NOT_KNOWN\}/.test(page) && /\{a\.bodyArea \? enumLabel\(a\.bodyArea\) : SITE_WITHHELD_WORD\}/.test(page), 'position, expected return and site in words');
   assert((page.match(/'—'/g) ?? []).length === 0, 'no dash stands in for a value on this report');
   assert(/joined part-way/.test(read('docs/screens/24-injury-report.md')), 'the spec says so');
 }

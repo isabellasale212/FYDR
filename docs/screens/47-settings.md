@@ -84,8 +84,24 @@ only" beside it.
   who can switch it on, rather than showing an empty column or a zero
   (`docs/decisions/absence-rule.md`). The switch is the sport scientist's;
   every other role reads the state as a sentence. Each flip writes an audit
-  row (`org.collects_rpe.changed`). For the sport scientist only, the **Club
-  details** form (name, sport, timezone, country, logo). The sidebar's and the
+  row (`org.collects_rpe.changed`). The **Coaches and the injury site card**
+  (`#injury-site`, since 13 September 2026, migration 0122,
+  `organisations.coach_sees_injury_site`, PATTERN-S3 C8): a switch, **off by
+  default**, that decides whether a coach reads where an athlete's injury is.
+  Off: a coach reads the status word, the restriction line and the expected
+  return — never the body site or the side, which stay with the medic, the
+  sport scientist and the S&C, and with the athlete. On: a coach also reads the
+  body site and side of an open injury on the injuries list, the squad list,
+  the allocation and rehab boards and the injury report — never the diagnosis,
+  the treatment notes or the protocol stage, whatever the setting says. Both
+  positions are printed on the card before the switch is pressed. The database
+  enforces it, not the screens: `body_area` and `side` are not readable at the
+  `injuries` table by any signed-in reader; the `injuries_staff` view masks both
+  to null for a coach while the setting is off (`injury_site_visible()`), and a
+  masked site renders as the word "Injury". The switch is the sport
+  scientist's; every other role reads the state as a sentence. Each flip writes
+  an audit row (`org.coach_sees_injury_site.changed`). For the sport scientist
+  only, the **Club details** form (name, sport, timezone, country, logo). The sidebar's and the
   plan gate's "see the plan" links point at `/settings/club#plan`.
 - **`/settings/profile`** — eyebrow "Settings · You". Profile (name, club, role
   as words), avatar upload, the profile edit form, then under `#password` the
@@ -111,6 +127,7 @@ None. Settings displays configuration, not measurements.
 | Two factor login | `/settings/profile#password` | Enrols or manages a second factor | Stays there | Registers a factor | Any staff, for themselves. **Required for some roles** | Yes | Never |
 | Club details | `/settings/club` | Changes the club's name, sport, timezone, country and logo | Stays there | Updates the organisation | **Sport scientist only** in the agreed model | Form submission | Absent for everyone else |
 | Session RPE switch | `/settings/club#rpe` | Turns the session rating on or off for the whole club; the database stops generating RPE expectations while it is off | Stays there | `organisations.collects_rpe` and an audit row | **Sport scientist only**; other roles read the state | None — reversible, and both consequences are on the card | Never absent: the sentence stands in for the switch |
+| Coaches and the injury site switch | `/settings/club#injury-site` | Decides whether a coach reads the body site and side of an open injury; the database masks both while it is off | Stays there | `organisations.coach_sees_injury_site` and an audit row | **Sport scientist only**; other roles read the state | None — reversible, and both positions are on the card | Never absent: the sentence stands in for the switch |
 | Users, Audit, Retention, Subject access | People and Data groups | Open those screens | Their own addresses | Nothing | As each screen | None | Never absent: closed rows state their reason instead of linking |
 | Groups, Thresholds, Notifications, Exports, Imports | Club and Data groups | Open those screens | Their own addresses | Nothing | As each screen | None | Never |
 | Plan preview switch | Plan card at `/settings/club` | Lets Fydr's own staff view the product on the lower package | Stays there | Sets a browser cookie | **Fydr staff only, identified by email address, not by role** | None | Absent for a club's own staff |

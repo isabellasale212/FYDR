@@ -34,7 +34,14 @@ export const NONE_WAIVED = 'None';
 export const NO_ENTRY_IN_WINDOW = 'No entry in this window';
 export const NOT_MEASURED = 'Not measured';
 export const NO_POSITION = 'No position set';
-export const SITE_NOT_RECORDED = 'Site not recorded';
+/** A row with no injury behind it — illness, a personal absence — has no
+ *  site to show. */
+export const SITE_NOT_RECORDED = 'No injury on file';
+/** injuries.body_area is not null at the table, so a null through the
+ *  injuries_staff view on a row that IS injury-linked is the club's setting
+ *  withholding it from a coach (0122, PATTERN-S3 C8) — never an unrecorded
+ *  site. */
+export const SITE_WITHHELD_WORD = 'Site withheld';
 export const RETURN_NOT_KNOWN = 'Return not known';
 
 /** "24 of 30 submitted · 2 waived" — a count always carries its denominator;

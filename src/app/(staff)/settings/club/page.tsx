@@ -1,6 +1,7 @@
 import Link from 'next/link';
 import { ClubDetailsEditForm } from '@/components/ClubDetailsEditForm/ClubDetailsEditForm';
 import { RpeSettingSwitch } from '@/components/RpeSettingSwitch/RpeSettingSwitch';
+import { InjurySiteSettingSwitch } from '@/components/InjurySiteSettingSwitch/InjurySiteSettingSwitch';
 import { PlanPreviewSwitch } from '@/components/PlanPreviewSwitch/PlanPreviewSwitch';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
@@ -27,8 +28,11 @@ export default async function SettingsClubPage() {
      drawn. Premium-only because the preview is downgrade-only — offering it to
      a Basic club would be a switch that provably cannot do anything. */
   const canPreviewTier = isPlatformStaff(claims.email) && isPremium(realTier);
+  /* The site setting is read for every role (the sentence for non-admins). */
+  const siteRow = await db.from('organisations').select('coach_sees_injury_site').eq('id', orgId).maybeSingle();
+  const siteSetting = siteRow.data?.coach_sees_injury_site ?? false;
   const orgRow = isAdmin
-    ? await db.from('organisations').select('name, sport, timezone, country_code, logo_url').eq('id', orgId).maybeSingle()
+    ? await db.from('organisations').select('name, sport, timezone, country_code, logo_url, coach_sees_injury_site').eq('id', orgId).maybeSingle()
     : { data: null };
 
   return (
@@ -212,6 +216,27 @@ export default async function SettingsClubPage() {
           ) : (
             <p className="tiny">
               {collectsRpe ? 'On — athletes rate each session on the CR-10 scale.' : 'Off — nobody is asked to rate a session.'} The sport scientist changes it.
+            </p>
+          )}
+        </section>
+
+        {/* PATTERN-S3 C8 (0122): body site and side are not coach-visible, a
+            club setting defaulting to off. The sport scientist's switch; the
+            database enforces it (injuries_staff). Other roles read the state
+            from the setting row read below. */}
+        <section className="card set-card" aria-labelledby="site-title" id="injury-site">
+          <h2 className="card-title" id="site-title" style={{ margin: 0 }}>
+            Coaches and the injury site
+          </h2>
+          <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: '2px 0 var(--sp-10)' }}>
+            Whether a coach reads where an athlete&apos;s injury is. Off by default: a coach reads the status, the restriction line
+            and the expected return, nothing else.
+          </p>
+          {isAdmin ? (
+            <InjurySiteSettingSwitch orgId={orgId} userId={claims.userId} initial={orgRow.data?.coach_sees_injury_site ?? false} />
+          ) : (
+            <p className="tiny">
+              {siteSetting ? 'On — a coach reads the body site and side of an open injury.' : 'Off — a coach reads the status, the restriction line and the expected return only.'} The sport scientist changes it.
             </p>
           )}
         </section>

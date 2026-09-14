@@ -62,3 +62,24 @@ export async function setCollectsRpe(
   });
   return { error: null };
 }
+
+/** PATTERN-S3 C8 (0122): whether a coach may read the body site and side of
+ *  an open injury. Off by default. The sport scientist's; audited as its own
+ *  action. Enforced by the injuries_staff view, which reads the column. */
+export async function setCoachSeesInjurySite(db: Db, orgId: string, actorId: string, on: boolean): Promise<{ error: string | null }> {
+  const result = await mustAffect(
+    db.from('organisations').update({ coach_sees_injury_site: on }).eq('id', orgId).select('id'),
+    { refusal: 'Not saved: this setting belongs to the sport scientist.' },
+  );
+  if (result.error) return result;
+  await db.from('audit_log').insert({
+    org_id: orgId,
+    actor_id: actorId,
+    actor_role: 'sport_scientist',
+    action: 'org.coach_sees_injury_site.changed',
+    entity_type: 'organisation',
+    entity_id: orgId,
+    metadata: { coach_sees_injury_site: on },
+  });
+  return { error: null };
+}

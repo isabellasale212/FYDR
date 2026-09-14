@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
+import { CLINICAL_ONLY, SITE_ALWAYS, hasAnyRole } from '@/lib/access';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { PrintButton } from '@/components/PrintButton/PrintButton';
@@ -7,7 +7,7 @@ import { ProblemReportsTriage } from '@/components/ProblemReportsTriage/ProblemR
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchInjuriesList } from '@/lib/queries/injuries';
 import { fetchOpenProblemReports, fetchProblemReportNotes } from '@/lib/queries/problemReports';
-import { enumLabel, formatDate } from '@/lib/format';
+import { bodyAreaPhrase, enumLabel, formatDate } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireInjuryAccess } from '@/lib/session';
@@ -51,11 +51,17 @@ export default async function InjuriesPage({
   // for why coach has no access to this domain, not even existence: the
   // athlete capability that drives it is worded "to medical staff", and the
   // flow it implements (03-flows.md §6) notifies Medical alone.
-  const [groups, injuries, problemReports] = await Promise.all([
+  const [groups, injuries, problemReports, siteRow] = await Promise.all([
     fetchGroups(db, orgId),
     fetchInjuriesList(db, orgId, groupIds),
     isMedical ? fetchOpenProblemReports(db, orgId) : Promise.resolve([]),
+    /* 0122 (PATTERN-S3 C8): what the boundary caption below may claim for a
+       coach depends on the club's setting; the view masks the columns either
+       way, the caption only says which. */
+    db.from('organisations').select('coach_sees_injury_site').eq('id', orgId).maybeSingle(),
   ]);
+  const coachSeesSite = siteRow.data?.coach_sees_injury_site === true;
+  const isCoachOnly = !isMedical && !hasAnyRole(claims.roles, SITE_ALWAYS);
 
   // Medical's own triage notes on those reports (migration 0055) — one batched
   // fetch for the whole inbox rather than one per row, so it has to wait on the
@@ -133,8 +139,8 @@ export default async function InjuriesPage({
                   {i.first_name} {i.last_name}
                 </span>
                 <div className="tiny">
-                  {enumLabel(i.body_area)}
-                  {i.side ? ` · ${enumLabel(i.side)}` : ''} · since {formatDate(i.onset_date, timezone)}
+                  {/* 0122: null is the site withheld from a coach, read as a word. */}
+                  {bodyAreaPhrase(i)} · since {formatDate(i.onset_date, timezone)}
                   {i.expected_return ? ` · back ${formatDate(i.expected_return, timezone)}` : ''}
                 </div>
               </div>
@@ -152,8 +158,10 @@ export default async function InjuriesPage({
 
       <p className="cap">
         {isMedical
-          ? 'Full clinical detail opens from each record. Nothing here is shown to coaching staff except availability status, restrictions, body area and expected return.'
-          : 'Availability status, restrictions, body area and expected return only. Diagnosis and clinical notes are medical only and are not on this screen.'}
+          ? `Full clinical detail opens from each record. Nothing here is shown to coaching staff except availability status, restrictions${coachSeesSite ? ', body area' : ''} and expected return${coachSeesSite ? '' : ' — the body area and side stay with you, the sport scientist and the S&C while the club\'s setting is off'}.`
+          : isCoachOnly && !coachSeesSite
+            ? 'Availability status, restrictions and expected return only. Where an injury is stays with the medic unless the club turns that on. Diagnosis and clinical notes are medical only and are not on this screen.'
+            : 'Availability status, restrictions, body area and expected return only. Diagnosis and clinical notes are medical only and are not on this screen.'}
       </p>
     </>
   );

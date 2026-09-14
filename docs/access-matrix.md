@@ -215,8 +215,17 @@ whether it happened in training or a match**
 (`supabase/migrations/0005_injuries_and_availability.sql:32` to `:39`). From the
 availability record: **status, restrictions, and reason category**.
 
-So a coach can tell that a player is unavailable with a hamstring problem, is
-expected back on the 18th, and must not sprint.
+**Body area and side are not coach-visible by default** (PATTERN-S3 C8,
+Isabella's decision of 13 September 2026, migration 0122). SELECT on the
+`injuries` table is granted to signed-in readers by column, without `body_area`
+and `side`; the `injuries_staff` view returns them for the medic, the sport
+scientist and the S&C, for the athlete's own row, and for a coach **only while
+`organisations.coach_sees_injury_site` is on** — a club setting on Club details,
+off by default, the sport scientist's to flip, audited. A masked site renders
+as "Injury" / "Site withheld", never as a blank. So by default a coach can tell
+that a player is unavailable, is expected back on the 18th, and must not
+sprint — not where the injury is.
+
 
 **What only the medic sees.** The whole clinical record, which is a separate
 table: **diagnosis, mechanism, severity, tissue type, imaging, referral, clinical

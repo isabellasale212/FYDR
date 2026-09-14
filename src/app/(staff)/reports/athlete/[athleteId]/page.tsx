@@ -10,7 +10,7 @@ import { WellnessChart } from '@/components/WellnessChart/WellnessChart';
 import { acwrInsufficiencyNote, acwrSuppressedLabel } from '@/lib/acwr';
 import { fetchAthleteReport } from '@/lib/queries/athleteReport';
 import { recordReportView } from '@/lib/queries/reports';
-import { ageFrom, enumLabel, formatDate, formatNumber } from '@/lib/format';
+import { ageFrom, bodyAreaPhrase, enumLabel, formatDate, formatNumber } from '@/lib/format';
 import { NO_RESULT } from '@/lib/reportFigures';
 import { availabilityStatus, SEVERITY_STATUS } from '@/lib/status';
 import { athleteDefinition } from '@/lib/reportCatalogue';
@@ -241,7 +241,7 @@ export default async function AthleteReportPage({
           </span>
           {openInjury ? (
             <span className="tiny" style={{ color: 'var(--muted)' }}>
-              {enumLabel(openInjury.body_area)}
+              {bodyAreaPhrase(openInjury)}
               {openInjury.side ? ` (${enumLabel(openInjury.side)})` : ''}, back{' '}
               {openInjury.expected_return ? formatDate(openInjury.expected_return, timezone) : 'not set'}
             </span>

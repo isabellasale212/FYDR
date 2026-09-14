@@ -77,10 +77,19 @@ select is(
 -- ===========================================================================
 
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
-select isnt(
-  (select body_area::text from injuries where id = tests.uid('orga','injury')),
+/* 0122 (PATTERN-S3 C8): body site and side are not coach-visible unless the
+   club's setting is on. The coach still reads the injury row — the limited
+   view's other columns — from the table; the site comes only through
+   injuries_staff, masked to null for a coach while the setting is off. */
+select throws_ok(
+  format($$select body_area from injuries where id = %L$$, tests.uid('orga','injury')),
+  '42501', null,
+  'the coach cannot read body area at the table (0122)'
+);
+select is(
+  (select body_area::text from injuries_staff where id = tests.uid('orga','injury')),
   null,
-  'the coach reads body area from injuries, the table the limited view is built on'
+  'and reads it as null through injuries_staff while the club''s setting is off'
 );
 select isnt(
   (select status::text from injuries where id = tests.uid('orga','injury')),

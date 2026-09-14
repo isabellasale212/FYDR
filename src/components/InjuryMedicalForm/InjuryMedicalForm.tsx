@@ -38,7 +38,7 @@ type Props = { orgId: string; userId: string; injury: InjuryDetail; clinical: In
  *  can also see." */
 export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
   const router = useRouter();
-  const [bodyArea, setBodyArea] = useState<string>(injury.body_area);
+  const [bodyArea, setBodyArea] = useState<string>(injury.body_area ?? '');
   const [side, setSide] = useState<string>(injury.side ?? '');
   const [status, setStatus] = useState<string>(injury.status);
   const [expectedReturn, setExpectedReturn] = useState(injury.expected_return ?? '');

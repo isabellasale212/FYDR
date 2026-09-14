@@ -393,6 +393,7 @@ export type Database = {
         set_by: string
         note: string | null
         created_at: string
+        athlete_seen_at: string | null
       }
       Insert: {
         id?: string
@@ -407,6 +408,7 @@ export type Database = {
         set_by: string
         note?: string | null
         created_at?: string
+        athlete_seen_at?: string | null
       }
       Update: {
         id?: string
@@ -421,6 +423,7 @@ export type Database = {
         set_by?: string
         note?: string | null
         created_at?: string
+        athlete_seen_at?: string | null
       }
       Relationships: [
         {
@@ -1795,6 +1798,119 @@ export type Database = {
         }
       ]
     }
+    injury_protocols: {
+      Row: {
+        injury_id: string
+        org_id: string
+        total_stages: number
+        opened_by: string | null
+        opened_at: string
+        current_stage: number
+      }
+      Insert: {
+        injury_id: string
+        org_id: string
+        total_stages: number
+        opened_by?: string | null
+        opened_at?: string
+        current_stage?: number
+      }
+      Update: {
+        injury_id?: string
+        org_id?: string
+        total_stages?: number
+        opened_by?: string | null
+        opened_at?: string
+        current_stage?: number
+      }
+      Relationships: [
+        {
+          foreignKeyName: "injury_protocols_injury_id_fkey"
+          columns: ["injury_id"]
+          isOneToOne: true
+          referencedRelation: "injuries"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "injury_protocols_opened_by_fkey"
+          columns: ["opened_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "injury_protocols_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
+    injury_stage_events: {
+      Row: {
+        id: string
+        org_id: string
+        injury_id: string
+        from_stage: number | null
+        to_stage: number
+        moved_by: string | null
+        moved_at: string
+        restriction_line: string | null
+        criteria_reviewed: boolean
+        reason: string | null
+        seq: number
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        injury_id: string
+        from_stage?: number | null
+        to_stage: number
+        moved_by?: string | null
+        moved_at?: string
+        restriction_line?: string | null
+        criteria_reviewed?: boolean
+        reason?: string | null
+        seq: number
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        injury_id?: string
+        from_stage?: number | null
+        to_stage?: number
+        moved_by?: string | null
+        moved_at?: string
+        restriction_line?: string | null
+        criteria_reviewed?: boolean
+        reason?: string | null
+        seq?: number
+      }
+      Relationships: [
+        {
+          foreignKeyName: "injury_stage_events_injury_id_fkey"
+          columns: ["injury_id"]
+          isOneToOne: false
+          referencedRelation: "injuries"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "injury_stage_events_moved_by_fkey"
+          columns: ["moved_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "injury_stage_events_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
     injury_timeline_event: {
       Row: {
         id: string
@@ -2572,6 +2688,7 @@ export type Database = {
         deleted_at: string | null
         logo_url: string | null
         collects_rpe: boolean
+        coach_sees_injury_site: boolean
       }
       Insert: {
         id?: string
@@ -2586,6 +2703,7 @@ export type Database = {
         deleted_at?: string | null
         logo_url?: string | null
         collects_rpe?: boolean
+        coach_sees_injury_site?: boolean
       }
       Update: {
         id?: string
@@ -2600,6 +2718,7 @@ export type Database = {
         deleted_at?: string | null
         logo_url?: string | null
         collects_rpe?: boolean
+        coach_sees_injury_site?: boolean
       }
       Relationships: [
 
@@ -2755,6 +2874,9 @@ export type Database = {
         assigned_by: string | null
         created_at: string
         injury_id: string | null
+        decided_by: string | null
+        decided_at: string | null
+        return_reason: string | null
       }
       Insert: {
         id?: string
@@ -2769,6 +2891,9 @@ export type Database = {
         assigned_by?: string | null
         created_at?: string
         injury_id?: string | null
+        decided_by?: string | null
+        decided_at?: string | null
+        return_reason?: string | null
       }
       Update: {
         id?: string
@@ -2783,6 +2908,9 @@ export type Database = {
         assigned_by?: string | null
         created_at?: string
         injury_id?: string | null
+        decided_by?: string | null
+        decided_at?: string | null
+        return_reason?: string | null
       }
       Relationships: [
         {
@@ -2797,6 +2925,13 @@ export type Database = {
           columns: ["athlete_id"]
           isOneToOne: false
           referencedRelation: "athletes"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "programme_assignments_decided_by_fkey"
+          columns: ["decided_by"]
+          isOneToOne: false
+          referencedRelation: "users"
           referencedColumns: ["id"]
         },
         {
@@ -4586,6 +4721,28 @@ export type Database = {
 
       ]
     }
+    injuries_staff: {
+      Row: {
+        id: string | null
+        org_id: string | null
+        athlete_id: string | null
+        body_area: Database["public"]["Enums"]["body_area"] | null
+        side: Database["public"]["Enums"]["body_side"] | null
+        onset_date: string | null
+        status: Database["public"]["Enums"]["injury_status"] | null
+        expected_return: string | null
+        actual_return: string | null
+        session_id: string | null
+        occurred_in: Database["public"]["Enums"]["occurrence_context"] | null
+        reported_by: string | null
+        created_at: string | null
+        updated_at: string | null
+        deleted_at: string | null
+      }
+      Relationships: [
+
+      ]
+    }
     injury_clinical_athlete_view: {
       Row: {
         injury_id: string | null
@@ -4834,6 +4991,14 @@ export type Database = {
       }
       Returns: boolean
     }
+    decide_proposal: {
+      Args: {
+        p_assignment_id: string
+        p_decision: string
+        p_reason: string
+      }
+      Returns: unknown
+    }
     default_threshold_set: {
       Args: Record<string, never>
       Returns: {
@@ -4901,6 +5066,10 @@ export type Database = {
       Args: Record<string, never>
       Returns: string
     }
+    injury_site_visible: {
+      Args: Record<string, never>
+      Returns: boolean
+    }
     log_access_denial: {
       Args: {
         p_gate: string
@@ -4931,11 +5100,32 @@ export type Database = {
           attempts_remaining: number
         }[]
     }
+    mark_availability_seen: {
+      Args: Record<string, never>
+      Returns: unknown
+    }
+    move_injury_stage: {
+      Args: {
+        p_injury_id: string
+        p_to_stage: number
+        p_restriction_line: string
+        p_criteria_reviewed: boolean
+        p_reason: string
+      }
+      Returns: unknown
+    }
     mute_notifications: {
       Args: {
         p_notification_ids: string[]
       }
       Returns: number
+    }
+    open_injury_protocol: {
+      Args: {
+        p_injury_id: string
+        p_total_stages: number
+      }
+      Returns: unknown
     }
     preview_threshold: {
       Args: {
@@ -5086,6 +5276,12 @@ export type Database = {
           one_rm_test_date: string
         }[]
     }
+    restriction_line_is_clean: {
+      Args: {
+        p_line: string
+      }
+      Returns: boolean
+    }
     revise_gym_session_log: {
       Args: {
         p_original_id: string
@@ -5171,7 +5367,7 @@ export type Database = {
     }
     Enums: {
     app_role: "athlete" | "coach" | "medic" | "sport_scientist" | "strength_conditioning" | "nutritionist"
-    assignment_status: "active" | "suspended" | "completed" | "cancelled" | "proposed"
+    assignment_status: "active" | "suspended" | "completed" | "cancelled" | "proposed" | "returned"
     athlete_status: "active" | "injured_long_term" | "left_club"
     attendance_status: "full" | "modified" | "absent" | "excused"
     availability_reason: "injury" | "illness" | "personal" | "suspension" | "load_management" | "academic" | "representative" | "other"

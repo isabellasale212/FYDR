@@ -23,7 +23,7 @@ they can leave.**
 | Gym session and set logs | Yes | same pattern | `0012_rls_policies.sql` |
 | Nutrition check ins and targets | Yes | same pattern | `0012_rls_policies.sql` |
 | Test results and personal bests | Yes | shown on My data | `src/app/(athlete)/my-data/page.tsx` |
-| **Injuries: body area, status, dates** | **Yes** | `injuries_self_select`, `athlete_id = auth_athlete_id()` | `0012_rls_policies.sql:656` |
+| **Injuries: body area, side, status, dates** | **Yes** | `injuries_self_select`, `athlete_id = auth_athlete_id()`; since 0122 the body area and side are read through the `injuries_staff` view, which returns the athlete's own unmasked whatever the club's coach setting says | `0012_rls_policies.sql:656`, `0122_availability_seen_and_injury_site_setting.sql` |
 | **Availability and restrictions** | **Yes** | `availability_self_select` | `0012_rls_policies.sql:725` |
 | **Diagnosis, mechanism, severity, tissue type, imaging, referral, treatment plan** | **Yes** | `injury_clinical_athlete_view` | `0010_helper_functions_and_triggers.sql` |
 | **The physio's private clinical notes** | **No** | deliberately excluded from the view | same |

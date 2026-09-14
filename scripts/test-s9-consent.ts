@@ -100,8 +100,11 @@ console.log('\n5. artboard 2 — what staff can see, verified against the code')
 {
   const vis = strip(read('src/lib/staffVisibility.ts'));
   assert(/createAdminClient\(\)/.test(vis) && /\.eq\('org_id', orgId\)/.test(vis), 'the club\'s own staff, read for the athlete\'s own club');
-  assert(!/no body site|not where on your body/i.test(vis.replace(/ONE CLAIM ON THE BOARD[\s\S]*?Reported\./, '')) && /the body area of an open injury/.test(vis), 'the coach card does not promise a body-site boundary the product does not enforce today');
-  assert(/your diagnosis, your treatment notes, or your weight/.test(vis), 'the coach card leads with the boundary that IS enforced: no diagnosis, no treatment notes, no weight');
+  /* 0122 (PATTERN-S3 C8): the coach card is worded from the club's own
+     setting — the board's "no body site or side" while it is off, the honest
+     wider sentence while it is on. Never a general claim. */
+  assert(/coach_sees_injury_site/.test(vis) && /the body site or side of an injury/.test(vis) && /COACH_SEES_SITE/.test(vis) && /role === 'coach' && coachSeesSite \? COACH_SEES_SITE/.test(vis), 'the coach card says what the club\'s injury-site setting enforces, in both positions');
+  assert(/your diagnosis, your treatment notes, the body site or side of an injury, or your weight/.test(vis), 'the coach card leads with the boundary that is enforced: no diagnosis, no treatment notes, no site or side, no weight');
   const page = strip(read('src/app/(athlete)/consent/staff/page.tsx'));
   assert(/Step 2 of 3 · nothing decided yet/.test(page) && /data-emphasis/.test(page) && /nobody can change it — not you, not the club/.test(page) && /A day you do not answer stays empty/.test(page), 'the two facts already true are the one emphasised card');
   assert(/\{total\} of \{total\} roles listed/.test(page), 'the roles count carries its denominator');

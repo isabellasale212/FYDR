@@ -36,7 +36,8 @@ import { restrictionLine } from '@/lib/restrictions';
 
 export type AthleteInjuryRow = {
   id: string;
-  body_area: BodyArea;
+  /** Null for a coach while the club's setting is off (0122, the view). */
+  body_area: BodyArea | null;
   side: BodySide | null;
   onset_date: string;
   status: InjuryStatus;
@@ -55,14 +56,15 @@ export type AthleteInjuryRow = {
  *  this athlete ever had". Used by the squad athlete profile page. */
 export async function fetchAthleteInjuries(db: Db, orgId: string, athleteId: string): Promise<AthleteInjuryRow[]> {
   const { data, error } = await db
-    .from('injuries')
+    .from('injuries_staff') /* 0122: the site-masking view */
     .select('id, body_area, side, onset_date, status, expected_return, actual_return, occurred_in')
     .eq('org_id', orgId)
     .eq('athlete_id', athleteId)
     .is('deleted_at', null)
     .order('onset_date', { ascending: false });
   if (error) throw new Error(error.message);
-  return data ?? [];
+  /* The view's columns are nullable in the generated types; narrowed once. */
+  return (data ?? []).filter((r): r is typeof r & { id: string; onset_date: string; status: NonNullable<typeof r.status> } => r.id !== null && r.onset_date !== null && r.status !== null);
 }
 
 export type InjurySummary = {
@@ -70,7 +72,8 @@ export type InjurySummary = {
   athlete_id: string;
   first_name: string;
   last_name: string;
-  body_area: BodyArea;
+  /** Null for a coach while the club's setting is off (0122, the view). */
+  body_area: BodyArea | null;
   side: BodySide | null;
   onset_date: string;
   expected_return: string | null;
@@ -130,7 +133,8 @@ export type InjuryDetail = {
   athlete_id: string;
   first_name: string;
   last_name: string;
-  body_area: BodyArea;
+  /** Null for a coach while the club's setting is off (0122, the view). */
+  body_area: BodyArea | null;
   side: BodySide | null;
   onset_date: string;
   status: InjuryStatus;
@@ -158,26 +162,27 @@ export type InjuryDetail = {
  *  rather than someone else's — or some other injury's — live data. */
 export async function fetchInjuryDetail(db: Db, orgId: string, injuryId: string): Promise<InjuryDetail | null> {
   const { data, error } = await db
-    .from('injuries')
-    .select(
-      'id, athlete_id, body_area, side, onset_date, status, expected_return, actual_return, occurred_in, athletes!inner(first_name, last_name)',
-    )
+    .from('injuries_staff') /* 0122: the site-masking view; a view carries no relation, so the name is read beside it */
+    .select('id, athlete_id, body_area, side, onset_date, status, expected_return, actual_return, occurred_in')
     .eq('org_id', orgId)
     .eq('id', injuryId)
     .is('deleted_at', null)
     .maybeSingle();
   if (error) throw new Error(error.message);
-  if (!data) return null;
+  if (!data || data.id === null || data.athlete_id === null || data.onset_date === null || data.status === null) return null;
 
-  const availability = await fetchCurrentAvailability(db, orgId, [data.athlete_id]);
+  const [availability, athleteRow] = await Promise.all([
+    fetchCurrentAvailability(db, orgId, [data.athlete_id]),
+    db.from('athletes').select('first_name, last_name').eq('org_id', orgId).eq('id', data.athlete_id).maybeSingle(),
+  ]);
   const current = availability[0] ?? null;
   const avail = current && current.injury_id === data.id ? current : null;
 
   return {
     id: data.id,
     athlete_id: data.athlete_id,
-    first_name: data.athletes.first_name,
-    last_name: data.athletes.last_name,
+    first_name: athleteRow.data?.first_name ?? '',
+    last_name: athleteRow.data?.last_name ?? '',
     body_area: data.body_area,
     side: data.side,
     onset_date: data.onset_date,

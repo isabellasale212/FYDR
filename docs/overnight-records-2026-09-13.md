@@ -231,3 +231,273 @@ consequences stated.
 dates on the absence form (C5's open half), the academy slot on the status
 screen (the board draws it; nothing in the schema names an academy squad —
 "Academy" is a group name, 0116's ruling).
+
+---
+
+## Match participation — Step 1, what exists (item 5a; answer and stop)
+
+**Read from the schema on scratch and the code, 14 September 2026. Nothing
+built.** `docs/decisions/scope.md` set the bar: "A product sold to rugby clubs
+that cannot say who played is not complete." This is what it can say today.
+
+### What exists for who played, and for how long
+
+- **Nothing records who played or for how many minutes.** There is no
+  `match_participation`, no lineup, no minutes column anywhere. The only
+  per-athlete tables a match session touches are:
+  - `session_participants` (`athlete_id` or `group_id`): who was **expected** —
+    the roster the session was built for, not who took the field. The four
+    seeded match sessions each carry two rows (two groups); the two September
+    fixtures carry 29 athlete rows (the whole squad), which is the same fact
+    stated athlete by athlete.
+  - `session_attendance` (`attendance`: full | modified | absent | excused,
+    `modified_reason`, `recorded_by/at`, migration 0003): **the closest thing
+    to "who played"** — a coach records it on the Timetable screen for any
+    session, matches included. On scratch two match sessions have 28
+    attendance rows each (1 Aug and 8 Aug), the rest none. It records
+    presence, not minutes, and "full" for a match means "took part fully", not
+    80 minutes.
+  - `gps_records.duration_s` (per athlete per session, when a unit was worn):
+    the only **minutes-shaped** number in the schema, and only for a Premium
+    club with an import. Three of the seeded match sessions have 28 GPS rows
+    each. It is time the unit was recording, which is not minutes played.
+  - `training_entries` (the athlete's RPE with `duration_min`): 25–28 ratings
+    on each seeded match; the athlete's own claim of how long, entered after.
+- **The fixture** (`fixtures`: opponent, kickoff_at, venue, home_away,
+  competition, importance, status planned | played | cancelled, result as free
+  text "W 24-19") carries the outcome and nothing about the team.
+
+So "who played" is answerable today only as "who the coach marked present on
+the Timetable", and "minutes" is not answerable at all.
+
+### `sessions.fixture_id` — what writes it
+
+The premise "nothing writes it" is out of date since 9 September:
+
+- `createSession` writes `fixture_id: input.fixtureId ?? null` and **creating a
+  fixture creates its linked match session** (`cf12b85`, decided 2026-09-09).
+- Applying a week template writes `fixture_id` on the MD (offset 0) session
+  (`lib/queries/weekTemplates.ts`).
+- Read by the session detail (a link to the fixture), the fixture detail (the
+  week's sessions by `fixture_id`), the schedule grid and the athlete report's
+  session columns.
+
+Every fixture on scratch created since then has exactly one linked session.
+What is **not** written: nothing back-fills a session created before a fixture
+existed, and nothing links a hand-made match session to a fixture after the
+fact (the session form has no fixture field).
+
+### The seeded match sessions, as they stand on scratch tonight
+
+Four seed sessions titled "Fixture" (`5e550000-…0001/0009/0017/0025`, Saturdays
+11 Jul–1 Aug, 19:30, status completed). **Three of the four are already
+linked** — to fixtures Harlequins (18 Jul), Gloucester (25 Jul), Bath (1 Aug),
+each `status played` with a result, created 8 Aug with `created_by null` (a
+seeding run, not a person). One is an orphan: **11 July, no fixture.** Two
+things about the three links are worth knowing before any rule is written:
+the fixtures' `kickoff_at` is 15:00 while their sessions start at 19:30 (the
+seed and the link disagree by four and a half hours); and the seed fixtures
+from `f1c50000-…` (Exeter 2 Aug, Bristol 8 Aug, Northampton 22 Aug) each have
+their own linked session, so the 8 Aug "Fixture" session (`…0033`) is linked
+to Bristol Bears correctly.
+
+### What linking would touch
+
+Nothing in the schema — the column, the FK and the two writers exist. What a
+"link" needs is a **rule and a place**:
+
+1. **A place** — the session form and the session detail gain a fixture
+   field/action ("This is the match against …") for a `session_type = 'match'`
+   session; the fixture detail gains "attach an existing session". Both are
+   one update of `sessions.fixture_id` through `updateSession` (audited by
+   0104's trigger already).
+2. **A rule for the seed** — see below.
+3. **Screens that read the link** already do the right thing once it is set:
+   fixture detail lists the week, session detail links up, the schedule grid
+   suppresses the duplicate fixture block.
+
+Nothing downstream computes from the link (no report joins sessions to
+fixtures for a metric), so linking is safe to do without a migration.
+
+### The four orphans (now one): recommendation, not a decision
+
+The options as the queue put them — leave as orphans, link by date, delete —
+against what is on scratch:
+
+- **Link by date** is what the 8 Aug seeding run evidently did for three of
+  them (same Saturday → linked), and it left the kick-off times disagreeing.
+  For the remaining orphan (11 Jul) there is no fixture to link to; "link by
+  date" would mean **creating** a fixture for it, which is inventing an
+  opponent.
+- **Delete** removes 28 RPE ratings and two participant rows that the
+  compliance and load figures already count for that week — a change to
+  history for the sake of tidiness, and CLAUDE.md rule 4's instinct (nothing
+  athlete-linked is hard-deleted) applies to the session they answered for.
+- **Leave** costs nothing: an unlinked match session is a legal object (the
+  schedule allows a match without a fixture; `fixturesToDraw` handles it) and
+  the athletes' entries stay counted.
+
+**Recommend:** leave the 11 July session as it is — an unlinked match, which
+the product supports — and **do not manufacture a fixture for it**. When the
+"attach an existing session" action exists (1 above), a coach can link it if
+an opponent is known. Separately, and worth doing when the fixture form is
+next touched: **align the three seed fixtures' kick-off with their sessions**
+(15:00 → 19:30, or the reverse) so the fixture detail does not say one time
+and the session card another. That is a seed correction on scratch, not
+product behaviour.
+
+### What "who played" would need, if it is to be answered (not built)
+
+The smallest honest shape is **match participation as a row per athlete per
+fixture**, written by a coach after the match: `fixture_id`, `athlete_id`,
+`role` (started | replacement | unused | not in squad), `minutes` (integer,
+nullable — "played, minutes not recorded" must be a state), `recorded_by/at`,
+audited like attendance. It is not `session_attendance` re-used: attendance is
+about training presence and "modified", and a match asks a different question
+("started or came on, and when"). A migration, a form on the fixture detail
+(the natural place: the fixture is the match), an athlete-facing line on My
+data's sessions tab, and the match report's thinness (`scope.md`) answered
+from it. Recommend it is briefed as its own row, after the fixture-form
+attach action, so the two land in the order a coach meets them.
+
+---
+
+## Premium contents — Step 1, what is premium and what breaks (item 5b; answer and stop)
+
+**Read from the code and the schema, 14 September 2026, under
+`docs/decisions/absence-rule.md`, `docs/decisions/premium-downgrade.md` and
+`docs/12-product-tiers.md` §3, with 0119's tier gate now at the database.
+Nothing built.**
+
+### What is premium today, surface by surface
+
+Two tiers exist in the database: `organisations.tier` = `core` (the UI's
+"Basic", the doc's "Club") or `performance` ("Premium"); `isPremium()` is an
+equality check against `performance`, so an unknown value fails closed to
+Basic. On scratch Ashcombe and Harlow Vale are `performance`, Marlow Vale is
+`core`.
+
+**At the database (0119, 13 September):** every staff SELECT / INSERT /
+UPDATE policy on `gps_records`, `import_batches`, `import_held_rows` and
+`athlete_import_aliases` carries `and auth_org_is_premium()`. A Basic club's
+staff read returns no rows, never an error. Written exceptions, tested (740):
+the athlete's own `gps_records` self-select (their data, Article 15) and the
+service role (the SAR pack). `compute_leaderboard` gates GPS-metric boards
+itself (0094).
+
+**At the route or the region (app-side), each one calling `isPremium()`:**
+
+| Surface | Kind | On Basic |
+|---|---|---|
+| `/analytics` (the four panels) | Whole destination | Absent from the sidebar (`PREMIUM_ONLY`), `PlanGate` at the URL. The only wholly-premium destination. |
+| `/reports/gps` and its CSV and PDF | Whole report | Absent from the reports index; `PlanGate` at the URL; the routes refuse. |
+| `/settings/imports`, upload, held rows, template, batch export | Whole area (the hook) | The row on Settings reads as locked; the routes refuse; the database returns nothing anyway. |
+| Leaderboards on `gps.*` metrics | A region: the catalogue on `/leaderboards/new`, the board page, its export and PDF, the athlete's board list and board page | The GPS metrics are not offered; an existing GPS board refuses with the plan named (`metricWithheld`). |
+| The athlete report's GPS columns and tiles | A region | Rendered only on Premium (`isPremium` in the page and the PDF). |
+| The Settings hub and Club details | The plan card, the tier label, the preview switch for Fydr staff | "Basic" and the plan card; nothing else changes. |
+| ACWR | Computed from RPE × duration on both tiers | Unchanged; `12-product-tiers.md` promises a GPS-load ACWR on Premium that is **not built** (the ratio reads session load only). |
+
+**What is NOT gated and reads GPS anyway** (all correct under keep-and-hide,
+because the database now returns no rows to a Basic club): the dashboard's
+GPS-flag session lookup, `myLatestRecord`'s `gps` domain (My data's "last
+record" line), the squad weekly and training report queries in `reports.ts`
+and `trainingReport.ts` (they render GPS sections "only with GPS data" — on
+Basic there is none), `leaderboardWall.ts`. Before 0119 these were the leak;
+now they are the absence rule's first row working as written.
+
+**Premium in the tier document that has no gate in code** (nothing to gate
+because nothing is built, or the gate is missing): GPS-domain **thresholds
+and flags** (`flag_domain = 'gps'` rules exist in the seed — "Acute chronic
+ratio high" is domain `gps` — and the thresholds screen offers no tier check;
+a Basic club can write a GPS-domain rule that never fires because it has no
+GPS rows — harmless but unexplained); vendor APIs, API export, named support
+(not built; a commitment on the table).
+
+### What a free club sees, under the absence rule
+
+The rule has three rows and the product hits all three:
+
+1. **Bought — silent.** Analytics, the GPS report and the import area are
+   gone from navigation and refuse at the URL. The `PlanGate` page names the
+   feature and the plan; it does not upsell inside a page. **One deviation
+   worth knowing:** the Settings hub's Imports row is present and *locked*
+   with the plan named — a premium REGION inside a base page, which the rule
+   allows ("an upsell card, never vanishes silently"). The reports index
+   simply omits the GPS report, which is the destination form of the rule.
+   Both are within the rule; they are two different readings of the same
+   absence, and a Basic administrator meets both.
+2. **Chosen — visible and reversible.** Session RPE off (0118) and, since
+   tonight, the coach injury-site setting (0122): the surfaces stay and name
+   the switch.
+3. **Not yet done — says so.** Empty states with the denominator.
+
+Where the free club is **under-served by the split as built**: the tier
+document's §3.2 promises "GPS views, GPS flags, GPS leaderboards" as the
+premium line and everything else in both — and that holds — but it also lists
+"Analytics builder, presets, saved views: Both" and "the bar chart is Premium"
+(§3.3), which the row-27 amendment reversed (the whole destination is
+Premium). §3.2 still says Both; §3.1 row 27 says P. **The document contradicts
+itself in two places about one screen**; the code follows row 27. Recommend
+§3.2's analytics row is rewritten to "P — the whole destination (row 27)"
+when the inventory is written.
+
+### What breaks on downgrade (keep and hide), with 0119 landed
+
+Simulated by reading each premium surface as a `core` club would (Marlow Vale
+on scratch, and the Fydr-staff preview which resolves downward only):
+
+- **Nothing is deleted and nothing errors.** GPS rows, batches, held rows and
+  aliases stay; the policies return no rows to staff; the athlete still reads
+  their own GPS through My data (the written exception). Restore = the tier
+  flips back and every read returns; `auth_org_is_premium()` reads the table,
+  not the JWT, so it applies on the next request.
+- **A GPS leaderboard the club built while Premium** stays in
+  `leaderboards`; the board page refuses with the plan named; the athlete's
+  board list omits it. `compute_leaderboard` refuses at the database. The
+  *manage* list still shows the board's row — a premium region that names
+  its state, within the rule.
+- **A GPS-domain threshold** stays active and never fires (no rows); its
+  flags already raised stay on the Flags screen and the dashboard, readable,
+  because `flags` is not a gated table. Correct under keep: a flag raised
+  while paying is history. It reads oddly only because nothing on the flag
+  says "from a GPS rule your plan no longer reads" — recommend the flag's
+  domain word carries the plan note on Basic (one line in `flagWords`).
+- **The athlete report** loses its GPS columns silently (rendered only on
+  Premium) — the rule's "premium region inside a base page shows an upsell
+  card" is **not met there**: the columns vanish rather than say why.
+  Recommend one `PlanGateCard` row in the report's GPS section on Basic.
+- **The dashboard's GPS flag → session association** and the squad weekly's
+  GPS sections degrade to absent without a word; both are data-absence forms
+  ("GPS sections render only with GPS data", §3.1 row 28) and the rule's
+  third row would want a sentence — but on Basic the truthful sentence is the
+  *first* row's ("bought"), which is silent. **This is the one place the
+  three-row rule needs a fourth word:** a base club with GPS history it can
+  no longer see. Recommend: silent, as the rule says, but the Settings plan
+  card states "Your GPS records from before {date} are kept and return with
+  Premium" — the one place a downgraded club would look. Needs a read of
+  `max(gps_records.record_date)` through the service role or a definer
+  function (staff cannot read the table on Basic — by design).
+- **Retention** still runs over hidden GPS rows (`lib/retention/compute.ts`
+  uses the admin client) — the decision's "kept under the club's normal
+  retention" holds without a change.
+- **Saved views, scheduled reports of the GPS report** — a `report_schedules`
+  row for the GPS report on a Basic club: the run would refuse (the route
+  gates). Not verified end to end tonight; recommend a test when schedules
+  are next touched.
+
+### The inventory, as the mechanism (S12) needs it
+
+For "what do I get for paying", the true list today is short and honest:
+**the GPS import and everything downstream of it** — the GPS report, GPS
+leaderboards, the athlete report's GPS columns, GPS flags — **plus the
+Analytics destination** (four panels of data every club holds: session load,
+readiness, tonnage, ACWR). The second is the only premium thing a Basic club
+already has the data for, which is exactly §3.3's argument for keeping it in
+both tiers and row 27's decision against. Recommend the inventory names it as
+a deliberate choice ("the view is premium, the numbers are not") so the
+downgrade card can say the same.
+
+**Decisions this raises (on the sheet with recommendations):** the §3.2 ↔ row
+27 contradiction; the athlete report's silent GPS columns on Basic; a plan
+note on GPS flags a Basic club still sees; the downgrade sentence on the plan
+card.

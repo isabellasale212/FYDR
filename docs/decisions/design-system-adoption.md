@@ -110,3 +110,20 @@ could have shipped, but the guard suite was blind to a whole class of failure.
 `check:css-parses` (postcss, both files) now runs second in prebuild.
 
 Do not deploy anything between `d6fb005` and `075d5ce`.
+
+## Reversal, 16 September 2026 (Isabella): one thing moves
+
+System A's motion file says "almost nothing moves" — one transition for state
+changes, one keyframe for the dials. **Isabella reversed that for one case,
+deliberately: the loading skeleton's shimmer.** Where the performance
+measurement shows a wait that survives the optimisation
+(`docs/perf-measurements-2026-09-16.md`), the route streams with a
+`loading.tsx` whose blocks shimmer — a static grey block reads as broken, a
+moving one reads as loading — over `--dur-ring`, in `--surf2` and `--surf`,
+on `--r`. `prefers-reduced-motion` stops it like every other animation.
+Recorded here with the date and the name so that nobody later removes the
+shimmer as a violation of the rule it reverses. The same night adds the
+keyboard focus ring (`--ring-focus`, 3px of the accent at a higher alpha than
+`--ring-select`, 2px offset, `:focus-visible` only) — an addition, not a
+reversal: nothing defined it before.
+

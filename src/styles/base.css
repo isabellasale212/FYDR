@@ -15039,3 +15039,81 @@ a.hist-row:active { background: var(--surf-sunken); }
   color: #484e57;
   text-align: center;
 }
+
+/* ---------------------------------------------------------------------------
+   Loading skeletons (components/Skeleton, 16 Sept 2026). Only the routes the
+   performance measurement left slow carry one — see the component's header
+   and docs/perf-measurements-2026-09-16.md. Every block is a token: --surf2
+   on --r, the spacing scale between, line heights from the type scale, the
+   shimmer over --dur-ring. The shimmer is the one deliberate reversal of
+   "almost nothing moves" (docs/decisions/design-system-adoption.md), and
+   prefers-reduced-motion above stops it like every other animation.
+   --------------------------------------------------------------------------- */
+.sk {
+  display: block;
+  border-radius: var(--r);
+  background: var(--surf2);
+  background-image: linear-gradient(90deg, var(--surf2) 0%, var(--surf) 50%, var(--surf2) 100%);
+  background-size: 200% 100%;
+  animation: sk-shimmer var(--dur-ring) linear infinite;
+}
+@keyframes sk-shimmer {
+  from { background-position: 200% 0; }
+  to { background-position: -200% 0; }
+}
+.sk-line {
+  height: var(--t-body);
+  margin: var(--sp-4) 0;
+}
+.sk-line-h1 {
+  height: var(--fs-22);
+  margin: var(--sp-6) 0 0;
+}
+.sk-line-label {
+  height: var(--t-label);
+}
+.sk-line-num {
+  height: var(--fs-28);
+}
+.sk-card {
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-start;
+}
+.sk-chips {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--gap-chip);
+  margin-bottom: var(--gap-stack);
+}
+.sk-chip {
+  height: var(--tap-min);
+}
+.sk-page {
+  display: flex;
+  flex-direction: column;
+  gap: var(--gap-stack);
+}
+.sk-row {
+  display: flex;
+  gap: var(--gap-grid);
+  flex-wrap: wrap;
+}
+.sk-row > * {
+  flex: 1 1 160px;
+}
+.sk-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1.6fr) minmax(0, 1fr);
+  gap: var(--gap-stack);
+}
+@media (max-width: 900px) {
+  .sk-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+/* A table: a head row and n body rows at the row height the real table uses. */
+.sk-table-row {
+  height: var(--tap-min);
+  margin: var(--sp-2) 0;
+}

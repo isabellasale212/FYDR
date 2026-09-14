@@ -157,6 +157,42 @@ nothing more), a migration for it, and the fixture-to-match-session decision
 underneath, which must be settled at the same time because a half-linked schema
 is worse than either end state. The catalogue stays at seven reports.
 
+## Premium contents and the match report, 14 September 2026
+
+**Three premium rows from the Step 1 report, all approved as recommended.**
+
+1. **`12-product-tiers.md` §3.2 is rewritten**: the analytics row reads "P, the
+   whole destination (row 27)". The document currently contradicts both §3.1 and
+   the code, which is the same class of problem as the catalogue drift.
+2. **A `PlanGateCard` goes in the athlete report's GPS section on Basic.** The
+   columns must not vanish silently. This is the second half of D-20: a wholly
+   premium DESTINATION disappears, a premium REGION inside an otherwise-base
+   page shows an upsell card. Both halves are one rule.
+3. **A downgraded club's GPS flags carry a plan note on the domain word.** A
+   flag still visible while the rule behind it is dormant is a number that means
+   something it no longer means. The "GPS history is kept" sentence belongs on
+   the plan page, not on the flag.
+
+**The match report, both halves approved.**
+
+**Definition sentence, confirmed** (supersedes the catalogue's draft now that
+participation is captured):
+
+> Everything recorded against {fixture}: who was selected, who started, who came
+> on, and minutes played, with each athlete's availability as it stood at
+> kick-off. An athlete with no minutes recorded shows as not recorded, never as
+> zero.
+
+**Capture: a coach's post-match sheet on the fixture.** One screen, reached from
+the fixture, writable by the coach and the sport scientist, matching
+`SESSION_EDIT`. Per athlete: started, came on, minutes. Nothing else. No
+positions, no events, no score. It is the smallest thing that makes the report
+real and the thing a coach will actually fill in on a Sunday.
+
+The fixture-to-session link is largely already done: `sessions.fixture_id` has
+been written since 9 September and three of the four seeded match sessions are
+linked. The orphan stays, with an attach action rather than a backfill.
+
 ## Group C: the order of the big briefs
 
 Each is a day or more and needs its own brief. Agreed order, 13 September 2026:

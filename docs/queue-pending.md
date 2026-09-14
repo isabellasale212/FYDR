@@ -19,22 +19,23 @@ current queue reports. Delete a section once it has been sent and acknowledged.
   trigger with the audit batch, the medic injury CSV gap, the re-held import
   spelling.
 
+## SENT AND SHIPPED 14 September 2026 (deploys 8 and 9)
+
+The injury and rehab cluster, S9 consent and first run, the revoke, the tier
+gate at the database, and analytics as a wholly premium destination covering all
+metrics. Migrations 0119 to 0125 on production.
+
 ## STILL PENDING, in order
 
-1. **S8 D5, the revoke.** Deactivate is the revoke: one button, not two.
-   Deactivating an account invalidates any outstanding invite or magic link at
-   the same moment. No separate Revoke control.
-2. **Match participation**, with the fixture-to-match-session decision settled
+1. **Match participation**, with the fixture-to-match-session decision settled
    in the same brief: starters, who came on, minutes each, nothing more. The
    four seeded match sessions with a null `fixture_id` need a ruling at the same
    moment: orphans, rows to link by date, or seed data to delete.
-3. **The tier gate moves to the database**, with the subject access read path as
-   a written, tested exception.
-4. **S9 build**, once its open question 4 is answered: whether an account can
-   exist in a declined state, and the two not-active states (no asserted date of
-   birth versus declined) rendering differently.
-5. **The injury and rehab cluster**, then analytics, then premium contents, then
-   the My data hero cards.
+2. **Premium contents**, once Isabella rules on the four decisions in the Step 1
+   report, including the Settings plan page that is now the single place a basic
+   club learns what premium contains.
+3. **My data hero cards**, blocked until `metrics.md` states what "steady" means
+   and the minimum sample.
 
 ---
 

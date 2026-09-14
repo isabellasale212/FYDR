@@ -260,6 +260,20 @@ gym set, "Use my numbers" / "Keep what is showing") as ghost controls inside
 the notice and nowhere else. The queue screen and "See what is waiting" are
 recorded, not built (PATTERN-S6 C1).
 
+**A check-in the week has closed on** (PATTERN-S6 C10, ruled 13 September
+2026, built 14 September): the weekly nutrition check-in's insert policy
+admits the ISO week just ended and the two before it, so a check-in held on
+the phone for longer is refused by row-level security for ever — it used to
+stay "waiting" for ever. The flusher recognises the refusal (42501, not a
+signal failure, not a slot conflict), flags the item the way a conflict is
+flagged (off the waiting count, never retried) and Today says once, in the
+same alert region and tone: "One saved check-in could not be sent: the week
+has closed, so the database refused your check-in for the week of Mon 3 Aug.
+A check-in can be sent for the week just ended and the two before it, not for
+one older than that." — with "Discard this one" as the only control. Nothing
+is showing instead, so there is no "keep what is showing". The other three
+forms have no such window at the database, so nothing of theirs ages out.
+
 ## 8. Notifications
 
 `docs/09-security-and-compliance.md:507` names `athlete.wellness.nudge` and

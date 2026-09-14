@@ -7,6 +7,7 @@ import { useRouter } from 'next/navigation';
 import {
   dequeueGymSetLog,
   dequeueNutritionCheckin,
+  markNutritionCheckinClosed,
   dequeueTraining,
   dequeueWellness,
   markNutritionCheckinConflict,
@@ -26,7 +27,7 @@ import { submitTrainingEntry, fetchTrainingEntryForSession } from '@/lib/queries
 import { submitCheckin, fetchCheckinForWeek } from '@/lib/queries/nutrition';
 import { reviseGymSetLog } from '@/lib/queries/programmes';
 import { describeGymSet } from '@/lib/gymSetConflict';
-import { flushGymSets, isDuplicateKeyError, type ConflictOutcome } from '@/lib/gymOutboxFlush';
+import { flushGymSets, isDuplicateKeyError, isPolicyRefusal, type ConflictOutcome } from '@/lib/gymOutboxFlush';
 import { createClient } from '@/lib/supabase/client';
 import type { Db } from '@/lib/queries/groups';
 import { formatDate } from '@/lib/format';
@@ -109,6 +110,11 @@ type ConflictItem = {
   domain: ConflictDomain;
   id: string;
   label: string;
+  /** Nutrition only (PATTERN-S6 C10): the week had closed when the check-in
+   *  reached the database. Not a conflict with a live row — nothing is
+   *  showing instead — so the sentence says what happened and the only
+   *  control is the discard. */
+  closedWeek?: boolean;
   /** Gym only: the two sets of numbers, and whether "Use my numbers" can be
    *  offered (it needs a live row to correct). */
   gym?: { queued: string; live: string | null; liveId: string | null; closedLog: boolean };
@@ -149,6 +155,7 @@ function snapshot(timezone: string): { pendingCount: number; conflicts: Conflict
         domain: 'nutrition' as const,
         id: item.input.id,
         label: `your check-in for the week of ${formatDate(item.input.week_start, timezone)}`,
+        closedWeek: item.closedWeek === true,
       })),
     ...gym
       .filter((item) => item.conflictAt)
@@ -301,6 +308,14 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
           dequeueNutritionCheckin(item.input.id);
           sent += 1;
         } catch (err) {
+          /* PATTERN-S6 C10 (batch A20): the insert policy admits the ISO week
+             just ended and the two before it; a check-in queued for longer
+             than that is refused by policy (42501), for ever — no retry can
+             land it. Flagged once, off the queue count, Discard the way out. */
+          if (isPolicyRefusal(err)) {
+            markNutritionCheckinClosed(item.input.id);
+            continue;
+          }
           if (isDuplicateKeyError(err)) {
             const outcome = await resolveNutritionConflict(db, athleteId, item);
             if (outcome === 'delivered') {
@@ -439,6 +454,17 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
                       Keep what is showing
                     </button>
                   </span>
+                </>
+              ) : c.closedWeek ? (
+                /* PATTERN-S6 C10: refused by policy, not by a live row. Said
+                   once, with the one control that makes sense. */
+                <>
+                  One saved check-in could not be sent: the week has closed, so the database refused {c.label}.
+                  A check-in can be sent for the week just ended and the two before it, not for one older than
+                  that.{' '}
+                  <button type="button" className="btn-ghost" onClick={() => handleDiscard(c.domain, c.id)}>
+                    Discard this one
+                  </button>
                 </>
               ) : (
                 <>

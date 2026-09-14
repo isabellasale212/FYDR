@@ -75,6 +75,11 @@ already done.
 - **Retried on the next load** of the app.
 - **If the app is closed before sync completes**, the entry is still in the queue
   and goes on the next open.
+- **If it waits past the window** — the week just ended and the two before it
+  are the weeks the database admits — the send is refused by policy, for ever.
+  The item is flagged once on Today ("could not be sent: the week has closed")
+  with Discard, and leaves the waiting count (PATTERN-S6 C10, 14 September
+  2026; `01-today.md` §7).
 
 **UNVERIFIED: what the athlete sees while an entry is queued**, and what happens
 if the same day is submitted twice from two devices. Looked in

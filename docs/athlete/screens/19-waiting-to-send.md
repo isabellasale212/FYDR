@@ -36,7 +36,9 @@ now: the send is not the athlete's job (`OutboxFlusher` on Today does it).
 
 A flagged conflict is not "waiting". It stays on Today's notice with its
 Discard, and is left out of this list and its count, so the count here is the
-count Today shows.
+count Today shows. A check-in the week has closed on (PATTERN-S6 C10, 14
+September 2026) is flagged the same way: refused by policy, said once on
+Today, discarded from there — never counted here.
 
 **Empty.** "Nothing is waiting." with when this phone last sent — "Last sent at
 12:04 today — 3 entries." / "Last sent Fri 11 Sept 12:04 — 1 entry." — or

@@ -60,6 +60,15 @@ export type PendingNutritionCheckin = {
   input: NutritionCheckinInput;
   queuedAt: string;
   conflictAt?: string;
+  /** PATTERN-S6 C10 (ruled 2026-09-13, batch A20): the week had closed by the
+   *  time this reached the database — nutrition_checkins_athlete_insert
+   *  admits the ISO week just ended and the two before it, and refused this
+   *  one by policy (42501). Retrying can never succeed, so it is flagged the
+   *  way a conflict is (conflictAt set, off the queue count, retried never)
+   *  and Today shows it once: "could not be sent — the week has closed",
+   *  with Discard. The §0bc closed-session flag for gym sets is the same
+   *  shape. */
+  closedWeek?: true;
 };
 
 export type PendingGymSetLog = {
@@ -220,6 +229,17 @@ export function pendingNutritionCheckins(): PendingNutritionCheckin[] {
 
 /** See PendingWellness's conflictAt comment; identical reasoning for the
  *  (athlete_id, week_start) slot. */
+/** See PendingNutritionCheckin's closedWeek comment (PATTERN-S6 C10).
+ *  Idempotent like the conflict markers. */
+export function markNutritionCheckinClosed(id: string): void {
+  write(
+    NUTRITION_KEY,
+    read<PendingNutritionCheckin>(NUTRITION_KEY).map((item) =>
+      item.input.id === id ? { ...item, conflictAt: item.conflictAt ?? new Date().toISOString(), closedWeek: true as const } : item,
+    ),
+  );
+}
+
 export function markNutritionCheckinConflict(id: string): void {
   write(
     NUTRITION_KEY,

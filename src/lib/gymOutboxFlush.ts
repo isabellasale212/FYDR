@@ -37,6 +37,17 @@ export function isDuplicateKeyError(err: unknown): boolean {
   return err instanceof Error && err.message.toLowerCase().includes('duplicate key');
 }
 
+/** A refusal by row-level security (42501, "new row violates row-level
+ *  security policy") — the database's answer to a row its policy will never
+ *  admit. Not a signal failure and not a slot conflict: retrying repeats it.
+ *  PATTERN-S6 C10 (batch A20): the weekly check-in's week window is the one
+ *  policy an athlete's queued write can age out of. */
+export function isPolicyRefusal(err: unknown): boolean {
+  if (!(err instanceof Error)) return false;
+  const m = err.message.toLowerCase();
+  return m.includes('row-level security') || (err as { code?: string }).code === '42501';
+}
+
 /** §0bc (migration 0110, 2026-09-13): a complete session refuses a NEW set at
  *  the database, and the trigger names itself in the message. Not a signal
  *  failure, not a conflict with a live row — retrying can never succeed. */

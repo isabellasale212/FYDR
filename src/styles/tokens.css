@@ -79,8 +79,15 @@
      happened to be — one token doing two unrelated jobs. Now the knob says
      what it means. Nothing changes visually today. */
   --knob-fill: #ffffff;
+  /* Identity, System A 15 Sept 2026: the avatar ground stays #1a2340; its
+     initials take #8aa8e0 (light; dark restates #6f9bff — frozen). The
+     nutrition avatar pair is System A's and new. --brand-navy is the logo
+     lockup's ground. */
   --avatar-bg: #1a2340;
-  --avatar-text: #6f9bff;
+  --avatar-text: #8aa8e0;
+  --avatar-bg-nutrition: #2a1a40;
+  --avatar-text-nutrition: #c79bff;
+  --brand-navy: #182241;
   /* ATHLETE-APP-SPEC.md §13's toast: a fixed near-black chip in both
      themes, same reasoning as --avatar-bg/--avatar-text just above it —
      a small always-dark surface that isn't the theme background, so it
@@ -89,7 +96,7 @@
   --toast-bg: #13161c;
   --toast-text: #ffffff;
   --toast-link: #6f9bff;
-  --tab-active: #6f9bff;
+  --tab-active: #8aa8e0; /* System A, 15 Sept 2026 — light; dark restates #6f9bff */
   --node-empty-border: #313c60;
 
   /* §4.5 and §14.6. Channel triplets so a tint reads rgb(var(--x-rgb) / a).
@@ -836,6 +843,8 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --ink-rgb: 16 18 23;
   --accent2: #33b6ff;
   --accent2-rgb: 51 182 255;
+  --avatar-text: #6f9bff;
+  --tab-active: #6f9bff;
   /* Visual Lift variants 1a and 2b, the dark half of the same scheme:
      #182241 -> #202b4e. Lighter and bluer, so the dark shell reads as a
      surface rather than a void, and it is what the lift's "dark as the hero"
@@ -999,6 +1008,8 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --ink-rgb: 16 18 23;
     --accent2: #33b6ff;
     --accent2-rgb: 51 182 255;
+    --avatar-text: #6f9bff;
+    --tab-active: #6f9bff;
     /* Route 2 of the three ways dark arrives (§2.4). Must track
        :root[data-theme='dark'] exactly — this block was missed when the
        Visual Lift moved the dark ground, so an OS-dark viewer with no explicit

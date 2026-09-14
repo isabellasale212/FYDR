@@ -129,7 +129,10 @@ console.log('\nwhat does not move');
   assert(value(darkExplicit, '--accent2') === '#33b6ff' && value(darkExplicit, '--accent2-rgb') === '51 182 255', '--accent2 stays #33b6ff in dark — dark is frozen');
   assert(value(shared, '--chart-load') === '#5b9bf0', '--chart-load unchanged (decoupled from the accent on purpose)');
   assert(value(light, '--group-blue') === '#2563eb', '--group-blue unchanged');
-  assert(value(shared, '--tab-active') === '#6f9bff' && value(shared, '--avatar-text') === '#6f9bff' && value(shared, '--toast-link') === '#6f9bff', '--tab-active / --avatar-text / --toast-link unchanged');
+  /* System A, 15 Sept 2026: --tab-active and --avatar-text are #8aa8e0 in
+     light and frozen at #6f9bff in dark; --toast-link is untouched. */
+  assert(value(shared, '--tab-active') === '#8aa8e0' && value(shared, '--avatar-text') === '#8aa8e0' && value(shared, '--toast-link') === '#6f9bff', '--tab-active / --avatar-text are System A\'s #8aa8e0 in light; --toast-link unchanged');
+  assert(value(darkExplicit, '--tab-active') === '#6f9bff' && value(darkExplicit, '--avatar-text') === '#6f9bff', '--tab-active / --avatar-text stay #6f9bff in dark — frozen');
   assert(/fill="#202b4e"/.test(read('src/app/icon.svg')) && /theme_color: '#202b4e'/.test(read('src/app/manifest.ts')), 'the icon tile and manifest keep their navy ground — they never carried the accent');
 }
 

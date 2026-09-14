@@ -207,3 +207,26 @@ RLS-gated read is at the floor. No cache: a memo that lives for one render
 is not a cache. `gps_records` `select *` survives in one place, the SAR
 pack assembly (`queries/sarPackAssembly.ts`), which needs every column by
 design.
+
+---
+
+## The gate on the skeletons: re-measure on production (Isabella, 16 September)
+
+Everything above was measured from a laptop talking to Ireland at 55–70ms a
+round trip. On Vercel the function sits in Dublin beside the database at one
+or two, so the pages may already be fast enough there that every skeleton
+flashes. **The round-trip work stands on its own; the skeletons have to earn
+their place.** After the deploy:
+
+1. Set `FYDR_QUERY_TIMING=1` on the production environment for a measured
+   window (Config, not Secret; it makes the server log one line per Supabase
+   request — path and duration, no data — to the function logs).
+2. Open each of the five skeleton routes signed in as one staff account, three
+   times each, and read the function's total duration and the `[qt]` lines
+   from the logs (or run `scratchpad/perf.mjs` against production with a
+   real session cookie, which needs no flag for the totals).
+3. **Remove every skeleton whose route comes in under about 300ms** — delete
+   its `loading.tsx`; the component and the styles stay for the ones that
+   earn it.
+4. Unset the flag.
+

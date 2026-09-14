@@ -127,3 +127,9 @@ keyboard focus ring (`--ring-focus`, 3px of the accent at a higher alpha than
 `--ring-select`, 2px offset, `:focus-visible` only) — an addition, not a
 reversal: nothing defined it before.
 
+**Dark's focus ring is a deliberate divergence (Isabella, 16 September 2026).**
+The instruction was 3px of the accent; the dark accent (`#2a6ddf`) cannot clear
+the 3:1 non-text floor on a dark ground at any alpha (2.87:1 on `--bg` at full
+strength), so the instruction was wrong for dark. Dark's `--ring-focus` is the
+theme's own `--focus` cyan (`#33b6ff`, 6.1:1 on `--bg`), approved as such.
+

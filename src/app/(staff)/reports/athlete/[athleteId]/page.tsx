@@ -23,6 +23,8 @@ import { ExportDialog } from '@/components/ExportDialog/ExportDialog';
 import { requireReport } from '@/lib/session';
 import { rpeOffLine } from '@/lib/rpeSetting';
 import { isUuid } from '@/lib/uuid';
+import { GPS_REGION_BODY, GPS_REGION_NOTE } from '@/lib/premiumWords';
+import { PlanGateCard } from '@/components/PlanGate/PlanGate';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 import {
@@ -409,24 +411,36 @@ export default async function AthleteReportPage({
                         </div>
                       ))}
                     </div>
-                    <div className="ath-stats" style={{ marginTop: 'var(--sp-12)' }}>
-                      <div>
-                        <div className="ath-stat-label">GPS sessions</div>
-                        <div className="ath-stat-value">{report.load.gps.sessionsWithData}</div>
-                      </div>
-                      <div>
-                        <div className="ath-stat-label">Total distance</div>
-                        <div className="ath-stat-value">
-                          {formatNumber(report.load.gps.totalDistanceM, 0)} m
+                    {/* D-20's second half (decision batch, 14 September 2026):
+                        a premium REGION inside a base page shows a card, never
+                        vanishes — and never reads "0 m" for a plan that returns
+                        no rows (0119), which is a zero standing in for an
+                        absence. The card names the plan; the plan page says the
+                        rest. */}
+                    {isPremium(tier) ? (
+                      <div className="ath-stats" style={{ marginTop: 'var(--sp-12)' }}>
+                        <div>
+                          <div className="ath-stat-label">GPS sessions</div>
+                          <div className="ath-stat-value">{report.load.gps.sessionsWithData}</div>
+                        </div>
+                        <div>
+                          <div className="ath-stat-label">Total distance</div>
+                          <div className="ath-stat-value">
+                            {formatNumber(report.load.gps.totalDistanceM, 0)} m
+                          </div>
+                        </div>
+                        <div>
+                          <div className="ath-stat-label">High speed</div>
+                          <div className="ath-stat-value">
+                            {formatNumber(report.load.gps.highSpeedDistanceM, 0)} m
+                          </div>
                         </div>
                       </div>
-                      <div>
-                        <div className="ath-stat-label">High speed</div>
-                        <div className="ath-stat-value">
-                          {formatNumber(report.load.gps.highSpeedDistanceM, 0)} m
-                        </div>
-                      </div>
-                    </div>
+                    ) : (
+                      <p className="tiny" style={{ marginTop: 'var(--sp-12)' }} data-gps-plan-note>
+                        {GPS_REGION_NOTE}
+                      </p>
+                    )}
                     <div style={{ marginTop: 'var(--sp-12)', paddingTop: 'var(--sp-10)', borderTop: '1px solid var(--hair)' }}>
                       <p style={{ fontSize: 'var(--fs-13)', fontWeight: 700, margin: '0 0 8px' }}>
                         Session load by day
@@ -615,9 +629,11 @@ export default async function AthleteReportPage({
 
                 {/* The athlete report is free (reports/page.tsx marks it
                     premiumGated: false), but this one panel is GPS, which is
-                    not. Withheld whole rather than zeroed: an empty tile row
-                    would read as "this athlete ran nothing", and absent is
-                    never zero. */}
+                    not. Never zeroed: an empty tile row would read as "this
+                    athlete ran nothing", and absent is never zero. And never
+                    silently absent either — D-20's second half (decision batch,
+                    14 September 2026): a premium region inside a base page
+                    shows a card. */}
                 {isPremium(tier) ? (
                 <section className="card" aria-labelledby="gps-title">
                   <h2 className="card-title" id="gps-title">
@@ -653,7 +669,13 @@ export default async function AthleteReportPage({
                     </div>
                   )}
                 </section>
-                ) : null}
+                ) : (
+                  <PlanGateCard
+                    heading="GPS, this period"
+                    body={GPS_REGION_BODY}
+                    metadata="Premium · GPS totals for this athlete · sessions with data, total distance, high speed distance"
+                  />
+                )}
 
                 <section className="card flush" aria-labelledby="load-days-title">
                   <h2 className="card-title" id="load-days-title" style={{ padding: '16px 16px 0' }}>

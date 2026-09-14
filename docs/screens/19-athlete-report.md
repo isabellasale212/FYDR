@@ -59,6 +59,16 @@ data.
 
 **GPS**, on the Premium package: total distance, high speed distance, and the
 date of the most recent record, so a coach can see how current the picture is.
+**On the Basic package the region stays and says so** (D-20's second half,
+decision batch 14 September 2026, built 15 September): the Load page's "GPS,
+this period" section is a `PlanGateCard` — "This athlete's GPS totals … come
+from the GPS import, which is part of the Premium plan. Nothing here is zero:
+the section is withheld on the Basic plan. Settings › Plan lists what Premium
+contains." — and the summary Load card's GPS stats row is one line saying the
+same. Never a "0 m": the database returns no GPS rows to a Basic club (0119),
+and a zero standing in for an absence is the thing the constitution forbids.
+The PDF names the section and states its absence the same way
+(`lib/premiumWords.ts` holds the three sentences).
 
 **Testing and personal bests.**
 
@@ -175,8 +185,10 @@ ratio is absent with its reason, rather than a number built on too little.
 
 **No permission.** Redirected to Settings with a reason.
 
-**Wrong tier.** The GPS regions are absent on Base. **UNVERIFIED whether they are
-hidden or replaced with an upsell.**
+**Wrong tier.** On Base the GPS regions are replaced by the card and the line
+above — a premium region inside a base page shows a card; it never vanishes
+silently and never reads zero. Verified 15 September 2026 as Marlow Vale's
+sport scientist (core).
 
 **Offline.** Not handled.
 
@@ -185,8 +197,8 @@ hidden or replaced with an upsell.**
 ## 9. Open issues
 
 - **The nutritionist should not reach this report.** Decision D-01.
-- **UNVERIFIED: what the GPS regions show on the Base package.** Decision D-20
-  proposes a general rule; this screen is one of the places it must be applied.
+- ~~UNVERIFIED: what the GPS regions show on the Base package.~~ Applied 15
+  September 2026 (§4, §8).
 - **Resolved, and it was a real fault that has already been fixed.** The
   downloads once ignored the period: asking for a season exported 28 days and said
   nothing about it (`src/app/(staff)/reports/athlete/[athleteId]/export/route.ts:31`).

@@ -9,6 +9,7 @@ import { athleteDefinition } from '@/lib/reportCatalogue';
 import { athleteComplianceFigure } from '@/lib/reportFigureCards';
 import { requireReport } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
+import { GPS_REGION_PDF } from '@/lib/premiumWords';
 import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 import { ACWR_WINDOW_CAPTION, periodCaveat, periodParamsFromUrl, resolveAthletePeriod } from '../period';
@@ -113,7 +114,12 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
             </PdfTileRow>
           ) : null}
         </>
-      ) : null}
+      ) : (
+        /* D-20's second half on paper: the section is named and its absence
+           said, never silently dropped from the document that leaves the
+           building. */
+        <PdfSectionTitle title="GPS, this period" caption={GPS_REGION_PDF} />
+      )}
 
       <PdfSectionTitle title="Testing" caption="Latest and personal best per test." />
       <PdfTable

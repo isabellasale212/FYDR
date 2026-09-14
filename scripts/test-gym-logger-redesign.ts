@@ -93,7 +93,10 @@ console.log('\n3. the one primary, labelled with what it writes');
 console.log('\n4. the set chips are the state display, one accent, no disabled control');
 {
   const chip = rule('.gym-set-key');
-  assert(/min-height:\s*48px/.test(chip) && /background:\s*var\(--surf2\)/.test(chip) && /color:\s*var\(--faint\)/.test(chip) && /border:\s*none/.test(chip), 'a chip is 48px, --faint on --surf2, no border');
+  /* --faint-on-tint since 15 Sept 2026: the chip sits on --surf2, a tinted
+     ground, where System A's --faint measured 4.21:1 — the context ink is the
+     ruling, not a change to --faint. */
+  assert(/min-height:\s*48px/.test(chip) && /background:\s*var\(--surf2\)/.test(chip) && /color:\s*var\(--faint-on-tint\)/.test(chip) && /border:\s*none/.test(chip), 'a chip is 48px, --faint-on-tint on --surf2, no border');
   const next = rule('.gym-set-key[data-next]');
   assert(/background:\s*var\(--wash-accent\)/.test(next) && /box-shadow:\s*var\(--ring-accent\)/.test(next), 'the current chip is the accent tint with the ring');
   const logged = rule('.gym-set-key[data-logged]');

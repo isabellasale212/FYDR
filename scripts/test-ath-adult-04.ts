@@ -77,7 +77,7 @@ console.log('\nthe rules, from existing tokens');
   const fact = rule('.after-fact');
   assert(/font-size:\s*var\(--fs-20\)/.test(fact) && /font-weight:\s*700/.test(fact) && /color:\s*var\(--text\)/.test(fact), '.after-fact --fs-20 / 700 / --text (B3)');
   const note = rule('.after-note');
-  assert(/font-size:\s*var\(--fs-13\)/.test(note) && /color:\s*var\(--muted\)/.test(note), '.after-note --fs-13 --muted');
+  assert(/font-size:\s*var\(--fs-13\)/.test(note) && /color:\s*var\(--muted-on-tint\)/.test(note), '.after-note --fs-13 --muted-on-tint (the emphasised card\'s context ink, 15 Sept 2026)');
   assert(/margin-top:\s*auto/.test(rule('.phone-body.phone-body > .subm')), 'a footer that is a direct child of the shell sits at the bottom of the screen — the empty space is above the action, as drawn');
   assert(/font-size:\s*var\(--fs-16\)/.test(rule('.subm .btn-primary,\n.subm .btn-ghost')) || /\.subm \.btn-primary,\s*\.subm \.btn-ghost \{[^}]*--fs-16/.test(css), 'the button takes 03\'s footer size (44px+)');
   assert(!/text-decoration/.test(rule('.subm .btn-primary')) , 'nothing turns the Link back into a text link');
@@ -100,17 +100,15 @@ console.log('\nthe contrast, measured from tokens.css');
   for (const [theme, src] of [['light', light], ['dark', dark]] as const) {
     /* The card sits on the athlete ground, and its own fill is the accent wash over that ground. */
     const fill = over(triplet(src, '--accent-rgb'), hex(src, '--phone-bg'), alpha(src, '--wash-accent'));
-    for (const [tok, name] of [['--text', 'the heading and the fact'], ['--muted', 'the recourse']] as const) {
-      const r = ratio(hex(src, tok), fill);
-      /* KNOWN BELOW AA SINCE THE SYSTEM A ADOPTION, 15 Sept 2026: light's
-         --muted is System A's #556074 (docs/decisions/design-system-adoption.md),
-         which measures 4.11:1 on the accent wash over the athlete ground —
-         it was 5.43 at #484e57. Not fixed here (a token value is Isabella's,
-         and the accessibility sweep after conformance rules on it); PINNED
-         at its measured figure so a further drift still fails. Reported
-         with the layer-one build. */
-      const knownSystemA = theme === 'light' && tok === '--muted';
-      assert(knownSystemA ? r >= 4.1 && r < 4.5 : r >= 4.5, `${theme}: ${name}, ${tok} on --wash-accent over --phone-bg = ${r.toFixed(2)}:1${knownSystemA ? ' (known below AA since System A, pinned)' : ''}`);
+    /* The recourse reads --muted-on-tint since 15 Sept 2026 (Isabella's
+       ruling on the adoption's contrast regression: a darker ink for the
+       emphasised card's context, not a change to --muted). In dark the
+       token aliases --muted; in light it is the derived #4f596c. Resolved
+       here the way the page resolves it. */
+    const resolveInk = (name: string): RGB => { const m = new RegExp(`${name}:\\s*var\\((--[a-z-]+)\\)`).exec(src); return m ? hex(src, m[1]!) : hex(src, name); };
+    for (const [tok, name] of [['--text', 'the heading and the fact'], ['--muted-on-tint', 'the recourse']] as const) {
+      const r = ratio(resolveInk(tok), fill);
+      assert(r >= 4.5, `${theme}: ${name}, ${tok} on --wash-accent over --phone-bg = ${r.toFixed(2)}:1`);
     }
   }
 }

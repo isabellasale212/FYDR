@@ -669,6 +669,22 @@
      narrowing is unavoidable rather than chosen: the old spacing was bought by
      putting the lightest level below AA. */
   --faint: #667287;
+  /* THE TWO CONTEXT INKS — 15 Sept 2026, Isabella's ruling on the two contrast
+     regressions the adoption brought in. System A measured its inks against
+     a pure white card; on a tinted ground they do not clear: --faint is 3.98
+     on --bg and 4.21 on --surf2, --muted 4.09 on the athlete's emphasised
+     card (the accent wash over --phone-bg) and 4.17 on the staff hero card's
+     wash. The fix is a darker ink for text IN THOSE CONTEXTS, not a change
+     to --faint or --muted, and not an exemption. Both derived the §3.7 way —
+     hue and saturation held, first value clearing 4.5 on every ground the
+     context puts it on: --faint-on-tint 4.68 on --bg, 4.58 on --phone-bg,
+     4.95 on --surf2; --muted-on-tint 4.57 on the athlete card's wash, 4.62
+     on the staff hero's, 5.77 on --bg. Read by the rules base.css names in
+     the fix commit; --faint stays the ink for a white card, which is what
+     System A derived it for. Dark: aliases of the dark inks, which already
+     clear every dark ground — no dark colour changes. */
+  --faint-on-tint: #5c677a;
+  --muted-on-tint: #4f596c;
   /* SOLID, not an ink alpha, 4 Sept 2026 — CHANGELOG-headers-spec.md measures
      #dce1e8 and the client asked the tokens to match. It is the one token in
      this group that no longer adapts to what is behind it: the old
@@ -981,6 +997,10 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --pill-fill-alpha-warn: 0.28;
   --pill-fill-alpha-bad: 0.24;
   --pill-fill-alpha-accent: 0.22;
+  /* The two context inks (see the light block): dark's inks already clear
+     every dark ground, so both alias them and no dark colour changes. */
+  --faint-on-tint: var(--faint);
+  --muted-on-tint: var(--muted);
   /* Visual Lift variants 1a and 2b, the dark half of the same scheme:
      #182241 -> #202b4e. Lighter and bluer, so the dark shell reads as a
      surface rather than a void, and it is what the lift's "dark as the hero"
@@ -1149,6 +1169,8 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --pill-fill-alpha-warn: 0.28;
     --pill-fill-alpha-bad: 0.24;
     --pill-fill-alpha-accent: 0.22;
+    --faint-on-tint: var(--faint);
+    --muted-on-tint: var(--muted);
     /* Route 2 of the three ways dark arrives (§2.4). Must track
        :root[data-theme='dark'] exactly — this block was missed when the
        Visual Lift moved the dark ground, so an OS-dark viewer with no explicit
@@ -1311,6 +1333,8 @@ Every alpha here is the handoff's own figure (§4 and §5),
     /* Print takes the same corrected light scale — a printed 11px caption
        is as unreadable at 2.84:1 as an on-screen one. */
     --faint: #626a76;
+    --faint-on-tint: #5c677a;
+    --muted-on-tint: #4f596c;
     --border: rgba(16, 18, 23, 0.085);
     --border-strong: rgba(16, 18, 23, 0.52);
     --hair: rgba(16, 18, 23, 0.05);

@@ -2381,7 +2381,7 @@ a.hist-row:focus-visible {
   color: var(--accent-text);
 }
 .wk-day[data-kind='rest'] .wo {
-  color: var(--faint);
+  color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
 }
 
 /* Match / training / recovery / rest, as a dot under each day's number.
@@ -2980,7 +2980,7 @@ a.hist-row:focus-visible {
 }
 .step .val .u {
   font-size: var(--fs-12);
-  color: var(--faint);
+  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
   margin-top: var(--sp-4);
 }
 /* The sleep stepper before its first tap reads "–" in --faint (ATH-ADULT-03
@@ -3283,7 +3283,7 @@ a.hist-row:focus-visible {
 .after-note {
   margin: var(--sp-10) 0 0;
   font-size: var(--fs-13);
-  color: var(--muted);
+  color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
   line-height: 1.45;
 }
 /* On a page with no form the footer is a direct child of the shell rather
@@ -3845,7 +3845,7 @@ a.hist-row:focus-visible {
   border-radius: var(--r);
   border: none;
   background: var(--surf2);
-  color: var(--faint);
+  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
   font-family: inherit;
   font-size: var(--fs-16);
   font-weight: 700;
@@ -4449,11 +4449,18 @@ img.me-avatar {
   border: 1px solid var(--border-accent-soft);
   box-shadow: var(--shadow);
 }
+/* The hero card's own controls sit on its accent wash, where --muted is
+   4.17:1; scoped here so the same controls on a white card keep --muted.
+   15 Sept 2026, the context-ink fix. */
+.pp-hero .btn-ghost-pill,
+.pp-hero .squad-chip {
+  color: var(--muted-on-tint);
+}
 .pp-hero-sub {
   margin: var(--sp-6) 0 0;
   font-size: var(--fs-13);
   font-weight: 600;
-  color: var(--muted);
+  color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
 }
 .pp-hero-rest {
   margin: var(--sp-4) 0 0;
@@ -4468,7 +4475,7 @@ img.me-avatar {
   font-weight: 600;
   letter-spacing: 0.08em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
 }
 .pp-hero .pp-detail-row {
   border-top: 1px solid var(--border-accent-soft);
@@ -4485,7 +4492,7 @@ img.me-avatar {
 }
 .pp-hero-plan {
   font-size: var(--fs-12);
-  color: var(--muted);
+  color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
 }
 
 /* -------- §4 Profile header card -------- */
@@ -6616,7 +6623,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-weight: 600;
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
 }
 /* THE VISUAL LIFT'S KPI STRIP ("Fydr Visual Lift.dc.html", variant 2a — the
    comment on its own markup reads "KPI strip, one domain colour per tile").
@@ -6725,7 +6732,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .dash-stat-foot {
   font-size: var(--fs-11);
-  color: var(--faint);
+  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
   margin-top: var(--sp-6);
 }
 
@@ -7875,12 +7882,12 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .nutr-range-caption {
   font-size: var(--fs-10);
-  color: var(--faint);
+  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
   margin-top: var(--sp-2);
 }
 .nutr-range-empty {
   font-size: var(--fs-10);
-  color: var(--faint);
+  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
 }
 .nutr-table-caption {
   font-family: var(--font-sans), system-ui, sans-serif;
@@ -8604,7 +8611,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
 }
 .lbw-sel-row {
   display: grid;
@@ -8676,7 +8683,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-weight: 600;
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
   margin: 0 0 var(--sp-8);
 }
 .lbw-leader-row {
@@ -8688,7 +8695,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lbw-leader-unit {
   font-size: var(--fs-11);
-  color: var(--faint);
+  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -9045,7 +9052,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-day-head-date {
   font-size: var(--fs-11);
-  color: var(--faint);
+  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
   margin-left: var(--sp-6);
 }
 .sg-day-head-row2 {
@@ -9057,7 +9064,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-day-head-md {
   font-size: var(--fs-12);
   font-weight: 500;
-  color: var(--faint);
+  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
 }
 .sg-day-head-md[data-tone='md'] {
   color: var(--bad-text);
@@ -9067,7 +9074,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-day-head-mins {
   font-size: var(--fs-11);
-  color: var(--faint);
+  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
 }
 
 .sg-grid-body {
@@ -9621,7 +9628,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-phone-tile-meta {
   font-size: var(--fs-11);
-  color: var(--muted);
+  color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
   white-space: nowrap;
 }
 .sg-phone-day-head {
@@ -11979,7 +11986,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
    surface-vs-tint distinction as --accent-text against --accent-pill-text.
    The design sets these muted on every card, tinted or not, so they match. */
 .prog-item .tiny {
-  color: var(--muted);
+  color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
 }
 
 /* Pills sitting on an already-tinted card. The rehab pill sits on the rehab
@@ -14036,7 +14043,7 @@ main:has(.rhead) > .back-btn > :first-child {
   font-size: var(--fs-11);
   letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--muted);
+  color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
   font-weight: 600;
 }
 .rfig-count {
@@ -14061,7 +14068,7 @@ main:has(.rhead) > .back-btn > :first-child {
 .rfig-exclusions {
   margin: var(--sp-4) 0 0;
   font-size: var(--fs-13);
-  color: var(--muted);
+  color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
 }
 /* PATTERN-S7 C1 (2026-09-13): the table shell — a heading row with the
    title, the sort order in words and the count with its denominator, then

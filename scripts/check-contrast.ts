@@ -64,6 +64,11 @@ function groundsFor(token: string, vars: Record<string, string>): readonly strin
      darkest binding. The bands are theme-neutral tints, so the pair reads the
      same in both themes — which is the point: a dark ink measured against
      dark's --bg would report 1.1:1 for a cell that is a light tint. */
+  /* The two context inks (tokens.css, 15 Sept 2026): --faint is System A's
+     caption ink for the white card and is measured there; --faint-on-tint
+     carries the tinted grounds and is measured on --bg as well as --surf
+     (the GROUNDS default). --muted keeps both grounds — it clears both. */
+  if (token === 'faint') return ['surf'];
   const heat = /^heat-ink-([1-5])$/.exec(token);
   if (heat && vars[`heat-${heat[1]}`]) return [`heat-${heat[1]}`];
   if (token === 'heat-pct-text') return [1, 2, 3, 4, 5].map((n) => `heat-pct-${n}`).filter((g) => vars[g]);
@@ -104,14 +109,12 @@ export const KNOWN_BELOW_AA: ReadonlyArray<{ token: string; theme: string; why: 
   },
   /* bad-text (dark) was here at 4.47:1 on --surf. Fixed 11 Sept 2026: #ff7460,
      5.61:1 on --surf, 5.22 on --bg — see scripts/test-brand-accent.ts. */
-  {
-    token: 'faint', theme: 'light', why:
-      'System A adoption, 15 Sept 2026 (docs/decisions/design-system-adoption.md): ' +
-      '#667287 is the design system\'s own value, 4.86:1 on --surf and 3.98:1 on ' +
-      '--bg #e1e9f6. The previous #626a76 cleared the page ground at 4.57. Reported ' +
-      'to Isabella with the layer-one build; the accessibility sweep that runs ' +
-      'after conformance rules on it. Not a fix to make here.',
-  },
+  /* faint (light) was here for one day, 15 Sept 2026: System A's #667287 at
+     3.98:1 on --bg. Fixed the same day by Isabella's ruling — a darker ink
+     for the tinted contexts, --faint-on-tint, with --faint kept as the
+     white-card ink it was derived for; groundsFor() pairs each with the
+     grounds it is painted on. An exemption that outlives its fix is a guard
+     lying; this one did not outlive the day. */
 ];
 
 const hexOf = (v: string): [number, number, number] | null => {

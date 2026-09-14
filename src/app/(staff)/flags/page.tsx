@@ -7,6 +7,7 @@ import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, todayIso } from '@/lib/format';
+import { isPremium } from '@/lib/tier';
 import { requireStaff } from '@/lib/session';
 import { canEditFlag } from '@/lib/access';
 
@@ -19,7 +20,7 @@ export default async function FlagsPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, orgName, timezone, claims } = await requireStaff();
+  const { db, orgId, orgName, timezone, claims, tier } = await requireStaff();
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
   const today = todayIso(timezone);
@@ -111,6 +112,7 @@ export default async function FlagsPage({
               userId={claims.userId}
               today={today}
               timezone={timezone}
+              premium={isPremium(tier)}
               /* Wording only, never authorisation (CLAUDE.md rule 2) — the roles
                  come from the server-resolved session either way. A clinician
                  writing a note here is writing into a column every coach in the

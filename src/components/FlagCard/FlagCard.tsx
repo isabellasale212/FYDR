@@ -10,6 +10,7 @@ import { createClient } from '@/lib/supabase/client';
 import { Pill } from '@/components/Pill/Pill';
 import { SEVERITY_STATUS } from '@/lib/status';
 import { dateInTz, enumLabel, formatDate, formatDateTime, formatTime } from '@/lib/format';
+import { flagDomainWord } from '@/lib/premiumWords';
 
 const DISMISS_REASONS = [
   'Normal for this athlete',
@@ -36,6 +37,9 @@ type Props = {
    *  medical — so it is a shared staff note, and a physio needs to know that in the
    *  moment rather than infer it. See this file's note-audience comment below. */
   viewerIsMedical?: boolean;
+  /** The club's plan, for the domain word only: a GPS flag on a Basic club
+   *  says its rule is dormant (lib/premiumWords). Never authorisation. */
+  premium?: boolean;
   /** May this viewer act on THIS flag, decided 2026-09-06.
    *
    *  Unlike viewerIsMedical above, this is not wording: it decides whether the
@@ -69,6 +73,7 @@ export function FlagCard({
   today,
   timezone,
   viewerIsMedical = false,
+  premium = true,
   canEdit = true,
 }: Props) {
   const router = useRouter();
@@ -197,7 +202,7 @@ export function FlagCard({
     <div className="card flag-card">
       <div className="flag-head">
         <Pill status={SEVERITY_STATUS[flag.severity]} />
-        <span className="tiny">{enumLabel(flag.domain)}</span>
+        <span className="tiny" data-flag-domain>{flagDomainWord(enumLabel(flag.domain), flag.domain, premium)}</span>
         {/* Escalation is history, not a transient state: a flag that went
             24h unseen stays marked after acknowledgement (the tag used to
             vanish on acknowledge — audit coach finding 21). */}

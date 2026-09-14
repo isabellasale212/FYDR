@@ -8,6 +8,7 @@ import type { ProfileFlag } from '@/lib/queries/playerProfile';
 import { acknowledgeFlag, addFlagNote, staffNoteLines } from '@/lib/queries/flags';
 import { createClient } from '@/lib/supabase/client';
 import { dateInTz, enumLabel, formatDate, formatDateTime, formatTime } from '@/lib/format';
+import { flagDomainWord } from '@/lib/premiumWords';
 
 type Props = {
   flags: ProfileFlag[];
@@ -31,6 +32,8 @@ type Props = {
    *  'all' rather than an array of every domain, so a domain added to the enum
    *  later is included by default for the roles that hold everything. */
   editableFlagDomains?: readonly string[] | 'all';
+  /** The club's plan, for the domain word only (lib/premiumWords). */
+  premium?: boolean;
 };
 
 const TONE_VAR: Record<'high' | 'medium' | 'low', string> = {
@@ -55,6 +58,7 @@ export function PlayerProfileFlags({
   timezone,
   viewerIsMedical = false,
   editableFlagDomains = 'all',
+  premium = true,
 }: Props) {
   const canEditFlagDomain = (domain: string): boolean =>
     editableFlagDomains === 'all' || editableFlagDomains.includes(domain);
@@ -178,8 +182,8 @@ export function PlayerProfileFlags({
                 style={{ borderInlineStart: `3px solid ${TONE_VAR[flag.severity]}` }}
               >
                 <div className="pp-flag-top">
-                  <span className="pill pill-neutral" style={{ fontSize: 'var(--fs-11)', padding: '2px 9px' }}>
-                    {enumLabel(flag.domain)}
+                  <span className="pill pill-neutral" style={{ fontSize: 'var(--fs-11)', padding: '2px 9px' }} data-flag-domain>
+                    {flagDomainWord(enumLabel(flag.domain), flag.domain, premium)}
                   </span>
                   {flag.escalated ? (
                     <span className={`pill ${canAck ? 'pill-bad' : 'pill-warn'}`} style={{ fontSize: 'var(--fs-11)', padding: '2px 9px' }}>

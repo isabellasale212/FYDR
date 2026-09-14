@@ -35,6 +35,7 @@ import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { headerOwnerLine, headerRestrictionLine, headerSubLine, planLine } from '@/lib/profileHeader';
 import { noWeighInLine } from '@/lib/nutritionNoWeighIn';
+import { isPremium } from '@/lib/tier';
 import { requireStaff } from '@/lib/session';
 import { rpeOffLine } from '@/lib/rpeSetting';
 import { consentStateLabel } from '@/lib/consentState';
@@ -253,7 +254,7 @@ export default async function AthletePage({
   searchParams: SearchParams;
 }) {
   const { athleteId } = await params;
-  const { db, orgId, timezone, claims, collectsRpe } = await requireStaff();
+  const { db, orgId, timezone, claims, collectsRpe, tier } = await requireStaff();
   /* Shape-check the route param before it reaches a query. Authenticated
      first, so this never becomes a probe; then 404 rather than 500, because a
      malformed id is a URL that does not name anything, not a server fault. */
@@ -840,6 +841,7 @@ export default async function AthletePage({
                  knows which row it is drawing -- but it is a Client Component,
                  and a function prop across that boundary is a runtime 500. */
               editableFlagDomains={editableFlagDomains(claims.roles)}
+              premium={isPremium(tier)}
             />
 
             {/* CORRECTED. This comment used to read "id is the Wellness domain chip's

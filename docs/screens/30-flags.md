@@ -88,8 +88,16 @@ Any statement of the form "a flag is raised above X" must read X from that table
 **No flags.** Says so, as a good outcome. **Filtered to nothing.** Says which
 group scope produced it. **Error.** Surfaces as an error. **A failed acknowledge**
 returns the card rather than silently losing it. **No permission.** A named
-refusal. **Wrong tier.** Not applicable. **Offline.** Acknowledging offline fails
-with the connection sentence rather than appearing to succeed.
+refusal. **Wrong tier.** The screen is every club's, and a flag raised while
+the club was on Premium stays (keep and hide, `docs/decisions/premium-downgrade.md`).
+A GPS-domain flag on a Basic club carries a plan note on its domain word —
+"GPS · Premium rule, dormant on the Basic plan" (`lib/premiumWords.ts`,
+`flagDomainWord`; decision batch 14 September 2026, built 15 September) — because
+a flag still visible while the rule behind it is dormant (0119 returns it no
+rows) is a number that means something it no longer means. The same word on the
+profile's Flags card. The "your GPS history is kept" sentence is the plan page's,
+not the flag's. **Offline.** Acknowledging offline fails with the connection
+sentence rather than appearing to succeed.
 
 ## 9. Open issues
 

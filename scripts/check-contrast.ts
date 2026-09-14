@@ -59,6 +59,14 @@ function groundsFor(token: string, vars: Record<string, string>): readonly strin
      text lands. */
   if (family !== token && vars[`${family}-bg`]) return [`${family}-bg`];
   if (vars[`${token}-bg`]) return [`${token}-bg`];
+  /* System A's heat ramps (15 Sept 2026): --heat-ink-N is painted on --heat-N
+     and nowhere else; --heat-pct-text on all five --heat-pct-N bands, the
+     darkest binding. The bands are theme-neutral tints, so the pair reads the
+     same in both themes — which is the point: a dark ink measured against
+     dark's --bg would report 1.1:1 for a cell that is a light tint. */
+  const heat = /^heat-ink-([1-5])$/.exec(token);
+  if (heat && vars[`heat-${heat[1]}`]) return [`heat-${heat[1]}`];
+  if (token === 'heat-pct-text') return [1, 2, 3, 4, 5].map((n) => `heat-pct-${n}`).filter((g) => vars[g]);
   return GROUNDS;
 }
 

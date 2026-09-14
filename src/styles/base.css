@@ -10810,26 +10810,30 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   border-radius: 7px;
   padding: var(--sp-6) var(--sp-8);
 }
-.tr-heat[data-ramp='hsr'][data-band='0'] { background: rgb(var(--accent-rgb) / 0.08); }
-.tr-heat[data-ramp='hsr'][data-band='1'] { background: rgb(var(--accent-rgb) / 0.16); }
-.tr-heat[data-ramp='hsr'][data-band='2'] { background: rgb(var(--accent-rgb) / 0.26); }
-.tr-heat[data-ramp='hsr'][data-band='3'] { background: rgb(var(--accent-rgb) / 0.36); }
-.tr-heat[data-ramp='hsr'][data-band='4'] { background: rgb(var(--accent-rgb) / 0.48); }
-/* Pink, the system's own --heat-hie hue, so HIE never reads as more or less
-   urgent than HSR — a different question, not a worse answer. */
-.tr-heat[data-ramp='hie'][data-band='0'] { background: rgb(233 109 168 / 0.09); }
-.tr-heat[data-ramp='hie'][data-band='1'] { background: rgb(233 109 168 / 0.17); }
-.tr-heat[data-ramp='hie'][data-band='2'] { background: rgb(233 109 168 / 0.27); }
-.tr-heat[data-ramp='hie'][data-band='3'] { background: rgb(233 109 168 / 0.37); }
-.tr-heat[data-ramp='hie'][data-band='4'] { background: rgb(233 109 168 / 0.48); }
-.tr-heat[data-ramp='pct'][data-band='0'] { background: rgb(140 234 173 / 0.10); }
-.tr-heat[data-ramp='pct'][data-band='1'] { background: rgb(140 234 173 / 0.18); }
-.tr-heat[data-ramp='pct'][data-band='2'] { background: rgb(140 234 173 / 0.28); }
-.tr-heat[data-ramp='pct'][data-band='3'] { background: rgb(140 234 173 / 0.38); }
-/* 0.6, not 0.5: this is the ramp's top band, and ink on it only clears 4.5:1
-   once the fill is bright enough to carry it — at 0.5 it measured 4.36 in
-   dark. A stronger top also reads as the top, which is the ramp's job. */
-.tr-heat[data-ramp='pct'][data-band='4'] { background: rgb(140 234 173 / 0.6); color: var(--on-bright-tint); }
+/* SYSTEM A's ramps, 15 Sept 2026 (docs/design-system/tokens/colors.css).
+   The load ramp: five LIGHT tints walking from cyan toward the deep accent,
+   one dark ink for all five — "the dark end was the hardest thing in the
+   product to read at 11px". The percentage ramp: five light cyan steps under
+   one ink, replacing the green that "appears nowhere else in this palette".
+   HIE keeps its pink alpha steps on the named hue — System A gives the hue
+   and no ramp for it. Theme-neutral, on instruction: in dark these cells are
+   light islands under dark ink, which is what the dark-mode render reports
+   for Isabella to rule on. */
+.tr-heat[data-ramp='hsr'][data-band='0'] { background: var(--heat-1); color: var(--heat-ink-1); }
+.tr-heat[data-ramp='hsr'][data-band='1'] { background: var(--heat-2); color: var(--heat-ink-2); }
+.tr-heat[data-ramp='hsr'][data-band='2'] { background: var(--heat-3); color: var(--heat-ink-3); }
+.tr-heat[data-ramp='hsr'][data-band='3'] { background: var(--heat-4); color: var(--heat-ink-4); }
+.tr-heat[data-ramp='hsr'][data-band='4'] { background: var(--heat-5); color: var(--heat-ink-5); }
+.tr-heat[data-ramp='hie'][data-band='0'] { background: rgb(var(--heat-hie-rgb) / 0.09); }
+.tr-heat[data-ramp='hie'][data-band='1'] { background: rgb(var(--heat-hie-rgb) / 0.17); }
+.tr-heat[data-ramp='hie'][data-band='2'] { background: rgb(var(--heat-hie-rgb) / 0.27); }
+.tr-heat[data-ramp='hie'][data-band='3'] { background: rgb(var(--heat-hie-rgb) / 0.37); }
+.tr-heat[data-ramp='hie'][data-band='4'] { background: rgb(var(--heat-hie-rgb) / 0.48); }
+.tr-heat[data-ramp='pct'][data-band='0'] { background: var(--heat-pct-1); color: var(--heat-pct-text); }
+.tr-heat[data-ramp='pct'][data-band='1'] { background: var(--heat-pct-2); color: var(--heat-pct-text); }
+.tr-heat[data-ramp='pct'][data-band='2'] { background: var(--heat-pct-3); color: var(--heat-pct-text); }
+.tr-heat[data-ramp='pct'][data-band='3'] { background: var(--heat-pct-4); color: var(--heat-pct-text); }
+.tr-heat[data-ramp='pct'][data-band='4'] { background: var(--heat-pct-5); color: var(--heat-pct-text); }
 /* No band means no data to rank, so no shading — never a band-0 fill, which
    would read as "lowest" rather than "absent". */
 .tr-heat:not([data-band]) {

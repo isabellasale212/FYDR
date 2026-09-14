@@ -112,15 +112,15 @@
 | src/styles/base.css | 9741 | letter-spacing | 0.08em | no exact tracking token; left |
 | src/styles/base.css | 9783 | letter-spacing | 0.08em | no exact tracking token; left |
 | src/styles/base.css | 11258 | letter-spacing | 0.13em | no exact tracking token; left |
-| src/styles/base.css | 11310 | letter-spacing | 0.11em | no exact tracking token; left |
-| src/styles/base.css | 11330 | letter-spacing | 0.11em | no exact tracking token; left |
-| src/styles/base.css | 11499 | letter-spacing | 0.11em | no exact tracking token; left |
-| src/styles/base.css | 11547 | letter-spacing | 0.11em | no exact tracking token; left |
-| src/styles/base.css | 11693 | letter-spacing | 0.11em | no exact tracking token; left |
-| src/styles/base.css | 11762 | letter-spacing | 0.11em | no exact tracking token; left |
-| src/styles/base.css | 11871 | letter-spacing | 0.11em | no exact tracking token; left |
-| src/styles/base.css | 12032 | letter-spacing | 0.11em | no exact tracking token; left |
-| src/styles/base.css | 12212 | letter-spacing | 0.11em | no exact tracking token; left |
+| src/styles/base.css | 11310 | letter-spacing | 0.11em | RULED 15 Sept 2026 (Isabella): reads --t-eyebrow-tracking (0.12em) — a tenth of a pixel per letter |
+| src/styles/base.css | 11330 | letter-spacing | 0.11em | RULED 15 Sept 2026 (Isabella): reads --t-eyebrow-tracking (0.12em) — a tenth of a pixel per letter |
+| src/styles/base.css | 11499 | letter-spacing | 0.11em | RULED 15 Sept 2026 (Isabella): reads --t-eyebrow-tracking (0.12em) — a tenth of a pixel per letter |
+| src/styles/base.css | 11547 | letter-spacing | 0.11em | RULED 15 Sept 2026 (Isabella): reads --t-eyebrow-tracking (0.12em) — a tenth of a pixel per letter |
+| src/styles/base.css | 11693 | letter-spacing | 0.11em | RULED 15 Sept 2026 (Isabella): reads --t-eyebrow-tracking (0.12em) — a tenth of a pixel per letter |
+| src/styles/base.css | 11762 | letter-spacing | 0.11em | RULED 15 Sept 2026 (Isabella): reads --t-eyebrow-tracking (0.12em) — a tenth of a pixel per letter |
+| src/styles/base.css | 11871 | letter-spacing | 0.11em | RULED 15 Sept 2026 (Isabella): reads --t-eyebrow-tracking (0.12em) — a tenth of a pixel per letter |
+| src/styles/base.css | 12032 | letter-spacing | 0.11em | RULED 15 Sept 2026 (Isabella): reads --t-eyebrow-tracking (0.12em) — a tenth of a pixel per letter |
+| src/styles/base.css | 12212 | letter-spacing | 0.11em | RULED 15 Sept 2026 (Isabella): reads --t-eyebrow-tracking (0.12em) — a tenth of a pixel per letter |
 | src/styles/base.css | 13515 | letter-spacing | 0.08em | no exact tracking token; left |
 | src/styles/base.css | 13800 | letter-spacing | 0 | no exact tracking token; left |
 | src/styles/base.css | 13823 | letter-spacing | 0.09em | no exact tracking token; left |

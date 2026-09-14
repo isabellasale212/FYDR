@@ -11307,7 +11307,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   padding: 0 0 var(--sp-10);
   font-size: var(--fs-11);
   font-weight: var(--w-num);
-  letter-spacing: 0.11em;
+  letter-spacing: var(--t-eyebrow-tracking); /* 0.11em -> 0.12em, Isabella's ruling 15 Sept 2026 */
   text-transform: uppercase;
   color: var(--faint);
 }
@@ -11327,7 +11327,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .cmpl-band-name {
   font-size: var(--fs-11);
   font-weight: var(--w-bold);
-  letter-spacing: 0.11em;
+  letter-spacing: var(--t-eyebrow-tracking); /* 0.11em -> 0.12em, Isabella's ruling 15 Sept 2026 */
   text-transform: uppercase;
 }
 .cmpl-band-name[data-tone='bad'] { color: var(--bad-pill-text); }
@@ -11496,7 +11496,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   padding: 0 var(--sp-4) var(--sp-10);
   font-size: var(--fs-11);
   font-weight: var(--w-num);
-  letter-spacing: 0.11em;
+  letter-spacing: var(--t-eyebrow-tracking); /* 0.11em -> 0.12em, Isabella's ruling 15 Sept 2026 */
   text-transform: uppercase;
   color: var(--faint);
 }
@@ -11544,7 +11544,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .inj-group-name {
   font-size: var(--fs-11);
   font-weight: var(--w-bold);
-  letter-spacing: 0.11em;
+  letter-spacing: var(--t-eyebrow-tracking); /* 0.11em -> 0.12em, Isabella's ruling 15 Sept 2026 */
   text-transform: uppercase;
 }
 .inj-group-name[data-status='unavailable'] { color: var(--bad-pill-text); }
@@ -11690,7 +11690,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .ath-stat-label {
   font-size: var(--fs-10);
   font-weight: var(--w-num);
-  letter-spacing: 0.11em;
+  letter-spacing: var(--t-eyebrow-tracking); /* 0.11em -> 0.12em, Isabella's ruling 15 Sept 2026 */
   text-transform: uppercase;
   color: var(--faint);
 }
@@ -11759,7 +11759,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   border-bottom: 1px solid var(--border);
   font-size: var(--fs-11);
   font-weight: var(--w-num);
-  letter-spacing: 0.11em;
+  letter-spacing: var(--t-eyebrow-tracking); /* 0.11em -> 0.12em, Isabella's ruling 15 Sept 2026 */
   text-transform: uppercase;
   color: var(--faint);
 }
@@ -11868,7 +11868,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   padding: 0 var(--sp-4) var(--sp-10);
   font-size: var(--fs-11);
   font-weight: var(--w-num);
-  letter-spacing: 0.11em;
+  letter-spacing: var(--t-eyebrow-tracking); /* 0.11em -> 0.12em, Isabella's ruling 15 Sept 2026 */
   text-transform: uppercase;
   color: var(--faint);
 }
@@ -12029,7 +12029,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   padding: 0 var(--sp-4) var(--sp-10);
   font-size: var(--fs-11);
   font-weight: var(--w-num);
-  letter-spacing: 0.11em;
+  letter-spacing: var(--t-eyebrow-tracking); /* 0.11em -> 0.12em, Isabella's ruling 15 Sept 2026 */
   text-transform: uppercase;
   color: var(--faint);
 }
@@ -12209,7 +12209,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sw-kpi-label {
   font-size: var(--fs-11);
   font-weight: var(--w-num);
-  letter-spacing: 0.11em;
+  letter-spacing: var(--t-eyebrow-tracking); /* 0.11em -> 0.12em, Isabella's ruling 15 Sept 2026 */
   text-transform: uppercase;
   color: var(--faint);
 }

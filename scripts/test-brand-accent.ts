@@ -52,8 +52,9 @@ const at = (s: string): number => { const i = tokens.indexOf(s); if (i < 0) thro
 const shared = tokens.slice(0, at(':root,'));
 const light = tokens.slice(at(":root[data-theme='light'] {"), at('.dark-tokens,'));
 const darkExplicit = tokens.slice(at(":root[data-theme='dark'] {"), at('@media (prefers-color-scheme: dark)'));
-const darkMedia = tokens.slice(at('@media (prefers-color-scheme: dark)'), at('\n@media print {'));
-const print = tokens.slice(at('\n@media print {'));
+/* No print block since 2026-09-14 (PATTERN-S7 C4: one renderer, the PDF; the
+   @media print theme is gone). The dark media block runs to the end. */
+const darkMedia = tokens.slice(at('@media (prefers-color-scheme: dark)'));
 const value = (block: string, name: string): string | null =>
   new RegExp(`^\\s*${name.replace(/[-]/g, '\\-')}:\\s*([^;]+);`, 'm').exec(uncommented(block))?.[1]?.trim() ?? null;
 const resolve = (block: string, name: string): string | null => value(block, name) ?? value(shared, name);
@@ -92,9 +93,7 @@ console.log('the values, light');
   assert(value(light, '--focus') === '#17489b', '--focus (light) is the accent');
   assert(value(light, '--wk-match-border') === '#17489b', '--wk-match-border (light) is the accent');
   assert(value(shared, '--on-accent') === '#ffffff', '--on-accent stays white');
-  for (const t of ['--accent-text', '--accent-pill-text', '--accent-on-tint', '--wk-match-border']) {
-    assert(value(print, t) === '#17489b', `${t} in the print block takes the same value as light`);
-  }
+  assert(!/@media\s+print/.test(uncommented(tokens)), 'no print block carries a second copy of the accent: the PDF (lib/pdf.tsx PDF_COLOR.accent) is the one print renderer');
 }
 
 console.log('\nthe values, dark — in BOTH dark blocks');

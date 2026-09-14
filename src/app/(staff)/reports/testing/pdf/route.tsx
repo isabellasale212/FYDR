@@ -7,7 +7,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, formatNumber, todayIso } from '@/lib/format';
 import { resolveTestingPeriod, testingWindow } from '../period';
 import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
-import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse, pdfDisposition } from '@/lib/pdf';
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { belowSquadFloor } from '@/lib/smallSample';
 import { testCoverageFigure } from '@/lib/reportFigureCards';
@@ -118,5 +118,5 @@ export async function GET(request: Request) {
     'export',
   );
 
-  return pdfResponse(buffer, `testing-report-${reportWindow.from}-to-${reportWindow.to}.pdf`);
+  return pdfResponse(buffer, `testing-report-${reportWindow.from}-to-${reportWindow.to}.pdf`, pdfDisposition(request));
 }

@@ -10,7 +10,7 @@ import { exportFileName } from '@/lib/exportDescriptor';
 import { filterEmptyCopy, staffEmptyCopy } from '@/lib/staffEmpty';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
-import { PrintButton } from '@/components/PrintButton/PrintButton';
+import { PrintLink } from '@/components/PrintLink/PrintLink';
 import { ReportPager } from '@/components/ReportPager/ReportPager';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchTestByTest, fetchTestLongitudinal, fetchTestingByAthlete, fetchLatestTestResultDate } from '@/lib/queries/testingReport';
@@ -180,7 +180,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                 <Link href="/testing" className="rhead-btn-primary" aria-label="Log a result for any test">
                   + Log a result
                 </Link>
-                <PrintButton className="rhead-btn" />
+                <PrintLink href={`/reports/testing/pdf?${query}`} className="rhead-btn" />
                 {/* PATTERN-S7 C3: named and described before it is written. */}
                 <ExportDialog
                   href={`/reports/testing/export?${query}`}

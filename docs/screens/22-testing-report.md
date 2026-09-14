@@ -36,8 +36,9 @@ middle looks like.
 2026, reconciled to Isabella's catalogue the same day; `docs/reports-catalogue.md`):
 "The most recent result for each test inside the period. A test with no result in the
 window is not shown as zero, and an athlete who has never been assigned a test does not
-appear for it." — a `--surf` card under the scope line; it prints with the page and is
-the first line of the CSV and the line under the PDF's title. Nothing in the app
+appear for it." — a `--surf` card under the scope line; it is the first line of the CSV
+and the line under the PDF's title (which is also what Print opens: PATTERN-S7 C4,
+14 September 2026, one renderer). Nothing in the app
 assigns a test (the sheet): the by-athlete grid shows every athlete in scope for every
 test, and the by-test ranking lists only athletes with a result and says how many have
 none.

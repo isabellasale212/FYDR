@@ -188,7 +188,7 @@ Formulas are in `docs/metrics.md`. They are not repeated here.
 | Flags affecting selection | The lead card's tail | Opens the flags screen | `/flags` | Nothing | Any staff but the nutritionist | None | As above |
 | Sessions left to run | The lead card's tail | Opens the schedule | `/schedule` | Nothing | Any staff but the nutritionist | None | As above |
 | Compliance link | Outstanding entries | Opens the compliance report | `/reports/compliance` | Nothing | Coach or medic today | None | Never |
-| Print | Top bar | Opens the browser print dialogue | Stays here | Nothing | Any staff | Browser's own | Never |
+| Print | Top bar | Opens the availability board as a PDF in a new tab (`/dashboard/pdf?open=1`): the four counts and the athletes not fully available with the line every role reads; counts only for the nutritionist. Printing is done from the viewer — two steps (PATTERN-S7 C4, 14 September 2026: one renderer, the PDF; no print stylesheet). Recorded as an export | A new tab | An export audit row | Any staff | None | Never |
 
 **Nothing on this page writes anything.** It is a reading screen. That is worth
 stating because it means no confirmation step is needed anywhere on it.

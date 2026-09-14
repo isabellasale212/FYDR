@@ -313,11 +313,21 @@ export function PdfReport({ children, footer }: { children: ReactNode; footer: s
   );
 }
 
-export function pdfResponse(buffer: Buffer, filename: string): Response {
+/** PATTERN-S7 C4 (ruled 2026-09-13, batch B10, built 2026-09-14): the PDF is
+ *  the ONE renderer for print. There is no print stylesheet any more; a
+ *  screen's Print control opens its PDF in a new tab (`?open=1`, an inline
+ *  disposition, so the browser shows it rather than saving it) and printing
+ *  is done from the viewer — two steps, accepted. Export PDF keeps the
+ *  attachment disposition. Same bytes either way: one document. */
+export function pdfDisposition(request: Request): 'inline' | 'attachment' {
+  return new URL(request.url).searchParams.get('open') === '1' ? 'inline' : 'attachment';
+}
+
+export function pdfResponse(buffer: Buffer, filename: string, disposition: 'inline' | 'attachment' = 'attachment'): Response {
   return new Response(new Uint8Array(buffer), {
     headers: {
       'Content-Type': 'application/pdf',
-      'Content-Disposition': `attachment; filename="${filename}"`,
+      'Content-Disposition': `${disposition}; filename="${filename}"`,
       'Cache-Control': 'no-store',
     },
   });

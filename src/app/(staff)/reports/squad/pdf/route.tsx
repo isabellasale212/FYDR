@@ -6,7 +6,7 @@ import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, formatNumber, todayIso } from '@/lib/format';
-import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse, pdfDisposition } from '@/lib/pdf';
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { squadComplianceFigure } from '@/lib/reportFigureCards';
 import { requireReport } from '@/lib/session';
@@ -128,5 +128,5 @@ export async function GET(request: Request) {
     'export',
   );
 
-  return pdfResponse(buffer, `squad-weekly-${report.from}-to-${report.to}.pdf`);
+  return pdfResponse(buffer, `squad-weekly-${report.from}-to-${report.to}.pdf`, pdfDisposition(request));
 }

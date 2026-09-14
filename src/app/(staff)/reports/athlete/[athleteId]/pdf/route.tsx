@@ -4,7 +4,7 @@ import { acwrSuppressedLabel } from '@/lib/acwr';
 import { fetchAthleteReport } from '@/lib/queries/athleteReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { enumLabel, formatDate, formatNumber } from '@/lib/format';
-import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse, pdfDisposition } from '@/lib/pdf';
 import { athleteDefinition } from '@/lib/reportCatalogue';
 import { athleteComplianceFigure } from '@/lib/reportFigureCards';
 import { requireReport } from '@/lib/session';
@@ -153,5 +153,5 @@ export async function GET(request: Request, { params }: { params: Promise<{ athl
     'export',
   );
 
-  return pdfResponse(buffer, `athlete-report-${athlete.last_name.toLowerCase()}-${report.from}-to-${report.to}.pdf`);
+  return pdfResponse(buffer, `athlete-report-${athlete.last_name.toLowerCase()}-${report.from}-to-${report.to}.pdf`, pdfDisposition(request));
 }

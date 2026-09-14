@@ -4,7 +4,7 @@ import { computeTestBestsBySide, fetchHistory, fetchTestDefinitions } from '@/li
 import { fetchCurrentSeason } from '@/lib/queries/schedule';
 import { recordReportView } from '@/lib/queries/reports';
 import { formatDate, formatNumber, todayIso } from '@/lib/format';
-import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse, pdfDisposition } from '@/lib/pdf';
 import { requireStaff } from '@/lib/session';
 import { actingRole } from '@/lib/access';
 
@@ -21,7 +21,7 @@ import { actingRole } from '@/lib/access';
 /* `_request` is unread — see the sibling export route's note: both ids come
  * from the path and no group filter is resolved here, so there is no query
  * string to read. The parameter stays because params arrive positionally. */
-export async function GET(_request: Request, { params }: { params: Promise<{ testDefId: string; athleteId: string }> }) {
+export async function GET(request: Request, { params }: { params: Promise<{ testDefId: string; athleteId: string }> }) {
   const { testDefId, athleteId } = await params;
   const { db, orgId, orgName, claims, timezone } = await requireStaff();
 
@@ -110,5 +110,5 @@ export async function GET(_request: Request, { params }: { params: Promise<{ tes
   );
 
   const slug = athleteName.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/(^-|-$)/g, '');
-  return pdfResponse(buffer, `${slug}-${definition.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`);
+  return pdfResponse(buffer, `${slug}-${definition.name.toLowerCase().replace(/[^a-z0-9]+/g, '-')}.pdf`, pdfDisposition(request));
 }

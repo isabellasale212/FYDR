@@ -6,7 +6,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { enumLabel, formatDate, todayIso } from '@/lib/format';
 import { complianceAnchor, resolveCompliancePeriod } from '../period';
 import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
-import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse, pdfDisposition } from '@/lib/pdf';
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { complianceFigure } from '@/lib/reportFigureCards';
 import { requireReport } from '@/lib/session';
@@ -119,5 +119,5 @@ export async function GET(request: Request) {
     'export',
   );
 
-  return pdfResponse(buffer, `compliance-${fromDate}-to-${today}.pdf`);
+  return pdfResponse(buffer, `compliance-${fromDate}-to-${today}.pdf`, pdfDisposition(request));
 }

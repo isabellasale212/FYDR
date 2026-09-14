@@ -13,7 +13,7 @@ import {
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, todayIso } from '@/lib/format';
-import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse, pdfDisposition } from '@/lib/pdf';
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { boardFigure } from '@/lib/reportFigureCards';
 import { requireReport, refuse } from '@/lib/session';
@@ -73,7 +73,7 @@ export async function GET(request: Request) {
           <PdfHeader eyebrow={`Match day GPS report · ${orgName}`} title="Match day GPS report" meta="No match GPS data on file yet." />
         </PdfReport>,
       );
-      return pdfResponse(buffer, 'match-report.pdf');
+      return pdfResponse(buffer, 'match-report.pdf', pdfDisposition(request));
     }
 
     const [overview, board, scopeIds, squadSize] = await Promise.all([
@@ -127,7 +127,7 @@ export async function GET(request: Request) {
     );
 
     await recordReportView(db, orgId, claims.userId, actorRole, 'gps', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, format: 'pdf', mode }, 'export');
-    return pdfResponse(buffer, `match-report-${selected.date}.pdf`);
+    return pdfResponse(buffer, `match-report-${selected.date}.pdf`, pdfDisposition(request));
   }
 
   const sessions = await fetchTrainingSessions(db, orgId, timezone);
@@ -138,7 +138,7 @@ export async function GET(request: Request) {
         <PdfHeader eyebrow={`GPS report · ${orgName}`} title="GPS report" meta="No GPS data imported yet." />
       </PdfReport>,
     );
-    return pdfResponse(buffer, 'gps-report.pdf');
+    return pdfResponse(buffer, 'gps-report.pdf', pdfDisposition(request));
   }
 
   const [overview, board, scopeIds, squadSize] = await Promise.all([
@@ -193,5 +193,5 @@ export async function GET(request: Request) {
   );
 
   await recordReportView(db, orgId, claims.userId, actorRole, 'gps', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, format: 'pdf', mode }, 'export');
-  return pdfResponse(buffer, `gps-report-${selected.date}.pdf`);
+  return pdfResponse(buffer, `gps-report-${selected.date}.pdf`, pdfDisposition(request));
 }

@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { CLINICAL_ONLY, SITE_ALWAYS, hasAnyRole } from '@/lib/access';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
-import { PrintButton } from '@/components/PrintButton/PrintButton';
+import { PrintLink } from '@/components/PrintLink/PrintLink';
 import { ProblemReportsTriage } from '@/components/ProblemReportsTriage/ProblemReportsTriage';
 import { fetchGroups } from '@/lib/queries/groups';
 import { fetchInjuriesList } from '@/lib/queries/injuries';
@@ -86,7 +86,10 @@ export default async function InjuriesPage({
               + Injury
             </Link>
           ) : null}
-          <PrintButton />
+          {/* PATTERN-S7 C4: Print opens the injury & availability report's PDF —
+              its "Current" section is this list, with the report's own header and
+              footer; every role on this page is admitted to that report. */}
+          <PrintLink href={`/reports/injuries/pdf${groupIds.length ? `?groups=${groupIds.join(',')}` : ''}`} />
         </div>
       </div>
 

@@ -13,7 +13,7 @@ import { recordReportView } from '@/lib/queries/reports';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, formatNumber, todayIso } from '@/lib/format';
-import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfHeader, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse, pdfDisposition } from '@/lib/pdf';
 import { premiumOnlyResponse, requireStaff } from '@/lib/session';
 import { isUuid } from '@/lib/uuid';
 import { isPremium } from '@/lib/tier';
@@ -28,10 +28,10 @@ import { actingRole } from '@/lib/access';
  *  aggregation, which window, which population, whose club, generated when) and the
  *  same "not for redistribution" footer every other export here carries. window.print()
  *  renders whatever happens to be on screen — sidebar, filter chips, action buttons and
- *  all — and the components/PrintButton component that does exactly that already exists
- *  for the two boards (availability, dashboard) where printing the live screen IS the
- *  workflow. This is not that: a leaderboard leaving the building is a named-athlete
- *  disclosure, and it should look like one.
+ *  all. (Since 2026-09-14, PATTERN-S7 C4, nothing prints the live screen any more: the
+ *  PDF is the one renderer everywhere, and a screen's Print control opens its PDF.)
+ *  A leaderboard leaving the building is a named-athlete disclosure, and it should
+ *  look like one.
  *
  *  Served as an attachment, exactly like every other pdfResponse in this app — the
  *  browser saves it, the coach opens it and prints from their own viewer. Serving it
@@ -189,5 +189,5 @@ export async function GET(
   );
 
   const slug = board.name.toLowerCase().replace(/[^a-z0-9]+/g, '-').replace(/^-|-$/g, '') || 'board';
-  return pdfResponse(buffer, `${slug}-leaderboard.pdf`);
+  return pdfResponse(buffer, `${slug}-leaderboard.pdf`, pdfDisposition(request));
 }

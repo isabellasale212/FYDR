@@ -1,6 +1,6 @@
 import Link from 'next/link';
 import { notFound } from 'next/navigation';
-import { PrintButton } from '@/components/PrintButton/PrintButton';
+import { PrintLink } from '@/components/PrintLink/PrintLink';
 import { TestBests } from '@/components/TestBests/TestBests';
 import { TestHistoryList } from '@/components/TestHistoryList/TestHistoryList';
 import { TestTrendChart } from '@/components/TestTrendChart/TestTrendChart';
@@ -61,7 +61,7 @@ export default async function TestAthleteHistoryPage({
          * away as CSV or PDF. The print stylesheet in base.css hides
          * buttons and .btn-ghost links, so these do not print themselves. */}
         <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
-          <PrintButton />
+          <PrintLink href={`/testing/${testDefId}/${athleteId}/pdf`} />
           <a href={`/testing/${testDefId}/${athleteId}/export`} className="btn-ghost">
             Export CSV
           </a>

@@ -66,7 +66,7 @@ None beyond the count of changes.
 | Element and label | Where it sits | What happens | Where it goes | What it writes | Permission | Confirmation | Hidden when |
 |---|---|---|---|---|---|---|---|
 | Export CSV | Header | Downloads the same rows as a CSV (When, When (ISO), Status, Current, Restrictions, What changed, Set by) | A file | An `audit_log` row, `report.availability_history.export` | Any staff who can open the page | None | Never |
-| Print | Header | The browser's print | — | Nothing | Any staff | None | Never |
+| Print | Header | Opens this history as a PDF in a new tab (`/squad/[athleteId]/availability/pdf?open=1`): the same rows from the same function as the screen and the CSV, with their own header and footer. Printing is done from the viewer (PATTERN-S7 C4, 14 September 2026: one renderer, the PDF) | A new tab | An export audit row | Any staff | None | Never |
 
 ---
 

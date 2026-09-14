@@ -16,9 +16,9 @@ import type { TestBestsForSide } from '@/lib/queries/testing';
  *
  * Server component on purpose — every number is computed by
  * computeTestBestsBySide() from history rows the page already has, so there is
- * nothing to hydrate and this costs no client JS. It also means the tiles
- * render into the printed page and into window.print()'s output, which is
- * the whole point of the Print button sitting next to them.
+ * nothing to hydrate and this costs no client JS. (Print no longer prints
+ * this screen — since PATTERN-S7 C4, 2026-09-14, it opens the athlete's
+ * testing PDF, which carries the same three bests as PdfTiles.)
  *
  * The trend's meaning is printed on the tile itself, not just in a code
  * comment. A bare "+3.7%" on a coach's printout that nobody can interpret

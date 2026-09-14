@@ -8098,88 +8098,11 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   color: var(--accent-text);
 }
 
-/* ---------- Print, 06-design-system.md §14.7 ----------
- * "A print stylesheet forcing the light theme, removing shadows, and
- * keeping glyphs." The theme half lives in tokens.css (the only file
- * allowed a literal hex value); this is the layout half — global, not
- * per-page, because every staff screen shares .sidebar/.topbar/.card, and
- * screens/dashboard.md and screens/injury-dashboard.md both cite the same
- * real workflow (a physio prints the availability board and pins it on a
- * wall) as the reason this matters, not just those two screens.
- *
- * Glyphs need nothing here: lib/status.ts's status vocabulary already
- * pairs every colour with a distinct glyph (●, ◐, ⊘, ◌) specifically so
- * meaning survives greyscale, which is the other half of "keeping
- * glyphs" — this stylesheet's job is only to get everything else out of
- * the way of what's already correct.
- *
- * screens/injury-dashboard.md's own literal target for that one screen —
- * "9pt, one A4 portrait page for up to 45 athletes" — is only partly
- * attempted: .injuries-board below tightens the row font size and spacing
- * toward that 9pt figure, a real, bounded change. The "one A4 page for 45
- * athletes" half is not verified — this environment has no way to render
- * an actual paginated print preview to confirm it, only to simulate the
- * on-screen styles, so that specific claim is left unmade rather than
- * asserted untested. Its "clinical columns never print" requirement is
- * satisfied structurally rather than by a print rule — injuries.ts's own
- * header confirms this page never fetches injury_clinical at all, coach
- * or medical, so there is no clinical column here for any stylesheet to
- * strip. */
-@media print {
-  .sidebar,
-  .no-print,
-  button,
-  a.btn-primary,
-  a.btn-ghost,
-  a.btn-ghost-pill,
-  form {
-    display: none !important;
-  }
-
-  .app {
-    display: block !important;
-    background: none !important;
-  }
-  .main {
-    --main-pad: 0px;
-    max-width: none !important;
-    padding: 0 !important;
-  }
-
-  /* screens/injury-dashboard.md's own print row: shared columns at 9pt.
-   * Scoped to .injuries-board specifically, not .load-row itself — that
-   * class is reused across a dozen other screens (testing, programmes,
-   * reports, the athlete app), and none of them asked for this. */
-  .injuries-board .load-row {
-    padding: 4pt 0 !important;
-  }
-  .injuries-board .nm {
-    font-size: 9pt !important;
-  }
-  .injuries-board .tiny {
-    font-size: 8pt !important;
-  }
-  .injuries-board .pill {
-    font-size: 8pt !important;
-    padding: 1pt 6pt !important;
-  }
-
-  .card,
-  .banner,
-  .pp-card {
-    box-shadow: none !important;
-    border: 1px solid var(--border-strong) !important;
-    break-inside: avoid;
-  }
-
-  a {
-    text-decoration: none !important;
-  }
-
-  @page {
-    margin: 12mm;
-  }
-}
+/* Print. There is no print stylesheet any more — PATTERN-S7 C4 (ruled
+   2026-09-13, batch B10, built 2026-09-14): the PDF is the one renderer for
+   print, and a screen's Print control opens its PDF (components/PrintLink,
+   lib/pdf.tsx). The @media print block that used to print the live screen
+   through a light theme was removed with it. */
 
 /* ---------------------------------------------------------------------------
    Leaderboard wall, LEADERBOARD-SPEC.md. The real content of /leaderboards —

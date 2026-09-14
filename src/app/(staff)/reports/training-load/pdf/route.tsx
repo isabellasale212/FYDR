@@ -7,7 +7,7 @@ import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { formatDate, formatNumber, todayIso } from '@/lib/format';
 import { resolveTrainingLoadPeriod, trainingLoadAnchor } from '../period';
 import { periodParamsFromUrl } from '@/lib/reportPeriod.server';
-import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, pdfResponse, pdfDisposition } from '@/lib/pdf';
 import { reportDefinition, TRAINING_LOAD_OFF_STATE } from '@/lib/reportCatalogue';
 import { belowSquadFloor } from '@/lib/smallSample';
 import { trainingLoadFigure } from '@/lib/reportFigureCards';
@@ -35,7 +35,7 @@ export async function GET(request: Request) {
       </PdfReport>,
     );
     await recordReportView(db, orgId, claims.userId, actorRole, 'trainingLoad', { group_ids: groupIds, off: 'collects_rpe', format: 'pdf' }, 'export');
-    return pdfResponse(buffer, 'training-load.pdf');
+    return pdfResponse(buffer, 'training-load.pdf', pdfDisposition(request));
   }
 
   const realToday = todayIso(timezone);
@@ -76,5 +76,5 @@ export async function GET(request: Request) {
   );
 
   await recordReportView(db, orgId, claims.userId, actorRole, 'trainingLoad', { from: fromDate, to: today, period: period.key, group_ids: groupIds, format: 'pdf' }, 'export');
-  return pdfResponse(buffer, `training-load-${fromDate}-to-${today}.pdf`);
+  return pdfResponse(buffer, `training-load-${fromDate}-to-${today}.pdf`, pdfDisposition(request));
 }

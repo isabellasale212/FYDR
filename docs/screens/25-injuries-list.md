@@ -69,7 +69,7 @@ Nothing on this page is a calculated metric with a registry entry. It is a list.
 | Element and label | Where it sits | What happens when used | Where it takes you | What it writes | Permission | Confirmation | Disabled or hidden when |
 |---|---|---|---|---|---|---|---|
 | Group filter chips | Header | Narrows the list | Stays here | Nothing. A cookie remembers it | Any staff today | None | Never |
-| Print | Header | Opens the browser print dialogue | Stays here | Nothing | Any staff | Browser's own | Never |
+| Print | Header | Opens the injury & availability report's PDF in a new tab (`/reports/injuries/pdf?open=1`, the current group filter) — its "Current" section is this list, with the report's own header and footer; every role on this page is admitted to that report. Printing is done from the viewer (PATTERN-S7 C4, 14 September 2026: one renderer, the PDF) | A new tab | An export audit row | Any staff | None | Never |
 | An injury row | The list | Opens that injury | `/injuries/[injuryId]` | Nothing | Any staff today | None | Never |
 | Triage a problem report | Triage panel | Turns a reported problem into an injury record, or dismisses it | Stays here | Creates or updates records, and writes a note | **Medic only, enforced by the database** | Yes | The whole panel is absent for anyone who is not a medic |
 | New injury | Header | Opens the create screen | `/injuries/new` | Nothing | Any staff today | None | Never |

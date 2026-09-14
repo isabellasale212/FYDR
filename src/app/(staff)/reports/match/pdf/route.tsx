@@ -1,7 +1,7 @@
 import { renderToBuffer } from '@react-pdf/renderer';
 import { formatDate, formatLongDate, formatTime, todayIso } from '@/lib/format';
 import { SELECTION_WORDS, availabilityAtKickOffWords, fixtureWords, matchDefinition, matchFigure, minutesWords, selectionOf, sortRows } from '@/lib/matchReport';
-import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfReport, PdfSectionTitle, PdfTable, pdfResponse, pdfDisposition } from '@/lib/pdf';
 import { fetchFixtureSheet, scopeSheet } from '@/lib/queries/matchParticipation';
 import { fetchGroupAthleteIds, fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
@@ -56,5 +56,5 @@ export async function GET(request: Request) {
     </PdfReport>,
   );
   await recordReportView(db, orgId, claims.userId, actorRole, 'match', { fixture_id: sheet.fixture.id, group_ids: groupIds, format: 'pdf' }, 'export');
-  return pdfResponse(buffer, `match-${sheet.fixture.kickoff_at.slice(0, 10)}.pdf`);
+  return pdfResponse(buffer, `match-${sheet.fixture.kickoff_at.slice(0, 10)}.pdf`, pdfDisposition(request));
 }

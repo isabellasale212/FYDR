@@ -1,5 +1,5 @@
 import Link from 'next/link';
-import { PrintButton } from '@/components/PrintButton/PrintButton';
+import { PrintLink } from '@/components/PrintLink/PrintLink';
 import { AthleteDomainDenied } from '@/components/AthleteDomainShell/AthleteDomainShell';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { loadAthleteDomainContext } from '@/lib/athleteDomain.server';
@@ -64,7 +64,7 @@ export default async function AvailabilityHistoryPage({
           <a href={`/squad/${athleteId}/availability/export`} className="btn-ghost">
             Export CSV
           </a>
-          <PrintButton />
+          <PrintLink href={`/squad/${athleteId}/availability/pdf`} />
         </div>
       </div>
 

@@ -5,7 +5,7 @@ import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { enumLabel, formatDate } from '@/lib/format';
-import { PdfFigure, PdfHeader, PdfMedicalBanner, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse } from '@/lib/pdf';
+import { PdfFigure, PdfHeader, PdfMedicalBanner, PdfReport, PdfSectionTitle, PdfTable, PdfTile, PdfTileRow, pdfResponse, pdfDisposition } from '@/lib/pdf';
 import { reportDefinition } from '@/lib/reportCatalogue';
 import { availabilityFigure } from '@/lib/reportFigureCards';
 import { requireReport } from '@/lib/session';
@@ -139,5 +139,5 @@ export async function GET(request: Request) {
     ? `injury-availability-medical-in-confidence-${fromDate}-to-${today}.pdf`
     : `injury-availability-${fromDate}-to-${today}.pdf`;
 
-  return pdfResponse(buffer, filename);
+  return pdfResponse(buffer, filename, pdfDisposition(request));
 }

@@ -3,7 +3,7 @@ import { DashboardFlagsPanel } from '@/components/DashboardFlagsPanel/DashboardF
 import { DashboardHeadlineStats } from '@/components/DashboardHeadlineStats/DashboardHeadlineStats';
 import { DashboardLeadCard } from '@/components/DashboardLeadCard/DashboardLeadCard';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
-import { PrintButton } from '@/components/PrintButton/PrintButton';
+import { PrintLink } from '@/components/PrintLink/PrintLink';
 import { FIXTURE_RANGE_DAYS, fetchEffectiveToday, fetchGymToday, fetchHeadlineStats, fetchNearestSessionDay, fetchOutstandingTracks, fetchSaturdayReadiness, fetchSelectionReasons, fetchTimeline, fetchWeekStrip, fetchWeighInsToday, type SessionPip } from '@/lib/queries/dashboard';
 import { dayEmptyCopy, flagsAllClearLine, sessionAllClearLine } from '@/lib/dashboardEmpty';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
@@ -269,7 +269,9 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           <h1>Dashboard</h1>
         </div>
         <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
-          <PrintButton />
+          {/* PATTERN-S7 C4: Print opens the availability board's PDF — the
+              treatment-room wall board, and nothing else on this screen. */}
+          <PrintLink href={`/dashboard/pdf${groupIds.length ? `?groups=${groupIds.join(',')}` : ''}`} />
         </div>
       </div>
 

@@ -123,7 +123,10 @@ console.log('\nthe values, dark — in BOTH dark blocks');
 
 console.log('\nwhat does not move');
 {
-  assert(value(shared, '--accent2') === '#33b6ff', '--accent2 unchanged');
+  /* System A, 15 Sept 2026: --accent2 deepens to #1793c9 in light; dark is
+     frozen and restates the old #33b6ff in both dark blocks. */
+  assert(value(shared, '--accent2') === '#1793c9' && value(shared, '--accent2-rgb') === '23 147 201', '--accent2 is System A\'s #1793c9 in light (23 147 201)');
+  assert(value(darkExplicit, '--accent2') === '#33b6ff' && value(darkExplicit, '--accent2-rgb') === '51 182 255', '--accent2 stays #33b6ff in dark — dark is frozen');
   assert(value(shared, '--chart-load') === '#5b9bf0', '--chart-load unchanged (decoupled from the accent on purpose)');
   assert(value(light, '--group-blue') === '#2563eb', '--group-blue unchanged');
   assert(value(shared, '--tab-active') === '#6f9bff' && value(shared, '--avatar-text') === '#6f9bff' && value(shared, '--toast-link') === '#6f9bff', '--tab-active / --avatar-text / --toast-link unchanged');

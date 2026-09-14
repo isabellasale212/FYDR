@@ -123,34 +123,34 @@ select tests.set_jwt(tests.uid('orga', 'user_coach'));
 
 select is(
   (select count(*)::int from public.default_threshold_set()),
-  5,
-  'default_threshold_set() returns exactly five starter rules'
+  6,
+  'default_threshold_set() returns exactly six starter rules (five from 0059, body mass from 0128)'
 );
 
--- The load-bearing assertion of this file. These five metric keys are the complete list
--- migration 0052's _threshold_metric_value() knows how to evaluate. A default on any
+-- The load-bearing assertion of this file. These six metric keys are the complete list
+-- the evaluator knows how to evaluate (0052's five, and body.mass_kg from 0128). A default on any
 -- other key would be a rule that is configured, visible in the UI, and silently
 -- unevaluable forever.
 -- Compared as a sorted text[] rather than with set_eq(), which nothing else in this
 -- suite uses and which has to infer a column type from an untyped VALUES list.
 select is(
   (select array_agg(metric order by metric) from public.default_threshold_set()),
-  array['compliance.wellness_7d', 'load.acwr', 'wellness.readiness_score',
+  array['body.mass_kg', 'compliance.wellness_7d', 'load.acwr', 'wellness.readiness_score',
         'wellness.sleep_hours', 'wellness.soreness']::text[],
-  'every default rule sits on a metric the 0052 evaluator actually supports'
+  'every default rule sits on a metric the evaluator actually supports'
 );
 
 -- 04-data-model.md §10: "personal_rolling ... is the recommended default for a new
--- organisation". Two of the five are personal_rolling — the two whose comparisons
--- (z_score, pct_change_below) genuinely evaluate against a baseline. The three absolute
+-- organisation". Three of the six are personal_rolling — the three whose comparisons
+-- (z_score, pct_change_below x2) genuinely evaluate against a baseline. The three absolute
 -- ones are absolute for a stated reason (soreness is a fixed 1-5 self-report, compliance
 -- is a count, ACWR is a flat cutoff), which is checked here so a future edit cannot
 -- quietly flip them.
 select is(
   (select count(*)::int from public.default_threshold_set()
     where baseline_type = 'personal_rolling'),
-  2,
-  'the two defaults that actually evaluate against a baseline are the personal_rolling ones'
+  3,
+  'the three defaults that actually evaluate against a baseline are the personal_rolling ones'
 );
 
 -- 0059 correction (b). `above`/`below` are flat comparisons in 0052's
@@ -199,18 +199,30 @@ select is(
 
 select is(
   (select count(*)::int from public.default_threshold_set() where is_active),
-  4,
-  'the other four ship live'
+  5,
+  'the other five ship live'
 );
 
 -- A personal_rolling rule with min_baseline_observations 0 would fire against a baseline
 -- built from one data point, which is 0006's own named failure mode ("makes a new
 -- athlete look alarming in week one"). No default may ship in that state.
+-- Body mass (0128) is the one exception, with its own floor of 4: a weigh-in may be
+-- weekly, so ten observations inside its 28-day baseline is a bar no weekly-weighing
+-- club could ever clear and the rule would be dormant for ever. Four is a month of
+-- weekly weigh-ins, or four mornings of check-in figures — never one data point.
 select is(
   (select count(*)::int from public.default_threshold_set()
-    where baseline_type = 'personal_rolling' and min_baseline_observations < 10),
+    where baseline_type = 'personal_rolling' and min_baseline_observations < 10
+      and metric <> 'body.mass_kg'),
   0,
   'no personal_rolling default can fire against a thin baseline'
+);
+
+select is(
+  (select min_baseline_observations from public.default_threshold_set()
+    where metric = 'body.mass_kg'),
+  4,
+  'the body-mass default needs four observations — a month of weekly weigh-ins — before it can fire'
 );
 
 -- Athletes are not staff. notify_roles must never carry 'athlete' — a flag reaches the
@@ -320,33 +332,33 @@ select is(
 
 select is(
   public.seed_default_thresholds(tests.uid('newclub','org')),
-  5,
-  'the club''s own coach provisions the five defaults'
+  6,
+  'the club''s own coach provisions the six defaults'
 );
 
 select is(
   (select count(*)::int from public.thresholds
     where org_id = tests.uid('newclub','org') and deleted_at is null
       and source = 'default'),
-  5,
-  'all five land marked source = default, which is what the enum value has always meant'
+  6,
+  'all six land marked source = default, which is what the enum value has always meant'
 );
 
 select is(
   (select count(*)::int from public.thresholds
     where org_id = tests.uid('newclub','org') and deleted_at is null
       and created_by = tests.uid('newclub','user_coach')),
-  5,
+  6,
   'created_by is the coach who applied them, resolved from the JWT and not from any argument'
 );
 
--- The is_active flags survive the insert: four live rules and the compliance rule off.
+-- The is_active flags survive the insert: five live rules and the compliance rule off.
 -- A default set that silently arrived all-active would put the day-one flag storm back.
 select is(
   (select count(*)::int from public.thresholds
     where org_id = tests.uid('newclub','org') and deleted_at is null and is_active),
-  4,
-  'four of the five arrive live'
+  5,
+  'five of the six arrive live'
 );
 
 select is(
@@ -366,8 +378,8 @@ select is(
 select is(
   (select count(*)::int from public.thresholds
     where org_id = tests.uid('newclub','org') and deleted_at is null),
-  5,
-  'still five, not ten'
+  6,
+  'still six, not twelve'
 );
 
 

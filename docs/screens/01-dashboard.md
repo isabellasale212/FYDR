@@ -16,7 +16,7 @@ nutritionist role. It answers one question: who needs me this morning.
 | Sport scientist | Yes | Everything on the page | Nothing. This page only links onward | None | Base. The week load card needs Premium, see section 8 | Route guard, `src/lib/session.ts:69` |
 | Coach | Yes | Everything | Nothing | Clinical detail is not on this page at all | Base | Same guard |
 | Medic | Yes | Everything | Nothing | None | Base | Same guard |
-| S&C | Yes | The S&C version (§4, STAFF-SS-01 C2 role versions, 13 September 2026): the attention card and "Need you" counting load readings only, Gym today, Weigh-ins, Available; no week strip | Nothing | Wellness and compliance flags are not counted on this page (they are on `/flags`) | Base | Same guard; the version from the server-side claims, `lib/dashboardVersion.ts` |
+| S&C | Yes | The S&C version (§4, STAFF-SS-01 C2 role versions, 13 September 2026): the attention card and "Need you" counting load and weigh-in readings only, Gym today, Weigh-ins, Available; no week strip | Nothing | Wellness and compliance flags are not counted on this page (they are on `/flags`) | Base | Same guard; the version from the server-side claims, `lib/dashboardVersion.ts` |
 | Nutritionist | Yes | The nutritionist version (§4, 13 September 2026): the matchday lead card with its three counts and no names; the attention card and "Need you" counting the nutrition domain; Weigh-ins; the Today timeline and Outstanding entries. No week strip | Nothing | The lead card's named lists and the Available tile (the board's choice — "a nutritionist does not pick a team"; the censored availability view itself is theirs since migration 0074) | Base | Same guard; `lib/dashboardVersion.ts` — a nutritionist who also holds a wider role reads that role's version |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, `src/lib/supabase/middleware.ts:84`, then the page guard, then the database |
 
@@ -92,8 +92,10 @@ C2 role versions, 13 September 2026, from the board's frame 7; the rule is
 `lib/dashboardVersion.ts`, resolved from the server-side claims, and roles add
 up — an S&C who is also a coach reads the full dashboard):
 
-- **S&C — four tiles**: Need you (counting load readings only: GPS, session
-  RPE, gym and testing flags — "load readings only ›"), **Gym today** ("9 of 24
+- **S&C — four tiles**: Need you (counting load and weigh-in readings only:
+  GPS, session RPE, gym and testing flags, and the nutrition domain, where the
+  body-mass rule raises (MET-043, 14 September 2026) — "load and weigh-in
+  readings only ›"), **Gym today** ("9 of 24
   logged · Lower A · 16:00": athletes in scope with a gym session log dated
   today, over those expected at today's scheduled gym session; with several the
   first by time is named; with none, "— · No gym session today" and anyone who

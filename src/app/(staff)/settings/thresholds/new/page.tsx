@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { redirect } from 'next/navigation';
 import { ThresholdEditorForm } from '@/components/ThresholdEditorForm/ThresholdEditorForm';
 import { requireStaff } from '@/lib/session';
-import { THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
+import { BODY_MASS_VIEW, THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'New threshold · Fydr' };
 
@@ -21,7 +21,7 @@ export default async function NewThresholdPage() {
         </div>
       </div>
 
-      <ThresholdEditorForm orgId={orgId} userId={claims.userId} />
+      <ThresholdEditorForm orgId={orgId} userId={claims.userId} canSeeBodyMass={hasAnyRole(claims.roles, BODY_MASS_VIEW)} />
     </>
   );
 }

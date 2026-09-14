@@ -5,7 +5,8 @@ import { describeThreshold, fetchThresholdOwnerNames, fetchThresholds } from '@/
 import { thresholdOwnerLine } from '@/lib/thresholdWords';
 import { enumLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
-import { THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
+import { BODY_MASS_VIEW, THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
+import { BODY_MASS_METRIC } from '@/lib/metrics';
 
 export const metadata = { title: 'Thresholds · Fydr' };
 
@@ -101,6 +102,7 @@ export default async function ThresholdsPage() {
               {rows.map((t) => (
                 <ThresholdRow
                   canManage={hasAnyRole(claims.roles, THRESHOLD_EDIT)}
+                  canPreview={t.metric !== BODY_MASS_METRIC || hasAnyRole(claims.roles, BODY_MASS_VIEW)}
                   key={t.id}
                   threshold={t}
                   orgId={orgId}

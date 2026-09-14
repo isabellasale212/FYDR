@@ -142,6 +142,8 @@ const METRIC_COPY: Record<string, MetricCopy> = {
   'wellness.sleep_hours': { what: 'slept', decimals: 1, unit: ' h' },
   'wellness.soreness': { what: 'soreness', decimals: 0, unit: ' of 5' },
   'load.acwr': { what: 'acute to chronic load', decimals: 2, unit: '' },
+  /* MET-043 (migration 0128): "weighed 78.0 kg vs 80.0 kg expected". */
+  'body.mass_kg': { what: 'weighed', decimals: 1, unit: ' kg' },
   'compliance.wellness_7d': {
     what: 'check-ins submitted',
     decimals: 0,

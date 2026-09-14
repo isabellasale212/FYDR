@@ -41,11 +41,18 @@ fires above or below a fixed number regardless of the athlete. A baseline rule
 fires relative to that athlete's own history. The choice is the most consequential
 one on this form.
 
+**Body mass has no choice to make** (MET-043, 14 September 2026): it is only
+ever a change against the athlete's own average — the form offers the three
+change rules and the personal baseline, with a line saying so, and the table
+refuses anything else. The measure is not offered to a coach at all: the coach
+does not see body mass (`access-matrix.md` §3.2), and a rule they could write
+would raise flags they could never read.
+
 ## 6. Every thing you can act on
 
 | Element and label | Where it sits | What happens | Where it goes | What it writes | Permission | Confirmation | Hidden when |
 |---|---|---|---|---|---|---|---|
-| Measure chooser | Top | Picks what to watch | Stays here | Nothing until submitted | Coach | None | Never |
+| Measure chooser | Top | Picks what to watch | Stays here | Nothing until submitted | Coach | None | Never; the body-mass measure is absent for a viewer outside `BODY_MASS_VIEW` |
 | Rule and cutoff | Middle | Sets when it fires | Stays here | Nothing until submitted | Coach | None | Never |
 | Baseline or absolute | Middle | Decides what the cutoff is measured against | Stays here | Nothing until submitted | Coach | None | Never |
 | Notify roles | Lower | Chooses who is told | Stays here | Nothing until submitted | Coach | None | Never |

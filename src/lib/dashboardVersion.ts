@@ -30,10 +30,11 @@ export function dashboardVersion(roles: readonly AppRole[]): DashboardVersion {
 /** The flag domains the version's attention card, "Need you" tile and Flags
  *  badge count — the board's "load and weigh-ins only" for the S&C. Load is
  *  the four domains the thresholds engine raises about training load and
- *  performance (GPS, session RPE, the gym, testing); no threshold exists for body mass (metric_definitions seeds
- *  `wellness.body_mass_kg` ineligible), so a weigh-in never raises a flag in
- *  either version. The nutritionist's is the one domain they may act on. */
-export const LOAD_FLAG_DOMAINS: readonly FlagDomain[] = ['gps', 'training', 'gym', 'testing'];
+ *  performance (GPS, session RPE, the gym, testing); weigh-ins are the
+ *  nutrition domain, where the body-mass rule raises (migration 0128,
+ *  MET-043) — today the only rule in that domain, so "nutrition" here means
+ *  weigh-ins. The nutritionist's is the one domain they may act on. */
+export const LOAD_FLAG_DOMAINS: readonly FlagDomain[] = ['gps', 'training', 'gym', 'testing', 'nutrition'];
 
 export function attentionDomains(version: DashboardVersion): 'all' | readonly FlagDomain[] {
   if (version === 'sc') return LOAD_FLAG_DOMAINS;
@@ -53,7 +54,7 @@ export function dashboardTiles(version: DashboardVersion): readonly DashboardTil
 /** The "Need you" tile's footer names the domains it counts, in the
  *  version's own words; the full dashboard's line is unchanged. */
 export function needYouFoot(version: DashboardVersion): string {
-  if (version === 'sc') return 'load readings only ›';
+  if (version === 'sc') return 'load and weigh-in readings only ›';
   if (version === 'nutritionist') return 'nutrition readings only ›';
   return 'across wellness and GPS ›';
 }

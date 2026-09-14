@@ -12,7 +12,7 @@ acknowledged, noted and dismissed.
 | Role | Can reach the page | What they can see | What they can change | Fields hidden or masked | Tier required | Where this is enforced |
 |---|---|---|---|---|---|---|
 | Sport scientist | Yes | Every flag | Acknowledge, note, dismiss | None | Base | Route guard, then a coach or medic check at `src/app/(staff)/flags/page.tsx:33` |
-| Coach | Yes | Every flag | Acknowledge, note, dismiss | None | Base | Same |
+| Coach | Yes | Every flag **except body mass** (MET-043; the coach does not see body mass at all, `access-matrix.md` §3.2 — withheld at row level security, migration 0128) | Acknowledge, note, dismiss the rest | Body-mass flags entirely | Base | Same, and the database |
 | Medic | Yes | Every flag, **and medical detail where a flag carries it** | Acknowledge, note, dismiss | None | Base | Same, plus a medical check at `:122` |
 | S&C | Yes | Every flag | Acknowledge, note, dismiss | Medical detail | Base | **NOT BUILT** |
 | Nutritionist | Yes | Flags **except** those whose domain is injury or availability | Acknowledge, note, dismiss the rest | Injury and availability flags entirely | Base | **NOT BUILT.** Decision D-01 |
@@ -47,6 +47,7 @@ was raised.
 | MET-001 | Readiness, on a wellness flag | How ready the athlete said they felt | The day | Blank |
 | MET-003 | Sleep hours, on a sleep flag | Hours slept | The day | Blank |
 | MET-010 | The ratio, on a load flag | This week against a typical week | 7 over 28 days | Withheld below 21 days with data |
+| MET-043 | Body mass, on a body-mass flag | The day's weigh-in against the athlete's own mean | The day, against 28 days | Blank; never shown to the coach |
 
 **The observed against expected sentence is the point of a flag card.** A number
 on its own does not tell a coach whether to act; the same number against that

@@ -7,7 +7,7 @@ import { createClient } from '@/lib/supabase/client';
 import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { createThreshold, type BaselineType, type ThresholdComparison } from '@/lib/queries/thresholds';
 import { ThresholdPreview } from '@/components/ThresholdPreview/ThresholdPreview';
-import { METRIC_REGISTRY, getMetricInfo } from '@/lib/metrics';
+import { BODY_MASS_COMPARISONS, BODY_MASS_METRIC, METRIC_REGISTRY, getMetricInfo } from '@/lib/metrics';
 import type { AppRole } from '@/lib/types/database';
 
 const COMPARISONS: { value: ThresholdComparison; label: string }[] = [
@@ -44,9 +44,24 @@ const SEVERITIES = ['low', 'medium', 'high'] as const;
 const NOTIFY_OPTIONS: AppRole[] = ['sport_scientist', 'coach', 'medic', 'strength_conditioning', 'nutritionist'];
 const DEFAULT_METRIC = 'wellness.readiness_score';
 
-type Props = { orgId: string; userId: string };
+type Props = {
+  orgId: string;
+  userId: string;
+  /** Whether this viewer may see body mass (BODY_MASS_VIEW, lib/access.ts).
+   *  The coach may not, so the body-mass measure is not offered to them:
+   *  a rule they could write would raise flags they could never read.
+   *  Data, not a predicate — resolved by the page. */
+  canSeeBodyMass: boolean;
+};
 
-export function ThresholdEditorForm({ orgId, userId }: Props) {
+/* A body-mass rule is a change against the athlete's own baseline, never an
+ * absolute number (migration 0128 refuses the other shape at the table). The
+ * form offers only what the table accepts. */
+function isBodyMass(metric: string): boolean {
+  return metric === BODY_MASS_METRIC;
+}
+
+export function ThresholdEditorForm({ orgId, userId, canSeeBodyMass }: Props) {
   const router = useRouter();
   const [name, setName] = useState('');
   const [metric, setMetric] = useState<string>(DEFAULT_METRIC);
@@ -144,14 +159,29 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
         id="th-metric"
         className="field"
         value={metric}
-        onChange={(event) => setMetric(event.target.value)}
+        onChange={(event) => {
+          const next = event.target.value;
+          setMetric(next);
+          if (isBodyMass(next)) {
+            /* The change shape, and nothing else, for body mass. */
+            if (!(BODY_MASS_COMPARISONS as readonly string[]).includes(comparison)) setComparison('pct_change_below');
+            setBaselineType('personal_rolling');
+          }
+        }}
       >
-        {Object.entries(METRIC_REGISTRY).map(([key, info]) => (
-          <option key={key} value={key}>
-            {info.label}
-          </option>
-        ))}
+        {Object.entries(METRIC_REGISTRY)
+          .filter(([key]) => canSeeBodyMass || !isBodyMass(key))
+          .map(([key, info]) => (
+            <option key={key} value={key}>
+              {info.label}
+            </option>
+          ))}
       </select>
+      {isBodyMass(metric) ? (
+        <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
+          Body mass is watched as a change against the athlete&apos;s own average, never as a fixed number.
+        </p>
+      ) : null}
 
       <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">The rule</legend>
@@ -161,7 +191,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
           onChange={(event) => setComparison(event.target.value as ThresholdComparison)}
           aria-label="Comparison rule"
         >
-          {COMPARISONS.map((c) => (
+          {COMPARISONS.filter((c) => !isBodyMass(metric) || (BODY_MASS_COMPARISONS as readonly string[]).includes(c.value)).map((c) => (
             <option key={c.value} value={c.value}>
               {c.label}
             </option>
@@ -197,7 +227,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
 
       <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">Compare against</legend>
-        {BASELINES.map((b) => (
+        {BASELINES.filter((b) => !isBodyMass(metric) || b.value === 'personal_rolling').map((b) => (
           <label
             key={b.value}
             style={{ display: 'block', marginTop: 'var(--sp-8)', cursor: 'pointer' }}

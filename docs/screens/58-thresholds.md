@@ -58,6 +58,7 @@ and is not run on page load.
 | Metric ID | Label on screen | What it means | Time window | When missing |
 |---|---|---|---|---|
 | Various | The measure each rule watches | Any metric in the registry | As the rule sets | A rule on a measure with no data never fires |
+| MET-043 | Body mass, on the "Body mass dropped" rule | The day's weigh-in against the athlete's own rolling mean — a change only, never a fixed number; the table refuses the other shape | The day, against 28 days by default | Fewer than four prior weigh-ins: cannot fire |
 
 **This screen is the authority on flag cutoffs, not the app's code.** Anywhere
 Fydr shows a band around a number, such as the 0.8 to 1.5 drawn around the acute
@@ -69,7 +70,7 @@ raises a flag is here.** The two can differ and nothing reconciles them.
 | Element and label | Where it sits | What happens | Where it goes | What it writes | Permission | Confirmation | Hidden when |
 |---|---|---|---|---|---|---|---|
 | A threshold | The list | Opens it for editing | Stays here | Updates the threshold, keeping a revision | Coach and sport scientist | Form submission | **Not built** for view only roles |
-| Preview the last 28 days | Under each rule | Reads which athletes the rule would have flagged in the last 28 days, with the denominator | Stays here | **Nothing** | Coach and sport scientist (the database answers nobody else) | None | For every other role |
+| Preview the last 28 days | Under each rule | Reads which athletes the rule would have flagged in the last 28 days, with the denominator | Stays here | **Nothing** | Coach and sport scientist (the database answers nobody else) | None | For every other role; and for the coach on the body-mass rule, whose preview names athletes by their weight (the coach does not see body mass at all, `access-matrix.md` §3.2) |
 | New threshold | Header | Opens the create screen | `/settings/thresholds/new` | Nothing | **Coach only today** | None | Refuses a medic |
 | Notify roles | A threshold | Chooses who is told when it fires | Stays here | Updates the threshold | Coach and sport scientist | Form submission | **Not built** |
 

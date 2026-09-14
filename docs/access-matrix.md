@@ -119,6 +119,7 @@ open it. See section 4.1.
 | New nutrition target | VC | X | X | X | VC |
 | Body mass target ranges | VEC | V | V | V | VEC |
 | Body mass (weigh-ins, the latest figure, the trend, the export columns) | V | **X** | V | V | V |
+| Body-mass flags (MET-043, metric `body.mass_kg`) | VE | **X** | VE | VE | VE |
 
 **The coach does not see body mass at all** — decided by Isabella 12 September
 2026 (STAFF-SS-02-05 C9, Q27 of the data-architecture briefing). The set is
@@ -130,6 +131,18 @@ export is refused. Hiding UI only: the athlete's own morning check-in carries
 `body_mass_kg` on `wellness_entries`, which the coach can still read at the
 database — gating that column at RLS is the other half, recorded on the
 decision sheet.
+
+**Body-mass flags follow the same rule, and at the database** (migration 0128,
+14 September 2026). A flag on `body.mass_kg` carries the weigh-in as its
+observed value, so `flags_staff_select` and `flags_staff_update` withhold that
+metric from anyone outside `BODY_MASS_VIEW`; the rule preview
+(`preview_threshold_rule`) answers the coach with nothing for it; the threshold
+editor does not offer the coach the measure; and a rule on it cannot name the
+coach in `notify_roles` (`thresholds_body_mass_not_to_coach`). Roles are
+unions: a coach who also holds S&C reads them. The athlete's own read is
+unchanged. Not gated: the rule's sentence on `/settings/thresholds` (no
+athlete, no figure) and `flag_actions` (staff notes under a flag the coach
+cannot open). Test: `supabase/tests/830_body_mass_threshold_test.sql`.
 
 ### 3.4 Analysis
 

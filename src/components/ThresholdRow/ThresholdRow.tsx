@@ -25,9 +25,15 @@ type Props = {
    *  happened, with no error. Resolved from the matching set in lib/access.ts
    *  by the page. */
   canManage: boolean;
+  /** Whether the 28-day preview is offered. Off for a coach on a body-mass
+   *  rule: the preview names the athletes whose weight moved and the coach
+   *  does not see body mass at all (access-matrix §3.2) — the RPC answers
+   *  them with nothing, and "Nobody in scope" would be a lie. Absent, not
+   *  locked, as every body-mass surface is for the coach. */
+  canPreview: boolean;
 };
 
-export function ThresholdRow({ threshold, orgId, sentence, ownerLine, canManage }: Props) {
+export function ThresholdRow({ threshold, orgId, sentence, ownerLine, canManage, canPreview }: Props) {
   const router = useRouter();
   const [confirmingArchive, setConfirmingArchive] = useState(false);
   const [error, setError] = useState<string | null>(null);
@@ -103,7 +109,7 @@ export function ThresholdRow({ threshold, orgId, sentence, ownerLine, canManage 
             away a read the matrix grants. */}
         {/* PATTERN-S8 C6: the 28-day preview on demand, for the roles that
             configure rules (the RPC answers nobody else). */}
-        {canManage ? (
+        {canManage && canPreview ? (
           <span style={{ display: 'block', marginTop: 'var(--sp-8)' }}>
             <ThresholdPreview kind="saved" thresholdId={threshold.id} />
           </span>

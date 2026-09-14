@@ -49,7 +49,7 @@ console.log('\n2. what each version draws');
 console.log('\n3. the attention domains — "load and weigh-ins only" for the S&C, their own domain for the nutritionist');
 {
   assert(attentionDomains('full') === 'all', 'the full dashboard counts every domain');
-  assert(attentionDomains('sc') === LOAD_FLAG_DOMAINS && JSON.stringify(LOAD_FLAG_DOMAINS) === JSON.stringify(['gps', 'training', 'gym', 'testing']), 'the S&C counts GPS, session RPE, gym and testing flags');
+  assert(attentionDomains('sc') === LOAD_FLAG_DOMAINS && JSON.stringify(LOAD_FLAG_DOMAINS) === JSON.stringify(['gps', 'training', 'gym', 'testing', 'nutrition']), 'the S&C counts GPS, session RPE, gym, testing and weigh-in (nutrition) flags');
   assert(!LOAD_FLAG_DOMAINS.includes('wellness') && !LOAD_FLAG_DOMAINS.includes('compliance'), 'and not wellness or compliance');
   const n = attentionDomains('nutritionist');
   assert(n !== 'all' && n.length === 1 && n[0] === NUTRITIONIST_FLAG_DOMAIN, 'the nutritionist counts the nutrition domain — the same word the flag-edit policy uses');

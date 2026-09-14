@@ -214,7 +214,14 @@ every chart points one way" (`supabase/migrations/0004_athlete_entries.sql:25`).
 
 **Exact calculation.** None, recorded as entered.
 
-**Inputs.** `wellness_entries.body_mass_kg`.
+**Inputs.** Two, and this entry used to name only the first.
+`wellness_entries.body_mass_kg` is the figure the athlete may type on the
+morning check-in (the athlete app's Me page reads it).
+`body_composition.body_mass_kg` is a staff-logged weigh-in — the dashboard's
+own definition of a weigh-in, and what the athlete profile's Body weight card,
+the nutrition workspace and the exports read. *Corrected 14 September 2026 from
+the running code; the two are not reconciled on screen (the profile shows the
+weigh-in, the Me page the check-in figure) — recorded on the decision sheet.*
 
 **Screens.** Athlete profile, nutrition, body composition, leaderboards,
 analytics.
@@ -226,7 +233,8 @@ rather than an access rule.
 **Where it is built.** Stored directly. Seeded as a rankable metric at
 `supabase/migrations/0016_leaderboards.sql`.
 
-**Related.** MET-006 is the trend line drawn from it.
+**Related.** MET-006 is the trend line drawn from it. MET-043 is the change
+in it that raises a flag.
 
 ---
 
@@ -1638,3 +1646,69 @@ scientist write it. Base.
 
 **Where it is built.** `supabase/migrations/0127_match_participation.sql`;
 `src/lib/matchReport.ts` holds the words.
+
+---
+
+## MET-043. Body mass change
+
+**Name on screen.** Body mass, on a flag card and on the threshold rule
+("Body mass dropped").
+
+**Surfaces.** Staff app: the flags screen, the dashboard attention card
+(the nutritionist's, and the S&C's "load and weigh-ins"), the athlete
+profile's flags panel. The athlete reads their own flag once staff have
+acknowledged it, like every flag.
+
+**What it means.** The athlete's weight today against what is normal for them
+lately. A drop of more than two per cent is the signal a nutritionist and an
+S&C want to hear about: under-fuelling, illness, or dehydration carried into a
+session.
+
+**Exact calculation.** A threshold on the metric key `body.mass_kg`, evaluated
+by the nightly sweep (MET-016's engine, migrations 0052 and 0053) like any
+other rule. **Only ever a change**: a percentage drop or rise against the
+athlete's own rolling mean, or a z-score against it — never an absolute number.
+The table refuses the absolute shape (`thresholds_body_mass_is_a_change`).
+
+The day's figure = the staff weigh-in measured that day
+(`body_composition.body_mass_kg`, the latest logged if one was re-entered),
+else the figure the athlete typed on that day's check-in
+(`wellness_entries.body_mass_kg`, current revision). The baseline is the mean
+of those day figures over the trailing `baseline_days` days ending yesterday.
+
+The default rule: `pct_change_below 2`, 28-day personal baseline, one day,
+four observations before it can fire, seven days' cooldown, medium, notifying
+the nutritionist and the S&C.
+
+**Inputs.** MET-005's two sources, merged per day as above.
+
+**Time window.** The day, against the trailing 28 days by default.
+
+**Rounding and units.** Kilograms, one decimal, on the flag's observed and
+expected values.
+
+**When data is missing.** A day with neither a weigh-in nor a check-in figure
+is a gap: no value, no breach, no reset (0053's gap rule). Fewer than four
+prior observations in the baseline window: the rule cannot fire.
+
+**Screens.** Flags, dashboard, athlete profile (flags panel), thresholds.
+
+**Roles and tier.** **Not the coach.** The coach does not see body mass at all
+(`docs/access-matrix.md` §3.2), so flags on this metric are withheld from the
+coach at row level security, the rule preview answers them with nothing, the
+editor does not offer them the measure, and a rule on it cannot name the coach
+among the roles it notifies. Sport scientist, S&C, nutritionist and medic read
+and act on them. Base.
+
+**Where it is built.** `supabase/migrations/0128_body_mass_flaggable.sql`;
+`src/lib/metrics.ts` (`body.mass_kg`); the default rule in
+`default_threshold_set()`.
+
+**How it differs from its twin.** MET-005 is the quantity, recorded as
+entered, and the leaderboard catalogue's `wellness.body_mass_kg` (never
+rankable). This is the same quantity read for a different purpose — a flag on
+its change — under a different key, in the nutrition domain, from both sources
+rather than one. Two purposes, two identifiers.
+
+**Related.** MET-005, MET-036 (the target range, a different question: where
+the weight should sit, not whether it has moved).

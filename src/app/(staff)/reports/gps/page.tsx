@@ -1059,12 +1059,12 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
                               {delta}
                             </span>
                           </div>
-                          <p className="tiny" style={{ color: 'var(--muted)', margin: 'var(--s-2) 0 0' }}>
+                          <p className="tiny" style={{ color: 'var(--muted)', margin: '3px 0 0' }}>
                             {r.last_name} ran {up ? 'more' : 'less'} high speed running than a normal {selected.title}{' '}
                             for {up ? 'them' : 'them'}.
                           </p>
                           {/* Fydr's copy rule: never shorten an evidence line. */}
-                          <p className="tiny num" style={{ color: 'var(--faint)', margin: 'var(--s-2) 0 0' }}>
+                          <p className="tiny num" style={{ color: 'var(--faint)', margin: '3px 0 0' }}>
                             today {Math.round(r.hsr ?? 0).toLocaleString('en-GB')} m · their mean{' '}
                             {Math.round(r.hsr_self_mean ?? 0).toLocaleString('en-GB')} m · n = {r.hsr_self_n} sessions
                           </p>

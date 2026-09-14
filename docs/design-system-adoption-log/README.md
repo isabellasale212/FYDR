@@ -5,9 +5,12 @@ One file per area, written by the repointing script as it ran on 15 September
 moved onto a token, by file and line, with the token; and every raw value it
 left as a literal, with the reason. A value with no exact token was left unless
 the nearest was one pixel away on the spacing grid (the inventory's own
-definition of imperceptible) — those moves are marked "nudged" in the Note
-column, ten of them in all, every one 1px. Nothing was moved further to fit a
-token, and no token was invented to keep a stray number.
+definition of imperceptible). Ten such moves were made in the style objects,
+every one 1px — and every one was put back after the six-screen render: a
+pixel on a row margin repeats on every row and compounds (10px down a five-row
+list on the GPS report). They are marked REVERTED in the Note column and stay
+literals. So nothing was moved to fit a token, and no token was invented to
+keep a stray number.
 
 | File | Area |
 |---|---|

@@ -36,9 +36,9 @@
 | src/app/(staff)/programmes/page.tsx | 264 | padding | 10px 12px | var(--s-5) var(--s-6) |  |
 | src/app/(staff)/leaderboards/[leaderboardId]/page.tsx | 229 | margin | 8px 0 0 | var(--s-4) 0 0 |  |
 | src/app/(staff)/leaderboards/[leaderboardId]/page.tsx | 246 | margin | 14px 0 | var(--s-7) 0 |  |
-| src/app/(staff)/reports/page.tsx | 248 | padding | 2px 9px | var(--s-1) var(--s-5) | nudged 9→10px (1px, imperceptible) |
-| src/app/(staff)/reports/gps/page.tsx | 1062 | margin | 3px 0 0 | var(--s-2) 0 0 | nudged 3→4px (1px, imperceptible) |
-| src/app/(staff)/reports/gps/page.tsx | 1067 | margin | 3px 0 0 | var(--s-2) 0 0 | nudged 3→4px (1px, imperceptible) |
+| src/app/(staff)/reports/page.tsx | 248 | padding | 2px 9px | var(--s-1) var(--s-5) | REVERTED to 9px after render, with the exact term kept on its token — a 1px nudge that repeats across chips; left as a literal |
+| src/app/(staff)/reports/gps/page.tsx | 1062 | margin | 3px 0 0 | var(--s-2) 0 0 | REVERTED to 3px after render: the nudge repeats on every row of the list and compounds (10px over five rows on the GPS report) — left as a literal |
+| src/app/(staff)/reports/gps/page.tsx | 1067 | margin | 3px 0 0 | var(--s-2) 0 0 | REVERTED to 3px after render: the nudge repeats on every row of the list and compounds (10px over five rows on the GPS report) — left as a literal |
 | src/app/(staff)/reports/training-load/page.tsx | 105 | margin | 0 0 10px | 0 0 var(--s-5) |  |
 | src/app/(staff)/reports/training-load/page.tsx | 110 | margin | 0 0 10px | 0 0 var(--s-5) |  |
 | src/app/(staff)/reports/match/page.tsx | 84 | margin | 0 0 10px | 0 0 var(--s-5) |  |
@@ -49,7 +49,7 @@
 | src/app/(staff)/reports/testing/page.tsx | 134 | margin | 0 0 10px | 0 0 var(--s-5) |  |
 | src/app/(staff)/reports/testing/page.tsx | 256 | margin | 0 16px 16px | 0 var(--s-8) var(--s-8) |  |
 | src/app/(staff)/reports/testing/page.tsx | 416 | padding | 16px 16px 0 | var(--s-8) var(--s-8) 0 |  |
-| src/app/(staff)/reports/testing/page.tsx | 427 | padding | 9px 16px | var(--s-5) var(--s-8) | nudged 9→10px (1px, imperceptible) |
+| src/app/(staff)/reports/testing/page.tsx | 427 | padding | 9px 16px | var(--s-5) var(--s-8) | REVERTED to 9px after render, with the exact term kept on its token — a 1px nudge that repeats across chips; left as a literal |
 | src/app/(staff)/reports/injuries/page.tsx | 285 | padding | 0 0 14px | 0 0 var(--s-7) |  |
 | src/app/(staff)/reports/injuries/page.tsx | 444 | margin | 6px 0 12px | var(--s-3) 0 var(--s-6) |  |
 | src/app/(staff)/reports/injuries/page.tsx | 500 | margin | 6px 0 12px | var(--s-3) 0 var(--s-6) |  |
@@ -65,20 +65,20 @@
 | src/app/(athlete)/my-data/page.tsx | 1189 | margin | 4px 0 0 | var(--s-2) 0 0 |  |
 | src/app/(athlete)/my-data/gym/[gymSessionLogId]/page.tsx | 118 | padding | 16px 16px 0 | var(--s-8) var(--s-8) 0 |  |
 | src/app/(athlete)/my-data/gym/[gymSessionLogId]/page.tsx | 162 | margin | 4px 0 0 | var(--s-2) 0 0 |  |
-| src/app/(athlete)/report-problem/page.tsx | 87 | padding | 13px var(--pad-card) | var(--s-7) var(--pad-card) | nudged 13→14px (1px, imperceptible) |
+| src/app/(athlete)/report-problem/page.tsx | 87 | padding | 13px var(--pad-card) | var(--s-7) var(--pad-card) | REVERTED to 13px after render — left as a literal |
 | src/app/(athlete)/rpe/[sessionId]/page.tsx | 138 | padding | 0 0 14px | 0 0 var(--s-7) |  |
 | src/components/NewFixtureForm/NewFixtureForm.tsx | 131 | margin | 14px 0 0 | var(--s-7) 0 0 |  |
 | src/components/NewFixtureForm/NewFixtureForm.tsx | 170 | margin | 14px 0 0 | var(--s-7) 0 0 |  |
-| src/components/FlagNotice/FlagNotice.tsx | 40 | padding | 2px 9px | var(--s-1) var(--s-5) | nudged 9→10px (1px, imperceptible) |
+| src/components/FlagNotice/FlagNotice.tsx | 40 | padding | 2px 9px | var(--s-1) var(--s-5) | REVERTED to 9px after render, with the exact term kept on its token — a 1px nudge that repeats across chips; left as a literal |
 | src/components/Sidebar/Sidebar.tsx | 232 | margin | 0 0 10px | 0 0 var(--s-5) |  |
 | src/components/PlanGate/PlanGate.tsx | 65 | margin | 14px 0 0 | var(--s-7) 0 0 |  |
 | src/components/ScheduleGrid/SelectedSessionPanel.tsx | 255 | padding | 8px 10px | var(--s-4) var(--s-5) |  |
-| src/components/ScheduleGrid/SelectedSessionPanel.tsx | 427 | padding | 5px 12px | var(--s-3) var(--s-6) | nudged 5→6px (1px, imperceptible) |
+| src/components/ScheduleGrid/SelectedSessionPanel.tsx | 427 | padding | 5px 12px | var(--s-3) var(--s-6) | REVERTED to 5px after render, with the exact term kept on its token — left as a literal |
 | src/components/ScheduleGrid/SelectedSessionPanel.tsx | 445 | margin | 0 0 14px | 0 0 var(--s-7) |  |
 | src/components/BodyWeightPanel/BodyWeightPanel.tsx | 329 | margin | 4px 0 2px | var(--s-2) 0 var(--s-1) |  |
 | src/components/NotificationPreferencesForm/NotificationPreferencesForm.tsx | 141 | padding | 12px 16px | var(--s-6) var(--s-8) |  |
-| src/components/PlayerProfileFlags/PlayerProfileFlags.tsx | 185 | padding | 2px 9px | var(--s-1) var(--s-5) | nudged 9→10px (1px, imperceptible) |
-| src/components/PlayerProfileFlags/PlayerProfileFlags.tsx | 189 | padding | 2px 9px | var(--s-1) var(--s-5) | nudged 9→10px (1px, imperceptible) |
+| src/components/PlayerProfileFlags/PlayerProfileFlags.tsx | 185 | padding | 2px 9px | var(--s-1) var(--s-5) | REVERTED to 9px after render, with the exact term kept on its token — a 1px nudge that repeats across chips; left as a literal |
+| src/components/PlayerProfileFlags/PlayerProfileFlags.tsx | 189 | padding | 2px 9px | var(--s-1) var(--s-5) | REVERTED to 9px after render, with the exact term kept on its token — a 1px nudge that repeats across chips; left as a literal |
 | src/components/PlayerProfileFlags/PlayerProfileFlags.tsx | 235 | margin | 6px 0 0 | var(--s-3) 0 0 |  |
 | src/components/PlayerProfileFlags/PlayerProfileFlags.tsx | 241 | margin | 6px 0 0 | var(--s-3) 0 0 |  |
 | src/components/FixtureEditForm/FixtureEditForm.tsx | 107 | margin | 14px 0 0 | var(--s-7) 0 0 |  |
@@ -125,7 +125,7 @@
 | src/components/GroupEditorForm/GroupEditorForm.tsx | 110 | margin | 14px 0 0 | var(--s-7) 0 0 |  |
 | src/components/MfaEnrollment/MfaEnrollment.tsx | 254 | margin | 10px 0 | var(--s-5) 0 |  |
 | src/components/WeekTemplateBuilder/WeekTemplateBuilder.tsx | 165 | padding | 4px 0 | var(--s-2) 0 |  |
-| src/components/WeekTemplateBuilder/WeekTemplateBuilder.tsx | 267 | padding | 5px 12px | var(--s-3) var(--s-6) | nudged 5→6px (1px, imperceptible) |
+| src/components/WeekTemplateBuilder/WeekTemplateBuilder.tsx | 267 | padding | 5px 12px | var(--s-3) var(--s-6) | REVERTED to 5px after render, with the exact term kept on its token — left as a literal |
 | src/components/WeekTemplateBuilder/WeekTemplateBuilder.tsx | 285 | padding | 4px 8px | var(--s-2) var(--s-4) |  |
 | src/components/WeekTemplateBuilder/WeekTemplateBuilder.tsx | 291 | padding | 4px 8px | var(--s-2) var(--s-4) |  |
 | src/components/WeekTemplateBuilder/WeekTemplateBuilder.tsx | 297 | padding | 4px 8px | var(--s-2) var(--s-4) |  |

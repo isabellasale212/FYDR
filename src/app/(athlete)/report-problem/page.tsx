@@ -84,7 +84,7 @@ export default async function ReportProblemPage({
                     owes the distance to the card's border itself, and an inline
                     14px was overriding the rule that does that. Vertical stays
                     13 — that is this list's own row rhythm. */
-                style={{ gridTemplateColumns: 'minmax(0, 1fr) auto', padding: 'var(--s-7) var(--pad-card)' }}>
+                style={{ gridTemplateColumns: 'minmax(0, 1fr) auto', padding: '13px var(--pad-card)' }}>
                   <div style={{ minWidth: 0 }}>
                     <div className="tiny" style={{ marginBottom: 'var(--sp-4)' }}>
                       {formatDateTime(r.created_at, timezone)}

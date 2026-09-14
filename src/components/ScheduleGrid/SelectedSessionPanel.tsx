@@ -424,7 +424,7 @@ export function SelectedSessionPanel({
              the session IS, and this is a screen people click around on — the
              three below (start, duration, groups) are adjustments and stay
              live. Opening these needs one deliberate press. */
-          <button type="button" className="btn-ghost" style={{ minHeight: 32, padding: 'var(--s-3) var(--s-6)' }} onClick={onUnlock}>
+          <button type="button" className="btn-ghost" style={{ minHeight: 32, padding: '5px var(--s-6)' }} onClick={onUnlock}>
             Edit
           </button>
         ) : (

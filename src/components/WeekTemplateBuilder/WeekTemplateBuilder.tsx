@@ -264,7 +264,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)' }}>
               <span style={{ fontWeight: 'var(--w-bold)', fontSize: 'var(--fs-14)' }}>{mdLabel(day.mdOffset)}</span>
               {day.sessions.length === 0 ? <span className="tiny" style={{ color: 'var(--faint)' }}>Off. Nothing scheduled.</span> : null}
-              <button type="button" className="btn-ghost" style={{ marginLeft: 'auto', minHeight: 32, padding: 'var(--s-3) var(--s-6)' }} onClick={() => setEditingPosition(day.mdOffset)}>
+              <button type="button" className="btn-ghost" style={{ marginLeft: 'auto', minHeight: 32, padding: '5px var(--s-6)' }} onClick={() => setEditingPosition(day.mdOffset)}>
                 + session
               </button>
             </div>

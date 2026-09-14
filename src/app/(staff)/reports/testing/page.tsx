@@ -424,7 +424,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                           longitudinal.map((p, i) => (
                             <div key={p.date}>
                               {i > 0 ? <div className="hair" /> : null}
-                              <div className="load-row" style={{ gridTemplateColumns: '1fr auto auto', padding: 'var(--s-5) var(--s-8)' }}>
+                              <div className="load-row" style={{ gridTemplateColumns: '1fr auto auto', padding: '9px var(--s-8)' }}>
                                 <span className="sub num">{formatDate(p.date, timezone)}</span>
                                 <span className="tiny">n = {p.n}{p.median === null ? ' · fewer than five' : ''}</span>
                                 <span className="num nm">

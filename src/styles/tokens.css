@@ -296,7 +296,11 @@
      in-list gap (14px, --gap-stack) was judged beside it at 375×812 and left. */
   --gap-body: 20px;
   --gap-grid: 12px;
-  --pad-card: 16px;
+  /* 18px since 15 Sept 2026 — Isabella's ruling (docs/decisions/
+     design-system-adoption.md): System A's card padding, replacing 16px on
+     every card. Visible, and wanted: the product replicates the system.
+     Rendered on the six screens before committing. */
+  --pad-card: 18px;
   --pad-field: 12px 14px;
 
   /* §2.7 TYPE SCALE. Sixteen steps in rem, added 2026-09-09.
@@ -670,10 +674,8 @@
 
   /* ---- named jobs. --gap-card and --gap-tile are the jobs this file
          already names as --gap-stack (14px) and --gap-grid (12px), so they
-         alias rather than restate. --pad-card COLLIDES: System A's card
-         padding is 18px, this file's --pad-card is 16px and is read by
-         every card; a 2px move on every card is visible, so this file's
-         value stands and the collision is in the report. The rest are
+         alias rather than restate. --pad-card (above, 18px since the
+         15 Sept ruling) is System A's value on every card. The rest are
          System A's and new, read by nothing yet. ---- */
   --gap-card: var(--gap-stack);
   --gap-tile: var(--gap-grid);

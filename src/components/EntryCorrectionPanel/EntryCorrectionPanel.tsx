@@ -261,7 +261,7 @@ function CorrectedPill({ by, at, timezone }: { by: string | null; at: string | n
      * discourage anyone from making one. */
     <span
       className="pill pill-neutral"
-      style={{ marginInlineStart: 6 }}
+      style={{ marginInlineStart: 'var(--s-3)' }}
       title={
         at
           ? `Corrected ${formatDateTime(at, timezone)}${by ? ` by ${by}` : ''}`
@@ -302,7 +302,7 @@ function HistoryCell<T extends { id: string; submitted_at: string | null }>({
             The version this replaced is older than the {WINDOW_LABEL} shown here.
           </p>
         ) : (
-          <ol className="cap" style={{ margin: 0, paddingInlineStart: 18 }}>
+          <ol className="cap" style={{ margin: 0, paddingInlineStart: 'var(--s-9)' }}>
             {row.priorRevisions.map((rev) => (
               <li key={rev.id} className="num">
                 {render(rev)}
@@ -345,7 +345,7 @@ function ActionsCell({
         <button
           type="button"
           className="btn-ghost"
-          style={{ padding: 'var(--s-2) var(--s-5)', marginInlineEnd: 6 }}
+          style={{ padding: 'var(--s-2) var(--s-5)', marginInlineEnd: 'var(--s-3)' }}
           onClick={onToggleHistory}
           aria-expanded={historyOpen}
         >

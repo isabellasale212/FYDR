@@ -84,7 +84,7 @@ export default async function SubjectAccessPage({ searchParams }: { searchParams
                   <td className="num sub" data-label="Due">
                     {formatLongDate(r.due_at, timezone)}
                     {due ? (
-                      <span className={`sub ${due.tone === 'bad' ? 'g-bad' : due.tone === 'warn' ? 'g-warn' : ''}`} style={{ marginInlineStart: 6 }}>
+                      <span className={`sub ${due.tone === 'bad' ? 'g-bad' : due.tone === 'warn' ? 'g-warn' : ''}`} style={{ marginInlineStart: 'var(--s-3)' }}>
                         ({due.text})
                       </span>
                     ) : null}

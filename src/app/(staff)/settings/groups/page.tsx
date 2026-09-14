@@ -152,7 +152,7 @@ export default async function GroupsPage() {
                     alignItems: 'center',
                     gap: 'var(--sp-8)',
                     borderTop: '1px solid var(--hair)',
-                    paddingInlineEnd: 10,
+                    paddingInlineEnd: 'var(--s-5)',
                   }}
                 >
                   {/* §0az: the arrows render for every role; a role outside

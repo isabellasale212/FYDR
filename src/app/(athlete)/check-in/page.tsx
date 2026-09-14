@@ -128,7 +128,7 @@ export default async function CheckInPage({
             <h2 className="after-heading">
               Already submitted
               {corrected ? (
-                <span className="pill pill-neutral" style={{ marginInlineStart: 8, verticalAlign: 'middle' }}>
+                <span className="pill pill-neutral" style={{ marginInlineStart: 'var(--s-4)', verticalAlign: 'middle' }}>
                   Corrected
                 </span>
               ) : null}

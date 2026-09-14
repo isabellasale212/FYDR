@@ -201,7 +201,7 @@ export default async function MyBoardDetailPage({
                     <td className="nm">
                       {isSelf ? (
                         <>
-                          <span className="pill pill-accent" style={{ marginInlineEnd: 8 }}>
+                          <span className="pill pill-accent" style={{ marginInlineEnd: 'var(--s-4)' }}>
                             YOU
                           </span>
                           {row.first_name} {row.last_name}
@@ -227,7 +227,7 @@ export default async function MyBoardDetailPage({
                     {own.position}
                   </td>
                   <td className="nm">
-                    <span className="pill pill-accent" style={{ marginInlineEnd: 8 }}>
+                    <span className="pill pill-accent" style={{ marginInlineEnd: 'var(--s-4)' }}>
                       YOU
                     </span>
                     {own.first_name} {own.last_name}

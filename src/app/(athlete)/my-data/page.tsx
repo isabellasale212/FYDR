@@ -960,7 +960,7 @@ async function WellnessTab({
                   <p className="hist-date">
                     {formatDate(date, timezone)}
                     {corrected ? (
-                      <span className="pill pill-neutral" style={{ marginInlineStart: 6 }}>
+                      <span className="pill pill-neutral" style={{ marginInlineStart: 'var(--s-3)' }}>
                         Corrected
                       </span>
                     ) : null}
@@ -999,7 +999,7 @@ async function WellnessTab({
                       : 'What you reported:'}
                   </p>
                   {corrected.priorRevisions.length > 0 ? (
-                    <ol className="cap" style={{ margin: 'var(--s-2) 0 0', paddingInlineStart: 18 }}>
+                    <ol className="cap" style={{ margin: 'var(--s-2) 0 0', paddingInlineStart: 'var(--s-9)' }}>
                       {corrected.priorRevisions.map((rev) => (
                         <li key={rev.id} className="num">
                           {`sleep ${dash(rev.sleep_hours)} h · quality ${dash(
@@ -1156,12 +1156,12 @@ async function TrainingTab({
                           <td className="sub">
                             {enumLabel(session.session_type)}
                             {session.status === 'cancelled' ? (
-                              <span className="pill pill-bad" style={{ marginInlineStart: 6 }}>
+                              <span className="pill pill-bad" style={{ marginInlineStart: 'var(--s-3)' }}>
                                 Cancelled
                               </span>
                             ) : null}
                             {corrected ? (
-                              <span className="pill pill-neutral" style={{ marginInlineStart: 6 }}>
+                              <span className="pill pill-neutral" style={{ marginInlineStart: 'var(--s-3)' }}>
                                 Corrected
                               </span>
                             ) : null}
@@ -1186,7 +1186,7 @@ async function TrainingTab({
                               {corrected.priorRevisions.length > 0 ? (
                                 <ol
                                   className="cap"
-                                  style={{ margin: 'var(--s-2) 0 0', paddingInlineStart: 18 }}
+                                  style={{ margin: 'var(--s-2) 0 0', paddingInlineStart: 'var(--s-9)' }}
                                 >
                                   {corrected.priorRevisions.map((rev) => (
                                     <li key={rev.id} className="num">
@@ -1292,7 +1292,7 @@ async function NutritionTab({
                           neutral pill and what it was. */}
                       {c.prior ? (
                         <>
-                          <span className="pill pill-neutral" style={{ marginInlineStart: 8, verticalAlign: 'middle' }}>
+                          <span className="pill pill-neutral" style={{ marginInlineStart: 'var(--s-4)', verticalAlign: 'middle' }}>
                             Corrected
                           </span>
                           <span className="sub" style={{ display: 'block', marginTop: 'var(--sp-2)' }}>
@@ -2025,7 +2025,7 @@ async function GymTab({
                     {/* ATH-ADULT-13 C3: the same neutral pill the wellness and
                         RPE rows carry, off the live sets' revision_of. */}
                     {s.corrected ? (
-                      <span className="pill pill-neutral" style={{ marginInlineStart: 8, verticalAlign: 'middle' }}>
+                      <span className="pill pill-neutral" style={{ marginInlineStart: 'var(--s-4)', verticalAlign: 'middle' }}>
                         Corrected
                       </span>
                     ) : null}

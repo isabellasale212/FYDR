@@ -271,7 +271,7 @@ export default async function AthleteWellnessPage({
           <p className="pp-goal-line" style={{ marginTop: 'var(--sp-10)' }}>
             <span className="pp-goal-label">Availability:</span>{' '}
             <Pill status={availabilityStatus(athlete.availability?.status ?? null)} />
-            <span className="cap" style={{ marginInlineStart: 8 }}>
+            <span className="cap" style={{ marginInlineStart: 'var(--s-4)' }}>
               status only &mdash; clinical detail is medical&apos;s, not this page&apos;s
             </span>
           </p>

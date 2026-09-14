@@ -159,7 +159,7 @@ export default async function GymSessionHistoryPage({
               .join(' ')}{' '}
             Both values are kept on record.
           </p>
-          <ol className="cap" style={{ margin: 'var(--s-2) 0 0', paddingInlineStart: 18 }}>
+          <ol className="cap" style={{ margin: 'var(--s-2) 0 0', paddingInlineStart: 'var(--s-9)' }}>
             {corrected.map((c) => (
               <li key={c.current.id} className="num">
                 {`Set ${c.current.set_number}: `}

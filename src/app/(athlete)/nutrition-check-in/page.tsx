@@ -126,7 +126,7 @@ export default async function NutritionCheckInPage({
           <div className="after-card">
             <h2 className="after-heading">
               Already answered
-              <span className="pill pill-neutral" style={{ marginInlineStart: 8, verticalAlign: 'middle' }}>
+              <span className="pill pill-neutral" style={{ marginInlineStart: 'var(--s-4)', verticalAlign: 'middle' }}>
                 Corrected
               </span>
             </h2>

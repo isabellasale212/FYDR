@@ -115,12 +115,14 @@ console.log('\n4. the CSS, below 768 only');
   const tokens = read('src/styles/tokens.css');
   /* The day-one rule that nothing from the Claude Design kit enters the code
      was WITHDRAWN on 14 Sept 2026 (docs/decisions/design-system-adoption.md):
-     the product adopts System A, and its colour and shape names — --scrim,
-     --tabbar-bg, --shadow-raised, --r-sheet — arrive in layers one and two.
-     What this still pins is that layer three's names (type, spacing, motion)
-     are not in the file until that layer is built, and that this shell keeps
-     reading the tokens it was built on. */
-  assert(!/--touch-min|--bar-blur|--tabbar-pad|--t-pill/.test(tokens), 'the layer-three names (--touch-min, --bar-blur, --tabbar-pad, --t-pill) are not tokens yet');
+     the product adopts System A. Its colour and shape names arrived in
+     layers one and two, its type, spacing and motion names in layer three
+     (15 Sept). What this still pins is that the shell keeps reading the
+     tokens it was built on (the assertions above) and that --bar-blur — the
+     one shape.css name the shell's own rules were written not to need — is
+     still not read by the shell. */
+  assert(/--touch-min:|--tabbar-pad:|--t-pill:/.test(tokens), 'the layer-three names (--touch-min, --tabbar-pad, --t-pill) are tokens now');
+  assert(!/var\(--bar-blur\)/.test(pb), 'and the shell reads no --bar-blur — its bar is a solid mix, as built');
 }
 
 console.log('\n5. the 44px floor for staff controls below 768');

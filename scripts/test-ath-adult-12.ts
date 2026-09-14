@@ -81,7 +81,12 @@ console.log('\nwhat this flow did NOT change (recorded, not built)');
      the adoption decision (docs/decisions/design-system-adoption.md), which
      is a different decision from B2: the gym weeks were built on
      --wash-accent-strong and still read it. --t-num-hero is layer three's. */
-  assert(!/--chart-h|--chart-stroke|--t-num-hero/.test(read('src/styles/tokens.css')), 'no new token for B1 or the hero numeral (B1, B2 as built)');
+  /* --t-num-hero arrived with layer three (15 Sept 2026, System A's type
+     scale, 34px) as a token; B1's proposal was a 48px hero numeral for this
+     screen, which is still not built — the readiness figure reads --fs-48.
+     The chart tokens B1 named are still not tokens. */
+  assert(!/--chart-h|--chart-stroke/.test(read('src/styles/tokens.css')), 'no new token for B1\'s chart (B1, B2 as built)');
+  assert(!/var\(--t-num-hero\)/.test(page), 'and the hero numeral does not read System A\'s --t-num-hero — B1 as built stands');
   assert(/--blue-200:\s*#b3c6e6/.test(read('src/styles/tokens.css')), '--blue-200 exists as System A\'s ramp step, not as B2\'s proposal');
   /* B2, built 2026-09-13 once D7 was accepted, where a bar chart exists:
      the gym weeks — prior completed weeks in the wash (--wash-accent-strong),

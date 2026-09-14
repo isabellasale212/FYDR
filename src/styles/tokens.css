@@ -412,8 +412,22 @@
      viewport below it. */
   --w-dialog: 640px;
 
-  --t-state: 0.15s ease;
+  /* SYSTEM A MOTION, 15 Sept 2026 (motion.css). --dur is the one state
+     duration and --t-state's 0.15s now reads it — same value, one place.
+     System A's own --t-state is a FULL transition shorthand (border-color,
+     color, background at --dur); this file's --t-state is a duration and an
+     easing that 50 rules append to their own property, so adopting the
+     shorthand under the same name would break every one of them. Not
+     adopted; recorded in the layer-three report for a ruling. --t-select
+     and --ring-circumference are System A's and new. --t-press is this
+     file's own (System A has no press timing). */
+  --dur: 0.15s;
+  --dur-ring: 0.9s;
+  --ease-ring: cubic-bezier(0.22, 0.8, 0.36, 1);
+  --t-state: var(--dur) ease;
   --t-press: 0.08s ease;
+  --t-select: box-shadow var(--dur);
+  --ring-circumference: 251;
   /* The one entrance curve in the product. A strong ease-out: fast out of the
      gate, settling at the end, so the moment the eye is on is the moment that
      moves. Added 2026-09-09 with the dial ring-in, which was the last motion
@@ -544,6 +558,136 @@
   --tabbar-bg: rgba(255, 255, 255, 0.94);
   --page-wash: none;
   --selection: rgba(51, 182, 255, 0.35);
+
+  /* =====================================================================
+     SYSTEM A — LAYER THREE, 15 Sept 2026: type, spacing and the shell,
+     brought across from docs/design-system/tokens/typography.css and
+     spacing.css. The decision (docs/decisions/design-system-adoption.md)
+     says the code had no type or spacing tokens; it had this file's own
+     --fs-* (sixteen rem steps, 9 Sept) and --sp-* (fifteen px steps) with
+     ~1,700 reads between them, and those stay exactly as they are — their
+     guard, check-scale-tokens, proves every reader still computes to what
+     it did. System A's names arrive beside them. What the two families are
+     to each other, and whether --fs-*/--sp-* are renamed onto these, is a
+     ruling the layer-three report asks for; nothing here changes a value.
+
+     TYPE IN REM, NOT PX. System A writes its sizes in px. This file writes
+     the same sizes in rem (px ÷ 16) for the reason the 9 Sept scale did and
+     check-font-scaling enforces: a px font-size ignores the browser's
+     default-text-size preference. Identical at the default; larger when a
+     reader asks for larger. The px value is in the comment beside each. */
+
+  /* ---- fonts and weights ---- */
+  --font-core: var(--font-sans), system-ui, -apple-system, sans-serif;
+  --font-num: var(--font-core);
+  --w-regular: 400;
+  --w-num: 500;
+  --w-semi: 600;
+  --w-num-strong: 600;
+  --w-bold: 700;
+  --w-black: 800;
+
+  /* ---- display and headings ---- */
+  --t-hero: 3.625rem; /* 58px */
+  --t-hero-tracking: -0.035em;
+  --t-page: 1.875rem; /* 30px */
+  --t-page-tracking: -0.03em;
+  --t-section: 1.5rem; /* 24px */
+  --t-section-tracking: -0.02em;
+  --t-subhead: 1.1875rem; /* 19px */
+  --t-card-lg: 1.25rem; /* 20px */
+  --t-card: 1rem; /* 16px */
+  --t-card-sm: 0.9375rem; /* 15px */
+
+  /* ---- numerals (tabular-nums wherever a value sits in a column) ---- */
+  --t-num-hero: 2.125rem; /* 34px */
+  --t-num-stat: 1.9375rem; /* 31px */
+  --t-num-stat-sm: 1.75rem; /* 28px */
+  --t-num-dial: 1.5rem; /* 24px */
+  --t-num-dial-sm: 1.375rem; /* 22px */
+  --t-num-lead: 1.25rem; /* 20px */
+  --t-num-row: 1.0625rem; /* 17px */
+  --t-num-body: 0.9375rem; /* 15px */
+  --t-num-cell: 0.84375rem; /* 13.5px */
+  --t-num-cell-sm: 0.8125rem; /* 13px */
+  --t-num-meta: 0.75rem; /* 12px */
+  --t-num-caption: 0.71875rem; /* 11.5px */
+  --t-num-micro: 0.65625rem; /* 10.5px */
+  --t-num-nano: 0.59375rem; /* 9.5px */
+
+  /* ---- body ---- */
+  --t-body-lg: 1.0625rem; /* 17px */
+  --t-body: 0.875rem; /* 14px */
+  --t-body-sm: 0.84375rem; /* 13.5px */
+  --t-body-xs: 0.8125rem; /* 13px */
+  --t-body-2xs: 0.78125rem; /* 12.5px */
+
+  /* ---- labels and captions ---- */
+  --t-label: 0.75rem; /* 12px */
+  --t-caption: 0.71875rem; /* 11.5px */
+  --t-eyebrow: 0.6875rem; /* 11px */
+  --t-eyebrow-tracking: 0.12em;
+  --t-colhead: 0.6875rem; /* 11px */
+  --t-colhead-tracking: 0.1em;
+  --t-micro: 0.65625rem; /* 10.5px */
+  --t-pill: 0.6875rem; /* 11px */
+  --t-pill-sm: 0.65625rem; /* 10.5px */
+  --t-pill-xs: 0.625rem; /* 10px */
+
+  --lh-base: 1.5;
+  --lh-tight: 1.25;
+  --lh-num: 1.15;
+  --lh-hero: 1.02;
+
+  /* ---- the 4px spacing grid with the half-steps the product uses. The
+         first ten coincide with --sp-2 … --sp-20 exactly; 22, 26, 30 and 44
+         are steps this file never had; --sp-24, --sp-28, --sp-32 and
+         --sp-48 are steps System A does not have and stay this file's. ---- */
+  --s-1: 2px;
+  --s-2: 4px;
+  --s-3: 6px;
+  --s-4: 8px;
+  --s-5: 10px;
+  --s-6: 12px;
+  --s-7: 14px;
+  --s-8: 16px;
+  --s-9: 18px;
+  --s-10: 20px;
+  --s-11: 22px;
+  --s-12: 26px;
+  --s-13: 30px;
+  --s-14: 40px;
+  --s-15: 44px;
+
+  /* ---- named jobs. --gap-card and --gap-tile are the jobs this file
+         already names as --gap-stack (14px) and --gap-grid (12px), so they
+         alias rather than restate. --pad-card COLLIDES: System A's card
+         padding is 18px, this file's --pad-card is 16px and is read by
+         every card; a 2px move on every card is visible, so this file's
+         value stands and the collision is in the report. The rest are
+         System A's and new, read by nothing yet. ---- */
+  --gap-card: var(--gap-stack);
+  --gap-tile: var(--gap-grid);
+  --gap-chip: 6px;
+  --gap-row: 8px;
+  --pad-card-wide: 18px 20px;
+  --pad-card-lead: 20px 22px;
+  --pad-cell: 8px 6px;
+  --pad-page: 30px 40px 80px;
+  --pad-page-wide: 30px 44px 80px;
+  --pad-bar: 11px 40px;
+
+  /* ---- shell. --sidebar-w is System A's 214px; the built sidebar is
+         236px (base.css .app's grid) and layout is out of scope tonight, so
+         the token exists and the grid does not read it — in the report.
+         --touch-min is --tap-min's name in System A. ---- */
+  --sidebar-w: 214px;
+  --sidebar-rail-w: 64px;
+  --content-max: 1180px;
+  --prose-max: 68ch;
+  --touch-min: var(--tap-min);
+  --tabbar-pad: 8px 6px 36px;
+  --sheet-top: 62px;
 }
 
 /* ---------------------------------------------------------------------------

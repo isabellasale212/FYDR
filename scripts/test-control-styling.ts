@@ -161,8 +161,10 @@ console.log('\nbuttons are crisp, not soft');
 console.log('\nstate changes are snappy');
 {
   const t = read(TOKENS);
-  const ms = (name: string): number => Number((new RegExp(`${name}:\\s*([0-9.]+)s`).exec(t) ?? [])[1] ?? 0) * 1000;
-  assert(ms('--t-state') > 0 && ms('--t-state') <= 150, `--t-state is ${ms('--t-state')}ms, inside the 100–150ms band`);
+  /* --t-state reads var(--dur) since 15 Sept 2026 (System A motion): resolve
+     one level of alias before reading the seconds. */
+  const ms = (name: string): number => { const raw = (new RegExp(`${name}:\\s*([^;]+);`).exec(t) ?? [])[1] ?? ''; const alias = /var\((--[a-z-]+)\)/.exec(raw)?.[1]; const src = alias ? ((new RegExp(`${alias}:\\s*([^;]+);`).exec(t) ?? [])[1] ?? '') : raw; return Number((/([0-9.]+)s/.exec(src) ?? [])[1] ?? 0) * 1000; };
+  assert(ms('--t-state') > 0 && ms('--t-state') <= 150, `--t-state is ${ms('--t-state')}ms (through --dur), inside the 100–150ms band`);
   assert(ms('--t-press') > 0 && ms('--t-press') <= 150, `--t-press is ${ms('--t-press')}ms`);
 }
 

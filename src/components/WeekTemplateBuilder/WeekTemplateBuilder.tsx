@@ -162,7 +162,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
           </p>
           <input
             className="field"
-            style={{ fontSize: 'var(--fs-22)', fontWeight: 700, border: 'none', padding: '4px 0', background: 'none' }}
+            style={{ fontSize: 'var(--fs-22)', fontWeight: 'var(--w-bold)', border: 'none', padding: '4px 0', background: 'none' }}
             value={name}
             onChange={(e) => {
               setName(e.target.value);
@@ -262,7 +262,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
         {positions.map((day) => (
           <div key={day.mdOffset} className="card">
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)' }}>
-              <span style={{ fontWeight: 700, fontSize: 'var(--fs-14)' }}>{mdLabel(day.mdOffset)}</span>
+              <span style={{ fontWeight: 'var(--w-bold)', fontSize: 'var(--fs-14)' }}>{mdLabel(day.mdOffset)}</span>
               {day.sessions.length === 0 ? <span className="tiny" style={{ color: 'var(--faint)' }}>Off. Nothing scheduled.</span> : null}
               <button type="button" className="btn-ghost" style={{ marginLeft: 'auto', minHeight: 32, padding: '5px 12px' }} onClick={() => setEditingPosition(day.mdOffset)}>
                 + session

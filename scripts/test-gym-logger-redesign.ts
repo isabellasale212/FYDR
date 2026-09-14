@@ -68,7 +68,7 @@ console.log('\n1. one exercise at a time, what is next beneath');
 console.log('\n2. the two numbers are the screen');
 {
   const v = rule('.gl-num-v');
-  assert(/font-size:\s*var\(--fs-48\)/.test(v) && /font-weight:\s*800/.test(v) && /letter-spacing:\s*-0\.025em/.test(v), 'the value at --fs-48, 800, -0.025em');
+  assert(/font-size:\s*var\(--fs-48\)/.test(v) && /font-weight:\s*(?:800|var\(--w-black\))/.test(v) && /letter-spacing:\s*-0\.025em/.test(v), 'the value at --fs-48, 800, -0.025em');
   assert(/font-size:\s*var\(--fs-15\)/.test(rule('.gl-num-v small')) && /color:\s*var\(--muted\)/.test(rule('.gl-num-v small')), 'the unit beside it at --fs-15 in --muted, not inside the figure');
   const grid = rule('.gl-num');
   assert(/grid-template-columns:\s*var\(--hit-md\) minmax\(0, 1fr\) var\(--hit-md\)/.test(grid), 'between two --hit-md columns');

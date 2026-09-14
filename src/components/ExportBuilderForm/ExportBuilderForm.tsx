@@ -160,7 +160,7 @@ export function ExportBuilderForm({ domains, groupIds, groupLabel, athleteCount,
             >
               <input type="checkbox" checked={selected.has(d.key)} onChange={() => toggle(d.key)} />
               <span style={{ minWidth: 0 }}>
-                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600, display: 'block' }}>{d.label}</span>
+                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 'var(--w-semi)', display: 'block' }}>{d.label}</span>
                 <span className="tiny">{d.description}</span>
               </span>
             </label>

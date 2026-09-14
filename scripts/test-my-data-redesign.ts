@@ -182,9 +182,9 @@ console.log('\na delta states the change and never judges it — ATH-ADULT-12 D3
      ink, the figure in --text bold, ↑ ↓ never ▲ ▼. The same for the tests
      tab's off-PB / ahead / at-PB lines. */
   const delta = /\.rd-delta\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
-  assert(/color:\s*var\(--muted\)/.test(delta) && /font-weight:\s*400/.test(delta), '.rd-delta is --muted at 400');
+  assert(/color:\s*var\(--muted\)/.test(delta) && /font-weight:\s*(?:400|var\(--w-regular\))/.test(delta), '.rd-delta is --muted at 400');
   assert(!/\.rd-delta\[data-dir='up'\]/.test(css) && !/\.rd-delta\[data-dir='down'\]/.test(css), 'no per-direction colour rule is left');
-  assert(/\.rd-delta b\s*\{[^}]*color:\s*var\(--text\)[^}]*font-weight:\s*700/.test(css), 'the figure is --text bold');
+  assert(/\.rd-delta b\s*\{[^}]*color:\s*var\(--text\)[^}]*font-weight:\s*(?:700|var\(--w-bold\))/.test(css), 'the figure is --text bold');
   assert(/\{readinessDelta >= 0 \? '↑' : '↓'\}/.test(page) && !/▲|▼/.test(page), '↑ ↓, never ▲ ▼');
   assert(/<b>\{Math\.abs\(readinessDelta\)\}<\/b> on last week/.test(page), '"↑ 4 on last week" with the figure bold — the comparison unchanged (C4 declined)');
   const hist = /\.hist-delta\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';

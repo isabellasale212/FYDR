@@ -56,7 +56,7 @@ export function MealLibraryPicker({ meals, addedIds, onAdd, onClose }: Props) {
                 }}
               >
                 <div style={{ minWidth: 0 }}>
-                  <div style={{ fontWeight: 600, fontSize: 'var(--fs-14)' }}>{meal.name}</div>
+                  <div style={{ fontWeight: 'var(--w-semi)', fontSize: 'var(--fs-14)' }}>{meal.name}</div>
                   <div className="tiny nutr-mono">
                     {meal.timeLabel} · {meal.items.length} item{meal.items.length === 1 ? '' : 's'} ·{' '}
                     {Math.round(totals.proteinG)}P / {Math.round(totals.carbG)}C / {Math.round(totals.fatG)}F g at

@@ -244,7 +244,7 @@ export default async function ReportsPage() {
                     className="num"
                     style={{
                       fontSize: 'var(--fs-10)',
-                      fontWeight: 700,
+                      fontWeight: 'var(--w-bold)',
                       padding: '2px 9px',
                       borderRadius: 'var(--r-control)',
                       background: 'rgb(var(--highlight-rgb) / 0.22)',

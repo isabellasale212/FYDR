@@ -264,7 +264,7 @@ console.log('\n7. the wordmark is Sora, and only the wordmark is');
      reaches, on the sign-in screens. */
   const lockup = rule('.lockup-word');
   assert(/font-family:\s*var\(--font-brand\)/.test(lockup), 'the lockup wordmark is --font-brand (Sora)');
-  assert(/font-weight:\s*800/.test(lockup), 'at 800');
+  assert(/font-weight:\s*(?:800|var\(--w-black\))/.test(lockup), 'at 800');
   assert(/letter-spacing:\s*-0\.035em/.test(lockup), 'and -0.035em tracking');
   /* THE FOURTEEN REDESIGNED SCREENS CARRY NO WORDMARK AT ALL. The athlete
      shell is a tab bar, not a brand bar — the mark lives in the staff Sidebar

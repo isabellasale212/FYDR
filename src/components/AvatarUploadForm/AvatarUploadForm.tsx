@@ -148,7 +148,7 @@ export function AvatarUploadForm({
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: 'var(--fs-20)',
-              fontWeight: 700,
+              fontWeight: 'var(--w-bold)',
               /* --on-group: its own token because the --group-* palette
                  inverts between themes, so one ink cannot serve both. It was
                  --on-accent (white), which is derived for the accent's deep

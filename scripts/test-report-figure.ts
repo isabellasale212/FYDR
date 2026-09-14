@@ -23,7 +23,7 @@ console.log('1. the component and its rule');
   assert(order.every((i, n) => i >= 0 && (n === 0 || i > order[n - 1]!)), 'and that order is the markup order');
   const css = strip(read('src/styles/base.css'));
   assert(/\.rfig\s*\{[^}]*background:\s*var\(--wash-accent\);[^}]*border:\s*1px solid var\(--border-accent-soft\);/.test(css), 'the emphasised surface is the wash family (.pp-hero\'s), not a new colour');
-  assert(/\.rfig-value\s*\{[^}]*font-size:\s*var\(--fs-48\);[^}]*font-weight:\s*600;/.test(css), 'the value at --fs-48, semi');
+  assert(/\.rfig-value\s*\{[^}]*font-size:\s*var\(--fs-48\);[^}]*font-weight:\s*(?:600|var\(--w-semi\));/.test(css), 'the value at --fs-48, semi');
   const rfigBlocks = css.match(/\.rfig[-\w]*\s*\{[^}]*\}/g) ?? [];
   assert(rfigBlocks.length === 6 && rfigBlocks.every((b) => !/#[0-9a-f]{3,6}/i.test(b) && (b.match(/\d+px/g) ?? []).every((px) => px === '1px')), 'tokens only: no raw hex, no raw px beyond the 1px hairline .pp-hero also draws');
   assert(/\.rfig-value \+ \.rfig-sample|\.rfig-exclusions\s*\{[^}]*color:\s*var\(--muted(-on-tint)?\)/.test(css), 'the exclusions read in --muted');

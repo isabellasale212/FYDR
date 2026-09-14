@@ -201,7 +201,7 @@ export default async function ProgrammesPage({
                   {detail.blocks.length > 0 ? ` · ${detail.blocks.length} block${detail.blocks.length === 1 ? '' : 's'}` : ''}
                 </p>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
-                  <h2 style={{ margin: 0, fontSize: 'var(--fs-22)', fontWeight: 800, letterSpacing: '-0.025em' }}>{selected.name}</h2>
+                  <h2 style={{ margin: 0, fontSize: 'var(--fs-22)', fontWeight: 'var(--w-black)', letterSpacing: '-0.025em' }}>{selected.name}</h2>
                   <span className={`pill ${selected.status === 'active' ? 'pill-good' : 'pill-neutral'}`}>
                     {enumLabel(selected.status)}
                   </span>

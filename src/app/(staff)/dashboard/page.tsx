@@ -476,7 +476,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       <div className="dash-body" style={{ marginTop: 'var(--sp-14)' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 'var(--sp-12)' }}>
-            <h2 style={{ fontSize: 'var(--fs-16)', fontWeight: 700, letterSpacing: '-0.02em', margin: 0 }}>
+            <h2 style={{ fontSize: 'var(--fs-16)', fontWeight: 'var(--w-bold)', letterSpacing: '-0.02em', margin: 0 }}>
               {dayTitle(selectedDay, wallClockToday)}
             </h2>
             <span className="tiny num" style={{ color: 'var(--muted)', marginLeft: 'auto' }}>
@@ -579,7 +579,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                 <h2 className="card-title" style={{ margin: 0 }}>
                   Outstanding entries
                 </h2>
-                <Link href="/reports/compliance" className="tiny" style={{ color: 'var(--accent-text)', fontWeight: 600 }}>
+                <Link href="/reports/compliance" className="tiny" style={{ color: 'var(--accent-text)', fontWeight: 'var(--w-semi)' }}>
                   Compliance ›
                 </Link>
               </div>
@@ -589,7 +589,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                     /* The RPE club setting is off (0118): the track stays and
                        says so — never a bar at zero, never quietly absent. */
                     <div key={t.label}>
-                      <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{t.label}</span>
+                      <span style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-semi)' }}>{t.label}</span>
                       <p className="tiny" style={{ color: 'var(--muted)', marginTop: 'var(--sp-4)' }}>
                         {t.off}
                       </p>
@@ -597,7 +597,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                   ) : (
                     <div key={t.label}>
                       <div style={{ display: 'flex', justifyContent: 'space-between', alignItems: 'baseline' }}>
-                        <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{t.label}</span>
+                        <span style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-semi)' }}>{t.label}</span>
                         <span className="num" style={{ fontSize: 'var(--fs-13)' }}>
                           {t.valueLeft} left
                         </span>

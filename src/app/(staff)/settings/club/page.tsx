@@ -88,7 +88,7 @@ export default async function SettingsClubPage() {
             Premium. The plan page is where the list is explained. */}
         <div className="plan-compare">
           <div className="plan-compare-card" data-active={!onPremium}>
-            <p style={{ fontSize: 'var(--fs-13)', fontWeight: 700, margin: 0 }}>Basic</p>
+            <p style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-bold)', margin: 0 }}>Basic</p>
             <div className="plan-compare-list">
               <span>Wellness, RPE and gym logging</span>
               <span>Gym and rehab programmes</span>
@@ -102,7 +102,7 @@ export default async function SettingsClubPage() {
           </div>
           <div className="plan-compare-card" data-active={onPremium}>
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-8)' }}>
-              <p style={{ fontSize: 'var(--fs-13)', fontWeight: 700, margin: 0 }}>Premium</p>
+              <p style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-bold)', margin: 0 }}>Premium</p>
               {/* The design gives this badge the WARN pill, not the highlight
                   gold the gated-row "Premium" markers use. Two different jobs:
                   those mark a row as out of reach, this labels what the
@@ -134,7 +134,7 @@ export default async function SettingsClubPage() {
           <div className="set-row">
             <div style={{ minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)' }}>
-                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600 }}>Catapult Openfield</span>
+                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 'var(--w-semi)' }}>Catapult Openfield</span>
                 {!onPremium ? <span className="gold-badge">Premium</span> : null}
               </div>
               <p style={{ fontSize: 'var(--fs-12)', color: 'var(--muted)', margin: '2px 0 0' }}>
@@ -173,7 +173,7 @@ export default async function SettingsClubPage() {
           <div className="set-row">
             <div style={{ minWidth: 0 }}>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-8)' }}>
-                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 600 }}>Vendor CSV import</span>
+                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 'var(--w-semi)' }}>Vendor CSV import</span>
                 {!onPremium ? <span className="gold-badge">Premium</span> : null}
               </div>
               <p style={{ fontSize: 'var(--fs-12)', color: 'var(--muted)', margin: '2px 0 0' }}>

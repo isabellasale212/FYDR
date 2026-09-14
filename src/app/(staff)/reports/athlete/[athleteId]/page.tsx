@@ -442,10 +442,10 @@ export default async function AthleteReportPage({
                       </p>
                     )}
                     <div style={{ marginTop: 'var(--sp-12)', paddingTop: 'var(--sp-10)', borderTop: '1px solid var(--hair)' }}>
-                      <p style={{ fontSize: 'var(--fs-13)', fontWeight: 700, margin: '0 0 8px' }}>
+                      <p style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-bold)', margin: '0 0 8px' }}>
                         Session load by day
                         {loadDaysWithValue.length > 0 ? (
-                          <span className="tiny" style={{ fontWeight: 400, color: 'var(--faint)' }}>
+                          <span className="tiny" style={{ fontWeight: 'var(--w-regular)', color: 'var(--faint)' }}>
                             {' '}
                             · {loadDaysWithValue.length} day{loadDaysWithValue.length === 1 ? '' : 's'}
                           </span>
@@ -509,7 +509,7 @@ export default async function AthleteReportPage({
                         return (
                           <div key={t.test_definition_id} className="ath-test-row" data-heavy={delta?.heavy ?? false}>
                             <span>
-                              <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{t.name}</span>{' '}
+                              <span style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-semi)' }}>{t.name}</span>{' '}
                               <span className="tiny" style={{ color: 'var(--faint)' }}>
                                 ({t.unit})
                               </span>
@@ -605,19 +605,19 @@ export default async function AthleteReportPage({
                 <div className="grid3">
                   <div className="card">
                     <p className="tiny">Acute · trailing 7 days</p>
-                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 'var(--w-black)' }}>
                       {report.load.acute === null ? 'Building baseline' : formatNumber(report.load.acute, 0)}
                     </p>
                   </div>
                   <div className="card">
                     <p className="tiny">Chronic · trailing 28 days, weekly</p>
-                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 'var(--w-black)' }}>
                       {report.load.chronic === null ? 'Building baseline' : formatNumber(report.load.chronic, 0)}
                     </p>
                   </div>
                   <div className="card">
                     <p className="tiny">ACWR · trailing 7:28</p>
-                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 'var(--w-black)' }}>
                       {report.load.acwr === null ? 'Building baseline' : formatNumber(report.load.acwr, 2)}
                     </p>
                   </div>
@@ -707,19 +707,19 @@ export default async function AthleteReportPage({
                 <div className="grid3">
                   <div className="card">
                     <p className="tiny">Gym sessions logged</p>
-                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 'var(--w-black)' }}>
                       {report.gymAndTesting.sessionsLogged}
                     </p>
                   </div>
                   <div className="card">
                     <p className="tiny">Completed</p>
-                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 800 }}>
+                    <p className="num" style={{ fontSize: 'var(--fs-22)', fontWeight: 'var(--w-black)' }}>
                       {report.gymAndTesting.sessionsCompleted}
                     </p>
                   </div>
                   <div className="card">
                     <p className="tiny">Programme{currentProgrammes.length === 1 ? '' : 's'}</p>
-                    <p style={{ fontSize: 'var(--fs-15)', fontWeight: 700 }}>
+                    <p style={{ fontSize: 'var(--fs-15)', fontWeight: 'var(--w-bold)' }}>
                       {currentProgrammes.length === 0 ? 'None assigned' : currentProgrammes.map((p) => `${p.name} (${enumLabel(p.type)})`).join(', ')}
                     </p>
                   </div>

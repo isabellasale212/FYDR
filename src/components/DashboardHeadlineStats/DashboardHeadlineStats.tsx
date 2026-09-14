@@ -325,7 +325,7 @@ export function DashboardHeadlineStats({
       {expanded === 'wellness' ? (
         <div className="dash-stat-expand" role="region" aria-label="Athletes still to submit wellness">
           <div className="dash-stat-expand-head">
-            <span style={{ fontSize: 'var(--fs-13)', fontWeight: 700 }}>Still to submit</span>
+            <span style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-bold)' }}>Still to submit</span>
             <span className="tiny" style={{ color: 'var(--muted)' }}>
               {stats.wellnessSub}
             </span>
@@ -341,7 +341,7 @@ export function DashboardHeadlineStats({
             stats.wellnessMissing.map((row) => (
               <div key={row.athleteId} className="dash-stat-expand-row">
                 <span className="dash-squad-dot" style={{ background: 'var(--warn)' }} aria-hidden="true" />
-                <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{row.name}</span>
+                <span style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-semi)' }}>{row.name}</span>
                 <span className="tiny" style={{ color: 'var(--muted)' }}>
                   Not submitted · {runLabel(row.runDays)} ·{' '}
                   {row.lastEntry ? `last entry ${formatDate(row.lastEntry, timezone)}` : 'no entry in the last 90 days'}
@@ -358,7 +358,7 @@ export function DashboardHeadlineStats({
       {expanded === 'available' ? (
         <div className="dash-stat-expand" role="region" aria-label="Athletes not fully available">
           <div className="dash-stat-expand-head">
-            <span style={{ fontSize: 'var(--fs-13)', fontWeight: 700 }}>Not fully available</span>
+            <span style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-bold)' }}>Not fully available</span>
             <span className="tiny" style={{ color: 'var(--muted)' }}>
               {stats.modifiedCount} modified, {stats.unavailableCount} out of {stats.availableTotal}
             </span>
@@ -370,13 +370,13 @@ export function DashboardHeadlineStats({
               {modifiedNamed.map((name) => (
                 <div key={`mod-${name}`} className="dash-stat-expand-row">
                   <span className="dash-squad-dot" style={{ background: 'var(--warn)' }} aria-hidden="true" />
-                  <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{name}</span>
+                  <span style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-semi)' }}>{name}</span>
                 </div>
               ))}
               {unavailableNamed.map((name) => (
                 <div key={`out-${name}`} className="dash-stat-expand-row">
                   <span className="dash-squad-dot" style={{ background: 'var(--bad)' }} aria-hidden="true" />
-                  <span style={{ fontSize: 'var(--fs-13)', fontWeight: 600 }}>{name}</span>
+                  <span style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-semi)' }}>{name}</span>
                 </div>
               ))}
             </>

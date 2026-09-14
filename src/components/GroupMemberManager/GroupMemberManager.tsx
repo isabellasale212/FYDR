@@ -98,7 +98,7 @@ export function GroupMemberManager({
         >
           <h2 className="card-title" id="members-title" style={{ margin: 0 }}>
             Members{' '}
-            <span className="tiny num" style={{ fontWeight: 400 }}>
+            <span className="tiny num" style={{ fontWeight: 'var(--w-regular)' }}>
               {current.length}
             </span>
           </h2>
@@ -139,7 +139,7 @@ export function GroupMemberManager({
                 {initials(member)}
               </span>
               <span style={{ minWidth: 0 }}>
-                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 700 }}>
+                <span style={{ fontSize: 'var(--fs-14)', fontWeight: 'var(--w-bold)' }}>
                   {member.first_name} {member.last_name}
                 </span>
                 <span className="tiny" style={{ display: 'block', marginTop: 'var(--sp-2)' }}>
@@ -190,7 +190,7 @@ export function GroupMemberManager({
                     onChange={() => toggle(c.id)}
                   />
                   <span style={{ flex: 1, minWidth: 0 }}>
-                    <span style={{ fontSize: 'var(--fs-14)', fontWeight: 700 }}>
+                    <span style={{ fontSize: 'var(--fs-14)', fontWeight: 'var(--w-bold)' }}>
                       {c.first_name} {c.last_name}
                     </span>
                     <span className="tiny" style={{ display: 'block', marginTop: 'var(--sp-2)' }}>

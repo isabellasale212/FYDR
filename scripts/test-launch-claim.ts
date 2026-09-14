@@ -108,7 +108,7 @@ console.log('\nthe headline says what was asked for, in the face that was asked 
      it is the number that was decided, and this is where that is recorded. */
   assert(/font-family: var\(--font-sans\)/.test(h), 'set in Roboto (--font-sans), not the brand face');
   assert(!/--font-brand/.test(h), 'Sora stays wordmark-only');
-  assert(/font-weight: 800/.test(h), 'weight 800');
+  assert(/font-weight: (?:800|var\(--w-black\))/.test(h), 'weight 800');
   assert(/font-size: clamp\(34px, 3\.5vw, var\(--fs-48\)\)/.test(h), 'clamp(34px, 3.5vw, --fs-48): fluid to the column, a true 48 where the column has room');
   assert(/line-height: 1\.1\b/.test(h), 'line-height 1.1');
   assert(/letter-spacing: -0\.03em/.test(h), 'tracking -0.03em');
@@ -166,7 +166,7 @@ console.log('\nlabels and captions are set as specified, and in the app face');
 {
   const label = rule('.launch-features .k');
   const cap = rule('.launch-features .v');
-  assert(/font-size: var\(--fs-16\)/.test(label) && /font-weight: 700/.test(label), 'label 16px / 700');
+  assert(/font-size: var\(--fs-16\)/.test(label) && /font-weight: (?:700|var\(--w-bold\))/.test(label), 'label 16px / 700');
   assert(/white-space: nowrap/.test(label), 'label nowrap — it fits: 95.4px widest against a 119.2px narrowest column');
   assert(/margin-top: var\(--sp-8\)/.test(label), 'label 8px below its icon');
   /* THE HANDOFF SAID 13.5px AND 3px, and the scale now says 13 and 4. This is

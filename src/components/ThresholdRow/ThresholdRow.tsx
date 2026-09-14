@@ -73,7 +73,7 @@ export function ThresholdRow({ threshold, orgId, sentence, ownerLine, canManage 
       </span>
       <span style={{ flex: 1, minWidth: 0 }}>
         <span style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-8)', flexWrap: 'wrap' }}>
-          <span style={{ fontSize: 'var(--fs-14)', fontWeight: 700 }}>{threshold.name}</span>
+          <span style={{ fontSize: 'var(--fs-14)', fontWeight: 'var(--w-bold)' }}>{threshold.name}</span>
           <Pill status={SEVERITY_STATUS[threshold.severity as 'low' | 'medium' | 'high']} />
           {!threshold.is_active ? <span className="tiny">Inactive</span> : null}
         </span>

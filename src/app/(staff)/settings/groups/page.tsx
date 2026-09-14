@@ -173,7 +173,7 @@ export default async function GroupsPage() {
                   <Link href={`/settings/groups/${g.id}`} className="todo" style={{ flex: 1, minWidth: 0 }}>
                     <GroupSwatch colour={g.colour} />
                     <span style={{ flex: 1, minWidth: 0 }}>
-                      <span style={{ fontSize: 'var(--fs-14)', fontWeight: 700 }}>{g.name}</span>
+                      <span style={{ fontSize: 'var(--fs-14)', fontWeight: 'var(--w-bold)' }}>{g.name}</span>
                       {g.description ? (
                         <span
                           className="tiny"

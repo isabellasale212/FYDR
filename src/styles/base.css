@@ -46,7 +46,7 @@ body {
   color: var(--text);
   font-family: var(--font-sans), system-ui, -apple-system, sans-serif;
   font-size: var(--fs-15);
-  font-weight: 400;
+  font-weight: var(--w-regular);
   line-height: 1.45;
   -webkit-font-smoothing: antialiased;
 }
@@ -295,7 +295,7 @@ a {
      — one mark, one face, one tracking, rather than split across two. */
   font-family: var(--font-brand), system-ui, sans-serif;
   font-size: var(--fs-48);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.035em;
   line-height: 1;
 }
@@ -424,7 +424,7 @@ a {
   gap: var(--sp-10);
   padding: var(--sp-10) var(--sp-24) var(--sp-10) var(--sp-20);
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
   cursor: pointer;
   border: none;
@@ -452,7 +452,7 @@ a {
  * number on a dark ground. */
 .nav-item[aria-current='page'] {
   border-left-color: var(--accent);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   /* --accent-pill-text, not --accent-text. The row is no longer a plain
      surface once it has a wash on it, and this file's §3.7 split is exactly
      that distinction: --accent-text is derived for a plain surface,
@@ -502,7 +502,7 @@ a {
 }
 .nav-who b {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--text);
 }
 .nav-signout {
@@ -513,7 +513,7 @@ a {
   padding: 0;
   font-family: inherit;
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
   background: none;
   border: none;
@@ -597,11 +597,11 @@ a {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .page-head h1 {
   font-size: var(--fs-22);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.02em;
   margin: var(--sp-6) 0 0;
 }
@@ -619,7 +619,7 @@ a {
   padding: var(--sp-10) var(--sp-14);
   min-height: 44px;
   font-size: var(--fs-12);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-family: inherit;
   cursor: pointer;
   display: inline-flex;
@@ -658,7 +658,7 @@ a {
   border-radius: var(--r-full);
   font-family: inherit;
   font-size: var(--fs-12);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--muted);
   padding: 0 var(--sp-14);
   cursor: pointer;
@@ -701,7 +701,7 @@ a {
 }
 .card-title {
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   margin: 0 0 var(--sp-6);
 }
 .import-sub {
@@ -736,7 +736,7 @@ a {
   color: var(--muted);
 }
 .nm {
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-size: var(--fs-13);
 }
 .dot {
@@ -761,7 +761,7 @@ a {
   padding: var(--sp-14) var(--sp-20);
   min-height: 44px;
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-family: inherit;
   cursor: pointer;
   /* Tracking, not the face's default. Roboto sets a touch wide at button
@@ -788,7 +788,7 @@ a {
   padding: var(--sp-10) var(--sp-16);
   min-height: 44px;
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   font-family: inherit;
   cursor: pointer;
   letter-spacing: -0.01em;
@@ -820,7 +820,7 @@ a {
 .label {
   display: block;
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
   margin: 0 0 var(--sp-6);
 }
@@ -833,7 +833,7 @@ a {
 }
 .squad-chip {
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   padding: var(--sp-8) var(--sp-14);
   min-height: 44px;
   border-radius: var(--r);
@@ -884,7 +884,7 @@ a {
  * interactive control, and this is not one. */
 .chip-static {
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   padding: var(--sp-8) var(--sp-14);
   border-radius: var(--r);
   border: 1px solid var(--accent);
@@ -899,7 +899,7 @@ a {
    status, and neither is optional. */
 .pill {
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   padding: var(--sp-4) var(--sp-10) var(--sp-4) var(--sp-8);
   border-radius: var(--r);
   display: inline-flex;
@@ -984,7 +984,7 @@ a {
 }
 .avail .v {
   font-size: var(--fs-24);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.02em;
   line-height: 1;
 }
@@ -993,7 +993,7 @@ a {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   margin-top: var(--sp-6);
   display: flex;
   align-items: center;
@@ -1031,7 +1031,7 @@ a {
   font-size: var(--fs-11);
   letter-spacing: 0.1em;
   text-transform: uppercase;
-  font-weight: 700;
+  font-weight: var(--w-bold);
   white-space: nowrap;
   display: flex;
   align-items: center;
@@ -1061,7 +1061,7 @@ a {
   border-top: none;
   padding-bottom: var(--sp-6);
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--faint);
@@ -1072,13 +1072,13 @@ a {
 }
 .attn .rank {
   font-size: var(--fs-12);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--faint);
   text-align: right;
 }
 .attn-name {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: inherit;
   text-decoration: none;
 }
@@ -1102,7 +1102,7 @@ a {
   color: var(--muted);
 }
 .attn-vs .v {
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .attn-vs .base {
   color: var(--faint);
@@ -1142,7 +1142,7 @@ a {
 }
 .load-val {
   text-align: right;
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 
 table.tbl {
@@ -1155,7 +1155,7 @@ table.tbl th {
   text-transform: uppercase;
   letter-spacing: 0.09em;
   color: var(--faint);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   text-align: left;
   padding: 0 var(--sp-8) var(--sp-10);
   white-space: nowrap;
@@ -1211,7 +1211,7 @@ table.tbl td {
     text-transform: uppercase;
     letter-spacing: 0.09em;
     color: var(--faint);
-    font-weight: 700;
+    font-weight: var(--w-bold);
   }
   table.tbl.tbl-cards td:not([data-label])::before,
   table.tbl.tbl-cards td[data-label='']::before {
@@ -1225,7 +1225,7 @@ table.tbl td {
    absent-value ink (ATH-ADULT-13) — the same rule as .hist-value[data-missing]. */
 table.tbl td[data-missing] {
   color: var(--faint);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   white-space: nowrap;
 }
 table.tbl th.r,
@@ -1252,11 +1252,11 @@ table.tbl.lb-table td {
 }
 table.tbl.lb-table .nm {
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 table.tbl.lb-table td.r {
   font-size: var(--fs-14);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-variant-numeric: tabular-nums;
 }
 .lb-pos {
@@ -1268,7 +1268,7 @@ table.tbl.lb-table td.r {
 }
 .lb-pos[data-top='true'] {
   color: var(--text);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .row-link {
   display: block;
@@ -1341,7 +1341,7 @@ table.tbl.lb-table td.r {
 }
 .empty h2 {
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   margin: 0 0 var(--sp-6);
 }
 .empty p {
@@ -1369,7 +1369,7 @@ table.tbl.lb-table td.r {
 }
 .pbar .nmx {
   font-size: var(--fs-20);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.02em;
   text-transform: uppercase;
 }
@@ -1597,7 +1597,7 @@ body:has(.phone) {
 }
 .phone-body .card-title {
   font-size: var(--fs-16);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.02em;
 }
 
@@ -1621,7 +1621,7 @@ body:has(.phone) {
 /* Spec §3: screen title 24/800/−0.03em. */
 .hd .d {
   font-size: var(--fs-24);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.03em;
   flex: 1;
   min-width: 0;
@@ -1667,7 +1667,7 @@ body:has(.phone) {
   gap: var(--sp-6);
   padding: var(--sp-6) 0;
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--tab-inactive);
   text-decoration: none;
   transition: color var(--t-state);
@@ -1736,7 +1736,7 @@ body:has(.phone) {
 .hist-date {
   margin: 0;
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
 }
 .hist-detail {
@@ -1750,7 +1750,7 @@ body:has(.phone) {
 .hist-value {
   margin: 0;
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.01em;
   /* Right-aligned in its track (the board's "value right-aligned"): with the
      wellness track at 92px a left-aligned score sat mid-row, a column's width
@@ -1768,7 +1768,7 @@ body:has(.phone) {
   margin: 0;
   padding: var(--sp-12) var(--pad-card-x);
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .hist-more a {
   color: var(--accent-text);
@@ -1793,7 +1793,7 @@ body:has(.phone) {
 }
 .hist-foot a {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--accent-text);
   text-decoration: none;
 }
@@ -1808,7 +1808,7 @@ body:has(.phone) {
 .hist-value[data-missing] {
   color: var(--faint);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   white-space: nowrap;
 }
 .hist-corrected {
@@ -1838,7 +1838,7 @@ body:has(.phone) {
 .rd-value {
   margin: 0;
   font-size: var(--fs-48);
-  font-weight: 800;
+  font-weight: var(--w-black);
   line-height: 1;
   letter-spacing: -0.04em;
   color: var(--accent-text);
@@ -1855,7 +1855,7 @@ body:has(.phone) {
    number block makes for "Not set". */
 .rd-value-words {
   font-size: var(--fs-20);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.02em;
   line-height: 1.2;
   white-space: normal;
@@ -1884,12 +1884,12 @@ body:has(.phone) {
 .rd-delta {
   margin: 0;
   font-size: var(--fs-14);
-  font-weight: 400;
+  font-weight: var(--w-regular);
   color: var(--muted);
 }
 .rd-delta b {
   color: var(--text);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .rd-mean {
   margin: var(--sp-4) 0 0;
@@ -1902,7 +1902,7 @@ body:has(.phone) {
    value ink, not a 48px word: the absence of a number is not a number. */
 .rd-value[data-missing] {
   font-size: var(--fs-16);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0;
   color: var(--faint);
   /* Keeps the figure's line box, so the two hero columns stay level. */
@@ -1923,7 +1923,7 @@ body:has(.phone) {
 /* Spec §3: hero unit suffix 18/600. */
 .rd-unit {
   font-size: var(--fs-18);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0;
   margin-inline-start: 1px;
 }
@@ -1987,7 +1987,7 @@ body:has(.phone) {
 }
 .gb-label {
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
   text-align: center;
   white-space: nowrap;
@@ -2002,7 +2002,7 @@ body:has(.phone) {
 .hist-name {
   margin: 0 0 var(--sp-2);
   font-size: var(--fs-15);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: -0.01em;
   color: var(--text);
 }
@@ -2016,7 +2016,7 @@ body:has(.phone) {
 .hist-delta {
   margin: var(--sp-2) 0 0;
   font-size: var(--fs-12);
-  font-weight: 500;
+  font-weight: var(--w-num);
   white-space: nowrap;
   color: var(--muted);
 }
@@ -2058,7 +2058,7 @@ a.hist-row:focus-visible {
 
 .todo-left {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0;
   text-transform: none;
   color: var(--warn-text);
@@ -2089,7 +2089,7 @@ a.hist-row:focus-visible {
    before any of these numbers mean anything.) */
 .athlete-tab[aria-current='page'] {
   color: var(--accent-on-tint);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .athlete-tab[aria-current='page'] .athlete-tab-glyph {
   color: var(--accent);
@@ -2125,7 +2125,7 @@ a.hist-row:focus-visible {
 .me-stat-value {
   margin: var(--sp-4) 0 0;
   font-size: var(--fs-24);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.03em;
   line-height: 1.1;
 }
@@ -2158,7 +2158,7 @@ a.hist-row:focus-visible {
   color: var(--bad-on-tint);
   font-family: inherit;
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   cursor: pointer;
   transition: background var(--t-state), border-color var(--t-state);
 }
@@ -2175,7 +2175,7 @@ a.hist-row:focus-visible {
   width: 58px;
   height: 58px;
   font-size: var(--fs-20);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .me-hd .sub {
   font-size: var(--fs-14);
@@ -2216,7 +2216,7 @@ a.hist-row:focus-visible {
   padding: var(--sp-10) var(--sp-6);
   border-radius: var(--r-full);
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
   text-decoration: none;
   white-space: nowrap;
@@ -2231,7 +2231,7 @@ a.hist-row:focus-visible {
 .md-seg[aria-selected='true'] {
   background: var(--accent);
   color: var(--on-accent);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .md-seg:focus-visible {
   outline: 2px solid var(--focus);
@@ -2268,7 +2268,7 @@ a.hist-row:focus-visible {
 .wk-towards-name {
   margin: var(--sp-4) 0 0;
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .wk-towards-when {
   margin: var(--sp-2) 0 0;
@@ -2343,7 +2343,7 @@ a.hist-row:focus-visible {
    system carries or a lighter tint than the design asks for. */
 .wk-day .wi {
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
 }
 .wk-day .wn {
@@ -2354,7 +2354,7 @@ a.hist-row:focus-visible {
   align-items: center;
   justify-content: center;
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   border: 1px solid transparent;
   color: var(--text);
 }
@@ -2367,7 +2367,7 @@ a.hist-row:focus-visible {
    rest days does not render a shorter card than a week with fixtures. */
 .wk-day .wo {
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
   min-height: 1.2em;
 }
@@ -2396,7 +2396,7 @@ a.hist-row:focus-visible {
  * instead of competing. */
 .wk-day[data-kind='match'] .wk-day[data-kind='training'] .wk-day[data-kind='recovery'] .wk-day[data-kind='match'] .wn {
   border-color: var(--bad);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 
 /* -------- to do / sessions row list, §5 --------
@@ -2439,7 +2439,7 @@ a.hist-row:focus-visible {
   justify-content: center;
   flex: none;
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.04em;
   background: rgb(var(--accent-rgb) / 0.1);
   /* The PILL variant, for the same reason as the per-domain glyphs below:
@@ -2470,7 +2470,7 @@ a.hist-row:focus-visible {
   border: none;
   color: var(--faint);
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   padding: var(--sp-4) var(--sp-2);
 }
 .chev {
@@ -2493,7 +2493,7 @@ a.hist-row:focus-visible {
 }
 .sess .ti {
   font-size: var(--fs-15);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   display: flex;
   align-items: center;
   gap: var(--sp-8);
@@ -2506,7 +2506,7 @@ a.hist-row:focus-visible {
 }
 .sess .state {
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 
 /* -------- done state, §5 -------- */
@@ -2526,7 +2526,7 @@ a.hist-row:focus-visible {
 }
 .done-title {
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   margin: var(--sp-12) 0 0;
 }
 .done-sub {
@@ -2575,7 +2575,7 @@ a.hist-row:focus-visible {
   /* The size is inline on the page: spec §7.1's 17/700 has no step on the
      type scale (16, 18), and it was inline before this pass for the same
      reason — check-scale-tokens refuses a raw value here, rightly. */
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.01em;
   line-height: 1.25;
 }
@@ -2602,7 +2602,7 @@ a.hist-row:focus-visible {
 .day-name {
   margin: 0;
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   line-height: 1.25;
   display: flex;
   align-items: center;
@@ -2640,7 +2640,7 @@ a.hist-row:focus-visible {
   background: color-mix(in srgb, rgb(var(--warn-rgb)) 12%, var(--surf));
   color: var(--text);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   text-decoration: none;
   min-height: 44px;
 }
@@ -2674,7 +2674,7 @@ a.hist-row:focus-visible {
 }
 .next-up .when {
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .next-up .what {
   font-size: var(--fs-13);
@@ -2753,7 +2753,7 @@ a.hist-row:focus-visible {
 .avail-chip {
   flex: none;
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   padding: var(--sp-2) var(--sp-8);
   border-radius: var(--r);
   background: var(--surf);
@@ -2761,7 +2761,7 @@ a.hist-row:focus-visible {
 }
 .avail-banner .k {
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.01em;
 }
 .avail-banner .v {
@@ -2793,11 +2793,11 @@ a.hist-row:focus-visible {
 }
 .report-card .k {
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .sect {
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.13em;
   text-transform: uppercase;
   color: var(--muted);
@@ -2864,7 +2864,7 @@ a.hist-row:focus-visible {
 }
 .sheet-head .t {
   font-size: var(--fs-22);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.03em;
   margin: 0;
 }
@@ -2901,7 +2901,7 @@ a.hist-row:focus-visible {
 }
 .dir b {
   color: var(--text);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 
 /* -------- inset sleep panel, §6 -------- */
@@ -2926,7 +2926,7 @@ a.hist-row:focus-visible {
 .sleep-panel .sp-head .k {
   display: block;
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .sleep-panel .sp-head .h {
   display: block;
@@ -2975,7 +2975,7 @@ a.hist-row:focus-visible {
 }
 .step .val .v {
   font-size: var(--fs-24);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.02em;
 }
 .step .val .u {
@@ -3011,17 +3011,17 @@ a.hist-row:focus-visible {
 /* Spec §7.2: question name 16/700, state 13.5/600. */
 .sc-l {
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .sc-v {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
 }
 .sc-v .n {
   font-size: var(--fs-13);
   color: inherit;
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 /* Neutral --muted since ATH-ADULT-03 A6 (2026-09-11); it was --warn-text.
    Five amber flags on an untouched form treated a normal starting state as a
@@ -3072,7 +3072,7 @@ a.hist-row:focus-visible {
   align-items: center;
   justify-content: center;
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   pointer-events: none;
   transition: background var(--t-state), border-color var(--t-state), color var(--t-state);
 }
@@ -3104,7 +3104,7 @@ a.hist-row:focus-visible {
    ties the word to a key. */
 .sc-a > span {
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
   background: var(--surf);
   border: 1px solid var(--border);
@@ -3115,7 +3115,7 @@ a.hist-row:focus-visible {
 .sc-where {
   margin-top: var(--sp-10);
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   padding: var(--sp-6) var(--sp-14);
   min-height: 32px;
   border-radius: var(--r);
@@ -3142,7 +3142,7 @@ a.hist-row:focus-visible {
 }
 .disclose summary {
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
   cursor: pointer;
   list-style: none;
@@ -3186,7 +3186,7 @@ a.hist-row:focus-visible {
   gap: var(--sp-6);
   margin: var(--sp-6) 0 0;
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   line-height: 1.4;
   color: var(--bad-text);
 }
@@ -3201,7 +3201,7 @@ a.hist-row:focus-visible {
   background: var(--wash-bad);
   color: var(--bad-pill-text);
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 /* Helper text under a field — "Usually 25 to 120 bpm" — at --fs-12 --muted.
    Under the field and not a placeholder, so it stays readable once a value is
@@ -3269,14 +3269,14 @@ a.hist-row:focus-visible {
 .after-heading {
   margin: 0;
   font-size: var(--fs-28);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.03em;
   line-height: 1.15;
 }
 .after-fact {
   margin: var(--sp-8) 0 0;
   font-size: var(--fs-20);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--text);
   line-height: 1.3;
 }
@@ -3357,7 +3357,7 @@ a.hist-row:focus-visible {
 .subm-count {
   margin: 0 0 var(--sp-8);
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--text);
   display: inline-block;
 }
@@ -3401,7 +3401,7 @@ a.hist-row:focus-visible {
 .subm-why-link {
   flex: none;
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--accent-text);
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -3417,7 +3417,7 @@ a.hist-row:focus-visible {
   padding: var(--sp-16) var(--sp-20);
   border-radius: var(--r);
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 /* The pending moment — the one `disabled` left — is still the action, mid-
    send. Full fill, full label; the label ("Saving…") is the state. Beats the
@@ -3484,7 +3484,7 @@ a.hist-row:focus-visible {
 }
 .cr10-n {
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--text);
 }
 .cr10-a {
@@ -3492,7 +3492,7 @@ a.hist-row:focus-visible {
    * (audit finding: cold thumbs read the number and skip the anchor word,
    * defeating the anchored scale). 10.5px still fits the 58px cell. */
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--faint);
   text-align: center;
   line-height: 1.15;
@@ -3534,11 +3534,11 @@ a.hist-row:focus-visible {
   color: var(--text);
 }
 .flag-line .v {
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .flag-line .base {
   color: var(--muted);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .flag-actions {
   display: flex;
@@ -3625,7 +3625,7 @@ a.hist-row:focus-visible {
 }
 .signin-eyebrow {
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
@@ -3633,7 +3633,7 @@ a.hist-row:focus-visible {
 }
 .signin-title {
   font-size: var(--fs-28);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.03em;
   line-height: 1.1;
   margin: var(--sp-8) 0 0;
@@ -3679,7 +3679,7 @@ a.hist-row:focus-visible {
   border-inline-start: 2px solid rgb(var(--bad-rgb));
   padding: var(--sp-10) var(--sp-12);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   margin-bottom: var(--sp-14);
 }
 
@@ -3707,7 +3707,7 @@ a.hist-row:focus-visible {
   background: var(--surf);
   color: var(--text);
   font-size: var(--fs-16);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   font-family: inherit;
   cursor: pointer;
   transition: border-color var(--t-state), background var(--t-state), color var(--t-state);
@@ -3767,7 +3767,7 @@ a.hist-row:focus-visible {
 .gym-head-title {
   margin: var(--sp-4) 0 0;
   font-size: var(--fs-24);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.02em;
   line-height: 1.15;
   text-wrap: balance;
@@ -3781,7 +3781,7 @@ a.hist-row:focus-visible {
 }
 .gym-progress .prog {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   white-space: nowrap;
 }
 .gym-progress-track {
@@ -3793,7 +3793,7 @@ a.hist-row:focus-visible {
 }
 .gym-head-eyebrow {
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--muted);
@@ -3848,7 +3848,7 @@ a.hist-row:focus-visible {
   color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
   font-family: inherit;
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-variant-numeric: tabular-nums;
   font-feature-settings: 'tnum' 1;
   transition: background var(--t-state), color var(--t-state);
@@ -3887,7 +3887,7 @@ a.hist-row:focus-visible {
 .gl-card-name {
   margin: 0;
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.01em;
 }
 /* "Set 2 of 3 · Rest 90s": position and rest as reference text, --muted, no
@@ -3895,7 +3895,7 @@ a.hist-row:focus-visible {
 .gl-card-pos {
   flex: none;
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
   white-space: nowrap;
 }
@@ -3918,7 +3918,7 @@ a.hist-row:focus-visible {
 }
 .gl-num-k {
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -3926,7 +3926,7 @@ a.hist-row:focus-visible {
 .gl-num-v {
   margin-top: var(--sp-2);
   font-size: var(--fs-48);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.025em;
   line-height: 1;
   color: var(--text);
@@ -3934,7 +3934,7 @@ a.hist-row:focus-visible {
 }
 .gl-num-v[data-words] {
   font-size: var(--fs-20);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--muted);
   letter-spacing: 0;
   line-height: 1.2;
@@ -3943,7 +3943,7 @@ a.hist-row:focus-visible {
 .gl-num-v small {
   margin-inline-start: var(--sp-4);
   font-size: var(--fs-15);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
   letter-spacing: 0;
 }
@@ -3953,7 +3953,7 @@ a.hist-row:focus-visible {
   color: var(--muted);
 }
 .gl-num-ref b {
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--text);
 }
 /* The stepper square: --hit-md, no border, the surf2 fill, the accent glyph. */
@@ -3966,7 +3966,7 @@ a.hist-row:focus-visible {
   color: var(--accent-text);
   font-family: inherit;
   font-size: var(--fs-24);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   line-height: 1;
   cursor: pointer;
   transition: background var(--t-state);
@@ -3999,7 +3999,7 @@ a.hist-row:focus-visible {
   border-radius: var(--r);
   background: var(--wash-accent);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--text);
 }
 .gl-strip-link {
@@ -4010,7 +4010,7 @@ a.hist-row:focus-visible {
   background: none;
   font-family: inherit;
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--accent-text);
   text-decoration: underline;
   cursor: pointer;
@@ -4021,7 +4021,7 @@ a.hist-row:focus-visible {
 .gl-then-k {
   margin: var(--sp-4) 0 var(--sp-6);
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -4109,7 +4109,7 @@ a.hist-row:focus-visible {
 .gym-sum-title {
   margin: 0;
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   line-height: 1.3;
 }
 .gym-sum-sub {
@@ -4133,7 +4133,7 @@ a.hist-row:focus-visible {
 }
 .gym-sum-k {
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -4141,7 +4141,7 @@ a.hist-row:focus-visible {
 .gym-sum-num {
   margin-top: var(--sp-4);
   font-size: var(--fs-48);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.025em;
   line-height: 1;
   color: var(--text);
@@ -4149,7 +4149,7 @@ a.hist-row:focus-visible {
 .gym-sum-num small {
   margin-inline-start: var(--sp-4);
   font-size: var(--fs-15);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
   letter-spacing: 0;
 }
@@ -4175,7 +4175,7 @@ a.hist-row:focus-visible {
 }
 .gym-sum-best-val {
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--accent-text);
   white-space: nowrap;
 }
@@ -4201,7 +4201,7 @@ a.hist-row:focus-visible {
 /* ---------- Programme, §11 ---------- */
 .prog-header h1 {
   font-size: var(--fs-20);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.02em;
   margin: var(--sp-4) 0 0;
 }
@@ -4216,7 +4216,7 @@ a.hist-row:focus-visible {
 }
 .target-bar .th .k {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .target-bar .th .v {
   font-size: var(--fs-13);
@@ -4237,7 +4237,7 @@ a.hist-row:focus-visible {
   background: var(--avatar-bg);
   color: var(--avatar-text);
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -4252,7 +4252,7 @@ img.me-avatar {
 }
 .me-profile .nm {
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .me-profile .sub {
   font-size: var(--fs-13);
@@ -4274,7 +4274,7 @@ img.me-avatar {
 }
 .me-row .k {
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 /* The reference's settings rows carry a second line under the name saying what
    the setting actually covers ("morning wellness prompt"), so the value on the
@@ -4284,7 +4284,7 @@ img.me-avatar {
   display: block;
   margin-top: var(--sp-2);
   font-size: var(--fs-13);
-  font-weight: 400;
+  font-weight: var(--w-regular);
   color: var(--muted);
 }
 /* The settings row's value is content, not a mark — §7.5 gives it "14px/600
@@ -4294,11 +4294,11 @@ img.me-avatar {
    readable ink. */
 .me-row .v {
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--accent-text);
 }
 .me-row .v[data-off] {
-  font-weight: 400;
+  font-weight: var(--w-regular);
   color: var(--muted);
 }
 .me-row.bad .k {
@@ -4327,11 +4327,11 @@ img.me-avatar {
 }
 .toast .msg {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .toast .dismiss {
   font-size: var(--fs-12);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--toast-link);
   background: none;
   border: none;
@@ -4390,7 +4390,7 @@ img.me-avatar {
 
 .pp-link {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--accent-text);
   white-space: nowrap;
 }
@@ -4410,7 +4410,7 @@ img.me-avatar {
   border-radius: var(--r);
   padding: var(--sp-8) var(--sp-16);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   font-family: inherit;
   cursor: pointer;
   display: inline-flex;
@@ -4426,7 +4426,7 @@ img.me-avatar {
 .btn-ghost-pill.accent {
   border-color: rgb(var(--accent-rgb) / 0.35);
   color: var(--accent-text);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .btn-ghost-pill:disabled,
 .btn-ghost-pill[aria-disabled='true'] {
@@ -4459,7 +4459,7 @@ img.me-avatar {
 .pp-hero-sub {
   margin: var(--sp-6) 0 0;
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
 }
 .pp-hero-rest {
@@ -4472,7 +4472,7 @@ img.me-avatar {
 .pp-hero-owner {
   margin: var(--sp-4) 0 0;
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
@@ -4529,7 +4529,7 @@ img.me-avatar {
   background: var(--accent);
   color: var(--on-accent);
   font-size: var(--fs-18);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   display: grid;
   place-items: center;
   flex: none;
@@ -4543,7 +4543,7 @@ img.me-avatar {
 }
 .pp-name {
   font-size: var(--fs-20);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.02em;
 }
 .pp-domain-chips {
@@ -4597,7 +4597,7 @@ img.me-avatar {
 }
 .pp-detail-cell .v {
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   margin-top: var(--sp-4);
 }
 
@@ -4639,7 +4639,7 @@ img.me-avatar {
 }
 .pp-dial-value {
   font-size: var(--fs-22);
-  font-weight: 500;
+  font-weight: var(--w-num);
   line-height: 1;
 }
 .pp-dial-unit {
@@ -4649,7 +4649,7 @@ img.me-avatar {
 }
 .pp-athleticism-band {
   font-size: var(--fs-14);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .pp-athleticism-desc {
   font-size: var(--fs-13);
@@ -4664,7 +4664,7 @@ img.me-avatar {
 }
 .pp-bench-head .t {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .pp-bench-head .s {
   font-size: var(--fs-12);
@@ -4722,11 +4722,11 @@ img.me-avatar {
 }
 .pp-bench-name {
   font-size: var(--fs-14);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .pp-bench-value {
   font-size: var(--fs-16);
-  font-weight: 500;
+  font-weight: var(--w-num);
 }
 .pp-bench-bar {
   height: 7px;
@@ -4746,7 +4746,7 @@ img.me-avatar {
 }
 .pp-bench-band {
   font-size: var(--fs-12);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .pp-bench-meta {
   font-size: var(--fs-12);
@@ -4783,7 +4783,7 @@ img.me-avatar {
 }
 .pp-flag-value {
   font-size: var(--fs-14);
-  font-weight: 500;
+  font-weight: var(--w-num);
 }
 .pp-flag-threshold {
   font-size: var(--fs-12);
@@ -4813,7 +4813,7 @@ img.me-avatar {
   border-radius: var(--r);
   padding: var(--sp-6) var(--sp-14);
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-family: inherit;
   cursor: pointer;
   white-space: nowrap;
@@ -4845,7 +4845,7 @@ img.me-avatar {
 }
 .pp-dial-title {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .pp-dial-window {
   font-size: var(--fs-12);
@@ -4853,7 +4853,7 @@ img.me-avatar {
 }
 .pp-dial-status {
   font-size: var(--fs-12);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   margin-top: var(--sp-10);
 }
 .pp-dial-meta {
@@ -4866,7 +4866,7 @@ img.me-avatar {
 }
 .pp-big-dial-value {
   font-size: var(--fs-24);
-  font-weight: 500;
+  font-weight: var(--w-num);
   line-height: 1;
 }
 .pp-big-dial-unit {
@@ -4881,7 +4881,7 @@ img.me-avatar {
   margin-top: var(--sp-12);
 }
 .pp-goal-label {
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .pp-goal-label.next-window {
   color: var(--warn-text);
@@ -4912,7 +4912,7 @@ img.me-avatar {
 }
 .pp-macro-value {
   font-size: var(--fs-22);
-  font-weight: 500;
+  font-weight: var(--w-num);
 }
 .pp-macro-label {
   font-size: var(--fs-12);
@@ -4942,13 +4942,13 @@ img.me-avatar {
 }
 .pp-weight-value {
   font-size: var(--fs-32);
-  font-weight: 500;
+  font-weight: var(--w-num);
   letter-spacing: -0.02em;
 }
 .pp-weight-value .u {
   font-size: var(--fs-15);
   color: var(--muted);
-  font-weight: 400;
+  font-weight: var(--w-regular);
   letter-spacing: normal;
 }
 .pp-weight-note {
@@ -5125,7 +5125,7 @@ img.me-avatar {
 }
 .plan-switch-label {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--faint);
 }
 .plan-switch-label[data-active='true'].plan-switch-label-basic {
@@ -5210,7 +5210,7 @@ img.me-avatar {
 }
 .gold-badge {
   font-size: var(--fs-10);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   padding: var(--sp-2) var(--sp-10);
   border-radius: var(--r);
   background: rgb(var(--highlight-rgb) / 0.22);
@@ -5234,7 +5234,7 @@ img.me-avatar {
   border-radius: var(--r);
   padding: var(--sp-10) var(--sp-16);
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-family: inherit;
   cursor: pointer;
   border: 1px solid var(--border);
@@ -5294,7 +5294,7 @@ img.me-avatar {
 }
 .set-row-label {
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   display: block;
 }
 .set-row-sub {
@@ -5572,7 +5572,7 @@ img.me-avatar {
   margin-top: var(--sp-6);
 }
 .dlg-line-medical {
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--bad-text);
 }
 /* PATTERN-S8 C9 (2026-09-13): retention's consequence in the same card as
@@ -5629,7 +5629,7 @@ img.me-avatar {
 }
 .pv-cat {
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .pv-meta {
   font-size: var(--fs-12);
@@ -5730,7 +5730,7 @@ img.me-avatar {
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--muted);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   font-size: var(--fs-13);
 }
 .setup-n-done {
@@ -5879,7 +5879,7 @@ img.me-avatar {
 }
 .prog-ex-head {
   border-top: none;
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--muted);
 }
 @media (max-width: 1100px) {
@@ -5911,7 +5911,7 @@ img.me-avatar {
 .tr-mode-switch a {
   padding: var(--sp-8) var(--sp-18);
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   border-radius: var(--r);
   text-decoration: none;
   color: var(--muted);
@@ -5930,7 +5930,7 @@ img.me-avatar {
   background: var(--surf);
   color: var(--text);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   text-decoration: none;
 }
 .tr-session-chip[aria-current='true'] {
@@ -5968,7 +5968,7 @@ img.me-avatar {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-15);
-  font-weight: 500;
+  font-weight: var(--w-num);
   margin-top: var(--sp-2);
 }
 .tr-read {
@@ -6011,7 +6011,7 @@ img.me-avatar {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-18);
-  font-weight: 500;
+  font-weight: var(--w-num);
 }
 .tr-dial-pct {
   font-size: var(--fs-12);
@@ -6032,7 +6032,7 @@ img.me-avatar {
   padding: var(--sp-8) var(--sp-16);
   border-radius: var(--r);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--text);
@@ -6132,7 +6132,7 @@ img.me-avatar {
 .tr-scatter-label {
   position: absolute;
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   pointer-events: none;
   white-space: nowrap;
   transform: translateY(50%);
@@ -6197,11 +6197,11 @@ img.me-avatar {
 }
 .tr-board-row.selected {
   background: rgb(var(--accent-rgb) / 0.07);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .tr-board-unit-header {
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--accent-text);
@@ -6366,13 +6366,13 @@ img.me-avatar {
 }
 .dash-flags-count {
   font-size: var(--fs-20);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
 .dash-flags-word {
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 /* Third line of the header block now, not a right-aligned scrap: it is the
    sentence that says how much of the count nobody has looked at. */
@@ -6399,7 +6399,7 @@ img.me-avatar {
 }
 .dash-flags-thresholds a {
   color: var(--accent-text);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   white-space: nowrap;
 }
 .dash-flags-list {
@@ -6458,7 +6458,7 @@ img.me-avatar {
 }
 .dash-flags-name {
   font-size: var(--fs-16);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.01em;
   white-space: nowrap;
 }
@@ -6528,7 +6528,7 @@ img.me-avatar {
 }
 .dash-flags-rule {
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
 }
 .dash-flags-eviline {
@@ -6548,7 +6548,7 @@ img.me-avatar {
   display: block;
   padding: var(--sp-12) var(--sp-18);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--accent-pill-text);
   text-decoration: none;
 }
@@ -6612,7 +6612,7 @@ button.dash-stat[aria-expanded='true'] {
 .dash-stat-state {
   margin-top: var(--sp-6);
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
 }
 button.dash-stat[aria-expanded='true'] .dash-stat-state {
@@ -6620,7 +6620,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .dash-stat-label {
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
@@ -6685,7 +6685,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lbw-stats-card .dash-stat-value {
   font-size: var(--fs-28);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 /* The mini bars. 4px is deliberate: enough to read a proportion at a glance,
    too thin to be mistaken for a chart with an axis. Segments are flex-weighted
@@ -6715,7 +6715,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-stat-value {
   font-family: var(--font-sans);
   font-size: var(--fs-32);
-  font-weight: 500;
+  font-weight: var(--w-num);
   line-height: 1.15;
   letter-spacing: -0.02em;
   margin-top: var(--sp-8);
@@ -6803,7 +6803,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .dash-week-head-title {
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .dash-week-head-meta {
   font-size: var(--fs-12);
@@ -6861,7 +6861,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .dash-week-col-day {
   font-size: var(--fs-14);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   white-space: nowrap;
 }
 .dash-week-col-md {
@@ -6885,7 +6885,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   gap: var(--sp-8);
   align-items: baseline;
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   line-height: 1.35;
 }
 .dash-week-act-dot {
@@ -6904,7 +6904,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   gap: var(--sp-6);
   margin-top: var(--sp-8);
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--bad-text);
 }
 @media (max-width: 900px) {
@@ -6934,7 +6934,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 
 .dash-timeline {
@@ -6955,7 +6955,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-15);
-  font-weight: 500;
+  font-weight: var(--w-num);
 }
 .dash-timeline-clock[data-past='true'] {
   color: var(--faint);
@@ -6990,7 +6990,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .dash-session-name {
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.02em;
 }
 .dash-session-meta {
@@ -7002,7 +7002,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-16);
-  font-weight: 500;
+  font-weight: var(--w-num);
   text-align: right;
 }
 .dash-session-count-label {
@@ -7041,12 +7041,12 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   display: grid;
   place-items: center;
   font-size: var(--fs-9);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   flex: none;
 }
 .dash-affected-name {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .dash-affected-why {
   font-size: var(--fs-12);
@@ -7098,7 +7098,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-lead-title {
   margin: var(--sp-4) 0 0;
   font-size: var(--fs-18);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.02em;
   line-height: 1.2;
 }
@@ -7125,7 +7125,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-lead-stat-n {
   font-family: var(--font-sans);
   font-size: var(--fs-32);
-  font-weight: 500;
+  font-weight: var(--w-num);
   line-height: 1.15;
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
@@ -7138,7 +7138,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .dash-lead-stat-k {
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.03em;
   text-transform: uppercase;
   color: var(--muted);
@@ -7168,7 +7168,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-lead-list-title {
   margin: 0;
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .dash-lead-list[data-tone='warn'] .dash-lead-list-title {
   color: var(--warn-pill-text);
@@ -7197,7 +7197,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .dash-lead-name {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .dash-lead-line,
 .dash-lead-reason {
@@ -7215,7 +7215,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .dash-lead-med {
   font-size: var(--fs-9);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -7399,7 +7399,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .nutr-plan-name {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .nutr-plan-sub {
   font-size: var(--fs-12);
@@ -7408,7 +7408,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .nutr-daytype-name {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .nutr-daytype-carb {
   font-family: var(--font-sans), system-ui, sans-serif;
@@ -7465,7 +7465,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .nutr-chase-name {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .nutr-chase-value {
   font-family: var(--font-sans), system-ui, sans-serif;
@@ -7498,7 +7498,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .nutr-plan-rules-title {
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .nutr-plan-rules-sub {
   font-size: var(--fs-13);
@@ -7563,7 +7563,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-20);
-  font-weight: 500;
+  font-weight: var(--w-num);
 }
 /* --muted, not --faint. These two sit on the rule panel's own tint, and
    --faint is derived for a plain surface: measured 4.07:1 there in dark.
@@ -7599,7 +7599,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-22);
-  font-weight: 500;
+  font-weight: var(--w-num);
   text-align: right;
 }
 .nutr-read-mean-label {
@@ -7629,7 +7629,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .nutr-totals-label {
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .nutr-totals-delta {
   font-family: var(--font-sans), system-ui, sans-serif;
@@ -7693,7 +7693,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .nutr-meal-name {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .nutr-meal-time {
   font-family: var(--font-sans), system-ui, sans-serif;
@@ -7734,7 +7734,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-12);
-  font-weight: 500;
+  font-weight: var(--w-num);
 }
 .nutr-meal-macro-label {
   font-size: var(--fs-9);
@@ -7759,7 +7759,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   gap: var(--sp-8);
   padding: 0 var(--sp-6) var(--sp-10);
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--faint);
@@ -7775,7 +7775,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .nutr-group-name {
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   text-transform: uppercase;
   letter-spacing: 0.1em;
   color: var(--accent-text);
@@ -7926,11 +7926,11 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   align-items: center;
   justify-content: center;
   font-size: var(--fs-14);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .nutr-selected-name {
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .nutr-selected-sub {
   font-size: var(--fs-12);
@@ -7968,7 +7968,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-28);
-  font-weight: 500;
+  font-weight: var(--w-num);
   letter-spacing: -0.02em;
 }
 .nutr-mass-unit {
@@ -8049,7 +8049,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 
 .nutr-checkin-title {
   font-size: var(--fs-12);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .nutr-checkin-footnote {
   font-size: var(--fs-11);
@@ -8071,7 +8071,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   border: 1px solid transparent;
 }
 .nutr-checkin-yes {
@@ -8218,7 +8218,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lbw-movers-title {
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.02em;
   margin: 0;
 }
@@ -8263,7 +8263,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lbw-mover-name {
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   margin: 0;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -8284,7 +8284,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-24);
-  font-weight: 500;
+  font-weight: var(--w-num);
   letter-spacing: -0.02em;
   color: var(--accent-text);
 }
@@ -8347,7 +8347,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .lbw-segmented button {
   font-family: inherit;
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   padding: var(--sp-8) var(--sp-16);
   border-radius: var(--r);
   border: none;
@@ -8414,7 +8414,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lbw-wall-head-name {
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--faint);
@@ -8427,7 +8427,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .lbw-wall-head-board {
   text-align: right;
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--faint);
@@ -8440,7 +8440,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   text-transform: none;
   letter-spacing: normal;
   margin-top: var(--sp-2);
-  font-weight: 400;
+  font-weight: var(--w-regular);
 }
 
 .lbw-group-row {
@@ -8449,7 +8449,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lbw-group-label {
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--accent-text);
@@ -8497,7 +8497,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   white-space: nowrap;
 }
 .lbw-athlete-row.is-selected .lbw-name {
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .lbw-age {
   font-family: var(--font-sans);
@@ -8520,7 +8520,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-10);
-  font-weight: 500;
+  font-weight: var(--w-num);
 }
 .lbw-value {
   font-family: var(--font-sans);
@@ -8563,7 +8563,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   align-items: center;
   justify-content: center;
   font-size: var(--fs-12);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   flex: none;
 }
 
@@ -8575,7 +8575,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lbw-sel-name {
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   margin: 0;
 }
 .lbw-sel-meta {
@@ -8585,7 +8585,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lbw-profile-link {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--accent-text);
 }
 
@@ -8608,7 +8608,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   background: var(--surf2);
   border-radius: var(--r);
   font-size: var(--fs-10);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
@@ -8636,7 +8636,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .lbw-sel-test {
   font-family: var(--font-sans), sans-serif;
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   margin: 0;
 }
 .lbw-sel-std {
@@ -8658,7 +8658,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 
 .lbw-leaders-title {
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   margin: 0;
 }
 .lbw-leaders-sub {
@@ -8680,7 +8680,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lbw-leader-board {
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
@@ -8702,7 +8702,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lbw-leader-value {
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   flex: none;
 }
 
@@ -8769,7 +8769,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-title {
   font-size: var(--fs-28);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.03em;
   margin: var(--sp-6) 0 0;
 }
@@ -8792,7 +8792,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   padding: var(--sp-8) var(--sp-16);
   border-radius: var(--r);
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-family: inherit;
   border: none;
   background: transparent;
@@ -8852,7 +8852,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 
 .sg-banner-title {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .sg-banner-sub {
   font-size: var(--fs-12);
@@ -8869,7 +8869,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   border: none;
   color: var(--faint);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   cursor: default;
   font-family: inherit;
 }
@@ -8880,7 +8880,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   border-radius: var(--r);
   padding: var(--sp-10) var(--sp-20);
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-family: inherit;
   cursor: pointer;
   transition: background var(--t-press);
@@ -8898,7 +8898,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   border-radius: var(--r);
   padding: var(--sp-10) var(--sp-16);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   font-family: inherit;
   color: var(--muted);
   cursor: pointer;
@@ -8924,7 +8924,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   border-radius: var(--r);
   padding: var(--sp-10) var(--sp-18);
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-family: inherit;
   cursor: pointer;
 }
@@ -8936,7 +8936,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-toolbar-label {
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--faint);
@@ -8975,7 +8975,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-clash-count {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .sg-clash-list {
   font-size: var(--fs-13);
@@ -8983,7 +8983,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-clash-link {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--accent-text);
   white-space: nowrap;
   background: none;
@@ -9044,7 +9044,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-day-head-weekday {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--text);
 }
 .sg-day-head[data-today='true'] .sg-day-head-weekday {
@@ -9063,7 +9063,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-day-head-md {
   font-size: var(--fs-12);
-  font-weight: 500;
+  font-weight: var(--w-num);
   color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
 }
 .sg-day-head-md[data-tone='md'] {
@@ -9135,7 +9135,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .wtp-head {
   height: 18px;
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.04em;
   color: var(--muted);
   text-align: center;
@@ -9181,7 +9181,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 
 .wtp-block-name {
   font-size: var(--fs-9);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   line-height: 1.15;
   color: var(--text);
   overflow: hidden;
@@ -9197,7 +9197,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 
 .sg-wiz-step {
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.02em;
   color: var(--muted);
 }
@@ -9437,14 +9437,14 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-fixture-meta {
   display: block;
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--bad-pill-text);
   white-space: nowrap;
 }
 .sg-fixture-name {
   display: block;
   font-size: var(--fs-12);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--text);
   white-space: nowrap;
   overflow: hidden;
@@ -9466,7 +9466,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-block-badge {
   margin-left: auto;
   font-size: var(--fs-9);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.02em;
   text-transform: uppercase;
   color: var(--warn-pill-text);
@@ -9485,7 +9485,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-block-name {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   line-height: 1.25;
   overflow: hidden;
   display: -webkit-box;
@@ -9616,15 +9616,15 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-phone-tile[data-match] .sg-phone-tile-meta {
   color: var(--bad-pill-text);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .sg-phone-tile-day {
   font-size: var(--fs-12);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .sg-phone-tile-date {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .sg-phone-tile-meta {
   font-size: var(--fs-11);
@@ -9641,7 +9641,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-phone-day-title {
   margin: 0;
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.02em;
 }
 .sg-phone-day-meta {
@@ -9684,7 +9684,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-phone-row-time {
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   white-space: nowrap;
   color: var(--muted);
 }
@@ -9699,7 +9699,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   align-items: center;
   gap: var(--sp-6);
   font-size: var(--fs-14);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .sg-phone-row-dot {
   width: 8px;
@@ -9737,7 +9737,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-phone-next-k {
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -9758,7 +9758,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-panel-name {
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .sg-panel-meta {
   font-size: var(--fs-13);
@@ -9785,7 +9785,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-fact-value {
   font-size: var(--fs-15);
-  font-weight: 500;
+  font-weight: var(--w-num);
   margin-top: var(--sp-4);
 }
 
@@ -9837,7 +9837,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   align-items: center;
   justify-content: center;
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .sg-helper {
   font-size: var(--fs-11);
@@ -9868,7 +9868,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   border-radius: var(--r);
   padding: var(--sp-10) var(--sp-16);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   font-family: inherit;
   cursor: pointer;
 }
@@ -9887,7 +9887,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-preview-head .sub {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--text);
 }
 .sg-preview-card {
@@ -9897,7 +9897,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-preview-expects {
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   /* Spec's literal warn-as-text value (§1: "Warn as text is #b07d0a, never
      #f6ab2f") is this file's existing --warn-text derivation, not a new
      hex — see the PP section's own precedent for reusing a contrast-checked
@@ -9926,7 +9926,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   gap: var(--sp-8);
   margin-top: var(--sp-16);
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--faint);
@@ -9948,7 +9948,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   align-items: center;
   gap: var(--sp-8);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   min-width: 0;
 }
 .sg-cmp-bar {
@@ -9980,7 +9980,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   padding: var(--sp-12) var(--sp-2);
   margin-top: var(--sp-4);
   border-top: 1px solid var(--border);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-size: var(--fs-13);
   align-items: center;
 }
@@ -10006,7 +10006,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-group-name {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .sg-group-mins {
   font-size: var(--fs-13);
@@ -10046,7 +10046,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   padding: 0;
   font-family: inherit;
   font-size: inherit;
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--accent-text);
   text-decoration: underline;
   text-underline-offset: 2px;
@@ -10105,13 +10105,13 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   margin: var(--sp-14) 0 0;
   text-align: center;
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .signin-return {
   margin: var(--sp-14) 0 0;
   text-align: center;
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .signin-forgot a,
 .signin-return a {
@@ -10192,7 +10192,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   right: -3px;
   font-size: var(--fs-11);
   line-height: 1;
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--warn-text);
 }
 
@@ -10222,7 +10222,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .flag-notice-heading {
   margin: 0 0 var(--sp-8);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
 }
 .flag-notice-list {
@@ -10333,11 +10333,11 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .pc-row-name {
   font-size: var(--fs-14);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .pc-row-value {
   font-size: var(--fs-16);
-  font-weight: 500;
+  font-weight: var(--w-num);
 }
 .pc-track {
   position: relative;
@@ -10424,7 +10424,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .cmp-card-title {
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   margin: 0;
 }
 .cmp-card-sub {
@@ -10500,7 +10500,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .cmp-picker-name {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   line-height: 1.2;
 }
 .cmp-picker-meta {
@@ -10519,7 +10519,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .cmp-against-label {
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted);
@@ -10569,7 +10569,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   position: absolute;
   transform: translate(var(--sp-6), -50%);
   font-size: var(--fs-11);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--accent);
   white-space: nowrap;
   pointer-events: none;
@@ -10715,7 +10715,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   padding: var(--sp-4) var(--sp-10);
   border-radius: var(--r);
   font-size: var(--fs-12);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   background: var(--rep-pill, rgb(var(--ink-rgb) / 0.06));
   color: var(--rep-pill-text, var(--muted));
 }
@@ -10794,13 +10794,13 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .tr-outlier-name {
   font-size: var(--fs-14);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   flex: 1;
   min-width: 0;
 }
 .tr-outlier-delta {
   font-size: var(--fs-14);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-variant-numeric: tabular-nums;
   flex: none;
 }
@@ -10861,7 +10861,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .tr-unit-mean {
   margin-left: auto;
   font-size: var(--fs-11);
-  font-weight: 400;
+  font-weight: var(--w-regular);
   color: var(--faint);
   font-variant-numeric: tabular-nums;
 }
@@ -10878,7 +10878,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .tr-legend-label {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .tr-legend-ramp {
   display: flex;
@@ -10948,7 +10948,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
     margin-block: 0;
     padding-block: 0;
     font-size: var(--fs-16);
-    font-weight: 700;
+    font-weight: var(--w-bold);
     color: var(--accent-text);
   }
   .roster td:nth-child(3) {
@@ -11012,7 +11012,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   text-decoration: none;
   color: var(--muted);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .tr-heat-toggle[aria-checked='true'] {
   color: var(--text);
@@ -11083,7 +11083,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .mute-switch-title {
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .mute-switch-sub {
   font-size: var(--fs-12);
@@ -11138,7 +11138,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   color: var(--muted);
   font-family: inherit;
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   cursor: pointer;
   transition: color var(--t-state), border-color var(--t-state);
 }
@@ -11254,7 +11254,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .cmpl-stat-label {
   font-size: var(--fs-11);
-  font-weight: 500;
+  font-weight: var(--w-num);
   letter-spacing: 0.13em;
   text-transform: uppercase;
   color: var(--faint);
@@ -11265,14 +11265,14 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .cmpl-stat-value {
   font-size: var(--fs-28);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
 }
 .cmpl-stat-value small {
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--muted);
   margin-left: var(--sp-2);
 }
@@ -11306,7 +11306,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
      cells at 281/587.6/997.3. */
   padding: 0 0 var(--sp-10);
   font-size: var(--fs-11);
-  font-weight: 500;
+  font-weight: var(--w-num);
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--faint);
@@ -11326,7 +11326,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .cmpl-band-name {
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.11em;
   text-transform: uppercase;
 }
@@ -11342,7 +11342,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .cmpl-name {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -11374,14 +11374,14 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   width: 74px;
   text-align: right;
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-variant-numeric: tabular-nums;
 }
 .cmpl-meter-pct {
   width: 46px;
   text-align: right;
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-variant-numeric: tabular-nums;
 }
 .cmpl-track {
@@ -11495,7 +11495,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .inj-head {
   padding: 0 var(--sp-4) var(--sp-10);
   font-size: var(--fs-11);
-  font-weight: 500;
+  font-weight: var(--w-num);
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--faint);
@@ -11543,7 +11543,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .inj-dot[data-status='unknown'] { background: var(--domain-recovery); }
 .inj-group-name {
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.11em;
   text-transform: uppercase;
 }
@@ -11558,7 +11558,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .inj-name {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .inj-unit {
   font-size: var(--fs-12);
@@ -11583,7 +11583,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   display: block;
   margin-top: var(--sp-4);
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .inj-flag[data-tone='warn'] { color: var(--warn-pill-text); }
 .inj-flag[data-tone='bad'] { color: var(--bad-pill-text); }
@@ -11620,7 +11620,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   display: grid;
   place-items: center;
   font-size: var(--fs-14);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   flex: none;
 }
 .ath-id-main {
@@ -11637,7 +11637,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .ath-position {
   font-size: var(--fs-18);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.02em;
 }
 .ath-meta {
@@ -11658,14 +11658,14 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .ath-card-title {
   font-size: var(--fs-16);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.02em;
   margin: 0;
 }
 .ath-latest {
   margin-left: auto;
   font-size: var(--fs-22);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.02em;
   color: var(--accent-pill-text);
   font-variant-numeric: tabular-nums;
@@ -11689,14 +11689,14 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .ath-tile-label,
 .ath-stat-label {
   font-size: var(--fs-10);
-  font-weight: 500;
+  font-weight: var(--w-num);
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--faint);
 }
 .ath-tile-value {
   font-size: var(--fs-22);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-variant-numeric: tabular-nums;
 }
 .ath-tile-value[data-empty='true'] {
@@ -11715,7 +11715,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .ath-stat-value {
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   margin-top: var(--sp-2);
   font-variant-numeric: tabular-nums;
 }
@@ -11735,7 +11735,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   width: 42px;
   text-align: right;
   font-size: var(--fs-12);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-variant-numeric: tabular-nums;
   flex: none;
 }
@@ -11758,7 +11758,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   padding: var(--sp-12) var(--sp-4) var(--sp-8);
   border-bottom: 1px solid var(--border);
   font-size: var(--fs-11);
-  font-weight: 500;
+  font-weight: var(--w-num);
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--faint);
@@ -11786,7 +11786,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .ath-test-delta {
   text-align: right;
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-variant-numeric: tabular-nums;
 }
 .ath-test-delta[data-tone='heavy'] { color: var(--bad-pill-text); }
@@ -11809,7 +11809,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .ath-note-title {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--warn-pill-text);
 }
 .ath-note-body {
@@ -11867,7 +11867,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .lb-head {
   padding: 0 var(--sp-4) var(--sp-10);
   font-size: var(--fs-11);
-  font-weight: 500;
+  font-weight: var(--w-num);
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--faint);
@@ -11894,17 +11894,17 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   color: var(--faint);
 }
 .lb-row[data-top='true'] .lb-rank {
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--accent-pill-text);
 }
 .lb-name {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
-.lb-row[data-top='true'] .lb-name { font-weight: 700; }
+.lb-row[data-top='true'] .lb-name { font-weight: var(--w-bold); }
 .lb-unit {
   font-size: var(--fs-13);
   color: var(--muted);
@@ -11917,7 +11917,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-size: var(--fs-13);
   font-variant-numeric: tabular-nums;
 }
-.lb-row[data-top='true'] .lb-value { font-weight: 700; }
+.lb-row[data-top='true'] .lb-value { font-weight: var(--w-bold); }
 .lb-gap {
   text-align: right;
   font-size: var(--fs-13);
@@ -11954,7 +11954,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lb-stats b {
   color: var(--text);
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .lb-meta {
   display: flex;
@@ -12028,7 +12028,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .pick-head {
   padding: 0 var(--sp-4) var(--sp-10);
   font-size: var(--fs-11);
-  font-weight: 500;
+  font-weight: var(--w-num);
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--faint);
@@ -12061,7 +12061,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .pick-name {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -12137,7 +12137,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .pick-group-name {
   font-size: var(--fs-11);
-  font-weight: 500;
+  font-weight: var(--w-num);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--accent-pill-text);
@@ -12208,14 +12208,14 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sw-kpi-label {
   font-size: var(--fs-11);
-  font-weight: 500;
+  font-weight: var(--w-num);
   letter-spacing: 0.11em;
   text-transform: uppercase;
   color: var(--faint);
 }
 .sw-kpi-value {
   font-size: var(--fs-28);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
   line-height: 1.15;
@@ -12225,7 +12225,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
    say which — so the tone carries the judgement and the arrow the direction. */
 .sw-kpi-trend {
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   font-variant-numeric: tabular-nums;
 }
 .sw-kpi-trend[data-tone='good'] { color: var(--good-pill-text); }
@@ -12276,7 +12276,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sw-load-head {
   font-size: var(--fs-10);
-  font-weight: 500;
+  font-weight: var(--w-num);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--faint);
@@ -12287,7 +12287,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sw-load-name {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -12301,7 +12301,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sw-load-acwr {
   text-align: right;
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-variant-numeric: tabular-nums;
 }
 /* Outside the descriptive band. Not a verdict — see the caption. */
@@ -12317,7 +12317,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sw-avail-name {
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
@@ -12354,7 +12354,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .week-nav b {
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   padding: 0 var(--sp-4);
   white-space: nowrap;
   font-variant-numeric: tabular-nums;
@@ -12494,7 +12494,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   white-space: nowrap;
   text-overflow: ellipsis;
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--text);
 }
 /* Three characters wide and right-aligned, so 0, 7 and 100 all end on the
@@ -12503,7 +12503,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   min-width: 3ch;
   text-align: right;
   font-size: var(--fs-13);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--muted);
 }
 .exlib-cat-chev {
@@ -12578,7 +12578,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .exlib-col {
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--faint);
@@ -12602,7 +12602,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .exlib-row-name {
   font-size: var(--fs-15);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   line-height: 1.35;
   color: var(--text);
   overflow-wrap: anywhere;
@@ -12624,7 +12624,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   background: var(--surf2);
   color: var(--text);
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   line-height: 1.6;
   white-space: nowrap;
   overflow: hidden;
@@ -12667,7 +12667,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .exlib-form-title {
   margin: 0;
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--text);
 }
 .exlib-form-help {
@@ -12695,12 +12695,12 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .exlib-flabel {
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
 }
 .exlib-fopt {
   font-size: var(--fs-11);
-  font-weight: 400;
+  font-weight: var(--w-regular);
   color: var(--faint);
 }
 /* Why the Unit picker beside Primary muscle is inert. Sits under the two-up
@@ -12793,7 +12793,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
      is the visible cost of one mark having one tracking, and it is the trade
      that was chosen. */
   font-family: var(--font-brand), system-ui, sans-serif;
-  font-weight: 800;
+  font-weight: var(--w-black);
   font-size: 386px;
   line-height: 1;
   letter-spacing: -0.035em;
@@ -13073,7 +13073,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .launch-title {
   font-family: var(--font-sans), system-ui, sans-serif;
-  font-weight: 800;
+  font-weight: var(--w-black);
   font-size: var(--fs-28);
   letter-spacing: -0.03em;
   color: var(--text);
@@ -13223,7 +13223,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   .launch-claim-h {
     margin: 0;
     font-family: var(--font-sans), system-ui, sans-serif;
-    font-weight: 800;
+    font-weight: var(--w-black);
     font-size: clamp(34px, 3.5vw, var(--fs-48));
     line-height: 1.1;
     letter-spacing: -0.03em;
@@ -13291,7 +13291,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
     display: block;
     margin-top: var(--sp-8);
     font-size: var(--fs-16);
-    font-weight: 700;
+    font-weight: var(--w-bold);
     white-space: nowrap;
     color: var(--text);
   }
@@ -13497,7 +13497,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sw-well-num {
   margin: 0;
   font-size: var(--fs-28);
-  font-weight: 800;
+  font-weight: var(--w-black);
   letter-spacing: -0.02em;
   line-height: 1.05;
 }
@@ -13511,14 +13511,14 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sw-well-eyebrow {
   margin: 0;
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--faint);
 }
 .sw-well-pct {
   margin: 0;
-  font-weight: 700;
+  font-weight: var(--w-bold);
 }
 .sw-well-flagged {
   margin-bottom: var(--sp-16);
@@ -13549,7 +13549,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .rsel-label {
   font-size: var(--fs-12);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--muted);
   white-space: nowrap;
 }
@@ -13664,7 +13664,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   display: inline-block;
   margin-bottom: var(--sp-12);
   font-size: var(--fs-13);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--accent-text);
 }
 .tst-manage:hover {
@@ -13795,7 +13795,7 @@ main:has(.rhead) > .back-btn > :first-child {
   border: 1px solid var(--border);
   color: var(--muted);
   font-family: inherit;
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-size: var(--fs-14);
   letter-spacing: 0;
   cursor: pointer;
@@ -13818,7 +13818,7 @@ main:has(.rhead) > .back-btn > :first-child {
   margin-top: var(--sp-16);
 }
 .rhead-eyebrow {
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-size: var(--fs-12);
   letter-spacing: 0.09em;
   text-transform: uppercase;
@@ -13846,7 +13846,7 @@ main:has(.rhead) > .back-btn > :first-child {
   background: var(--accent);
   border: 1px solid var(--accent);
   padding: var(--sp-14) var(--sp-20);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-size: var(--fs-16);
   color: #fff;
 }
@@ -13854,7 +13854,7 @@ main:has(.rhead) > .back-btn > :first-child {
   background: var(--surf);
   border: 1px solid var(--border);
   padding: var(--sp-14) var(--sp-20);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   font-size: var(--fs-14);
   color: var(--muted);
 }
@@ -13862,7 +13862,7 @@ main:has(.rhead) > .back-btn > :first-child {
 /* 4. Title ---------------------------------------------------------------- */
 .rhead-title {
   margin: var(--sp-10) 0 0;
-  font-weight: 800;
+  font-weight: var(--w-black);
   font-size: var(--fs-32);
   letter-spacing: -0.03em;
   color: var(--text);
@@ -13895,7 +13895,7 @@ main:has(.rhead) > .back-btn > :first-child {
   border-radius: var(--r);
   padding: var(--sp-10) var(--sp-18);
   font-family: inherit;
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-size: var(--fs-14);
   color: var(--muted);
   text-decoration: none;
@@ -13920,7 +13920,7 @@ main:has(.rhead) > .back-btn > :first-child {
 .rhead-tabrow .tr-mode-switch a {
   padding: var(--sp-10) var(--sp-18);
   font-size: var(--fs-14);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   border-radius: var(--r);
   color: var(--muted);
 }
@@ -13942,7 +13942,7 @@ main:has(.rhead) > .back-btn > :first-child {
   gap: var(--sp-12);
 }
 .rhead .rsel-label {
-  font-weight: 400;
+  font-weight: var(--w-regular);
   font-size: var(--fs-13);
   color: var(--muted);
   letter-spacing: 0;
@@ -13957,7 +13957,7 @@ main:has(.rhead) > .back-btn > :first-child {
   padding: var(--sp-10) var(--sp-40) var(--sp-10) var(--sp-16);
   min-width: 220px;
   font-family: inherit;
-  font-weight: 600;
+  font-weight: var(--w-semi);
   font-size: var(--fs-15);
   color: var(--text);
   cursor: pointer;
@@ -14044,18 +14044,18 @@ main:has(.rhead) > .back-btn > :first-child {
   letter-spacing: 0.12em;
   text-transform: uppercase;
   color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .rfig-count {
   margin: var(--sp-6) 0 0;
   font-size: var(--fs-16);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   color: var(--text);
 }
 .rfig-value {
   margin: 0;
   font-size: var(--fs-48);
-  font-weight: 600;
+  font-weight: var(--w-semi);
   line-height: 1.1;
   letter-spacing: -0.02em;
   color: var(--text);
@@ -14098,7 +14098,7 @@ main:has(.rhead) > .back-btn > :first-child {
 }
 .rtable-count {
   color: var(--text);
-  font-weight: 600;
+  font-weight: var(--w-semi);
 }
 .rtable-body {
   margin-top: var(--sp-10);
@@ -14124,7 +14124,7 @@ main:has(.rhead) > .back-btn > :first-child {
 .rhead-tabrow .sg-viewtab {
   padding: var(--sp-10) var(--sp-18);
   border-radius: var(--r);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-size: var(--fs-14);
   color: var(--muted);
   text-decoration: none;
@@ -14375,7 +14375,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   .ph-title {
     margin: 0;
     font-size: var(--fs-18);
-    font-weight: 800;
+    font-weight: var(--w-black);
     letter-spacing: -0.02em;
     color: var(--text);
     min-width: 0;
@@ -14417,7 +14417,7 @@ a.hist-row:active { background: var(--surf-sunken); }
     background: none;
     font-family: inherit;
     font-size: var(--fs-12);
-    font-weight: 600;
+    font-weight: var(--w-semi);
     color: var(--muted);
     text-decoration: none;
     cursor: pointer;
@@ -14427,7 +14427,7 @@ a.hist-row:active { background: var(--surf-sunken); }
      the staff bar, and the same rule the sidebar's own rows follow. */
   .ph-tab[data-active] {
     color: var(--accent);
-    font-weight: 700;
+    font-weight: var(--w-bold);
   }
   .ph-tab:focus-visible {
     outline: 2px solid var(--focus);
@@ -14458,7 +14458,7 @@ a.hist-row:active { background: var(--surf-sunken); }
     background: var(--accent);
     color: var(--on-accent);
     font-size: var(--fs-11);
-    font-weight: 700;
+    font-weight: var(--w-bold);
     line-height: 18px;
     text-align: center;
   }
@@ -14488,7 +14488,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   .ph-sheet-title {
     margin: 0 0 var(--sp-6);
     font-size: var(--fs-11);
-    font-weight: 600;
+    font-weight: var(--w-semi);
     letter-spacing: 0.12em;
     text-transform: uppercase;
     color: var(--muted);
@@ -14505,7 +14505,7 @@ a.hist-row:active { background: var(--surf-sunken); }
     background: none;
     font-family: inherit;
     font-size: var(--fs-15);
-    font-weight: 600;
+    font-weight: var(--w-semi);
     color: var(--text);
     text-decoration: none;
     text-align: left;
@@ -14642,7 +14642,7 @@ a.hist-row:active { background: var(--surf-sunken); }
 .empty-period-title {
   margin: 0;
   font-size: var(--fs-16);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   line-height: 1.3;
 }
 .empty-period-body {
@@ -14734,7 +14734,7 @@ a.hist-row:active { background: var(--surf-sunken); }
 .absence-well-k {
   margin: 0;
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -14757,7 +14757,7 @@ a.hist-row:active { background: var(--surf-sunken); }
 .ro-owner-k {
   margin: 0;
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.08em;
   text-transform: uppercase;
   color: var(--muted);
@@ -14775,7 +14775,7 @@ a.hist-row:active { background: var(--surf-sunken); }
 .pb-assign-headline {
   margin: 0 0 var(--sp-2);
   font-size: var(--fs-22);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: -0.02em;
   font-variant-numeric: tabular-nums;
 }
@@ -14789,7 +14789,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   align-items: center;
   min-height: 44px;
   color: var(--muted);
-  font-weight: 500;
+  font-weight: var(--w-num);
 }
 
 /* ---------- PATTERN-S9: consent, first run, install teaching (2026-09-13) ----------
@@ -14818,7 +14818,7 @@ a.hist-row:active { background: var(--surf-sunken); }
 .legal-pending[data-lines='6'] { min-height: 144px; }
 .legal-pending-ref {
   font-size: var(--fs-10);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.04em;
   color: var(--faint);
   text-transform: uppercase;
@@ -14856,7 +14856,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   border-radius: var(--r);
   padding: var(--sp-14) var(--sp-20);
   font-size: var(--fs-15);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-family: inherit;
   letter-spacing: -0.01em;
   cursor: pointer;
@@ -14888,7 +14888,7 @@ a.hist-row:active { background: var(--surf-sunken); }
 }
 .consent-block-list dt {
   font-size: var(--fs-11);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   letter-spacing: 0.04em;
   text-transform: uppercase;
   color: var(--faint);
@@ -14924,7 +14924,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   flex: 0 0 18px;
   width: 18px;
   text-align: center;
-  font-weight: 700;
+  font-weight: var(--w-bold);
   color: var(--faint);
 }
 .pw-rule[data-state='met'] .pw-rule-mark { color: var(--accent2-text); }
@@ -14988,7 +14988,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   border-radius: var(--r-round);
   background: var(--accent);
   color: var(--on-accent);
-  font-weight: 700;
+  font-weight: var(--w-bold);
   font-size: var(--fs-12);
   display: inline-flex;
   align-items: center;

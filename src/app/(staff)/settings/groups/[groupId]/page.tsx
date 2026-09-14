@@ -124,7 +124,7 @@ export default async function GroupDetailPage({
         <section className="card flush" aria-labelledby="past-title">
           <h2 className="card-title" id="past-title" style={{ padding: '16px 16px 8px' }}>
             Past members{' '}
-            <span className="tiny num" style={{ fontWeight: 400 }}>
+            <span className="tiny num" style={{ fontWeight: 'var(--w-regular)' }}>
               {past.length}
             </span>
           </h2>
@@ -149,7 +149,7 @@ export default async function GroupDetailPage({
                   {initials(member)}
                 </span>
                 <span style={{ minWidth: 0 }}>
-                  <span style={{ fontSize: 'var(--fs-14)', fontWeight: 700 }}>
+                  <span style={{ fontSize: 'var(--fs-14)', fontWeight: 'var(--w-bold)' }}>
                     {member.first_name} {member.last_name}
                   </span>
                   <span className="tiny" style={{ display: 'block', marginTop: 'var(--sp-2)' }}>

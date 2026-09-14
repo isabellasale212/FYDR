@@ -46,7 +46,7 @@ console.log('A1. an absent value is words, never a dash');
   const missing = rule(".hist-value[data-missing]");
   assert(/color:\s*var\(--faint\)/.test(missing), '.hist-value[data-missing] is --faint');
   assert(/font-size:\s*var\(--fs-13\)/.test(missing), 'at --fs-13');
-  assert(/font-weight:\s*600/.test(missing), 'and 600');
+  assert(/font-weight:\s*(?:600|var\(--w-semi\))/.test(missing), 'and 600');
   assert(/white-space:\s*nowrap/.test(missing), 'and does not wrap');
 }
 

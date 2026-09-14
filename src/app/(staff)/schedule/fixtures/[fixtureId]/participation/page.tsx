@@ -80,7 +80,7 @@ export default async function PostMatchSheetPage({ params, searchParams }: { par
                   <tr key={r.athlete_id} data-athlete={r.athlete_id} data-selection={current}>
                     <td className="nm" data-label="Athlete">
                       {r.first_name} {r.last_name}
-                      <span className="sub" style={{ display: 'block', fontWeight: 400 }}>
+                      <span className="sub" style={{ display: 'block', fontWeight: 'var(--w-regular)' }}>
                         {r.position ?? 'No position set'}
                         {r.squad_number !== null ? ` · #${r.squad_number}` : ''}
                       </span>

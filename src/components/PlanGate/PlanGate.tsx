@@ -59,7 +59,7 @@ export function PlanGateCard({
             <path d="M4.6 6V4.2a2.4 2.4 0 0 1 4.8 0V6" />
           </svg>
         </div>
-        <p style={{ fontSize: 'var(--fs-15)', fontWeight: 700, margin: 0 }}>{heading}</p>
+        <p style={{ fontSize: 'var(--fs-15)', fontWeight: 'var(--w-bold)', margin: 0 }}>{heading}</p>
       </div>
 
       <p style={{ fontSize: 'var(--fs-13)', color: 'var(--text)', margin: '14px 0 0' }}>{body}</p>

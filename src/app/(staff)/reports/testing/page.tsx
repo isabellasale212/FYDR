@@ -339,19 +339,19 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                       <div className="grid3">
                         <div className="card">
                           <p className="tiny">Median</p>
-                          <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 800 }}>
+                          <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 'var(--w-black)' }}>
                             {byTest.median === null ? (byTest.rows.length === 0 ? 'No results' : NOT_SHOWN) : `${formatNumber(byTest.median, byTest.definition.decimal_places)} ${byTest.definition.unit}`}
                           </p>
                         </div>
                         <div className="card">
                           <p className="tiny">Q1</p>
-                          <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 800 }}>
+                          <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 'var(--w-black)' }}>
                             {byTest.q1 === null ? (byTest.rows.length === 0 ? 'No results' : NOT_SHOWN) : formatNumber(byTest.q1, byTest.definition.decimal_places)}
                           </p>
                         </div>
                         <div className="card">
                           <p className="tiny">Q3</p>
-                          <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 800 }}>
+                          <p className="num" style={{ fontSize: 'var(--fs-20)', fontWeight: 'var(--w-black)' }}>
                             {byTest.q3 === null ? (byTest.rows.length === 0 ? 'No results' : NOT_SHOWN) : formatNumber(byTest.q3, byTest.definition.decimal_places)}
                           </p>
                         </div>

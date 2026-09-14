@@ -100,7 +100,7 @@ export function OrgLogoField({ orgId, orgName, initialLogoUrl }: Props) {
               alignItems: 'center',
               justifyContent: 'center',
               fontSize: 'var(--fs-16)',
-              fontWeight: 700,
+              fontWeight: 'var(--w-bold)',
               color: 'var(--muted)',
             }}
           >

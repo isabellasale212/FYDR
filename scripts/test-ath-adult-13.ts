@@ -57,7 +57,7 @@ console.log('\nA2. the summary line is the hero');
     'no loads at all reads "Not logged"');
   assert(/session\.session_rpe !== null \? formatNumber\(session\.session_rpe, 1\) : 'Not rated'/.test(page), 'no rating reads "Not rated"');
   const missing = rule('.rd-value[data-missing]');
-  assert(/color:\s*var\(--faint\)/.test(missing) && /font-size:\s*var\(--fs-16\)/.test(missing) && /font-weight:\s*600/.test(missing),
+  assert(/color:\s*var\(--faint\)/.test(missing) && /font-size:\s*var\(--fs-16\)/.test(missing) && /font-weight:\s*(?:600|var\(--w-semi\))/.test(missing),
     'a hero word is --faint, --fs-16, 600 — not a 48px word');
   const hero = rule('.sd-hero');
   assert(/grid-template-columns:\s*1fr 1fr/.test(hero) && /gap:\s*var\(--sp-14\)/.test(hero), '.sd-hero is a 1fr 1fr grid on --sp-14');
@@ -80,7 +80,7 @@ console.log('\nA4. an absent set value is words');
   assert(/data-missing=\{s\.load_kg === null \? '' : undefined\}/.test(list), 'a null load cell is marked');
   assert((list.match(/'Not logged'/g) ?? []).length === 2, 'both say "Not logged"');
   const cell = rule('table.tbl td[data-missing]');
-  assert(/color:\s*var\(--faint\)/.test(cell) && /font-weight:\s*600/.test(cell), 'in --faint, 600');
+  assert(/color:\s*var\(--faint\)/.test(cell) && /font-weight:\s*(?:600|var\(--w-semi\))/.test(cell), 'in --faint, 600');
   assert(!/const dash = /.test(page) && !/dash\(/.test(page), 'the detail page has no dash() any more');
   assert(/load not logged/.test(page) && /reps not logged/.test(page), 'the "What you reported" list says which value was not logged');
 }

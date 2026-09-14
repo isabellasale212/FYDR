@@ -47,7 +47,7 @@ console.log('\nA2. a summary card is a button and says which state it is in');
   assert(/background:\s*var\(--surf2\)/.test(closed), 'closed: a --surf2 well (the stat is the button text)');
   const open = rule("button.dash-stat[aria-expanded='true']");
   assert(/background:\s*var\(--surf\)/.test(open) && /box-shadow:\s*inset 0 0 0 1px var\(--accent\)/.test(open), 'open: the surface with an accent border');
-  assert(/font-size:\s*var\(--fs-11\)/.test(rule('.dash-stat-state')) && /font-weight:\s*600/.test(rule('.dash-stat-state')), 'the state line at --fs-11 / 600');
+  assert(/font-size:\s*var\(--fs-11\)/.test(rule('.dash-stat-state')) && /font-weight:\s*(?:600|var\(--w-semi\))/.test(rule('.dash-stat-state')), 'the state line at --fs-11 / 600');
 }
 
 console.log('\nA4. missing check-ins by run length, and "Not submitted"');

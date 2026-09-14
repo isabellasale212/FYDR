@@ -78,7 +78,7 @@ console.log('\nevery wordmark surface is set in the brand face');
     assert(r !== '', `${sel} exists (${where})`);
     assert(/font-family: var\(--font-brand\)/.test(r), `${sel} is set in --font-brand`);
     assert(!/var\(--font-sans\)/.test(r), `${sel} does NOT read the UI face`);
-    assert(/font-weight: 800/.test(r), `${sel} is weight 800`);
+    assert(/font-weight: (?:800|var\(--w-black\))/.test(r), `${sel} is weight 800`);
   }
 }
 
@@ -134,7 +134,7 @@ console.log('\nthe brand face is used by the mark and nothing else — the launc
   const h = rule('.launch-claim-h');
   assert(h !== '', '.launch-claim-h exists');
   assert(/font-family: var\(--font-sans\)/.test(h) && !/--font-brand/.test(h), 'the launch headline is Roboto — the brand face is the mark\'s alone again');
-  assert(/font-weight: 800/.test(h), 'at 800');
+  assert(/font-weight: (?:800|var\(--w-black\))/.test(h), 'at 800');
   assert(
     /letter-spacing: -0\.03em/.test(h) && !/letter-spacing: -0\.035em/.test(h),
     'at -0.03em, not the mark\'s -0.035em',

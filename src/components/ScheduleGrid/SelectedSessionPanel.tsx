@@ -252,7 +252,7 @@ export function SelectedSessionPanel({
             onChange={(e) => onNameChange(e.target.value)}
             placeholder="Session name"
             maxLength={80}
-            style={{ fontSize: 'var(--fs-16)', fontWeight: 700, padding: '8px 10px' }}
+            style={{ fontSize: 'var(--fs-16)', fontWeight: 'var(--w-bold)', padding: '8px 10px' }}
           />
   );
 

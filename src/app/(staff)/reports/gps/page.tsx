@@ -108,8 +108,8 @@ function DialView({ dial }: { dial: DialScore }) {
             <div className="tr-dial-of">of typical</div>
           </div>
         </Dial>
-        <div style={{ marginTop: 'var(--sp-6)', fontWeight: 700, fontSize: 'var(--fs-13)' }}>{dial.label}</div>
-        <div className="tiny" style={{ color: 'var(--faint)', fontWeight: 700 }}>
+        <div style={{ marginTop: 'var(--sp-6)', fontWeight: 'var(--w-bold)', fontSize: 'var(--fs-13)' }}>{dial.label}</div>
+        <div className="tiny" style={{ color: 'var(--faint)', fontWeight: 'var(--w-bold)' }}>
           Not scoreable
         </div>
         <div className="tiny num" style={{ color: 'var(--faint)' }}>
@@ -130,8 +130,8 @@ function DialView({ dial }: { dial: DialScore }) {
           <div className="tr-dial-of">of typical</div>
         </div>
       </Dial>
-      <div style={{ marginTop: 'var(--sp-6)', fontWeight: 700, fontSize: 'var(--fs-13)' }}>{dial.label}</div>
-      <div className="tiny" style={{ color: TONE[tone], fontWeight: 700 }}>
+      <div style={{ marginTop: 'var(--sp-6)', fontWeight: 'var(--w-bold)', fontSize: 'var(--fs-13)' }}>{dial.label}</div>
+      <div className="tiny" style={{ color: TONE[tone], fontWeight: 'var(--w-bold)' }}>
         {statusLabel}
       </div>
       <div className="tiny num" style={{ color: 'var(--faint)' }}>
@@ -157,7 +157,7 @@ function ComparisonTableView({ table }: { table: ComparisonTable }) {
               <span
                 key={c.key}
                 className="tiny"
-                style={{ textAlign: i === 0 ? 'left' : 'right', textTransform: 'uppercase', fontWeight: 700 }}
+                style={{ textAlign: i === 0 ? 'left' : 'right', textTransform: 'uppercase', fontWeight: 'var(--w-bold)' }}
                 title={GPS_TERM_TITLE[lookupKey]}
               >
                 {c.label}
@@ -457,7 +457,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
             <div className="card tr-overview">
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 'var(--fs-20)', fontWeight: 700, letterSpacing: '-0.02em' }}>v {selected.opponent}</span>
+                  <span style={{ fontSize: 'var(--fs-20)', fontWeight: 'var(--w-bold)', letterSpacing: '-0.02em' }}>v {selected.opponent}</span>
                   {selected.result ? (
                     <span className={`pill ${resultGood ? 'pill-good' : 'pill-bad'}`}>{selected.result}</span>
                   ) : null}
@@ -531,7 +531,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
                 <div className="tr-board-inner match">
                   <div
                     className="tr-board-row"
-                    style={{ gridTemplateColumns: 'minmax(180px, 1.4fr) 62px repeat(4, minmax(76px, 1fr))', fontWeight: 700, color: 'var(--faint)', fontSize: 'var(--fs-11)', textTransform: 'uppercase' }}
+                    style={{ gridTemplateColumns: 'minmax(180px, 1.4fr) 62px repeat(4, minmax(76px, 1fr))', fontWeight: 'var(--w-bold)', color: 'var(--faint)', fontSize: 'var(--fs-11)', textTransform: 'uppercase' }}
                   >
                     <span>Player</span>
                     <span className="r">Mins</span>
@@ -736,7 +736,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
           <div className="card tr-overview">
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 'var(--fs-20)', fontWeight: 700, letterSpacing: '-0.02em' }}>{selected.title}</span>
+                <span style={{ fontSize: 'var(--fs-20)', fontWeight: 'var(--w-bold)', letterSpacing: '-0.02em' }}>{selected.title}</span>
                 {md ? <span className="pill pill-accent">{md}</span> : null}
               </div>
               <div className="tr-facts">
@@ -801,7 +801,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
               <div className="tr-board-inner">
                 <div
                   className="tr-board-row"
-                  style={{ gridTemplateColumns: 'minmax(170px, 1.3fr) repeat(5, minmax(66px, 1fr))', fontWeight: 700, color: 'var(--faint)', fontSize: 'var(--fs-11)', textTransform: 'uppercase' }}
+                  style={{ gridTemplateColumns: 'minmax(170px, 1.3fr) repeat(5, minmax(66px, 1fr))', fontWeight: 'var(--w-bold)', color: 'var(--faint)', fontSize: 'var(--fs-11)', textTransform: 'uppercase' }}
                 >
                   <span>Player</span>
                   <span className="r" title={GPS_TERM_TITLE.td}>TD</span>
@@ -918,7 +918,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
                         color: 'var(--avatar-text)',
                         display: 'grid',
                         placeItems: 'center',
-                        fontWeight: 700,
+                        fontWeight: 'var(--w-bold)',
                         fontSize: 'var(--fs-14)',
                         flex: 'none',
                       }}
@@ -926,7 +926,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
                       {athletePanel.name.split(', ').reverse().map((n) => n[0]).join('')}
                     </div>
                     <div style={{ minWidth: 0 }}>
-                      <div style={{ fontWeight: 700, fontSize: 'var(--fs-16)' }}>{athletePanel.name}</div>
+                      <div style={{ fontWeight: 'var(--w-bold)', fontSize: 'var(--fs-16)' }}>{athletePanel.name}</div>
                       <div className="tiny" style={{ color: 'var(--faint)' }}>
                         {athletePanel.unit}
                       </div>
@@ -936,23 +936,23 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
                     <Link
                       href={`/squad/${selectedAthleteId}`}
                       className="tiny"
-                      style={{ marginLeft: 'auto', color: 'var(--accent-text)', fontWeight: 600 }}
+                      style={{ marginLeft: 'auto', color: 'var(--accent-text)', fontWeight: 'var(--w-semi)' }}
                     >
                       Profile
                     </Link>
                   </div>
 
                   <div className="tr-selected-panel-table" style={{ marginTop: 'var(--sp-14)' }}>
-                    <span className="tiny" style={{ fontWeight: 700 }}>
+                    <span className="tiny" style={{ fontWeight: 'var(--w-bold)' }}>
                       Metric
                     </span>
-                    <span className="tiny r" style={{ fontWeight: 700 }}>
+                    <span className="tiny r" style={{ fontWeight: 'var(--w-bold)' }}>
                       Today
                     </span>
-                    <span className="tiny r" style={{ fontWeight: 700 }}>
+                    <span className="tiny r" style={{ fontWeight: 'var(--w-bold)' }}>
                       vs self
                     </span>
-                    <span className="tiny r" style={{ fontWeight: 700 }}>
+                    <span className="tiny r" style={{ fontWeight: 'var(--w-bold)' }}>
                       vs unit
                     </span>
                     {athletePanel.rows.map((r) => (
@@ -1088,7 +1088,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
             ].map((r) => (
               <div key={r.ramp} className="tr-legend-row">
                 <span className="tr-legend-label">
-                  {r.label} <span style={{ color: 'var(--faint)', fontWeight: 400 }}>{r.note}</span>
+                  {r.label} <span style={{ color: 'var(--faint)', fontWeight: 'var(--w-regular)' }}>{r.note}</span>
                 </span>
                 <span className="tr-legend-ramp">
                   {[0, 1, 2, 3, 4].map((b) => (

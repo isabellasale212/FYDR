@@ -281,7 +281,7 @@ export default async function SquadWeeklyReportPage({ searchParams }: { searchPa
           )}
           {report.tiles.openFlagCount > report.attention.length ? (
             <p style={{ marginTop: 'var(--sp-12)', paddingTop: 'var(--sp-10)', borderTop: '1px solid var(--border)' }}>
-              <Link href={`/flags${groupIds.length > 0 ? `?groups=${groupIds.join(',')}` : ''}`} className="tiny" style={{ fontWeight: 600 }}>
+              <Link href={`/flags${groupIds.length > 0 ? `?groups=${groupIds.join(',')}` : ''}`} className="tiny" style={{ fontWeight: 'var(--w-semi)' }}>
                 See all {report.tiles.openFlagCount} open flags &rsaquo;
               </Link>
             </p>

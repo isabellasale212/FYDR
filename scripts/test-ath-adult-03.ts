@@ -134,7 +134,7 @@ console.log('\nA1/A2. nothing in the footer is dimmed, and a blocked action is n
 console.log('\nA1/A3. the count is its own line, legible in every state, and a chip when complete');
 {
   const count = rule('.subm-count');
-  assert(/font-size:\s*var\(--fs-13\)/.test(count) && /font-weight:\s*700/.test(count) && /color:\s*var\(--text\)/.test(count), '.subm-count is --fs-13 / 700 / --text (B6)');
+  assert(/font-size:\s*var\(--fs-13\)/.test(count) && /font-weight:\s*(?:700|var\(--w-bold\))/.test(count) && /color:\s*var\(--text\)/.test(count), '.subm-count is --fs-13 / 700 / --text (B6)');
   const complete = rule('.subm-count[data-complete]');
   assert(/background:\s*var\(--wash-good\)/.test(complete) && /border:\s*1px solid var\(--border-good\)/.test(complete), 'complete: --wash-good fill with --border-good — the 01/02 banner pair');
   assert(/border-radius:\s*var\(--r\)/.test(complete) && /padding:\s*var\(--sp-4\) var\(--sp-8\)/.test(complete), 'at --r-control, padding --sp-4 --sp-8 (B2, B7)');
@@ -208,7 +208,7 @@ console.log('\nA4/C-d. irreversibility is one line, the reasoning is behind a di
   const note = rule('.subm-note');
   assert(/font-size:\s*var\(--fs-12\)/.test(note) && /color:\s*var\(--muted\)/.test(note), 'the line is --fs-12 --muted');
   const why = rule('.subm-why-link');
-  assert(/font-size:\s*var\(--fs-13\)/.test(why) && /font-weight:\s*600/.test(why) && /color:\s*var\(--accent-text\)/.test(why), 'the link is --fs-13 / 600 / --accent-text');
+  assert(/font-size:\s*var\(--fs-13\)/.test(why) && /font-weight:\s*(?:600|var\(--w-semi\))/.test(why) && /color:\s*var\(--accent-text\)/.test(why), 'the link is --fs-13 / 600 / --accent-text');
   assert(/min-height:\s*44px/.test(rule('.subm-why summary')), 'and its summary is a 44px target');
   assert(/Once this is sent it can’t be edited\./.test(rpe) && !/subm-why/.test(rpe), 'RpeForm keeps its full sentence — A4 was approved for /check-in only');
   assert(/Saved on this phone first — it sends even if your signal drops\./.test(nutrition) && !/change this after you submit/.test(nutrition), 'NutritionCheckinForm keeps its existing line — D7, the footer copy is blocked until the 3b board is final');
@@ -222,7 +222,7 @@ console.log('\nA5/A6/A9. the scales: numbered ends, neutral "Not answered", no s
   assert(/color:\s*var\(--muted\)/.test(un) && !/--warn-text/.test(un), '.sc-v.un is --muted, not amber: an untouched form is a starting state, not a fault');
   assert(/\{1\} · \{copy\.low\}|1 · \{copy\.low\}/.test(scaleInput) && /5 · \{copy\.high\}/.test(scaleInput), 'the ends read "1 · {low}" and "5 · {high}"');
   const anchor = rule('.sc-a > span');
-  assert(/font-size:\s*var\(--fs-11\)/.test(anchor) && /font-weight:\s*600/.test(anchor) && /color:\s*var\(--muted\)/.test(anchor), 'anchor chips at --fs-11 / 600 / --muted');
+  assert(/font-size:\s*var\(--fs-11\)/.test(anchor) && /font-weight:\s*(?:600|var\(--w-semi\))/.test(anchor) && /color:\s*var\(--muted\)/.test(anchor), 'anchor chips at --fs-11 / 600 / --muted');
   assert(/background:\s*var\(--surf\)/.test(anchor) && /border:\s*1px solid var\(--border\)/.test(anchor) && /border-radius:\s*var\(--r\)/.test(anchor) && /padding:\s*var\(--sp-4\) var\(--sp-8\)/.test(anchor), 'on --surf, 1px --border, --r-control, --sp-4 --sp-8 (B2, B7)');
   const opt = rule('.dots .opt > span');
   assert(/background:\s*var\(--surf2\)/.test(opt), 'an unanswered option is filled --surf2 (A9)');
@@ -284,7 +284,7 @@ console.log('\nC-e/B9. out-of-range heart rate or body mass blocks Submit, inlin
   const invalid = rule(".disclose-body .field[aria-invalid='true']");
   assert(/border-color:\s*var\(--bad\)/.test(invalid) && /box-shadow:\s*0 0 0 3px rgb\(var\(--bad-rgb\) \/ 0\.18\)/.test(invalid), 'the field: 1px --bad and a 3px ring of --bad-rgb at 0.18 (A7)');
   const err = rule('.err-line');
-  assert(/font-size:\s*var\(--fs-13\)/.test(err) && /font-weight:\s*600/.test(err) && /color:\s*var\(--bad-text\)/.test(err), 'the message: --fs-13 / 600 / --bad-text');
+  assert(/font-size:\s*var\(--fs-13\)/.test(err) && /font-weight:\s*(?:600|var\(--w-semi\))/.test(err) && /color:\s*var\(--bad-text\)/.test(err), 'the message: --fs-13 / 600 / --bad-text');
   const dot = rule('.err-dot');
   assert(/background:\s*var\(--wash-bad\)/.test(dot) && /color:\s*var\(--bad-pill-text\)/.test(dot) && /border-radius:\s*var\(--r-round\)/.test(dot), 'its glyph: --wash-bad / --bad-pill-text / --r-round (a circle names itself since System A, 15 Sept 2026)');
   const help = rule('.help-line');

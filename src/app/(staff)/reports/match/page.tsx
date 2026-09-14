@@ -167,7 +167,7 @@ export default async function MatchReportPage({ searchParams }: { searchParams: 
                       <Link href={`/squad/${r.athlete_id}`} style={{ color: 'inherit', textDecoration: 'none' }}>
                         {r.first_name} {r.last_name}
                       </Link>
-                      <span className="sub" style={{ display: 'block', fontWeight: 400 }}>
+                      <span className="sub" style={{ display: 'block', fontWeight: 'var(--w-regular)' }}>
                         {r.position ?? 'No position set'}
                         {r.squad_number !== null ? ` · #${r.squad_number}` : ''}
                       </span>

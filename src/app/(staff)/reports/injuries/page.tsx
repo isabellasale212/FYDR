@@ -227,7 +227,7 @@ export default async function InjuryAvailabilityReportPage({
                     <span className="cmpl-stat-label">Available now</span>
                     <span className="cmpl-stat-value">
                       {availableNow}
-                      <small style={{ fontWeight: 400 }}>of {report.summary.athleteCount}</small>
+                      <small style={{ fontWeight: 'var(--w-regular)' }}>of {report.summary.athleteCount}</small>
                     </span>
                     <span className="cmpl-stat-sub">
                       {availablePct === null ? 'no athletes in scope' : `${availablePct}% of the squad`}

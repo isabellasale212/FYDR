@@ -163,7 +163,7 @@ export function MfaEnrollment({ timezone, roleRequiresMfa, initialFactors }: Pro
         <p
           className="banner"
           role="alert"
-          style={{ background: 'rgb(var(--warn-rgb) / 0.1)', borderColor: 'rgb(var(--warn-rgb) / 0.45)', color: 'var(--warn-text)' }}
+          style={{ background: 'rgb(var(--warn-rgb) / 0.1)', borderColor: 'rgb(var(--warn-rgb) / 0.45)', color: 'var(--warn-pill-text)' }}
         >
           <span className="g" aria-hidden="true">
             !

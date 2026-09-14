@@ -92,7 +92,7 @@ const TONE_VAR: Record<Tone, string> = {
 const TONE_TEXT_VAR: Record<Tone, string> = {
   accent: 'var(--accent-text)',
   accent2: 'var(--accent2-text)',
-  warn: 'var(--warn-text)',
+  warn: 'var(--warn-pill-text)', /* amber at 12px, 16 Sept 2026 (batch #12) */
   bad: 'var(--bad-text)',
   faint: 'var(--faint)',
 };

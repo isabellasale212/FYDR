@@ -1067,7 +1067,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
                             </span>
                             <span
                               className="num tr-outlier-delta"
-                              style={{ color: up ? 'var(--warn-text)' : 'var(--accent-text)' }}
+                              style={{ color: up ? 'var(--warn-pill-text)' : 'var(--accent-text)' }}
                             >
                               {delta}
                             </span>

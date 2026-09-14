@@ -192,12 +192,14 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
           </div>
           {/* PATTERN-S8 A5 (2026-09-13): the log says what it cannot show. The
               type chips are whatever the club's log holds, so an absent kind is
-              invisible — and sessions and schedule changes are not written yet
-              (§0al's batch), so nobody should read an empty filter as "nothing
-              happened". */}
+              invisible. CORRECTED 16 Sept 2026 (decision batch 2026-09-14 #14):
+              this used to say sessions and schedule changes were not written —
+              false since 0104. What the log genuinely does not carry is a
+              group's rename or archive (groups has no audit trigger; queued
+              with the trigger batch), so that is what the sentence names. */}
           <p className="tiny" style={{ marginTop: 'var(--sp-10)', color: 'var(--muted)' }}>
-            Sessions and schedule changes are not written to the log yet, so an empty filter there does not mean
-            nothing happened.
+            A group&rsquo;s rename or archive is not written to the log yet, so an empty filter there does not mean
+            nothing happened. Sessions, the schedule and everything else here is written as it happens.
           </p>
 
           <div className="chiprow" style={{ marginTop: 'var(--sp-14)', justifyContent: 'space-between' }}>

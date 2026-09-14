@@ -61,7 +61,9 @@ console.log('\nA4. the exports intro');
 console.log('\nA5. the log says what it cannot show');
 {
   const audit = strip(read('src/app/(staff)/settings/audit/page.tsx'));
-  assert(/Sessions and schedule changes are not written to the log yet, so an empty filter there does not mean nothing happened\./.test(audit.replace(/\s+/g, ' ')), 'the coverage sentence under the table');
+  /* Corrected 16 Sept 2026 (decision batch 2026-09-14 #14): sessions and the
+     schedule have been logged since 0104; groups is what is missing. */
+  assert(/A group&rsquo;s rename or archive is not written to the log yet, so an empty filter there does not mean nothing happened\. Sessions, the schedule and everything else here is written as it happens\./.test(audit.replace(/\s+/g, ' ')), 'the coverage sentence under the table');
 }
 
 console.log('\nA6. the reorder arrows');

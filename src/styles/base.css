@@ -93,6 +93,18 @@ textarea.num,
   border-radius: var(--r);
 }
 
+/* PLACEHOLDER TEXT, 16 Sept 2026 (decision batch 2026-09-14 #11). Nothing
+   set it, so every field showed the browser's own grey — #757575, 4.03:1 on
+   --field in light and 3.36 in dark — and check:contrast could not see a
+   colour the stylesheet never stated. One rule, the tinted-ground caption
+   ink: 4.90:1 on --field in light, 5.03 in dark. opacity: 1 because Firefox
+   fades a placeholder to 0.54 on its own. */
+input::placeholder,
+textarea::placeholder {
+  color: var(--faint-on-tint);
+  opacity: 1;
+}
+
 button:disabled,
 input:disabled,
 [aria-disabled='true'] {
@@ -1009,7 +1021,7 @@ a {
   color: var(--good-text);
 }
 .g-warn {
-  color: var(--warn-text);
+  color: var(--warn-pill-text); /* amber at 12–13px, 16 Sept 2026 (batch #12): 7.3:1 */
 }
 .g-bad {
   color: var(--bad-text);
@@ -2064,7 +2076,7 @@ a.hist-row:focus-visible {
   font-weight: var(--w-bold);
   letter-spacing: 0;
   text-transform: none;
-  color: var(--warn-text);
+  color: var(--warn-pill-text); /* amber at 12–13px, 16 Sept 2026 (batch #12): 7.3:1 */
 }
 /* --accent-pill-text, a step lighter than --accent-text: the tab bar has its
    own elevated background rather than the plain --surf that --accent-text is
@@ -4871,7 +4883,7 @@ img.me-avatar {
   font-weight: var(--w-bold);
 }
 .pp-goal-label.next-window {
-  color: var(--warn-text);
+  color: var(--warn-pill-text); /* amber at 12–13px, 16 Sept 2026 (batch #12): 7.3:1 */
 }
 .pp-goal-note {
   font-size: var(--fs-13);
@@ -7464,7 +7476,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   color: var(--bad-text);
 }
 .nutr-chase-warn {
-  color: var(--warn-text);
+  color: var(--warn-pill-text); /* amber at 12–13px, 16 Sept 2026 (batch #12): 7.3:1 */
 }
 .nutr-chase-reason {
   font-size: var(--fs-11);
@@ -7625,7 +7637,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   color: var(--muted);
 }
 .nutr-totals-delta.is-off {
-  color: var(--warn-text);
+  color: var(--warn-pill-text); /* amber at 12–13px, 16 Sept 2026 (batch #12): 7.3:1 */
 }
 .nutr-totals-track {
   position: relative;
@@ -8490,7 +8502,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans);
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-11);
-  color: var(--faint);
+  color: var(--muted-on-tint); /* on the selected row's tint in dark, --faint is 4.27 (16 Sept 2026) */
   flex: none;
 }
 
@@ -9889,7 +9901,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
      #f6ab2f") is this file's existing --warn-text derivation, not a new
      hex — see the PP section's own precedent for reusing a contrast-checked
      text token over a spec's raw one-off value. */
-  color: var(--warn-text);
+  color: var(--warn-pill-text); /* amber at 12–13px, 16 Sept 2026 (batch #12): 7.3:1 */
   margin-top: var(--sp-4);
 }
 .sg-preview-foot {
@@ -10153,7 +10165,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   border-radius: var(--r);
   background: rgb(var(--warn-rgb) / 0.14);
   border-inline-start: 2px solid rgb(var(--warn-rgb));
-  color: var(--warn-text);
+  color: var(--warn-pill-text); /* amber at 12–13px, 16 Sept 2026 (batch #12): 7.3:1 */
   font-size: var(--fs-12);
   line-height: var(--lh-base);
 }
@@ -10162,7 +10174,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
  * one-colour .is-off treatment, so a red bar always means "short" and an amber bar
  * always means "over", instead of one colour doing both jobs. */
 .nutr-totals-delta.is-over {
-  color: var(--warn-text);
+  color: var(--warn-pill-text); /* amber at 12–13px, 16 Sept 2026 (batch #12): 7.3:1 */
 }
 .nutr-totals-delta.is-under {
   color: var(--bad-text);
@@ -10180,7 +10192,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-size: var(--fs-11);
   line-height: 1;
   font-weight: var(--w-bold);
-  color: var(--warn-text);
+  color: var(--warn-pill-text); /* amber at 12–13px, 16 Sept 2026 (batch #12): 7.3:1 */
 }
 
 /* Gameplan 4.2 / audit S8: TrainingScatter had a y-axis with no unit and no
@@ -12420,9 +12432,6 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: inherit;
   font-size: var(--fs-14);
   transition: border-color var(--t-state);
-}
-.exlib-search-input::placeholder {
-  color: var(--faint);
 }
 .exlib-search-input:focus {
   border-color: var(--accent);

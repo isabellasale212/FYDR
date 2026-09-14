@@ -134,7 +134,7 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
     return slots;
   }
   const STATUS_GLYPH: Record<CellStatus, { text: string; color: string }> = {
-    dirty: { text: 'unsaved', color: 'var(--warn-text)' },
+    dirty: { text: 'unsaved', color: 'var(--warn-pill-text)' },
     saving: { text: 'saving…', color: 'var(--faint)' },
     saved: { text: 'saved ✓', color: 'var(--good-text)' },
     error: { text: 'failed — retry', color: 'var(--bad-text)' },

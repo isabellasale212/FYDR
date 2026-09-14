@@ -349,7 +349,7 @@ export function FlagCard({
            *  audience note on the standalone-note mutation above for why
            *  removing the field from medical staff was rejected. */}
           {viewerIsMedical ? (
-            <p className="cap" style={{ margin: 'var(--s-3) 0 0', color: 'var(--warn-text)' }}>
+            <p className="cap" style={{ margin: 'var(--s-3) 0 0', color: 'var(--warn-pill-text)' }}>
               Coaching staff read this field. Keep diagnosis and treatment detail out of
               it &mdash; that belongs on the injury record, where it stays with medical.
             </p>

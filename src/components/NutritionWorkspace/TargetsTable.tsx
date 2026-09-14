@@ -145,14 +145,14 @@ function AthleteRow({
      3.54:1 there. The -text tokens are theme-split and derived for exactly
      this: ink on a plain surface. */
   const stateColour =
-    state === 'above' ? 'var(--warn-text)' : state === 'below' ? 'var(--bad-text)' : 'var(--accent-text)';
+    state === 'above' ? 'var(--warn-pill-text)' : state === 'below' ? 'var(--bad-text)' : 'var(--accent-text)';
   const wash = selected
     ? 'rgb(var(--accent-rgb) / 0.07)'
     : athlete.change7d !== null && athlete.change7d <= -2
       ? 'rgb(var(--bad-rgb) / 0.05)'
       : 'transparent';
   const logged = athlete.loggedDatesThisWeek.length;
-  const loggedColour = logged <= 3 ? 'var(--bad-text)' : logged <= 5 ? 'var(--warn-text)' : 'var(--text)';
+  const loggedColour = logged <= 3 ? 'var(--bad-text)' : logged <= 5 ? 'var(--warn-pill-text)' : 'var(--text)';
 
   // Finding 42: "set" alone answered no question a coach would actually ask ("set to
   // what? by whom?"). The pill now reads as a sentence fragment with a subject and an

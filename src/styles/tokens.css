@@ -441,7 +441,12 @@
 
   /* Handoff §9 and §10. State opacities and the one blur radius the theme
      permits (the sticky group-filter bar and the athlete tab bar, nowhere
-     else). Single valued: an opacity is not a colour and does not flip. */
+     else). Single valued: an opacity is not a colour and does not flip.
+     THE 45% FADE ON AN UNAVAILABLE CONTROL IS DELIBERATE — Isabella, decision
+     batch 2026-09-14 #9: the fade signals unavailable, the reason on tap
+     carries the meaning, and darkening the text would make an unavailable
+     control look available. Its text measures under 4.5:1 through the fade
+     by design; the accessibility sweep records it, it does not fix it. */
   --o-disabled: 0.45;
   --o-gated: 0.62;
   --blur: 14px;
@@ -1121,7 +1126,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --lb-standard-met-rgb: 79 214 255;
   /* The selected wall row's sticky name-cell background, a flat literal the
      spec gives directly rather than as a computed alpha-over-white tint. */
-  --lb-row-selected: rgb(243 247 254);
+  --lb-row-selected: rgb(243 247 254); /* light; dark has its own since 16 Sept 2026 — see the dark blocks */
   /* The Result/Improvement/Standard lenses' warn and bad rank tints
      (rgb(var(--warn-rgb) / var(--lb-tint-alpha)) etc. in leaderboardWallMath.ts
      and this component's own LEGEND) at the alpha the spec's light mockup
@@ -1327,6 +1332,12 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --group-plum: #c08fd2;
 
   --lb-tint-alpha: 0.24;
+  /* The selected wall row's name cell, 16 Sept 2026 (decision batch
+     2026-09-14 #10): it was the light tint in both themes, so dark's --text
+     sat on it at 1.09:1 — invisible, not dim. The dark accent over --surf
+     at 0.12: --text 11.2:1, --muted 6.3:1; --faint 4.27, which is why
+     .lbw-age reads --muted-on-tint. */
+  --lb-row-selected: #1f2f56;
   --lb-warn-tint-text: #f6ab2f;
   --lb-bad-tint-text: #f5887d;
   /* See :root. Gold has to LIGHTEN on a dark band, not darken. */
@@ -1515,6 +1526,12 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --group-plum: #c08fd2;
 
     --lb-tint-alpha: 0.24;
+    /* The selected wall row's name cell, 16 Sept 2026 (decision batch
+       2026-09-14 #10): it was the light tint in both themes, so dark's --text
+       sat on it at 1.09:1 — invisible, not dim. The dark accent over --surf
+       at 0.12: --text 11.2:1, --muted 6.3:1; --faint 4.27, which is why
+       .lbw-age reads --muted-on-tint. */
+    --lb-row-selected: #1f2f56;
     --lb-warn-tint-text: #f6ab2f;
     --lb-bad-tint-text: #f5887d;
     /* See :root. Gold has to LIGHTEN on a dark band, not darken. */

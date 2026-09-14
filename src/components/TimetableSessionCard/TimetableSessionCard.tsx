@@ -320,7 +320,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
                           />
                         ) : null}
                         {!p.modified_reason && p.attendance === 'modified' ? (
-                          <p className="tiny" style={{ color: 'var(--warn-text)', marginTop: 'var(--sp-4)' }}>
+                          <p className="tiny" style={{ color: 'var(--warn-pill-text)', marginTop: 'var(--sp-4)' }}>
                             A reason is needed — unreadable a week from now without one.
                           </p>
                         ) : null}

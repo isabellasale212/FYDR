@@ -65,7 +65,9 @@ console.log('\nthe record and the sheet');
   assert(/## PATTERN-S6 — System states/.test(rec) && /### Step 1, answered from the code/.test(rec), 'the S6 record answers Step 1');
   const sheet = read('docs/design-decisions-outstanding.md');
   // Repointed 2026-09-13: D3 is struck with C1 (built), so its row reads ~~PATTERN-S6~~ | ~~D3~~.
-  assert(/\| PATTERN-S6 \| C10 \|/.test(sheet) && /\| ~~PATTERN-S6~~ \| ~~D3~~ \|/.test(sheet), 'C1–C10 and D1–D3 are on the sheet');
+  /* The reviewer's reconciliation (14 Sept) marks a ruled row "C10 · DECIDED ·
+     unbuilt"; the row is still the row. */
+  assert(/\| PATTERN-S6 \| C10( · [^|]*)? \|/.test(sheet) && /\| ~~PATTERN-S6~~ \| ~~D3~~ \|/.test(sheet), 'C1–C10 and D1–D3 are on the sheet');
   const spec = read('docs/athlete/screens/01-today.md');
   assert(/Nothing is waiting/.test(spec), '01-today.md describes the sent line');
 }

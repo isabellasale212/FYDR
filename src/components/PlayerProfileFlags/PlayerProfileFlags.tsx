@@ -238,7 +238,7 @@ export function PlayerProfileFlags({
                         : `Every coach and medical staff member in the club can read this, and so can ${flag.name.split(' ')[0]}, alongside the date the flag was raised.`}
                     </p>
                     {viewerIsMedical ? (
-                      <p className="cap" style={{ margin: 'var(--s-3) 0 0', color: 'var(--warn-text)' }}>
+                      <p className="cap" style={{ margin: 'var(--s-3) 0 0', color: 'var(--warn-pill-text)' }}>
                         Coaching staff read this field. Keep diagnosis and treatment detail
                         out of it &mdash; that belongs on the injury record, where it stays
                         with medical.

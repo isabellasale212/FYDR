@@ -1,8 +1,9 @@
 # System A adoption — the finished build, after only
 
-**Rendered 15 September 2026 at commit `b36e2e8` (layers one, two and three of
-`docs/decisions/design-system-adoption.md`, the two contrast context inks and
-the heat ramps' dark values).** One
+**Rendered 15 September 2026 at commit `5e75013` (layers one, two and three of
+`docs/decisions/design-system-adoption.md`, the two contrast context inks, the
+heat ramps' dark values, and the four rulings of the same evening — card padding
+18px among them).** One
 screenshot per screen, width and theme — after only; the before-and-after
 pairs used for verification are not here. Full page, clipped at 2400px.
 Nothing is deployed from this folder; it is the set to review before

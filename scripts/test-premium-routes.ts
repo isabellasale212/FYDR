@@ -50,6 +50,13 @@ const PREMIUM_SIGNALS = /gps|trainingReport/i; // healthkit dropped 2026-09-13: 
  *  needs a reason, because an empty reason is how a hole gets normalised. */
 const DELIBERATELY_UNGATED = new Map<string, string>([
   [
+    'src/app/(staff)/settings/retention/run/route.ts',
+    'Retention, not a GPS surface: the run retires GPS rows past the cutoff on ANY plan ' +
+      '(0126; docs/decisions/premium-downgrade.md, "kept does not mean kept forever"), so ' +
+      'the route must not gate on tier — a Basic club\'s hidden GPS history ages under the ' +
+      'same clock. It serves no GPS data; it only names the count it retired in the audit row.',
+  ],
+  [
     'src/app/(staff)/settings/imports/[batchId]/export/route.ts',
     'Data portability: the route\'s own header argues a club that downgrades must ' +
       'still be able to export the GPS it already collected, rather than have it ' +

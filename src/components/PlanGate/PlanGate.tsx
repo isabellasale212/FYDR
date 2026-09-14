@@ -95,11 +95,12 @@ export function PlanGateCard({
       </p>
 
       <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-18)' }}>
-        <Link href="/settings/club#plan" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-          See plans
+        {/* One place: the plan page (14 Sept 2026). */}
+        <Link href="/settings/plan" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+          See what Premium contains
         </Link>
         <Link href="/settings" className="btn-ghost" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
-          See what each plan includes
+          Back to Settings
         </Link>
       </div>
     </div>

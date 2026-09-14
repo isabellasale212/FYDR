@@ -25,3 +25,20 @@ export const GPS_FLAG_PLAN_NOTE = 'GPS \u00b7 Premium rule, dormant on the Basic
 export function flagDomainWord(domainWord: string, domain: string, premium: boolean): string {
   return domain === 'gps' && !premium ? GPS_FLAG_PLAN_NOTE : domainWord;
 }
+
+/** What the Premium plan contains — the inventory (the premium contents
+ *  report, 14 September 2026; docs/12-product-tiers.md §3). One list, read by
+ *  the plan page and the club card's compare columns, so they cannot drift.
+ *  Everything not here is in both plans. */
+export const PREMIUM_INVENTORY: readonly { label: string; sentence: string }[] = [
+  { label: 'GPS import', sentence: 'Vendor CSV and XLSX files, matched to athletes and sessions, with held rows and aliases. The hook everything below rests on.' },
+  { label: 'GPS report', sentence: 'Every GPS measure per athlete per session, with the squad band, exports and print.' },
+  { label: 'GPS on the athlete report', sentence: 'The athlete report\u2019s GPS section: sessions with data, total distance, high speed distance.' },
+  { label: 'GPS leaderboards', sentence: 'Boards ranked on a GPS measure. Boards on every other measure are in both plans.' },
+  { label: 'GPS flags and thresholds', sentence: 'Rules on a GPS measure, and the flags they raise.' },
+  { label: 'Analytics', sentence: 'The four panels \u2014 training load with session load or any GPS measure, wellness, gym volume, acute to chronic \u2014 one athlete against the squad, or two side by side. The whole destination.' },
+  { label: 'Named support', sentence: 'A named contact and a response commitment. Basic has best-effort support, stated plainly.' },
+];
+
+/** The price is not decided. A placeholder, drawn as one, never a number. */
+export const PRICE_PLACEHOLDER = 'Price \u2014 not yet decided. It is set before the plan is sold; nothing here is a quote.';

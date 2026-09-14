@@ -4,6 +4,7 @@ import { RpeSettingSwitch } from '@/components/RpeSettingSwitch/RpeSettingSwitch
 import { InjurySiteSettingSwitch } from '@/components/InjurySiteSettingSwitch/InjurySiteSettingSwitch';
 import { PlanPreviewSwitch } from '@/components/PlanPreviewSwitch/PlanPreviewSwitch';
 import { requireStaff } from '@/lib/session';
+import { PREMIUM_INVENTORY } from '@/lib/premiumWords';
 import { isPremium } from '@/lib/tier';
 import { isPlatformStaff } from '@/lib/platformStaff';
 import { SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
@@ -55,8 +56,8 @@ export default async function SettingsClubPage() {
             </h2>
             <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: '2px 0 0' }}>
               {onPremium
-                ? 'Premium · GPS, the training report and the analytics bar chart are on.'
-                : 'Basic · wellness, gym, nutrition, schedule, reports and exports.'}
+                ? 'Premium · the GPS import and everything built on it, and Analytics, are on.'
+                : 'Basic · everything but the Premium column below.'}
             </p>
             {/* Never let a preview be mistaken for the real plan. Without
                 this, an admin who forgot the switch was on would find GPS
@@ -78,28 +79,25 @@ export default async function SettingsClubPage() {
           <PlanPreviewSwitch onPremium={onPremium} canPreview={canPreviewTier} />
         </div>
 
+        {/* The two columns read one list, the plan page's inventory
+            (lib/premiumWords PREMIUM_INVENTORY): the Basic column is the
+            product without it, the Premium column is it. Until 15 September
+            2026 these lines were hand-typed here and had drifted — "Analytics
+            · metric builder, trends and table" under Basic, "bar chart" under
+            Premium — against a product where the whole destination is
+            Premium. The plan page is where the list is explained. */}
         <div className="plan-compare">
           <div className="plan-compare-card" data-active={!onPremium}>
             <p style={{ fontSize: 'var(--fs-13)', fontWeight: 700, margin: 0 }}>Basic</p>
             <div className="plan-compare-list">
-              <span>Gym programme</span>
+              <span>Wellness, RPE and gym logging</span>
+              <span>Gym and rehab programmes</span>
               <span>Nutrition</span>
               <span>Schedule and fixtures</span>
-              <span>Wellness</span>
-              <span>Reports · gym, wellness, testing, nutrition</span>
-              {/* This line used to read "Analytics · bar charts". The BAR
-                  CHART moved to the Premium column below, on the coach's own
-                  instruction ("move the analytics bar chart ... onto the
-                  premium plan side") — the screen did not. This is not a
-                  copy change: /analytics renders a locked panel in place of
-                  the bar view for a Basic club and leaves the rest of the
-                  screen live, so this list and the real gate agree line for
-                  line. The narrow scope, and what it does and does not
-                  contradict in 12-product-tiers.md §3.3 and
-                  screens/analytics.md, is argued in full in the analytics
-                  page component's own header. */}
-              <span>Analytics · metric builder, trends and table</span>
-              <span>Settings and exports</span>
+              <span>Injuries and availability</span>
+              <span>Testing and leaderboards</span>
+              <span>Reports and exports</span>
+              <span>Settings, users and the audit log</span>
             </div>
           </div>
           <div className="plan-compare-card" data-active={onPremium}>
@@ -108,28 +106,19 @@ export default async function SettingsClubPage() {
               {/* The design gives this badge the WARN pill, not the highlight
                   gold the gated-row "Premium" markers use. Two different jobs:
                   those mark a row as out of reach, this labels what the
-                  adjacent column contains. Following the design for the one it
-                  specifies and leaving the gate badges on gold. */}
+                  adjacent column contains. */}
               <span className="pill pill-warn">everything in Basic, plus</span>
             </div>
             <div className="plan-compare-list">
-              <span>GPS exports</span>
-              <span>Training report</span>
-              {/* Was "Analytics · heatmaps", which promised a visualisation
-                  /analytics has never rendered. Named for the one analytics
-                  capability that is actually Premium — the bar chart, which
-                  is what the instruction names. Heatmaps stay unbuilt in
-                  both tiers, so neither column may claim them; see
-                  screens/analytics.md. */}
-              <span>Analytics · bar chart, by athlete</span>
-              {/* "Apple Health connection" was the fourth line until
-                  2026-09-13: Apple Health is removed from the product
-                  (docs/platform-decision.md) — there is no native app and
-                  none is planned, and it was the one thing that needed
-                  one. Not a Premium feature, not deferred: gone. */}
+              {PREMIUM_INVENTORY.map((item) => (
+                <span key={item.label}>{item.label}</span>
+              ))}
             </div>
           </div>
         </div>
+        <p className="tiny" style={{ marginTop: 'var(--sp-10)' }}>
+          <Link href="/settings/plan">What each of these is, what is kept on Basic, and the price</Link> — the plan page.
+        </p>
 
       </section>
 

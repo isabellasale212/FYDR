@@ -29,7 +29,19 @@ app.**
 **The retention schedule**, one row per category, each saying what is kept, for
 how long, and **when the clock starts**, which is the part people get wrong.
 
-**Which categories are automated here** and which are handled elsewhere.
+**Which categories are automated here** and which are handled elsewhere. Three
+are real: import files past 30 days (deleted), closed injury records past their
+clinical window (redacted and archived), and — since migration 0126, 15
+September 2026 — **GPS records past the performance cutoff, retired**
+(soft-deleted through `gps_records.deleted_at`, never hard-deleted). Retired
+rows are filtered at the row by the table's policies and by the two definer
+reads, so no screen can show one; the service role sees them, and the SAR pack
+skips them. **On any plan:** a Basic club's hidden GPS rows age under the same
+clock (`docs/decisions/premium-downgrade.md`, "kept does not mean kept
+forever"). The consequence sentence names the count ("retire 412 GPS records
+older than the club's three kept seasons"), the result line and the
+`retention.run` audit row carry it (`gps_records_retired`). The other
+performance categories stay preview only.
 
 **A preview**, showing what would be removed if retention ran now. **Preview only**
 is labelled as such.

@@ -172,7 +172,8 @@ export function RetentionPanel() {
           </span>
           <span>
             {result.importBatchesDeleted} import file{result.importBatchesDeleted === 1 ? '' : 's'} deleted,{' '}
-            {result.injuriesRedacted} closed injury record{result.injuriesRedacted === 1 ? '' : 's'} redacted.
+            {result.injuriesRedacted} closed injury record{result.injuriesRedacted === 1 ? '' : 's'} redacted,{' '}
+            {result.gpsRecordsRetired} GPS record{result.gpsRecordsRetired === 1 ? '' : 's'} retired.
           </span>
         </div>
       ) : null}

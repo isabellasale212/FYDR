@@ -31,9 +31,18 @@ import { createAdminClient } from '@/lib/supabase/admin';
  *   deleted_at, the same column every other read path in this build
  *   already filters on — redacting through it is consistent with the
  *   whole schema, not a new pattern invented for this file.
+ *   `gps_records` past the performance cutoff (0126, 15 September 2026,
+ *   the premium inventory's "retention run's coverage of gps_records"):
+ *   soft-deleted through the deleted_at the migration added. Every
+ *   signed-in read is filtered AT THE ROW by the table's policies and
+ *   the two definer reads filter it themselves, so no query in the app
+ *   has to remember; the service role (this run, the SAR pack) sees the
+ *   rows, and the SAR pack skips them in code. Hidden GPS rows on a
+ *   Basic club age under the same clock (docs/decisions/premium-
+ *   downgrade.md: "kept does not mean kept forever").
  *   Everything else this build's own retention schedule names —
- *   wellness/training/gym/GPS/body composition — has no deleted_at
- *   column to redact through today. Adding one to five more tables and
+ *   wellness/training/gym/body composition — has no deleted_at column
+ *   to redact through today. Adding one to four more tables and
  *   auditing every read path in this app that queries them for the
  *   filter is real, larger, separate work; this pass computes and shows
  *   an honest count for those categories without ever touching a row,
@@ -64,6 +73,25 @@ export type RetentionPreview = {
    *  and carry no athlete here. */
   athletes: { total: number; current: number; names: string[] };
 };
+
+/** The club's completed seasons, most-recent-first, so index N is "the
+ *  (N+1)-th most recent completed season" — index 2 is the 3rd most recent
+ *  (the last one kept alongside the current season for the 3-season
+ *  categories), index 4 the 5th most recent (same, for the 5-season
+ *  categories). One read for the preview and the run, so the two cannot
+ *  disagree about the cutoff. */
+async function fetchCompletedSeasons(admin: ReturnType<typeof createAdminClient>, orgId: string): Promise<{ id: string; starts_on: string }[]> {
+  const currentSeasonRes = await admin.from('seasons').select('id, starts_on').eq('org_id', orgId).eq('is_current', true).is('deleted_at', null).maybeSingle();
+  const completedSeasonsRes = await admin
+    .from('seasons')
+    .select('id, starts_on')
+    .eq('org_id', orgId)
+    .eq('is_current', false)
+    .is('deleted_at', null)
+    .lt('ends_on', currentSeasonRes.data?.starts_on ?? '9999-12-31')
+    .order('starts_on', { ascending: false });
+  return completedSeasonsRes.data ?? [];
+}
 
 /** Read-only. Every count here is a real query against the real schema —
  *  nothing estimated, nothing invented — but nothing here writes
@@ -112,20 +140,7 @@ export async function computeRetentionPreview(orgId: string): Promise<RetentionP
     names: [...byAthlete.values()].filter((a) => a.current).map((a) => a.name).sort(),
   };
 
-  const currentSeasonRes = await admin.from('seasons').select('id, starts_on').eq('org_id', orgId).eq('is_current', true).is('deleted_at', null).maybeSingle();
-  const completedSeasonsRes = await admin
-    .from('seasons')
-    .select('id, starts_on')
-    .eq('org_id', orgId)
-    .eq('is_current', false)
-    .is('deleted_at', null)
-    .lt('ends_on', currentSeasonRes.data?.starts_on ?? '9999-12-31')
-    // Most-recent-first, so index N is "the (N+1)-th most recent completed
-    // season" — index 2 is the 3rd most recent (the last one kept
-    // alongside the current season for the 3-season categories), index 4
-    // the 5th most recent (same, for the 5-season categories).
-    .order('starts_on', { ascending: false });
-  const completedSeasons = completedSeasonsRes.data ?? [];
+  const completedSeasons = await fetchCompletedSeasons(admin, orgId);
   const completedSeasonCount = completedSeasons.length;
 
   // Performance-data categories need 3 (or 5) *completed* seasons to have
@@ -155,7 +170,7 @@ export async function computeRetentionPreview(orgId: string): Promise<RetentionP
       ? admin.from('gym_session_logs').select('id', { count: 'exact', head: true }).eq('org_id', orgId).lt('entry_date', performanceCutoff)
       : { count: 0 },
     performanceCutoff
-      ? admin.from('gps_records').select('id', { count: 'exact', head: true }).eq('org_id', orgId).lt('record_date', performanceCutoff)
+      ? admin.from('gps_records').select('id', { count: 'exact', head: true }).eq('org_id', orgId).is('deleted_at', null).lt('record_date', performanceCutoff)
       : { count: 0 },
     testCutoff
       ? admin.from('test_results').select('id', { count: 'exact', head: true }).eq('org_id', orgId).is('deleted_at', null).lt('test_date', testCutoff)
@@ -192,7 +207,7 @@ export async function computeRetentionPreview(orgId: string): Promise<RetentionP
         category: 'GPS records (current + 3 completed seasons)',
         count: gps.count ?? 0,
         cutoffDescription: performanceCutoff ? `Before ${performanceCutoff} (start of the 3rd-most-recent completed season)` : `Not yet eligible — ${completedSeasonCount} completed season${completedSeasonCount === 1 ? '' : 's'} on record`,
-        automated: false,
+        automated: true,
       },
       {
         category: 'Test results, body composition (current + 5 completed seasons)',
@@ -207,9 +222,11 @@ export async function computeRetentionPreview(orgId: string): Promise<RetentionP
 export type RetentionRunResult = {
   importBatchesDeleted: number;
   injuriesRedacted: number;
+  /** GPS rows retired (soft-deleted) past the performance cutoff, 0126. */
+  gpsRecordsRetired: number;
 };
 
-/** The only two categories computeRetentionPreview's own header names as
+/** The three categories computeRetentionPreview's own header names as
  *  real. Refuses outright unless dryRun is explicitly false — the
  *  spec's own words, "refuses to run without a dry-run mode", enforced
  *  as a parameter the caller cannot skip past by accident. */
@@ -266,8 +283,26 @@ export async function runRetention(orgId: string, dryRun: boolean): Promise<{ re
     injuriesRedacted = eligibleIds.length;
   }
 
+  /* GPS rows past the performance cutoff — the same cutoff the preview
+     counted them under — retired, never hard-deleted (CLAUDE.md rule 4).
+     On any plan: a Basic club's hidden rows age under the same clock. */
+  let gpsRecordsRetired = 0;
+  const seasonsForCutoff = await fetchCompletedSeasons(admin, orgId);
+  const performanceCutoff = seasonsForCutoff.length > 3 ? seasonsForCutoff[2]!.starts_on : null;
+  if (performanceCutoff) {
+    const { data: retired, error: gpsErr } = await admin
+      .from('gps_records')
+      .update({ deleted_at: new Date().toISOString() })
+      .eq('org_id', orgId)
+      .is('deleted_at', null)
+      .lt('record_date', performanceCutoff)
+      .select('id');
+    if (gpsErr) return { result: null, error: gpsErr.message };
+    gpsRecordsRetired = retired?.length ?? 0;
+  }
+
   return {
-    result: { importBatchesDeleted: deletedBatches?.length ?? 0, injuriesRedacted },
+    result: { importBatchesDeleted: deletedBatches?.length ?? 0, injuriesRedacted, gpsRecordsRetired },
     error: null,
   };
 }

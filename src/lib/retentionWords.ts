@@ -23,12 +23,14 @@ export function retentionConsequence(p: RetentionPreview): RetentionConsequence 
   const previewOnly = p.categories.filter((c) => !c.automated);
   const imports = automated.find((c) => /Import batch/.test(c.category))?.count ?? 0;
   const injuries = automated.find((c) => /Injury clinical/.test(c.category))?.count ?? 0;
-  const runnable = imports + injuries > 0;
+  const gps = automated.find((c) => /^GPS records/.test(c.category))?.count ?? 0;
+  const runnable = imports + injuries + gps > 0;
 
   const parts: string[] = [];
   if (imports) parts.push(`delete ${n(imports, 'import file', 'import files')} older than 30 days`);
   if (injuries) parts.push(`redact the clinical detail on ${n(injuries, 'closed injury record', 'closed injury records')} and archive ${injuries === 1 ? 'it' : 'them'}`);
-  const lead = runnable ? `Running now will ${parts.join(', and ')}. This cannot be undone.` : 'Nothing is eligible today: no import file is older than 30 days and no closed injury record has passed its retention period. Run has nothing to do.';
+  if (gps) parts.push(`retire ${n(gps, 'GPS record', 'GPS records')} older than the club's three kept seasons`);
+  const lead = runnable ? `Running now will ${parts.join(', and ')}. This cannot be undone.` : 'Nothing is eligible today: no import file is older than 30 days, no closed injury record has passed its retention period, and no GPS record is older than the club\'s three kept seasons. Run has nothing to do.';
 
   let people: string | null = null;
   if (injuries) {

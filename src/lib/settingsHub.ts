@@ -42,7 +42,11 @@ export function settingsGroups(o: {
         ...(o.isAdmin && o.counts.setup
           ? [{ key: 'setup', label: 'Setup checklist', sub: 'Athletes, groups, thresholds, staff, roles — what is still on a default', href: '/settings/setup', count: `${o.counts.setup.done} of ${o.counts.setup.total} done`, countTone: (o.counts.setup.done < o.counts.setup.total ? 'warn' : 'good') as 'warn' | 'good' }]
           : []),
-        { key: 'plan', label: 'Plan', sub: o.previewingTier ? 'Previewing Basic — the real plan is Premium' : 'What the club has bought', href: '/settings/club#plan', count: o.tierWord, countTone: o.previewingTier ? 'warn' : undefined },
+        /* The plan page (docs/decisions/absence-rule.md, 14 Sept 2026): the
+           one place a Basic club learns what Premium contains. The sport
+           scientist's; every other role reads the plan word here and the
+           reason. */
+        { key: 'plan', label: 'Plan', sub: o.previewingTier ? 'Previewing Basic — the real plan is Premium' : o.isAdmin ? 'What the club has bought, what Premium contains, what is kept' : 'Sport scientist only', href: o.isAdmin ? '/settings/plan' : null, count: o.tierWord, countTone: o.previewingTier ? 'warn' : undefined },
         { key: 'club-details', label: 'Club details', sub: o.isAdmin ? 'Name, sport, timezone and badge' : 'Read by the sport scientist', href: o.isAdmin ? '/settings/club' : null, count: null },
         { key: 'groups', label: 'Groups', sub: 'Squad groups and who is in them', href: '/settings/groups', count: n(o.counts.groups, 'group') },
         { key: 'thresholds', label: 'Thresholds', sub: 'The rules that raise a flag', href: '/settings/thresholds', count: `${o.counts.thresholds} active`, countTone: 'warn' },

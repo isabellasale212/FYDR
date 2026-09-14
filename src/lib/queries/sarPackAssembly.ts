@@ -83,7 +83,9 @@ async function gatherAthleteData(orgId: string, athleteId: string) {
     fetchAllPaged((f, t) => admin.from('nutrition_checkins').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
     fetchAllPaged((f, t) => admin.from('training_entries').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
     fetchAllPaged((f, t) => admin.from('gym_session_logs').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
-    fetchAllPaged((f, t) => admin.from('gps_records').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
+    /* 0126: rows retention has retired are not held for the athlete any more —
+       the service role sees them, so the pack must skip them itself. */
+    fetchAllPaged((f, t) => admin.from('gps_records').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).is('deleted_at', null).order('id').range(f, t)),
     fetchAllPaged((f, t) => admin.from('test_results').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
     fetchAllPaged((f, t) => admin.from('body_composition').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),
     fetchAllPaged((f, t) => admin.from('session_attendance').select('*').eq('org_id', orgId).eq('athlete_id', athleteId).order('id').range(f, t)),

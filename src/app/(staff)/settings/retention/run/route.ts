@@ -33,7 +33,7 @@ export async function POST(request: Request) {
     action: 'retention.run',
     entity_type: 'organisation',
     entity_id: orgId,
-    metadata: { import_batches_deleted: result.importBatchesDeleted, injuries_redacted: result.injuriesRedacted },
+    metadata: { import_batches_deleted: result.importBatchesDeleted, injuries_redacted: result.injuriesRedacted, gps_records_retired: result.gpsRecordsRetired },
   });
 
   return NextResponse.json({ result });

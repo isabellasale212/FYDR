@@ -46,9 +46,13 @@ console.log('\n2. the hub, the two levels down, and the links');
   const account = strip(read('src/app/(staff)/settings/profile/page.tsx'));
   assert(/<AvatarUploadForm/.test(account) && /<StaffProfileEditForm/.test(account) && /<ChangePasswordForm/.test(account) && /<MfaEnrollment/.test(account) && /id="password"/.test(account), '/settings/profile: profile, avatar, password, two-factor, with the #password anchor');
   assert(/href="\/settings\/profile#password"/.test(hub), 'the two-factor notice points at the account level');
-  for (const f of ['src/components/Sidebar/Sidebar.tsx', 'src/components/PlanGate/PlanGate.tsx', 'src/components/StaffPhoneShell/StaffPhoneShell.tsx']) {
-    assert(/\/settings\/club#plan/.test(read(f)) && !/"\/settings#plan"/.test(read(f)), `${f.split('/').slice(-1)[0]} links the plan at its new level`);
+  /* 15 Sept 2026: the "Previewing Basic" links keep pointing at the plan card
+     (the switch lives there); the PlanGate pages send discovery to the plan
+     page, the one place. */
+  for (const f of ['src/components/Sidebar/Sidebar.tsx', 'src/components/StaffPhoneShell/StaffPhoneShell.tsx']) {
+    assert(/\/settings\/club#plan/.test(read(f)) && !/"\/settings#plan"/.test(read(f)), `${f.split('/').slice(-1)[0]} links the preview at the plan card`);
   }
+  assert(/href="\/settings\/plan"/.test(read('src/components/PlanGate/PlanGate.tsx')), 'PlanGate links the plan page');
   const css = strip(read('src/styles/base.css'));
   assert(/\.set-groups\s*\{[^}]*repeat\(4, minmax\(0, 1fr\)\)/.test(css) && /@media \(max-width: 767px\) \{\s*\.set-groups \{\s*grid-template-columns: minmax\(0, 1fr\);/.test(css), 'four across at desktop, one column at a phone');
   assert(/four groups/i.test(read('docs/screens/47-settings.md')), 'the spec says so');

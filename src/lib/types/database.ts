@@ -1053,6 +1053,7 @@ export type Database = {
         source: Database["public"]["Enums"]["data_source"]
         import_batch_id: string | null
         created_at: string
+        deleted_at: string | null
       }
       Insert: {
         id?: string
@@ -1078,6 +1079,7 @@ export type Database = {
         source?: Database["public"]["Enums"]["data_source"]
         import_batch_id?: string | null
         created_at?: string
+        deleted_at?: string | null
       }
       Update: {
         id?: string
@@ -1103,6 +1105,7 @@ export type Database = {
         source?: Database["public"]["Enums"]["data_source"]
         import_batch_id?: string | null
         created_at?: string
+        deleted_at?: string | null
       }
       Relationships: [
         {
@@ -5139,6 +5142,15 @@ export type Database = {
         p_total_stages: number
       }
       Returns: unknown
+    }
+    premium_history_kept: {
+      Args: Record<string, never>
+      Returns: {
+          gps_rows: number
+          first_date: string
+          last_date: string
+          import_batches: number
+        }[]
     }
     preview_threshold: {
       Args: {

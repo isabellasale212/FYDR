@@ -737,6 +737,20 @@ client check must be a mirror of it rather than the thing itself. This is the sa
 > through the denied screen, **no upsell page**; a Basic club learns what premium holds on
 > the Settings plan page (to be built with the premium work). `supabase/tests/800_analytics_tier_gate_test.sql`.
 >
+> **The plan page and the three gaps, 15 September 2026, migration
+> `0126_premium_plan_page_and_gaps.sql`** (decision batch, "Premium contents"). `/settings/plan`
+> is the one place a Basic club learns what Premium contains (`lib/premiumWords.ts`
+> `PREMIUM_INVENTORY`; the price a placeholder, not decided). The gaps: **a tier flip is
+> audited** — `organisations_tier_audit` writes `org.tier.changed {from, to}` with whatever
+> actor the session carries (null from the console), so keep-and-hide has a date; **the
+> retention run covers `gps_records`** — `deleted_at` added, the two SELECT policies and the
+> UPDATE policy gain `deleted_at is null` (filtered at the row, so no read can forget),
+> `analytics_daily_rows` and `compute_leaderboard` filter it themselves, the run retires rows
+> past the performance cutoff on any plan and the SAR pack skips them; **the one-place
+> sentence** — `premium_history_kept()` tells the sport scientist what GPS history the club
+> holds on any plan, so the plan page can say "kept and returns with Premium" to a club whose
+> staff cannot read the table. `supabase/tests/810_premium_plan_page_and_gaps_test.sql`.
+>
 > **Still application-layer, on purpose:**
 > - **The analytics bar chart** — a drawing of gym and wellness data every club holds.
 >   There is no premium row to hide, only a premium view.

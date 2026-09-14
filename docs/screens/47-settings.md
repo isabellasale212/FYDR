@@ -101,8 +101,36 @@ only" beside it.
   masked site renders as the word "Injury". The switch is the sport
   scientist's; every other role reads the state as a sentence. Each flip writes
   an audit row (`org.coach_sees_injury_site.changed`). For the sport scientist
-  only, the **Club details** form (name, sport, timezone, country, logo). The sidebar's and the
-  plan gate's "see the plan" links point at `/settings/club#plan`.
+  only, the **Club details** form (name, sport, timezone, country, logo). The
+  plan card's two columns read the plan page's inventory
+  (`lib/premiumWords.ts`, `PREMIUM_INVENTORY`) and link to the page; the
+  sidebar's and the phone shell's "Previewing Basic" links still point at
+  `/settings/club#plan`, where the preview switch lives.
+- **`/settings/plan`** — eyebrow "Settings · Club". **The plan page**
+  (`docs/decisions/absence-rule.md`, "Where a basic club learns premium
+  exists", 14 September 2026; built 15 September): **the one place a Basic
+  club learns what Premium contains.** D-20 hides every wholly premium
+  destination and shows a card for a premium region; nothing else in the
+  product teases, and this page is where the absent things are named. Sport
+  scientist only (the hub's Plan row is closed with its reason for everyone
+  else; the URL refuses through the denied screen). Three cards: **This club
+  is on Basic / Premium** — what that means in a sentence, when the plan last
+  changed (the `org.tier.changed` audit row the tier trigger writes, 0126) and
+  that the plan is changed with Fydr, not here; **What Premium contains** —
+  the seven items of the inventory, each with one sentence (GPS import, GPS
+  report, GPS on the athlete report, GPS leaderboards, GPS flags and
+  thresholds, Analytics, Named support) and **the price as a placeholder**,
+  drawn as one (the pending pattern) because it is not decided — never a
+  number; **What is kept while the club is on Basic / Your GPS history** —
+  from `premium_history_kept()` (0126, a definer read the sport scientist may
+  make on any plan, counts and dates only): "598 GPS records from Tue 14 Jul to
+  Sat 12 Sept are kept. They are hidden from every screen while the club is on
+  Basic and return with Premium — nothing was deleted when the plan changed."
+  (on Premium, the same figures with "if the club ever leaves Premium…"; with
+  none, "This club holds no GPS records."), and that kept does not mean kept
+  forever — GPS records age under the club's normal retention on any plan,
+  with the link to Data retention. The `PlanGate` pages (the GPS report, the
+  imports) send their "See what Premium contains" here.
 - **`/settings/profile`** — eyebrow "Settings · You". Profile (name, club, role
   as words), avatar upload, the profile edit form, then under `#password` the
   change-password form and two-factor enrolment.
@@ -127,6 +155,7 @@ None. Settings displays configuration, not measurements.
 | Two factor login | `/settings/profile#password` | Enrols or manages a second factor | Stays there | Registers a factor | Any staff, for themselves. **Required for some roles** | Yes | Never |
 | Club details | `/settings/club` | Changes the club's name, sport, timezone, country and logo | Stays there | Updates the organisation | **Sport scientist only** in the agreed model | Form submission | Absent for everyone else |
 | Session RPE switch | `/settings/club#rpe` | Turns the session rating on or off for the whole club; the database stops generating RPE expectations while it is off | Stays there | `organisations.collects_rpe` and an audit row | **Sport scientist only**; other roles read the state | None — reversible, and both consequences are on the card | Never absent: the sentence stands in for the switch |
+| Plan | `/settings/plan` | Reads what the club is on, what Premium contains, the price placeholder, and what GPS history is kept | Stays there | Nothing | **Sport scientist only** | None | Closed row with its reason for every other role |
 | Coaches and the injury site switch | `/settings/club#injury-site` | Decides whether a coach reads the body site and side of an open injury; the database masks both while it is off | Stays there | `organisations.coach_sees_injury_site` and an audit row | **Sport scientist only**; other roles read the state | None — reversible, and both positions are on the card | Never absent: the sentence stands in for the switch |
 | Users, Audit, Retention, Subject access | People and Data groups | Open those screens | Their own addresses | Nothing | As each screen | None | Never absent: closed rows state their reason instead of linking |
 | Groups, Thresholds, Notifications, Exports, Imports | Club and Data groups | Open those screens | Their own addresses | Nothing | As each screen | None | Never |

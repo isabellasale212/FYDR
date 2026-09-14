@@ -41,8 +41,8 @@ export const RETENTION_SCHEDULE: readonly RetentionScheduleRow[] = [
     category: 'GPS records',
     retention: 'Current season plus 3 completed seasons.',
     clockStartsOn: 'Season end',
-    automated: false,
-    note: 'Same gap as above — gps_records has no deleted_at column.',
+    automated: true,
+    note: 'Retired (soft-deleted, migration 0126) past the cutoff on any plan — a Basic club\'s hidden GPS rows age under the same clock. Filtered at the row for every read; the service role sees them.',
   },
   {
     category: 'Test results, body composition',

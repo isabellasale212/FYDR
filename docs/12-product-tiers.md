@@ -719,6 +719,20 @@ client check must be a mirror of it rather than the thing itself. This is the sa
 > yours, not the plan's; the athlete app's premium surfaces stay app-gated. Fydr staff
 > previewing Basic do so on the real tier at the database: a preview is a view.
 >
+> **Analytics closed at the database, 14 September 2026, migration
+> `0125_analytics_tier_gate.sql`** (`docs/decisions/absence-rule.md`, "Analytics is
+> premium": a wholly premium destination covering every metric, GPS included). The
+> four analytics panels read every source — training, wellness, gym, GPS — through one
+> SECURITY DEFINER function, `analytics_daily_rows(source_table, from, to, athlete)`,
+> which returns **no rows** unless `auth_org_is_premium()` (0119's mechanism) and the
+> caller is the sport scientist (D-02); it dispatches on `metric_definitions.source_table`'s
+> names, never a `gps.%` key prefix (0094's argument). The three non-GPS tables stay
+> every club's at the row — the dashboard, the reports and the athlete's own screens read
+> them — so the gate is the destination's, not the data's. At the route D-20 holds
+> unchanged: absent from a Basic club's sidebar (`PREMIUM_ONLY`), refused at the URL
+> through the denied screen, **no upsell page**; a Basic club learns what premium holds on
+> the Settings plan page (to be built with the premium work). `supabase/tests/800_analytics_tier_gate_test.sql`.
+>
 > **Still application-layer, on purpose:**
 > - **The analytics bar chart** — a drawing of gym and wellness data every club holds.
 >   There is no premium row to hide, only a premium view.

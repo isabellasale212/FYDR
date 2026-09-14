@@ -133,7 +133,7 @@ decision sheet.
 
 | Page | Sport scientist | Coach | Medic | S&C | Nutritionist |
 |---|---|---|---|---|---|
-| Analytics **[Pr]** | V | **X** | **X** | **X** | **X** |
+| Analytics **[Pr]** — premium at the database since 0125 (14 Sept 2026): `analytics_daily_rows` returns no rows to a Basic club or to any role but the sport scientist; every metric, GPS included | V | **X** | **X** | **X** | **X** |
 | Build an analytics view **[Pr]** | VEC | **X** | **X** | **X** | **X** |
 | Leaderboard | VECD | VECD | V | VECD | V |
 | Testing | VEC | VEC | V | VEC | X |

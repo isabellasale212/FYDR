@@ -6,22 +6,42 @@
 
 Four fixed panels of bars — **Training load**, **Wellness**, **Gym volume**,
 **Acute to chronic** — one athlete against the squad's spread, or against the
-club's zone where one is set; or two athletes side by side. **Premium package
-only, and sport scientist only.** PATTERN-S7 C6, built 14 September 2026 from
-`docs/designs/PATTERN-S7-final /` (artboards 9–11); it replaced the four
-day-only boards with their metric dropdowns, and the builder at
-`/analytics/build` (D2: it stayed until C6 replaced it).
+club's zone where one is set; or two athletes side by side. **A wholly premium
+destination covering every metric, GPS included, and sport scientist only**
+(`docs/decisions/absence-rule.md`, "Analytics is premium", 14 September 2026).
+PATTERN-S7 C6, built 14 September 2026 from `docs/designs/PATTERN-S7-final /`
+(artboards 9–11); it replaced the four day-only boards with their metric
+dropdowns, and the builder at `/analytics/build` (D2: it stayed until C6
+replaced it).
 
 ## 2. Who can access this page
 
 | Role | Can reach | What they see | What they change | Hidden | Tier | Enforced |
 |---|---|---|---|---|---|---|
-| Sport scientist | Yes | The four panels | The athlete, the comparison, the window, the group filter | None | **Premium** | Route guard (`refuse`, logged), then the package check in `src/app/(staff)/analytics/page.tsx` |
-| Coach, Medic, S&C, Nutritionist | **No** — the denied screen | Nothing | Nothing | The whole page | **Premium** | `ANALYTICS = ['sport_scientist']` (D-02, confirmed 2026-09-05) |
+| Sport scientist | Yes, on Premium | The four panels | The athlete, the comparison, the window, the load measure, the group filter | None | **Premium** | Route guard (`refuse`, logged) for the role and for the plan in `src/app/(staff)/analytics/page.tsx`; **and the database**: `analytics_daily_rows` (0125) returns no rows to a Basic club |
+| Coach, Medic, S&C, Nutritionist | **No** — the denied screen | Nothing | Nothing | The whole page | **Premium** | `ANALYTICS = ['sport_scientist']` (D-02, confirmed 2026-09-05); the function returns nothing to any other role |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard, then database |
 
-**This is the only whole destination that disappears from the sidebar on the Base
-package** (`src/components/Sidebar/Sidebar.tsx`). The address refuses too.
+**D-20, unchanged and confirmed 14 September 2026.** For a Basic club the
+destination is gone: absent from the sidebar (`PREMIUM_ONLY`), refused at the URL
+through the denied screen (logged, with its reference), and the denied screen's
+"your role covers" line does not name it. **There is no upsell page.** A Basic
+club learns what premium contains on the Settings plan page — one place — which
+is its own row, to be built with the premium work.
+
+**Premium at the database.** Every panel reads every source through one
+SECURITY DEFINER function, `analytics_daily_rows(source_table, from, to,
+athlete)` (migration 0125), which returns no rows unless
+`auth_org_is_premium()` (0119's mechanism — the tier read from the club's row,
+so a downgrade or an upgrade applies at once) and the caller is the sport
+scientist. It dispatches on `metric_definitions.source_table`'s names —
+`training_entries_current`, `wellness_entries_current`, `gym_set_logs`,
+`gps_records` — and refuses any other; what makes a measure a GPS measure is
+its source table, never a key prefix (0094's argument). The three non-GPS
+tables stay every club's at the row (the dashboard, the reports and the
+athlete's own screens read them): the gate is the destination's, not the
+data's. Keep and hide: nothing is deleted on downgrade, and the panels return
+on upgrade.
 
 ## 3. How you get here
 
@@ -39,7 +59,14 @@ one).
 
 **Four panels, two by two** (one column below 1100px), each a card:
 
-- **The title** and, right, who is drawn ("Okonkwo", "Okonkwo and Aholelei").
+- **The title** and, right, who is drawn ("Okonkwo", "Okonkwo and Aholelei") —
+  and on **Training load** the **Measure** select: Total distance (MET-017, the
+  default), Session load (MET-007), High speed distance (MET-018), Sprint
+  distance (MET-019), Player load (MET-021), Accelerations (MET-022),
+  Decelerations (MET-023). All volumes, summed per day and per week; `?load=`
+  carries the choice and a stale value degrades to the default. The other three
+  panels are fixed to one measure. GPS joined the panels on 14 September 2026:
+  analytics covers every metric.
 - **The definition line**, one sentence under the title and never a tooltip:
   what the bar measures with its registry ID, the window in dates, the grain
   and how a week is collapsed, and the ground with its n — "Session load — RPE
@@ -97,7 +124,9 @@ report carry a definition, a row count, a print layout and an audit row.
 
 | Metric ID | Label on screen | What it means | Time window | When missing |
 |---|---|---|---|---|
-| MET-007 | Training load, AU | Session load, RPE × minutes, summed over the period | The window, by day or week | A dashed stub: "No session logged" |
+| MET-017 | Training load · Total distance, m (the default) | Metres from the GPS unit, summed over the period | The window, by day or week | A dashed stub: "No unit worn" |
+| MET-007 | Training load · Session load, AU | RPE × minutes, summed over the period | The window, by day or week | "No session logged" |
+| MET-018, MET-019, MET-021, MET-022, MET-023 | Training load · High speed distance, Sprint distance, Player load, Accelerations, Decelerations | The GPS family, each summed over the period | The window | "No unit worn" |
 | MET-002 | Wellness | Readiness 0–100, the strict version; a day missing any answer has no value | The window, meaned per week | "Not submitted" |
 | MET-041 | Gym volume, kg | Tonnage, load × reps across working sets, summed over the period | The window, by day or week | "No gym session" |
 | MET-010 | Acute to chronic | The last 7 days of load over the last 28, as it stood at the end of the period | The window | "Not enough days on record" (21 of 28 days needed) |
@@ -117,6 +146,7 @@ show MET-001.
 | Compare two | Header | Adds a second athlete, named at the end of their bars | `?compare=1` | Nothing | Sport scientist | None | Never |
 | Compared with | Header | Chooses the second athlete | `?b=` | Nothing | Sport scientist | None | Not comparing |
 | Window | Header | 14 days · 6 weeks · 12 weeks · 26 weeks; the grain follows | `?w=` | Nothing | Sport scientist | None | Never |
+| Measure | The Training load panel's head | Session load or one of the GPS family | `?load=` | Nothing | Sport scientist | None | Never (the other panels have no measure control) |
 | Group filter chips | Compare against | Narrows the population every ground is computed from | Stays here; the shared cookie | Nothing | Sport scientist | None | Never |
 | A bar (hover / tap) | The plot | Shows the readout; a tap pins it | Stays here | Nothing | Sport scientist | None | Never |
 | Widen the window / Open {name}'s report | A withheld panel | The one action | `?w=` wider, or `/reports/athlete/[id]` | Nothing | Sport scientist | None | The panel is drawn |
@@ -134,26 +164,27 @@ denominator every analytics read has used — and `src/lib/analyticsPanels.ts`
 buckets those maps into bars, the squad band, the zone, the axis and the words.
 Weeks run Monday to Sunday, clipped to the window at both ends so a bar never
 counts a day outside it. ACWR still fetches its 28-day run-up so the first bar
-is real.
+is real. `fetchPerAthleteDaily` reads nothing from a table directly: every
+source arrives through `analytics_daily_rows` (§2), paged like every other
+multi-row read.
 
 ## 8. States
 
-**Base package.** The destination is absent from the sidebar and the address
-refuses. **Not the sport scientist.** The denied screen, logged. **Nobody in
+**Base package.** The destination is absent from the sidebar, the address
+refuses through the denied screen (logged), and the database returns no rows —
+no upsell page. **Not the sport scientist.** The denied screen, logged. **Nobody in
 scope.** Says so. **A withheld panel.** Its reason and one action (§4).
 **Session RPE off for this club** (`organisations.collects_rpe`, migration
-0118): Training load and Acute to chronic keep their cards and say "This club
-does not collect session RPE, so … has nothing to show. A sport scientist can
-switch it on in Settings › Club."; Wellness and Gym volume draw. **Ground
+0118): Acute to chronic, and Training load while its measure is session load,
+keep their cards and say "This club does not collect session RPE, so … has
+nothing to show. A sport scientist can switch it on in Settings › Club."; the
+GPS measures, Wellness and Gym volume draw. **Ground
 withheld.** Under five athletes with data in a period the band's edges are
 absent for that period, and under five in the window the definition line says
 "ground: none — {k} athletes with data, fewer than 5". **Offline.** Not handled.
 
 ## 9. Open issues
 
-- The Training load panel measures session load (MET-007), the same load the
-  ratio rests on; the previous boards charted GPS distance under that title.
-  GPS distance stays on the GPS report. Recorded on the sheet for a decision.
 - A group-scoped threshold (`applies_to_group_id`) is not drawn as a zone; only
   club-wide fixed rules are. If a club wants group zones, the rule in
   `zoneFor` widens to "the rule scoped to the current group filter".

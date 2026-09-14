@@ -30,7 +30,10 @@ September 2026).** The four analytics panels draw one bar per day up to a
 fortnight and one bar per week beyond it. A week bar is not a new metric: it
 is the entry's own daily value collapsed by the rule its kind demands, and the
 panel's definition line says which. A *volume* measure — session load
-(MET-007), tonnage (MET-041) — is **summed** over the days in the week; a
+(MET-007), tonnage (MET-041), and the GPS family the Training load panel offers
+since 14 September (total distance MET-017, high speed distance MET-018, sprint
+distance MET-019, player load MET-021, accelerations and decelerations
+MET-022/023) — is **summed** over the days in the week; a
 *scored* one — readiness (MET-002) — is **meaned** over the days that have a
 value; the *trailing ratio* (MET-010) is **the ratio as it stood on the last
 day of the week that has one**, because a mean of overlapping windows is a

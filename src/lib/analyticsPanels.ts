@@ -1,7 +1,11 @@
 /* PATTERN-S7 C6 (Isabella, 2026-09-13; built 2026-09-14): analytics as four
  * fixed panels of bars — one athlete against the squad's spread, or against
- * the club's zone where one is set. Every rule the panels rest on is here,
- * pure, so the guard can hold the words and the numbers:
+ * the club's zone where one is set. A wholly premium destination covering
+ * every metric, GPS included (docs/decisions/absence-rule.md, 14 September):
+ * gated at the database by analytics_daily_rows (0125) and at the route under
+ * D-20 — absent from a basic club's sidebar, refused at the URL, no upsell
+ * page. Every rule the panels rest on is here, pure, so the guard can hold
+ * the words and the numbers:
  *
  *   - the grain: one bar per day up to a fortnight, one bar per week beyond;
  *   - what a week bar is: summed for a volume measure, meaned for a scored
@@ -25,73 +29,84 @@ export type PanelKey = 'load' | 'wellness' | 'gym' | 'acwr';
 export type Measure = 'volume' | 'scored' | 'ratio';
 export type Grain = 'day' | 'week';
 
-export type Panel = {
-  key: PanelKey;
-  title: string;
+/** One thing a panel can measure: the metric, its kind, and its words. */
+export type PanelMeasure = {
   metric: MetricKey;
   measure: Measure;
   /** What one bar measures, in a sentence — the definition line's first clause. */
-  measures: string;
+  sentence: string;
   unit: string;
   decimals: number;
   /** The readout for a period with no value. */
   missingWord: string;
+};
+
+export type Panel = {
+  key: PanelKey;
+  title: string;
+  /** What the panel can measure; the first is its default. Only Training
+   *  load offers a choice — the GPS family joined it on 14 September 2026
+   *  (analytics is premium and covers every metric, GPS included). */
+  measures: readonly PanelMeasure[];
+  /** The URL key the choice rides on, when there is one. */
+  param: string | null;
   /** The thresholds metric key a club zone may be set on; null = no zone exists for this measure. */
   thresholdMetric: string | null;
   /** A bounded scale keeps its ceiling so two windows read alike. */
   axisTop: number | null;
 };
 
+const GPS_VOLUME = (metric: MetricKey, sentence: string, unit: string): PanelMeasure => ({ metric, measure: 'volume', sentence, unit, decimals: 0, missingWord: 'No unit worn' });
+
 export const PANELS: readonly Panel[] = [
   {
     key: 'load',
     title: 'Training load',
-    metric: 'load',
-    measure: 'volume',
-    measures: 'Session load — RPE × minutes (MET-007), summed across every session logged',
-    unit: ' AU',
-    decimals: 0,
-    missingWord: 'No session logged',
+    measures: [
+      GPS_VOLUME('gps_distance', 'Total distance — metres from the GPS unit (MET-017), summed across every session it was worn', ' m'),
+      { metric: 'load', measure: 'volume', sentence: 'Session load — RPE × minutes (MET-007), summed across every session logged', unit: ' AU', decimals: 0, missingWord: 'No session logged' },
+      GPS_VOLUME('gps_high_speed_distance', 'High speed distance — metres above the vendor’s high-speed threshold (MET-018), summed', ' m'),
+      GPS_VOLUME('gps_sprint_distance', 'Sprint distance — metres above the vendor’s sprint threshold (MET-019), summed', ' m'),
+      GPS_VOLUME('gps_player_load', 'Player load — the vendor’s accelerometer load (MET-021), summed', ''),
+      GPS_VOLUME('gps_accelerations', 'Accelerations — above the vendor’s threshold (MET-022), summed', ''),
+      GPS_VOLUME('gps_decelerations', 'Decelerations — above the vendor’s threshold (MET-023), summed', ''),
+    ],
+    param: 'load',
     thresholdMetric: null,
     axisTop: null,
   },
   {
     key: 'wellness',
     title: 'Wellness',
-    metric: 'readiness',
-    measure: 'scored',
-    measures: 'Readiness — the five morning answers on 0 to 100, a day missing any answer has no value (MET-002)',
-    unit: '',
-    decimals: 0,
-    missingWord: 'Not submitted',
+    measures: [{ metric: 'readiness', measure: 'scored', sentence: 'Readiness — the five morning answers on 0 to 100, a day missing any answer has no value (MET-002)', unit: '', decimals: 0, missingWord: 'Not submitted' }],
+    param: null,
     thresholdMetric: 'wellness.readiness_score',
     axisTop: 100,
   },
   {
     key: 'gym',
     title: 'Gym volume',
-    metric: 'gym_volume',
-    measure: 'volume',
-    measures: 'Tonnage — load × reps across every working set (MET-041), summed',
-    unit: ' kg',
-    decimals: 0,
-    missingWord: 'No gym session',
+    measures: [{ metric: 'gym_volume', measure: 'volume', sentence: 'Tonnage — load × reps across every live working set (MET-041), summed', unit: ' kg', decimals: 0, missingWord: 'No gym session' }],
+    param: null,
     thresholdMetric: null,
     axisTop: null,
   },
   {
     key: 'acwr',
     title: 'Acute to chronic',
-    metric: 'acwr',
-    measure: 'ratio',
-    measures: 'Acute to chronic load ratio — the last 7 days of session load over the last 28 (MET-010)',
-    unit: '',
-    decimals: 2,
-    missingWord: 'Not enough days on record',
+    measures: [{ metric: 'acwr', measure: 'ratio', sentence: 'Acute to chronic load ratio — the last 7 days of session load over the last 28 (MET-010)', unit: '', decimals: 2, missingWord: 'Not enough days on record' }],
+    param: null,
     thresholdMetric: 'load.acwr',
     axisTop: null,
   },
 ];
+
+/** The measure a panel draws: the URL's choice when the panel offers one and
+ *  the value is on its list, else the default. A stale link degrades. */
+export function measureFor(panel: Panel, raw: string | string[] | undefined): PanelMeasure {
+  const key = typeof raw === 'string' ? raw : undefined;
+  return (panel.param && key ? panel.measures.find((m) => m.metric === key) : undefined) ?? panel.measures[0]!;
+}
 
 /** The windows offered. Days, because every series is built per day. The
  *  grain follows the window: a fortnight or less is read by the day, anything
@@ -219,18 +234,18 @@ export function fmt(value: number, decimals: number): string {
 }
 
 /** "0.80 to 1.30 · Acute chronic ratio high · set by Jane Pemberton, 24 Aug". */
-export function zoneWords(zone: Zone, panel: Panel, setBy: string | null, setAtWords: string): string {
-  const range = zone.lo !== null && zone.hi !== null ? `${fmt(zone.lo, panel.decimals)} to ${fmt(zone.hi, panel.decimals)}` : zone.hi !== null ? `0 to ${fmt(zone.hi, panel.decimals)}` : `${fmt(zone.lo!, panel.decimals)} and above`;
-  return `${range}${panel.unit} · ${zone.names.join(', ')} · set by ${setBy ?? 'the club'}, ${setAtWords}`;
+export function zoneWords(zone: Zone, m: PanelMeasure, setBy: string | null, setAtWords: string): string {
+  const range = zone.lo !== null && zone.hi !== null ? `${fmt(zone.lo, m.decimals)} to ${fmt(zone.hi, m.decimals)}` : zone.hi !== null ? `0 to ${fmt(zone.hi, m.decimals)}` : `${fmt(zone.lo!, m.decimals)} and above`;
+  return `${range}${m.unit} · ${zone.names.join(', ')} · set by ${setBy ?? 'the club'}, ${setAtWords}`;
 }
 
 /** A nice ceiling above the data so the top bar has air and the axis reads as
  *  a round number. Never below the panel's own fixed top. */
-export function axisTop(panel: Panel, values: readonly (number | null)[]): number {
+export function axisTop(panel: Panel, m: PanelMeasure, values: readonly (number | null)[]): number {
   const max = Math.max(0, ...values.filter((v): v is number => v !== null));
   if (panel.axisTop !== null) return Math.max(panel.axisTop, max);
-  if (max === 0) return panel.measure === 'ratio' ? 2 : 1;
-  if (panel.measure === 'ratio') return Math.max(2, Math.ceil(max * 4) / 4);
+  if (max === 0) return m.measure === 'ratio' ? 2 : 1;
+  if (m.measure === 'ratio') return Math.max(2, Math.ceil(max * 4) / 4);
   const mag = 10 ** Math.floor(Math.log10(max));
   const steps = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
   for (const s of steps) if (max <= s * mag) return s * mag;
@@ -238,15 +253,15 @@ export function axisTop(panel: Panel, values: readonly (number | null)[]): numbe
 }
 
 /** The axis line, in words. */
-export function axisWords(panel: Panel, top: number, grain: Grain): string {
-  return `Axis 0 to ${fmt(top, panel.decimals)}${panel.unit} · one bar per ${grain} · hover or tap a bar for its value`;
+export function axisWords(m: PanelMeasure, top: number, grain: Grain): string {
+  return `Axis 0 to ${fmt(top, m.decimals)}${m.unit} · one bar per ${grain} · hover or tap a bar for its value`;
 }
 
 /** The grain clause of the definition line. */
-export function grainWords(panel: Panel, grain: Grain): string {
+export function grainWords(m: PanelMeasure, grain: Grain): string {
   if (grain === 'day') return 'one bar per day';
-  if (panel.measure === 'volume') return 'one bar per week, the week summed';
-  if (panel.measure === 'scored') return 'one bar per week, the week meaned';
+  if (m.measure === 'volume') return 'one bar per week, the week summed';
+  if (m.measure === 'scored') return 'one bar per week, the week meaned';
   return 'one bar per week, the ratio as it stood at the end of the week';
 }
 

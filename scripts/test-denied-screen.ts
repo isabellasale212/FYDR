@@ -39,7 +39,9 @@ console.log('\n2. the screen and the redirects');
 {
   const page = strip(read('src/app/(staff)/denied/page.tsx'));
   assert(/requireStaff\(\)/.test(page) && /deniedCopy\(\{ fullName, roles: claims\.roles, covers/.test(page), 'the screen is staff-only and builds its words from the session');
-  assert(/SIDEBAR_ROWS\.filter\(\(row\) => row\.roles\.some\(\(r\) => claims\.roles\.includes\(r\)\)\)/.test(page), 'what the role covers is the sidebar\'s own rule — nothing invented, nothing leaked');
+  /* 14 September 2026 (D-20 confirmed, analytics premium): the plan filter
+     joins the role filter, the same pair the sidebar applies. */
+  assert(/SIDEBAR_ROWS\.filter\(\(row\) => row\.roles\.some\(\(r\) => claims\.roles\.includes\(r\)\) && \(isPremium\(tier\) \|\| !PREMIUM_ONLY\.has\(row\.id\)\)\)/.test(page), 'what the role covers is the sidebar\'s own rule, on the club\'s own plan — nothing invented, nothing leaked');
   assert(/className="btn-primary"/.test(page) && /href=\{copy\.action\.href\}/.test(page), 'the one primary');
   assert(/const reference = typeof sp\.r === 'string' \? sp\.r : null;/.test(page) && !/from=|reason|path/.test(page.replace(/Reads no reason and echoes no path[^*]*\*\//, '')), 'the screen reads only the reference from the address — no reason, no path');
   const sessionSrc = strip(read('src/lib/session.ts'));

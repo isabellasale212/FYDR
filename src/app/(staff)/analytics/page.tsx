@@ -1,7 +1,6 @@
 import Link from 'next/link';
 import { AnalyticsPanel, type PanelBand } from '@/components/AnalyticsPanel/AnalyticsPanel';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
-import { PlanGate } from '@/components/PlanGate/PlanGate';
 import { ReportSelectNav } from '@/components/ReportSelectNav/ReportSelectNav';
 import { ANALYTICS, hasAnyRole } from '@/lib/access';
 import { METRICS, type MetricDef } from '@/lib/analyticsBuilder';
@@ -17,11 +16,12 @@ import {
   grainFor,
   grainWords,
   groundWords,
+  measureFor,
   squadBand,
   suppression,
   zoneFor,
   zoneWords,
-  type Panel,
+  type PanelMeasure,
 } from '@/lib/analyticsPanels';
 import { addDays, formatDate, todayIso } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
@@ -36,11 +36,17 @@ import { isPremium } from '@/lib/tier';
 export const metadata = { title: 'Analytics · Fydr' };
 
 /* ANALYTICS — PATTERN-S7 C6 (Isabella, 2026-09-13; built 2026-09-14), the
- * board "PATTERN-S7 · FINAL" artboards 9–11. Four fixed panels of bars —
- * Training load, Wellness, Gym volume, Acute to chronic — one athlete against
- * the squad's spread, or against the club's zone where one is set; Compare
- * two names each series at the end of its own bars; the group filter is the
- * population compared against. Every panel states what it measures, over
+ * board "PATTERN-S7 · FINAL" artboards 9–11. A WHOLLY PREMIUM DESTINATION
+ * covering every metric, GPS included (docs/decisions/absence-rule.md,
+ * 14 September): under D-20 it is absent from a basic club's sidebar and
+ * refuses at the URL — no upsell page, discovery lives on the Settings plan
+ * page — and at the database analytics_daily_rows (0125) returns nothing to
+ * a club that is not premium, whatever the page does. Four fixed panels of
+ * bars — Training load (session load or any of the GPS family), Wellness,
+ * Gym volume, Acute to chronic — one athlete against the squad's spread, or
+ * against the club's zone where one is set; Compare two names each series at
+ * the end of its own bars; the group filter is the population compared
+ * against. Every panel states what it measures, over
  * what window, what the ground is, and n, in one line under the title —
  * never a tooltip. The axis starts at zero and the axis line says so. One
  * bar per day up to a fortnight, one per week beyond, summed for a volume
@@ -61,28 +67,23 @@ export const metadata = { title: 'Analytics · Fydr' };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-function metricFor(panel: Panel): MetricDef {
-  const m = METRICS.find((x) => x.key === panel.metric);
-  if (!m) throw new Error(`Unknown metric ${panel.metric}`);
-  return m;
+function metricFor(m: PanelMeasure): MetricDef {
+  const def = METRICS.find((x) => x.key === m.metric);
+  if (!def) throw new Error(`Unknown metric ${m.metric}`);
+  return def;
 }
 
 export default async function AnalyticsPage({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, timezone, tier, claims, collectsRpe } = await requireStaff();
   /* D-02: Analytics is the sport scientist's alone. Confirmed 2026-09-05. */
   if (!hasAnyRole(claims.roles, ANALYTICS)) await refuse(db, 'analytics', '/analytics');
-  /* 12-product-tiers.md §2.3 row 27: the whole destination is Premium, refused
-   * at the route as well as absent from the sidebar. requireStaff() has
-   * already resolved the preview through effectiveTier(), downward only. */
-  if (!isPremium(tier)) {
-    return (
-      <PlanGate
-        featureName="Analytics"
-        body="Four panels of bars — training load, wellness, gym volume and the acute to chronic ratio — one athlete against the squad, or two athletes side by side."
-        metadata="Premium · analytics · four panels"
-      />
-    );
-  }
+  /* D-20, confirmed 14 September 2026: a wholly premium destination is gone
+   * for a basic club — absent from the sidebar (PREMIUM_ONLY) and refused at
+   * the URL, logged like any other refusal. No upsell page: a basic club
+   * learns what premium holds on the Settings plan page, one place.
+   * requireStaff() has already resolved the preview through effectiveTier(),
+   * downward only. The database refuses too (0125). */
+  if (!isPremium(tier)) await refuse(db, 'analytics_premium', '/analytics');
 
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);
@@ -117,6 +118,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
     if (bId) sp.set('b', bId);
     if (comparing) sp.set('compare', '1');
     if (days !== DEFAULT_WINDOW_DAYS) sp.set('w', String(days));
+    for (const p of PANELS) if (p.param && typeof params[p.param] === 'string') sp.set(p.param, params[p.param] as string);
     for (const [k, v] of Object.entries(next)) {
       if (v === undefined) sp.delete(k);
       else sp.set(k, v);
@@ -138,27 +140,28 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
   const panelData = a
     ? await Promise.all(
         PANELS.map(async (panel) => {
-          const metric = metricFor(panel);
+          const m = measureFor(panel, panel.param ? params[panel.param] : undefined);
+          const metric = metricFor(m);
           const rpeOff = !collectsRpe && isRpeAnalyticsMetric(metric.key);
-          if (rpeOff) return { panel, metric, rpeOff: true as const };
+          if (rpeOff) return { panel, m, metric, rpeOff: true as const };
           /* The whole scope in one read: A's bars, B's bars and the squad's
            * spread all come from the same per-athlete daily maps. */
           const daily = await fetchPerAthleteDaily(db, orgId, metric, range, groupIds, null);
           const valuesA = daily.perAthlete.get(a.id) ?? new Map<string, number>();
           const valuesB = b ? (daily.perAthlete.get(b.id) ?? new Map<string, number>()) : null;
-          const seriesA = buckets.map((bk) => bucketValue(valuesA, bk, panel.measure));
-          const seriesB = valuesB ? buckets.map((bk) => bucketValue(valuesB, bk, panel.measure)) : null;
+          const seriesA = buckets.map((bk) => bucketValue(valuesA, bk, m.measure));
+          const seriesB = valuesB ? buckets.map((bk) => bucketValue(valuesB, bk, m.measure)) : null;
           const zone = zoneFor(panel, thresholds);
           const bands: PanelBand[] = buckets.map((bk) => {
-            const e = squadBand(daily.perAthlete, bk, panel.measure);
+            const e = squadBand(daily.perAthlete, bk, m.measure);
             return e ? { lo: e.lo, hi: e.hi } : null;
           });
           /* n for the definition line: athletes in scope with any value in the window. */
           let nWithData = 0;
           for (const [, values] of daily.perAthlete) if ([...values.keys()].some((d) => d >= range.from && d <= range.to)) nWithData += 1;
           const zoneRule = zone ? thresholds.find((t) => zone.names.includes(t.name)) ?? null : null;
-          const zoneText = zone ? zoneWords(zone, panel, zoneRule?.created_by ? (setters.get(zoneRule.created_by) ?? null) : null, formatDate(zone.setAt.slice(0, 10), timezone)) : null;
-          const top = axisTop(panel, [...seriesA, ...(seriesB ?? []), ...bands.map((e) => e?.hi ?? null), zone?.hi ?? null]);
+          const zoneText = zone ? zoneWords(zone, m, zoneRule?.created_by ? (setters.get(zoneRule.created_by) ?? null) : null, formatDate(zone.setAt.slice(0, 10), timezone)) : null;
+          const top = axisTop(panel, m, [...seriesA, ...(seriesB ?? []), ...bands.map((e) => e?.hi ?? null), zone?.hi ?? null]);
           const points = seriesA.filter((v) => v !== null).length;
           const held = suppression({
             points,
@@ -170,7 +173,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
             reportHref: `/reports/athlete/${a.id}`,
           });
           const lastIdx = (() => { for (let i = seriesA.length - 1; i >= 0; i -= 1) if (seriesA[i] !== null) return i; return -1; })();
-          return { panel, metric, rpeOff: false as const, seriesA, seriesB, bands, zone, zoneText, top, nWithData, held, lastIdx };
+          return { panel, m, metric, rpeOff: false as const, seriesA, seriesB, bands, zone, zoneText, top, nWithData, held, lastIdx };
         }),
       )
     : [];
@@ -239,31 +242,47 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
       ) : (
         <div className="cmp-grid">
           {panelData.map((d) => {
-            const { panel } = d;
+            const { panel, m } = d;
             const windowWords = `last ${days} days, ${formatDate(range.from, timezone)} to ${formatDate(range.to, timezone)}`;
             return (
-              <section key={panel.key} className="card" aria-labelledby={`p-${panel.key}`} data-panel={panel.key}>
+              <section key={panel.key} className="card" aria-labelledby={`p-${panel.key}`} data-panel={panel.key} data-measure={m.metric}>
                 <div className="cmp-card-head">
                   <h2 className="cmp-card-title" id={`p-${panel.key}`}>
                     {panel.title}
                   </h2>
-                  {d.rpeOff ? null : (
-                    <span className="cmp-picker-meta" style={{ marginLeft: 'auto' }}>
-                      {a.last_name}
-                      {b ? ` and ${b.last_name}` : ''}
-                    </span>
-                  )}
+                  <div className="cmp-card-controls">
+                    {d.rpeOff ? null : (
+                      <span className="cmp-picker-meta">
+                        {a.last_name}
+                        {b ? ` and ${b.last_name}` : ''}
+                      </span>
+                    )}
+                    {/* The measure, where the panel offers one: session load or
+                        the GPS family on Training load. A URL key per panel, so
+                        one panel's choice never moves another. */}
+                    {panel.param && panel.measures.length > 1 ? (
+                      <ReportSelectNav
+                        stacked
+                        label="Measure"
+                        paramKey={panel.param}
+                        value={m.metric}
+                        options={panel.measures.map((x) => ({ value: x.metric, label: x.sentence.split(' — ')[0]! }))}
+                        clearValue={panel.measures[0]!.metric}
+                        ariaLabel={`Measure for the ${panel.title} panel`}
+                      />
+                    ) : null}
+                  </div>
                 </div>
                 {d.rpeOff ? (
                   /* Migration 0118: the club setting. The panel keeps its
                      place and says why the plot is not drawn (the absence rule). */
                   <p className="import-sub" style={{ marginBottom: 0 }} data-rpe-off>
-                    {rpeOffLine(`${panel.title.toLowerCase()} on this panel`)}
+                    {rpeOffLine(`${METRICS.find((y) => y.key === m.metric)?.label.toLowerCase() ?? panel.title.toLowerCase()} on this panel`)}
                   </p>
                 ) : (
                   <>
                     <p className="ap-def" data-definition>
-                      {panel.measures} · {windowWords} · {grainWords(panel, grain)} · {groundWords({ zone: d.zoneText, nWithData: d.nWithData, scope: scopeLabel.toLowerCase(), grain })}.
+                      {m.sentence} · {windowWords} · {grainWords(m, grain)} · {groundWords({ zone: d.zoneText, nWithData: d.nWithData, scope: scopeLabel.toLowerCase(), grain })}.
                     </p>
                     {d.held ? (
                       <div className="ap-suppressed" data-suppressed>
@@ -278,8 +297,8 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
                         <p className="ap-figure" data-figure>
                           {d.lastIdx >= 0 ? (
                             <>
-                              <b>{fmt(d.seriesA[d.lastIdx]!, panel.decimals)}{panel.unit}</b> · {bucketLabels[d.lastIdx]!.long}
-                              {d.seriesB && d.seriesB[d.lastIdx] !== null ? ` · ${b!.last_name} ${fmt(d.seriesB[d.lastIdx]!, panel.decimals)}${panel.unit}` : ''}
+                              <b>{fmt(d.seriesA[d.lastIdx]!, m.decimals)}{m.unit}</b> · {bucketLabels[d.lastIdx]!.long}
+                              {d.seriesB && d.seriesB[d.lastIdx] !== null ? ` · ${b!.last_name} ${fmt(d.seriesB[d.lastIdx]!, m.decimals)}${m.unit}` : ''}
                               {' · '}
                               <Link href={`/reports/athlete/${a.id}`}>full detail in the athlete report</Link>
                             </>
@@ -289,16 +308,16 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
                         </p>
                         <AnalyticsPanel
                           title={panel.title}
-                          unit={panel.unit}
-                          decimals={panel.decimals}
-                          missingWord={panel.missingWord}
+                          unit={m.unit}
+                          decimals={m.decimals}
+                          missingWord={m.missingWord}
                           buckets={bucketLabels}
                           a={{ label: a.last_name, values: d.seriesA }}
                           b={b && d.seriesB ? { label: b.last_name, values: d.seriesB } : null}
                           band={d.zone ? null : d.bands}
                           zone={d.zone ? { lo: d.zone.lo, hi: d.zone.hi } : null}
                           top={d.top}
-                          axisLine={axisWords(panel, d.top, grain)}
+                          axisLine={axisWords(m, d.top, grain)}
                         />
                       </>
                     )}

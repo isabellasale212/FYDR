@@ -1,7 +1,8 @@
 import Link from 'next/link';
-import { SIDEBAR_ROWS } from '@/components/Sidebar/rows';
+import { PREMIUM_ONLY, SIDEBAR_ROWS } from '@/components/Sidebar/rows';
 import { deniedCopy } from '@/lib/denied';
 import { requireStaff } from '@/lib/session';
+import { isPremium } from '@/lib/tier';
 
 export const metadata = { title: 'Not available · Fydr' };
 
@@ -13,12 +14,15 @@ export const metadata = { title: 'Not available · Fydr' };
  *  says what is true without saying what exists. The words are
  *  lib/denied.ts's; what the role covers is the sidebar's own list for it. */
 export default async function DeniedPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
-  const { fullName, claims } = await requireStaff();
+  const { fullName, claims, tier } = await requireStaff();
   /* The one thing read from the address: the denial log's reference (0112),
      which the refusing gate carried here. Not a reason, not a path. */
   const sp = await searchParams;
   const reference = typeof sp.r === 'string' ? sp.r : null;
-  const covers = SIDEBAR_ROWS.filter((row) => row.roles.some((r) => claims.roles.includes(r))).map((row) => row.label);
+  /* The sidebar's own list for the role, on the club's own plan: a wholly
+     premium destination (D-20) is not "covered" for a basic club, so it is
+     not named here either — the screen says what is true. */
+  const covers = SIDEBAR_ROWS.filter((row) => row.roles.some((r) => claims.roles.includes(r)) && (isPremium(tier) || !PREMIUM_ONLY.has(row.id))).map((row) => row.label);
   const copy = deniedCopy({ fullName, roles: claims.roles, covers, reference });
   return (
     <>

@@ -26,6 +26,16 @@ import { ACWR_BAND_TEXT, ACWR_CHRONIC_WINDOW_DAYS, ACWR_MIN_DAYS_WITH_DATA } fro
  * metrics for free, since it runs the same engine. */
 export type MetricSource = 'training' | 'wellness' | 'gps' | 'gym';
 
+/** The table a source's numbers come from — metric_definitions.source_table's
+ *  names, which analytics_daily_rows (0125) dispatches on. What makes a
+ *  measure a GPS measure is this, never a key prefix (0094's argument). */
+export const SOURCE_TABLE: Record<MetricSource, string> = {
+  training: 'training_entries_current',
+  wellness: 'wellness_entries_current',
+  gym: 'gym_set_logs',
+  gps: 'gps_records',
+};
+
 /** How several entries for ONE athlete on ONE day collapse to that day's
  *  value. Session load is additive — two sessions in a day is a bigger day.
  *  A wellness scale is not: an athlete does not submit twice, and if a
@@ -71,6 +81,11 @@ export type MetricKey =
   | 'acwr'
   | 'readiness'
   | 'gps_distance'
+  | 'gps_high_speed_distance'
+  | 'gps_sprint_distance'
+  | 'gps_player_load'
+  | 'gps_accelerations'
+  | 'gps_decelerations'
   | 'gym_volume'
   | 'load'
   | 'rpe'
@@ -128,6 +143,15 @@ export const METRICS: readonly MetricDef[] = [
     aggregate: 'mean',
     note: 'Metres covered, from the GPS unit. Summed across every session an athlete wore one that day; a session with no unit is absent, not zero.',
   },
+  /* The rest of the GPS family analytics draws (decided 14 September 2026:
+   * analytics is premium and covers every metric, GPS included). All volumes,
+   * summed across a day as total distance is; the registry ids are on the
+   * panels' definition lines. */
+  { key: 'gps_high_speed_distance', label: 'High speed distance', source: 'gps', column: 'high_speed_distance_m', unit: ' m', decimals: 0, axis: null, ticks: null, perDay: 'sum', aggregate: 'mean', note: 'Metres above the vendor\'s high-speed threshold (MET-018), summed across the day\'s sessions with a unit worn.' },
+  { key: 'gps_sprint_distance', label: 'Sprint distance', source: 'gps', column: 'sprint_distance_m', unit: ' m', decimals: 0, axis: null, ticks: null, perDay: 'sum', aggregate: 'mean', note: 'Metres above the vendor\'s sprint threshold (MET-019), summed across the day.' },
+  { key: 'gps_player_load', label: 'Player load', source: 'gps', column: 'player_load', unit: '', decimals: 0, axis: null, ticks: null, perDay: 'sum', aggregate: 'mean', note: 'The vendor\'s accelerometer load (MET-021), summed across the day. Comparable within one vendor only.' },
+  { key: 'gps_accelerations', label: 'Accelerations', source: 'gps', column: 'accelerations', unit: '', decimals: 0, axis: null, ticks: null, perDay: 'sum', aggregate: 'mean', note: 'Count of accelerations above the vendor\'s threshold (MET-022), summed across the day.' },
+  { key: 'gps_decelerations', label: 'Decelerations', source: 'gps', column: 'decelerations', unit: '', decimals: 0, axis: null, ticks: null, perDay: 'sum', aggregate: 'mean', note: 'Count of decelerations above the vendor\'s threshold (MET-023), summed across the day.' },
   {
     key: 'gym_volume',
     label: 'Volume load',

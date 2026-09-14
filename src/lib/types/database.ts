@@ -4882,6 +4882,19 @@ export type Database = {
       }
       Returns: number
     }
+    analytics_daily_rows: {
+      Args: {
+        p_source_table: string
+        p_from: string
+        p_to: string
+        p_athlete_id?: string | null
+      }
+      Returns: {
+          athlete_id: string
+          entry_date: string
+          cols: Json
+        }[]
+    }
     athlete_age_years: {
       Args: {
         p_dob: string

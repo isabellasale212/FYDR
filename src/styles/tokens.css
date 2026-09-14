@@ -1043,6 +1043,16 @@ Every alpha here is the handoff's own figure (§4 and §5),
   /* §14.1 focus, §14.4 skeleton. The focus ring is the accent: 8.46:1 against
      --surf, 7.20 against --bg. */
   --focus: #17489b; /* 11 Sept 2026, Isabella's decision */
+  /* THE KEYBOARD FOCUS RING — 16 Sept 2026, Isabella's instruction: 3px of
+     the accent at a higher alpha than --ring-select (0.16), so it never reads
+     as selection, with a 2px offset, on :focus-visible only, one token and
+     one rule (base.css :focus-visible) rather than a rule per component.
+     0.7 is the first alpha that clears the 3:1 non-text floor on every light
+     ground: 4.04 on a white card, 3.62 on --bg, 3.73 on --surf2. Dark's is
+     below, on its own --focus (#33b6ff, 6.6 on --surf, 6.1 on --bg): the
+     dark accent even at full alpha is 2.87 on --bg, so the ring there is
+     the cyan the dark theme already chose for focus — no new dark colour. */
+  --ring-focus: 3px solid rgb(var(--accent-rgb) / 0.7);
   --skeleton: #eeeeef;
 
   /* screens/groups.md palette. Ten of the twelve documented slots: Amber and
@@ -1302,6 +1312,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --tab-inactive: #949ec9;
 
   --focus: #33b6ff;
+  --ring-focus: 3px solid var(--focus); /* see the light block — the dark accent cannot clear 3:1 on --bg */
   --skeleton: #33394e;
 
   --group-blue: #5aa8ff;
@@ -1489,6 +1500,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --tab-inactive: #949ec9;
 
     --focus: #33b6ff;
+    --ring-focus: 3px solid var(--focus);
     --skeleton: #33394e;
 
     --group-blue: #5aa8ff;

@@ -79,9 +79,16 @@ textarea.num,
   font-feature-settings: 'tnum' 1;
 }
 
-/* §14.1. Two pixels, offset, outside the control, never removed. */
+/* §14.1 — THE ONE FOCUS RING, 16 Sept 2026 (Isabella): --ring-focus, 3px of
+   the accent at 0.7 (dark: its own cyan), 2px outside the control, on
+   :focus-visible only so a mouse never sees it, applied here and nowhere
+   else. The per-component restatements that used to follow this rule are
+   gone; the four that remain below each ring an element OTHER than the one
+   holding focus (a hidden input's visible twin) or sit inside a bar that
+   would clip an outside ring, and every one of them reads this token. Never
+   removed, never restyled per component. */
 :focus-visible {
-  outline: 2px solid var(--focus);
+  outline: var(--ring-focus);
   outline-offset: 2px;
   border-radius: var(--r);
 }
@@ -672,10 +679,6 @@ a {
 .theme-seg-btn[data-active] {
   background: var(--accent);
   color: var(--on-accent);
-}
-.theme-seg-btn:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 1px;
 }
 
 .toggle:hover {
@@ -2042,8 +2045,8 @@ a.hist-row:hover {
   background: var(--surf2);
 }
 a.hist-row:focus-visible {
-  outline: 2px solid var(--accent-text);
-  outline-offset: -2px;
+  outline: var(--ring-focus); /* inset: a row inside a clipping list */
+  outline-offset: -3px;
 }
 
 /* The test sparkline's caption. Not a legend — it names which point is which,
@@ -2165,10 +2168,6 @@ a.hist-row:focus-visible {
 .sign-out:hover {
   background: rgb(var(--bad-rgb) / 0.16);
 }
-.sign-out:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
 
 /* Spec §7.5: 58px avatar, 19/700, and the role line at 14px muted. */
 .me-hd .me-avatar {
@@ -2232,10 +2231,6 @@ a.hist-row:focus-visible {
   background: var(--accent);
   color: var(--on-accent);
   font-weight: var(--w-bold);
-}
-.md-seg:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 1px;
 }
 
 /* The week card holds the strip and, when there is one, the fixture it is
@@ -3089,8 +3084,8 @@ a.hist-row:focus-visible {
   box-shadow: var(--ring-accent);
 }
 .dots .opt input:focus-visible + span {
-  outline: 2px solid var(--focus);
-  outline-offset: 3px;
+  outline: var(--ring-focus); /* the hidden input's visible twin */
+  outline-offset: 2px;
 }
 .sc-a {
   display: flex;
@@ -3479,7 +3474,7 @@ a.hist-row:focus-visible {
   cursor: pointer;
 }
 .cr10-row input:focus-visible {
-  outline: 2px solid var(--focus);
+  outline: var(--ring-focus); /* the input fills its row; the ring is the row's */
   outline-offset: 2px;
 }
 .cr10-n {
@@ -3866,10 +3861,6 @@ a.hist-row:focus-visible {
 .gym-set-key[data-correcting] {
   box-shadow: var(--ring-accent);
 }
-.gym-set-key:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
-}
 
 /* The one exercise card. */
 .gl-card {
@@ -3973,10 +3964,6 @@ a.hist-row:focus-visible {
 }
 .gl-step:hover {
   background: var(--wash-accent);
-}
-.gl-step:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
 }
 /* A lift with no kilogram to show (bodyweight, or a 1RM never linked): the
    reason in words where the weight block would be. */
@@ -6296,8 +6283,8 @@ img.me-avatar {
   background: var(--surf2);
 }
 .dash-flags-head:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: -2px;
+  outline: var(--ring-focus); /* inset: the panel clips */
+  outline-offset: -3px;
 }
 /* The icon in a tinted badge rather than loose in the row. Same flag glyph. */
 .dash-flags-badge {
@@ -11043,11 +11030,6 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .tr-heat-toggle[aria-checked='true'] .tr-heat-toggle-track::after {
   transform: translateX(18px);
 }
-.tr-heat-toggle:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-  border-radius: var(--r);
-}
 
 /* PATTERN-S8 C13 (2026-09-13): the athlete's "Mute everything" — one switch
    at the top of the notifications screen. The whole card row is the control
@@ -11115,11 +11097,6 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .mute-switch[aria-checked='true'] .mute-switch-track::after {
   transform: translateX(18px);
 }
-.mute-switch:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 3px;
-  border-radius: var(--r);
-}
 .mute-note {
   margin-top: var(--sp-8);
 }
@@ -11154,10 +11131,6 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .back-btn:hover {
   color: var(--text);
   border-color: var(--border-accent);
-}
-.back-btn:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 2px;
 }
 .back-btn svg {
   width: 15px;
@@ -12485,7 +12458,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   border-color: var(--border-hover);
 }
 .exlib-cat:has(.exlib-cat-select:focus-visible) {
-  outline: 2px solid var(--focus);
+  outline: var(--ring-focus); /* the hidden select's visible wrapper */
   outline-offset: 2px;
 }
 .exlib-cat-label {
@@ -13587,11 +13560,6 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .rsel-wrap select:hover {
   border-color: var(--border-hover);
 }
-.rsel-wrap select:focus-visible {
-  outline: 2px solid var(--accent);
-  outline-offset: 1px;
-  border-color: var(--accent);
-}
 .rsel-chev {
   position: absolute;
   inset-inline-end: 9px;
@@ -14430,8 +14398,8 @@ a.hist-row:active { background: var(--surf-sunken); }
     font-weight: var(--w-bold);
   }
   .ph-tab:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: -2px;
+    outline: var(--ring-focus); /* inset: the fixed bar clips */
+    outline-offset: -3px;
     border-radius: var(--r);
   }
   .ph-tab-glyph {
@@ -14516,8 +14484,8 @@ a.hist-row:active { background: var(--surf-sunken); }
     background: var(--wash-accent-soft);
   }
   .ph-sheet-row:focus-visible {
-    outline: 2px solid var(--focus);
-    outline-offset: -2px;
+    outline: var(--ring-focus); /* inset: the sheet clips */
+    outline-offset: -3px;
   }
   .ph-sheet-glyph {
     display: inline-flex;
@@ -14864,10 +14832,6 @@ a.hist-row:active { background: var(--surf-sunken); }
 }
 .consent-choice:active {
   background: var(--surf2);
-}
-.consent-choice:focus-visible {
-  outline: 2px solid var(--focus);
-  outline-offset: 2px;
 }
 
 /* A committing action anywhere else on the flow (set password, read the

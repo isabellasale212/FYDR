@@ -1,0 +1,80 @@
+/* Fydr typography.
+   One family does the work: Roboto for language AND for every number. Roboto Mono is
+   kept for code only. Because every Fydr screen is numbers in columns, numerals carry
+   `font-variant-numeric: tabular-nums` wherever a value sits in a column — with a
+   proportional-numeral family that rule is doing all the alignment work, so it is not
+   optional.
+
+   --font-brand is Sora 800 and exists only for the set-type "Fydr." wordmark, which is a
+   brandmark. Never use it for UI type. See readme.md. */
+
+:root {
+  --font-core: "Roboto", system-ui, -apple-system, sans-serif;
+  --font-mono: "Roboto Mono", ui-monospace, SFMono-Regular, monospace;
+  --font-num: var(--font-core); /* @kind font */
+  --code: var(--font-mono); /* @kind font */
+  /* --font-brand: brandmark wordmark ONLY. --font-sora: deprecated alias, retained so older
+     markup keeps working; it now resolves to Roboto. */
+  --font-brand: "Sora", var(--font-core); /* @kind font */
+  --font-sora: var(--font-core); /* @kind font */
+
+  /* ---- weights ---- */
+  --w-regular: 400; /* @kind font */
+  --w-semi: 600; /* @kind font */
+  --w-bold: 700; /* @kind font */
+  --w-black: 800; /* @kind font */
+  --w-num: 500; /* @kind font */
+  --w-num-strong: 600; /* @kind font */
+
+  /* ---- display and headings ---- */
+  --t-hero: 58px;
+  --t-hero-tracking: -0.035em; /* @kind other */
+  --t-page: 30px;
+  --t-page-tracking: -0.03em; /* @kind other */
+  --t-section: 24px;
+  --t-section-tracking: -0.02em; /* @kind other */
+  --t-subhead: 19px;
+  --t-card-lg: 20px;
+  --t-card: 16px;
+  --t-card-sm: 15px;
+
+  /* ---- numerals (Roboto, tabular-nums) ---- */
+  --t-num-hero: 34px;
+  --t-num-stat: 31px;
+  --t-num-stat-sm: 28px;
+  --t-num-dial: 24px;
+  --t-num-dial-sm: 22px;
+  --t-num-lead: 20px;
+  --t-num-row: 17px;
+  --t-num-body: 15px;
+  --t-num-cell: 13.5px;
+  --t-num-cell-sm: 13px;
+  --t-num-meta: 12px;
+  --t-num-caption: 11.5px;
+  --t-num-micro: 10.5px;
+  --t-num-nano: 9.5px;
+
+  /* ---- body ---- */
+  --t-body-lg: 17px;
+  --t-body: 14px;
+  --t-body-sm: 13.5px;
+  --t-body-xs: 13px;
+  --t-body-2xs: 12.5px;
+
+  /* ---- labels and captions ---- */
+  --t-label: 12px;
+  --t-caption: 11.5px;
+  --t-eyebrow: 11px;
+  --t-eyebrow-tracking: 0.12em; /* @kind other */
+  --t-colhead: 11px;
+  --t-colhead-tracking: 0.1em; /* @kind other */
+  --t-micro: 10.5px;
+  --t-pill: 11px;
+  --t-pill-sm: 10.5px;
+  --t-pill-xs: 10px;
+
+  --lh-base: 1.5; /* @kind other */
+  --lh-tight: 1.25; /* @kind other */
+  --lh-num: 1.15; /* @kind other */
+  --lh-hero: 1.02; /* @kind other */
+}

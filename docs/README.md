@@ -20,6 +20,7 @@ strategy and a current-state page, and points here for everything else.
 | How do we deploy? | `runbook-deploy-*.md` |
 | What are the binding rules for an agent session? | `../CLAUDE.md` |
 | What rules does every screen follow? | `decisions/design-constitution.md` |
+| Which design system does the code use? | `decisions/design-system-adoption.md` |
 | What happens when a club downgrades? | `decisions/premium-downgrade.md` |
 | Why is a screen missing? | `decisions/absence-rule.md` |
 | What lawful basis do we process on? | `decisions/lawful-basis-open.md` (OPEN) |

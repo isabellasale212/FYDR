@@ -111,7 +111,7 @@ console.log('\nthe headline says what was asked for, in the face that was asked 
   assert(/font-weight: (?:800|var\(--w-black\))/.test(h), 'weight 800');
   assert(/font-size: clamp\(34px, 3\.5vw, var\(--fs-48\)\)/.test(h), 'clamp(34px, 3.5vw, --fs-48): fluid to the column, a true 48 where the column has room');
   assert(/line-height: 1\.1\b/.test(h), 'line-height 1.1');
-  assert(/letter-spacing: -0\.03em/.test(h), 'tracking -0.03em');
+  assert(/letter-spacing: (?:-0\.03em|var\(--t-page-tracking\))/.test(h), 'tracking -0.03em (System A\'s --t-page-tracking since 15 Sept 2026)');
   assert(
     !/letter-spacing: -0\.035em/.test(h),
     'and NOT the wordmark\'s -0.035em — this is a headline in the brand face, not an instance of the mark',

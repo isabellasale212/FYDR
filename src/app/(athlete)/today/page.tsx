@@ -338,7 +338,7 @@ export default async function TodayPage({
           {!formsOpen ? (
             <Link href={consent.state === 'guardian_pending' ? '/consent/guardian' : '/me/data-consent'} className="card td-row" data-entry-locked={consent.state}>
               <span style={{ minWidth: 0 }}>
-                <span className="td-name" style={{ fontSize: '1.0625rem' }}>
+                <span className="td-name" style={{ fontSize: 'var(--t-body-lg)' }}>
                   {consent.state === 'guardian_pending' ? 'Waiting on your guardian' : consent.state === 'withdrawn' ? 'You withdrew your consent' : 'You said no'}
                 </span>
                 <span className="td-sub">{lockedFormLine(consent.state)}</span>
@@ -366,7 +366,7 @@ export default async function TodayPage({
                 <span style={{ minWidth: 0 }}>
                   {/* Spec §7.1: row name 17/700 — 1.0625rem IS that 17px at the
                       default root, in rem so it follows the text setting. */}
-                  <span className="td-name" style={{ fontSize: '1.0625rem' }}>{item.name}</span>
+                  <span className="td-name" style={{ fontSize: 'var(--t-body-lg)' }}>{item.name}</span>
                   <span className="td-sub num">{item.sub}</span>
                 </span>
                 <span className="chev td-chev" aria-hidden="true">
@@ -377,7 +377,7 @@ export default async function TodayPage({
           ) : (
             <div className="card td-row td-empty">
               <span style={{ minWidth: 0 }}>
-                <span className="td-name" style={{ fontSize: '1.0625rem' }}>You&rsquo;re up to date</span>
+                <span className="td-name" style={{ fontSize: 'var(--t-body-lg)' }}>You&rsquo;re up to date</span>
                 <span className="td-sub">Nothing expected of you today is outstanding.</span>
               </span>
             </div>

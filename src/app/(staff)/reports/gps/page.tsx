@@ -457,7 +457,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
             <div className="card tr-overview">
               <div>
                 <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
-                  <span style={{ fontSize: 'var(--fs-20)', fontWeight: 'var(--w-bold)', letterSpacing: '-0.02em' }}>v {selected.opponent}</span>
+                  <span style={{ fontSize: 'var(--fs-20)', fontWeight: 'var(--w-bold)', letterSpacing: 'var(--t-section-tracking)' }}>v {selected.opponent}</span>
                   {selected.result ? (
                     <span className={`pill ${resultGood ? 'pill-good' : 'pill-bad'}`}>{selected.result}</span>
                   ) : null}
@@ -736,7 +736,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
           <div className="card tr-overview">
             <div>
               <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
-                <span style={{ fontSize: 'var(--fs-20)', fontWeight: 'var(--w-bold)', letterSpacing: '-0.02em' }}>{selected.title}</span>
+                <span style={{ fontSize: 'var(--fs-20)', fontWeight: 'var(--w-bold)', letterSpacing: 'var(--t-section-tracking)' }}>{selected.title}</span>
                 {md ? <span className="pill pill-accent">{md}</span> : null}
               </div>
               <div className="tr-facts">

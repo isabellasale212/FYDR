@@ -296,7 +296,7 @@ a {
   font-family: var(--font-brand), system-ui, sans-serif;
   font-size: var(--fs-48);
   font-weight: var(--w-black);
-  letter-spacing: -0.035em;
+  letter-spacing: -0.035em; /* the brand mark's own tracking, not the type scale's — test-brand-face */
   line-height: 1;
 }
 /* The trace runs under the wordmark and off to its ringed dot, so it is
@@ -594,7 +594,7 @@ a {
 }
 .eyebrow {
   font-size: var(--fs-11);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--muted);
   font-weight: var(--w-semi);
@@ -602,7 +602,7 @@ a {
 .page-head h1 {
   font-size: var(--fs-22);
   font-weight: var(--w-black);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   margin: var(--sp-6) 0 0;
 }
 @media (min-width: 1000px) {
@@ -721,7 +721,7 @@ a {
 .cap {
   font-size: var(--fs-13);
   color: var(--muted);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   margin: var(--sp-10) 0 0;
 }
 .cap b {
@@ -985,12 +985,12 @@ a {
 .avail .v {
   font-size: var(--fs-24);
   font-weight: var(--w-black);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   line-height: 1;
 }
 .avail .k {
   font-size: var(--fs-11);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--muted);
   font-weight: var(--w-semi);
@@ -1029,7 +1029,7 @@ a {
 }
 .arow .lbl {
   font-size: var(--fs-11);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--t-colhead-tracking);
   text-transform: uppercase;
   font-weight: var(--w-bold);
   white-space: nowrap;
@@ -1370,7 +1370,7 @@ table.tbl.lb-table td.r {
 .pbar .nmx {
   font-size: var(--fs-20);
   font-weight: var(--w-black);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   text-transform: uppercase;
 }
 .pbar .l2 {
@@ -1598,7 +1598,7 @@ body:has(.phone) {
 .phone-body .card-title {
   font-size: var(--fs-16);
   font-weight: var(--w-black);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
 }
 
 /* -------- tab header, §4 -------- */
@@ -1622,7 +1622,7 @@ body:has(.phone) {
 .hd .d {
   font-size: var(--fs-24);
   font-weight: var(--w-black);
-  letter-spacing: -0.03em;
+  letter-spacing: var(--t-page-tracking);
   flex: 1;
   min-width: 0;
   margin: 0;
@@ -1856,7 +1856,7 @@ body:has(.phone) {
 .rd-value-words {
   font-size: var(--fs-20);
   font-weight: var(--w-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   line-height: 1.2;
   white-space: normal;
   color: var(--text);
@@ -2126,7 +2126,7 @@ a.hist-row:focus-visible {
   margin: var(--sp-4) 0 0;
   font-size: var(--fs-24);
   font-weight: var(--w-black);
-  letter-spacing: -0.03em;
+  letter-spacing: var(--t-page-tracking);
   line-height: 1.1;
 }
 .me-stat-sub {
@@ -2577,7 +2577,7 @@ a.hist-row:focus-visible {
      reason — check-scale-tokens refuses a raw value here, rightly. */
   font-weight: var(--w-bold);
   letter-spacing: -0.01em;
-  line-height: 1.25;
+  line-height: var(--lh-tight);
 }
 .td-sub {
   display: block;
@@ -2603,7 +2603,7 @@ a.hist-row:focus-visible {
   margin: 0;
   font-size: var(--fs-15);
   font-weight: var(--w-bold);
-  line-height: 1.25;
+  line-height: var(--lh-tight);
   display: flex;
   align-items: center;
   gap: var(--sp-8);
@@ -2865,7 +2865,7 @@ a.hist-row:focus-visible {
 .sheet-head .t {
   font-size: var(--fs-22);
   font-weight: var(--w-black);
-  letter-spacing: -0.03em;
+  letter-spacing: var(--t-page-tracking);
   margin: 0;
 }
 .sheet-head .s {
@@ -2976,7 +2976,7 @@ a.hist-row:focus-visible {
 .step .val .v {
   font-size: var(--fs-24);
   font-weight: var(--w-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
 }
 .step .val .u {
   font-size: var(--fs-12);
@@ -3270,8 +3270,8 @@ a.hist-row:focus-visible {
   margin: 0;
   font-size: var(--fs-28);
   font-weight: var(--w-black);
-  letter-spacing: -0.03em;
-  line-height: 1.15;
+  letter-spacing: var(--t-page-tracking);
+  line-height: var(--lh-num);
 }
 .after-fact {
   margin: var(--sp-8) 0 0;
@@ -3495,7 +3495,7 @@ a.hist-row:focus-visible {
   font-weight: var(--w-semi);
   color: var(--faint);
   text-align: center;
-  line-height: 1.15;
+  line-height: var(--lh-num);
 }
 .cr10-tick {
   display: none;
@@ -3530,7 +3530,7 @@ a.hist-row:focus-visible {
 .flag-line {
   margin: 0;
   font-size: var(--fs-13);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   color: var(--text);
 }
 .flag-line .v {
@@ -3626,7 +3626,7 @@ a.hist-row:focus-visible {
 .signin-eyebrow {
   font-size: var(--fs-11);
   font-weight: var(--w-semi);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--muted);
   margin: 0;
@@ -3634,7 +3634,7 @@ a.hist-row:focus-visible {
 .signin-title {
   font-size: var(--fs-28);
   font-weight: var(--w-black);
-  letter-spacing: -0.03em;
+  letter-spacing: var(--t-page-tracking);
   line-height: 1.1;
   margin: var(--sp-8) 0 0;
 }
@@ -3768,8 +3768,8 @@ a.hist-row:focus-visible {
   margin: var(--sp-4) 0 0;
   font-size: var(--fs-24);
   font-weight: var(--w-black);
-  letter-spacing: -0.02em;
-  line-height: 1.15;
+  letter-spacing: var(--t-section-tracking);
+  line-height: var(--lh-num);
   text-wrap: balance;
 }
 /* The count sits beside the bar it counts, not under the title. */
@@ -3794,7 +3794,7 @@ a.hist-row:focus-visible {
 .gym-head-eyebrow {
   font-size: var(--fs-11);
   font-weight: var(--w-semi);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--t-colhead-tracking);
   text-transform: uppercase;
   color: var(--muted);
   margin-bottom: var(--sp-2);
@@ -4094,7 +4094,7 @@ a.hist-row:focus-visible {
   padding: var(--sp-10) 0 0;
   font-size: var(--fs-12);
   color: var(--muted);
-  line-height: 1.5;
+  line-height: var(--lh-base);
 }
 /* ---------- the session summaries, ATH-ADULT-09 C6 / 10 C3 (12 Sept 2026) ----------
    Session complete and Finished early, on the logger once the session is
@@ -4202,7 +4202,7 @@ a.hist-row:focus-visible {
 .prog-header h1 {
   font-size: var(--fs-20);
   font-weight: var(--w-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   margin: var(--sp-4) 0 0;
 }
 .target-bar + .target-bar {
@@ -4544,7 +4544,7 @@ img.me-avatar {
 .pp-name {
   font-size: var(--fs-20);
   font-weight: var(--w-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
 }
 .pp-domain-chips {
   display: flex;
@@ -4943,7 +4943,7 @@ img.me-avatar {
 .pp-weight-value {
   font-size: var(--fs-32);
   font-weight: var(--w-num);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
 }
 .pp-weight-value .u {
   font-size: var(--fs-15);
@@ -5566,7 +5566,7 @@ img.me-avatar {
   margin: 0;
   padding-left: var(--sp-18);
   font-size: var(--fs-13);
-  line-height: 1.5;
+  line-height: var(--lh-base);
 }
 .dlg-lines li + li {
   margin-top: var(--sp-6);
@@ -5600,7 +5600,7 @@ img.me-avatar {
   border-radius: var(--r);
   background: var(--wash-accent);
   font-size: var(--fs-14);
-  line-height: 1.5;
+  line-height: var(--lh-base);
 }
 .pv-request + .pv-request {
   margin-top: var(--sp-8);
@@ -5610,7 +5610,7 @@ img.me-avatar {
   margin: var(--sp-10) 0 var(--sp-8);
   padding-left: var(--sp-18);
   font-size: var(--fs-14);
-  line-height: 1.5;
+  line-height: var(--lh-base);
 }
 .pv-steps li + li,
 .pv-rules li + li {
@@ -6203,7 +6203,7 @@ img.me-avatar {
   font-size: var(--fs-11);
   font-weight: var(--w-bold);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--t-colhead-tracking);
   color: var(--accent-text);
   padding: var(--sp-10) var(--sp-6) var(--sp-4);
   display: flex;
@@ -6367,7 +6367,7 @@ img.me-avatar {
 .dash-flags-count {
   font-size: var(--fs-20);
   font-weight: var(--w-black);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   font-variant-numeric: tabular-nums;
 }
 .dash-flags-word {
@@ -6533,7 +6533,7 @@ img.me-avatar {
 }
 .dash-flags-eviline {
   font-size: var(--fs-12);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   color: var(--accent-pill-text);
   font-variant-numeric: tabular-nums;
 }
@@ -6621,7 +6621,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-stat-label {
   font-size: var(--fs-11);
   font-weight: var(--w-semi);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
 }
@@ -6716,8 +6716,8 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans);
   font-size: var(--fs-32);
   font-weight: var(--w-num);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  line-height: var(--lh-num);
+  letter-spacing: var(--t-section-tracking);
   margin-top: var(--sp-8);
   font-variant-numeric: tabular-nums;
 }
@@ -6991,7 +6991,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-session-name {
   font-size: var(--fs-16);
   font-weight: var(--w-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
 }
 .dash-session-meta {
   font-size: var(--fs-13);
@@ -7099,7 +7099,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   margin: var(--sp-4) 0 0;
   font-size: var(--fs-18);
   font-weight: var(--w-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   line-height: 1.2;
 }
 .dash-lead-sub {
@@ -7126,8 +7126,8 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans);
   font-size: var(--fs-32);
   font-weight: var(--w-num);
-  line-height: 1.15;
-  letter-spacing: -0.02em;
+  line-height: var(--lh-num);
+  letter-spacing: var(--t-section-tracking);
   font-variant-numeric: tabular-nums;
 }
 .dash-lead-stat[data-tone='warn'] .dash-lead-stat-n {
@@ -7761,7 +7761,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-size: var(--fs-11);
   font-weight: var(--w-semi);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--t-colhead-tracking);
   color: var(--faint);
 }
 .nutr-col-num {
@@ -7777,7 +7777,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-size: var(--fs-11);
   font-weight: var(--w-bold);
   text-transform: uppercase;
-  letter-spacing: 0.1em;
+  letter-spacing: var(--t-colhead-tracking);
   color: var(--accent-text);
 }
 .nutr-group-meta {
@@ -7810,7 +7810,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .nutr-set-pill {
   font-size: var(--fs-9);
   padding: 1px var(--sp-8) 1px var(--sp-6);
-  line-height: 1.5;
+  line-height: var(--lh-base);
 }
 .nutr-range-track {
   position: relative;
@@ -7969,7 +7969,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-28);
   font-weight: var(--w-num);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
 }
 .nutr-mass-unit {
   font-size: var(--fs-14);
@@ -8219,7 +8219,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .lbw-movers-title {
   font-size: var(--fs-16);
   font-weight: var(--w-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   margin: 0;
 }
 .lbw-movers-caption {
@@ -8285,7 +8285,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-variant-numeric: tabular-nums;
   font-size: var(--fs-24);
   font-weight: var(--w-num);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   color: var(--accent-text);
 }
 .lbw-mover-delta-board {
@@ -8415,7 +8415,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .lbw-wall-head-name {
   font-size: var(--fs-11);
   font-weight: var(--w-semi);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--faint);
   position: sticky;
@@ -8428,7 +8428,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   text-align: right;
   font-size: var(--fs-11);
   font-weight: var(--w-semi);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--t-colhead-tracking);
   text-transform: uppercase;
   color: var(--faint);
 }
@@ -8450,7 +8450,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .lbw-group-label {
   font-size: var(--fs-11);
   font-weight: var(--w-bold);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--t-colhead-tracking);
   text-transform: uppercase;
   color: var(--accent-text);
   position: sticky;
@@ -8609,7 +8609,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   border-radius: var(--r);
   font-size: var(--fs-10);
   font-weight: var(--w-semi);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--t-colhead-tracking);
   text-transform: uppercase;
   color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
 }
@@ -8681,7 +8681,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .lbw-leader-board {
   font-size: var(--fs-11);
   font-weight: var(--w-semi);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--t-colhead-tracking);
   text-transform: uppercase;
   color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
   margin: 0 0 var(--sp-8);
@@ -8770,7 +8770,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-title {
   font-size: var(--fs-28);
   font-weight: var(--w-black);
-  letter-spacing: -0.03em;
+  letter-spacing: var(--t-page-tracking);
   margin: var(--sp-6) 0 0;
 }
 .sg-header-right {
@@ -8937,7 +8937,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-toolbar-label {
   font-size: var(--fs-11);
   font-weight: var(--w-bold);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--t-colhead-tracking);
   text-transform: uppercase;
   color: var(--faint);
 }
@@ -9182,7 +9182,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .wtp-block-name {
   font-size: var(--fs-9);
   font-weight: var(--w-semi);
-  line-height: 1.15;
+  line-height: var(--lh-num);
   color: var(--text);
   overflow: hidden;
   text-overflow: ellipsis;
@@ -9486,7 +9486,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-block-name {
   font-size: var(--fs-13);
   font-weight: var(--w-bold);
-  line-height: 1.25;
+  line-height: var(--lh-tight);
   overflow: hidden;
   display: -webkit-box;
   -webkit-line-clamp: var(--name-lines, 2);
@@ -9642,7 +9642,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   margin: 0;
   font-size: var(--fs-16);
   font-weight: var(--w-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
 }
 .sg-phone-day-meta {
   margin: var(--sp-2) 0 0;
@@ -9918,7 +9918,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-size: var(--fs-13);
   color: var(--muted);
   margin-top: var(--sp-4);
-  line-height: 1.5;
+  line-height: var(--lh-base);
 }
 .sg-cmp-head {
   display: grid;
@@ -9927,7 +9927,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   margin-top: var(--sp-16);
   font-size: var(--fs-11);
   font-weight: var(--w-semi);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--t-colhead-tracking);
   text-transform: uppercase;
   color: var(--faint);
 }
@@ -9988,7 +9988,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-size: var(--fs-13);
   color: var(--text);
   margin-top: var(--sp-12);
-  line-height: 1.5;
+  line-height: var(--lh-base);
 }
 
 /* -------- §8 contact time per group -------- */
@@ -10144,7 +10144,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .nutr-disclaimer {
   margin: var(--sp-10) 0 0;
   font-size: var(--fs-11);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   color: var(--faint);
 }
 
@@ -10168,7 +10168,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   border-inline-start: 2px solid rgb(var(--warn-rgb));
   color: var(--warn-text);
   font-size: var(--fs-12);
-  line-height: 1.5;
+  line-height: var(--lh-base);
 }
 
 /* Finding 43: direction-specific colour (over vs under) replacing the single
@@ -10245,12 +10245,12 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .flag-notice-line {
   margin: var(--sp-6) 0 0;
   font-size: var(--fs-13);
-  line-height: 1.5;
+  line-height: var(--lh-base);
 }
 .flag-notice-note {
   margin: var(--sp-6) 0 0;
   font-size: var(--fs-13);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   font-style: italic;
   color: var(--muted);
 }
@@ -10289,7 +10289,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .report-note-body {
   margin: 0;
   font-size: var(--fs-13);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   color: var(--muted);
   white-space: pre-wrap;
 }
@@ -10520,7 +10520,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .cmp-against-label {
   font-size: var(--fs-11);
   font-weight: var(--w-semi);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--muted);
 }
@@ -11266,7 +11266,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .cmpl-stat-value {
   font-size: var(--fs-28);
   font-weight: var(--w-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   font-variant-numeric: tabular-nums;
   line-height: 1.1;
 }
@@ -11569,7 +11569,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .inj-can {
   font-size: var(--fs-13);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   color: var(--muted);
   text-wrap: pretty;
 }
@@ -11596,7 +11596,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   padding: var(--sp-10) var(--sp-4) var(--sp-14);
   border-top: 1px solid var(--border);
   font-size: var(--fs-12);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   color: var(--muted);
   text-wrap: pretty;
 }
@@ -11638,7 +11638,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .ath-position {
   font-size: var(--fs-18);
   font-weight: var(--w-black);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
 }
 .ath-meta {
   font-size: var(--fs-13);
@@ -11659,14 +11659,14 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .ath-card-title {
   font-size: var(--fs-16);
   font-weight: var(--w-black);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   margin: 0;
 }
 .ath-latest {
   margin-left: auto;
   font-size: var(--fs-22);
   font-weight: var(--w-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   color: var(--accent-pill-text);
   font-variant-numeric: tabular-nums;
 }
@@ -11814,7 +11814,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .ath-note-body {
   font-size: var(--fs-12);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   color: var(--text);
   text-wrap: pretty;
 }
@@ -12138,7 +12138,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .pick-group-name {
   font-size: var(--fs-11);
   font-weight: var(--w-num);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--accent-pill-text);
 }
@@ -12216,9 +12216,9 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sw-kpi-value {
   font-size: var(--fs-28);
   font-weight: var(--w-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   font-variant-numeric: tabular-nums;
-  line-height: 1.15;
+  line-height: var(--lh-num);
 }
 /* The delta is read against what is GOOD for the squad, not against the sign:
    flags rising is bad, compliance rising is good, and the arrow alone cannot
@@ -12277,7 +12277,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sw-load-head {
   font-size: var(--fs-10);
   font-weight: var(--w-num);
-  letter-spacing: 0.1em;
+  letter-spacing: var(--t-colhead-tracking);
   text-transform: uppercase;
   color: var(--faint);
   padding-bottom: var(--sp-2);
@@ -12407,7 +12407,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .exlib-sub {
   margin: var(--sp-6) 0 0;
   font-size: var(--fs-13);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   color: var(--muted);
 }
 .exlib-tools {
@@ -12579,7 +12579,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .exlib-col {
   font-size: var(--fs-11);
   font-weight: var(--w-bold);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--faint);
 }
@@ -12673,7 +12673,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .exlib-form-help {
   margin: 0;
   font-size: var(--fs-12);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   color: var(--muted);
 }
 /* .form-error carries a 14px bottom margin for the forms it was written for;
@@ -12726,7 +12726,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .exlib-note {
   margin: 0;
   font-size: var(--fs-12);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   color: var(--faint);
 }
 .exlib-actions {
@@ -12796,7 +12796,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-weight: var(--w-black);
   font-size: 386px;
   line-height: 1;
-  letter-spacing: -0.035em;
+  letter-spacing: -0.035em; /* the brand mark's own tracking, not the type scale's — test-brand-face */
   color: var(--lk-ink, var(--text));
   white-space: pre;
 }
@@ -13075,20 +13075,20 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-family: var(--font-sans), system-ui, sans-serif;
   font-weight: var(--w-black);
   font-size: var(--fs-28);
-  letter-spacing: -0.03em;
+  letter-spacing: var(--t-page-tracking);
   color: var(--text);
   margin: 0;
 }
 .launch-sub {
   font-size: var(--fs-13);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   color: var(--muted);
   text-wrap: pretty;
   margin: 0;
 }
 .launch-foot {
   font-size: var(--fs-13);
-  line-height: 1.5;
+  line-height: var(--lh-base);
   color: var(--muted);
   text-align: center;
   margin: 0;
@@ -13226,7 +13226,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
     font-weight: var(--w-black);
     font-size: clamp(34px, 3.5vw, var(--fs-48));
     line-height: 1.1;
-    letter-spacing: -0.03em;
+    letter-spacing: var(--t-page-tracking);
     color: var(--text);
     /* 11ch, capped at the column. With the clamp the hairline over-run the
        fixed 48 had at 1080 (406.1px against 405.5px) no longer arises. */
@@ -13498,7 +13498,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   margin: 0;
   font-size: var(--fs-28);
   font-weight: var(--w-black);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   line-height: 1.05;
 }
 .sw-well-lab {
@@ -13864,9 +13864,9 @@ main:has(.rhead) > .back-btn > :first-child {
   margin: var(--sp-10) 0 0;
   font-weight: var(--w-black);
   font-size: var(--fs-32);
-  letter-spacing: -0.03em;
+  letter-spacing: var(--t-page-tracking);
   color: var(--text);
-  line-height: 1.15;
+  line-height: var(--lh-num);
 }
 
 /* 5. Tabs + period -------------------------------------------------------- */
@@ -14041,7 +14041,7 @@ main:has(.rhead) > .back-btn > :first-child {
 .rfig-label {
   margin: 0;
   font-size: var(--fs-11);
-  letter-spacing: 0.12em;
+  letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
   color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
   font-weight: var(--w-semi);
@@ -14057,7 +14057,7 @@ main:has(.rhead) > .back-btn > :first-child {
   font-size: var(--fs-48);
   font-weight: var(--w-semi);
   line-height: 1.1;
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   color: var(--text);
 }
 .rfig-sample {
@@ -14376,7 +14376,7 @@ a.hist-row:active { background: var(--surf-sunken); }
     margin: 0;
     font-size: var(--fs-18);
     font-weight: var(--w-black);
-    letter-spacing: -0.02em;
+    letter-spacing: var(--t-section-tracking);
     color: var(--text);
     min-width: 0;
     overflow: hidden;
@@ -14489,7 +14489,7 @@ a.hist-row:active { background: var(--surf-sunken); }
     margin: 0 0 var(--sp-6);
     font-size: var(--fs-11);
     font-weight: var(--w-semi);
-    letter-spacing: 0.12em;
+    letter-spacing: var(--t-eyebrow-tracking);
     text-transform: uppercase;
     color: var(--muted);
   }
@@ -14649,7 +14649,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   margin: var(--sp-8) 0 0;
   font-size: var(--fs-13);
   color: var(--muted);
-  line-height: 1.5;
+  line-height: var(--lh-base);
 }
 .empty-period-action {
   display: flex;
@@ -14776,7 +14776,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   margin: 0 0 var(--sp-2);
   font-size: var(--fs-22);
   font-weight: var(--w-bold);
-  letter-spacing: -0.02em;
+  letter-spacing: var(--t-section-tracking);
   font-variant-numeric: tabular-nums;
 }
 .pb-assign-arith {

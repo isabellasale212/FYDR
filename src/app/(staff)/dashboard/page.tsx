@@ -476,7 +476,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
       <div className="dash-body" style={{ marginTop: 'var(--sp-14)' }}>
         <div>
           <div style={{ display: 'flex', alignItems: 'baseline', marginBottom: 'var(--sp-12)' }}>
-            <h2 style={{ fontSize: 'var(--fs-16)', fontWeight: 'var(--w-bold)', letterSpacing: '-0.02em', margin: 0 }}>
+            <h2 style={{ fontSize: 'var(--fs-16)', fontWeight: 'var(--w-bold)', letterSpacing: 'var(--t-section-tracking)', margin: 0 }}>
               {dayTitle(selectedDay, wallClockToday)}
             </h2>
             <span className="tiny num" style={{ color: 'var(--muted)', marginLeft: 'auto' }}>

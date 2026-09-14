@@ -113,7 +113,7 @@ export function TodayRpeRow({ orgId, athleteId, userId, sessionId, sessionTitle,
   return (
     <div className="card td-row td-rate" style={{ flexDirection: 'column', alignItems: 'stretch', gap: 'var(--sp-10)' }} data-state={state}>
       <div style={{ minWidth: 0 }}>
-        <span className="td-name" style={{ fontSize: '1.0625rem' }}>
+        <span className="td-name" style={{ fontSize: 'var(--t-body-lg)' }}>
           {done ? rpeRatedLine(sessionTitle, rated) : name}
         </span>
         <span className="td-sub num" role={done ? 'status' : undefined} aria-live={done ? 'polite' : undefined}>

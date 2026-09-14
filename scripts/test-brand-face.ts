@@ -136,8 +136,8 @@ console.log('\nthe brand face is used by the mark and nothing else — the launc
   assert(/font-family: var\(--font-sans\)/.test(h) && !/--font-brand/.test(h), 'the launch headline is Roboto — the brand face is the mark\'s alone again');
   assert(/font-weight: (?:800|var\(--w-black\))/.test(h), 'at 800');
   assert(
-    /letter-spacing: -0\.03em/.test(h) && !/letter-spacing: -0\.035em/.test(h),
-    'at -0.03em, not the mark\'s -0.035em',
+    /letter-spacing: (?:-0\.03em|var\(--t-page-tracking\))/.test(h) && !/letter-spacing: (?:-0\.035em|var\(--t-hero-tracking\))/.test(h),
+    'at -0.03em (System A\'s --t-page-tracking since 15 Sept 2026), not the mark\'s -0.035em',
   );
   const marks = WORDMARKS.map((w) => rule(w.sel));
   assert(

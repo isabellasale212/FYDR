@@ -544,34 +544,16 @@ decision D-01.
 
 ---
 
-## MET-014. Named for selection
+## MET-014. Named for selection — RETIRED
 
-**Name on screen.** Named. Shown as a ring reading, for example, 25/28.
-
-**Surfaces.** Staff app only.
-
-**What it means.** How many of the squad you could pick for the next match. It
-is the squad size minus the players who are ruled out. **Doubtful players are
-counted as available**, because they can be selected.
-
-**Exact calculation.**
-
-```
-named = squad size - ruled out count
-```
-
-**Inputs.** MET-013.
-
-**Time window.** Right now.
-
-**When data is missing.** If the squad size is zero the ring shows no
-percentage.
-
-**Screens.** Dashboard only.
-
-**Roles and tier.** All staff. Base.
-
-**Where it is built.** `src/lib/queries/dashboard.ts`, `fetchSaturdayReadiness`.
+**Retired 16 September 2026** (Isabella, decision batch 2026-09-13 B4; built
+on the 16th). Its only surface was the dashboard lead card's Named ring, and
+the ring went on 13 September: **Full + Doubtful is the named count**, and the
+card's three numbers say it. The identifier is not reused. The definition
+that stood, for the record: `named = squad size - ruled out count`, doubtful
+players counted as available because they can be selected; inputs MET-013;
+right now; all staff, Base. MET-015 (week load so far) stays on the lead
+card's tail line.
 
 ---
 

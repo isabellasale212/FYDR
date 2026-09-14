@@ -159,7 +159,7 @@ show. A sport scientist can switch it on in Settings › Club." — never "0 of 
 |---|---|---|---|---|
 | MET-012 | Wellness in | Share of expected check-ins received | Today | Empty, never 0 percent, when nobody was expected |
 | MET-013 | Fit and available, Doubtful, Ruled out | The three way availability split | Right now | An athlete with no availability record is counted in none of the three |
-| MET-014 | ~~Named~~ Not drawn since 13 September 2026 — Full + Doubtful on the lead card is the named count; the registry entry stays (the decision to retire it is on the sheet) | Right now | — |
+| MET-014 | ~~Named~~ Retired 16 September 2026 — Full + Doubtful on the lead card is the named count; the registry entry is marked retired and the identifier is not reused | — | — |
 | MET-015 | Week load so far | Squad running this week against a normal week | Monday to today | Empty when no earlier week has GPS data |
 | MET-016 | Open flags | Unresolved alerts | Now | Zero is a real answer here |
 | MET-001 | Readiness, inside the attention rows | How ready an athlete says they feel | The day quoted | Blank |

@@ -54,3 +54,59 @@ carries around eighty colour tokens; its dark block covers eleven. Pill fills,
 heat ramps, washes and the blue ramp have no dark values. Every new colour token
 must either get a dark value or carry a written reason why it is theme-neutral.
 Without that, a screen nobody looked at renders white on white.
+
+---
+
+## Correction, 14 September 2026: the premise above was wrong about the code
+
+This document said the code had no type, spacing or motion tokens and that every
+size was a raw number. **That is false.** The code had `--fs-*` (16 rem steps)
+and `--sp-*` (15 px steps), read in roughly 1,700 places. The advisory chat
+checked for System A's names (`--font-*`, `--t-page`, `--gap-card`) and, finding
+none, concluded there were none. It never checked the names the code actually
+used. The error is recorded here rather than quietly edited out, because layer
+three was scoped against it.
+
+## Ruling: two vocabularies, one mechanism
+
+**The code's `--fs-*` and `--sp-*` stay as the working scale. The 1,700 reads are
+NOT renamed.**
+
+**Where a System A role name maps to exactly the same value as a code step, the
+System A name is pointed at the code step.** New work writes the role name; old
+work keeps resolving. You get System A's vocabulary without the rewrite.
+
+**Why not the full rename.** It changes nothing on screen, not one pixel, and it
+cannot be done mechanically: one old label maps to several role names depending
+on context (`--fs-13` is a table number in one place and body text in another).
+That is days of manual judgement for no visible result, at a moment when the club
+run and the region move are the work on the path to a paying club.
+
+**Why it might be revisited.** A role name says what a thing is FOR.
+`--t-num-cell` is self-documenting; `--fs-13` is not. If the codebase outlives
+this decision by a year or two, the rename becomes worth doing. It is a tidy-up,
+not a blocker.
+
+## Two smaller rulings, same day
+
+- **`--pad-card` takes System A's 18px**, replacing the code's 16px on every
+  card. Visible, and wanted: the whole point of the adoption is that the product
+  replicates the system. Render the six screens before committing it.
+- **`--sidebar-w` stays at the built 236px**, not System A's 214px. That is
+  layout, layout was out of scope for the whole adoption, and changing a sidebar
+  width moves every page's content column. Recorded as a deliberate divergence,
+  not a miss.
+- The nine eyebrows at `0.11em` go to `--t-eyebrow-tracking` (`0.12em`). A tenth
+  of a pixel per letter.
+
+## The guard gap layer three exposed, and closed
+
+A comment added to `tokens.css` contained the literal characters `--fs-*/--sp-*`.
+A star followed by a slash ends a CSS comment, so the rest of the file parsed as
+junk and every page showed a CSS parse error for six commits. **Prebuild stayed
+green throughout: all ~200 guards read the stylesheet as TEXT and not one parsed
+it as CSS.** `next build` would have refused those commits, so nothing broken
+could have shipped, but the guard suite was blind to a whole class of failure.
+`check:css-parses` (postcss, both files) now runs second in prebuild.
+
+Do not deploy anything between `d6fb005` and `075d5ce`.

@@ -106,7 +106,7 @@ console.log('\n4. the CSS, below 768 only');
   assert(/min-height:\s*44px/.test(rule('.ph-tab', pb)), 'tabs at the floor');
   assert(/min-height:\s*52px/.test(rule('.ph-sheet-row', pb)), 'sheet rows at 52px');
   assert(/rgb\(var\(--ink-rgb\) \/ 0\.35\)/.test(rule('.ph-sheet-scrim', pb)), 'the scrim is --ink-rgb at 0.35 (no --scrim)');
-  assert(/var\(--r-card\) var\(--r-card\) 0 0/.test(rule('.ph-sheet', pb)), 'the sheet\'s top radius is --r-card (no --r-sheet)');
+  assert(/border-radius:\s*var\(--r-sheet\)/.test(rule('.ph-sheet', pb)), 'the sheet\'s top radius is --r-sheet (System A, 15 Sept 2026)');
   assert(/box-shadow:\s*var\(--shadow\)/.test(rule('.ph-sheet', pb)), 'and --shadow (no --shadow-raised)');
   assert(/\.main\s*\{[^}]*padding:\s*calc\(64px \+ var\(--sp-18\)\)/.test(pb), 'the content starts below the 64px bar');
   const outside = strip(css.replace(/@media \(max-width: 767px\)\s*\{[\s\S]*?\n\}\n/g, ''));

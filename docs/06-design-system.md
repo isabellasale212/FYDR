@@ -5,6 +5,28 @@
 
 ## 0. Source of truth
 
+> **SYSTEM A, 15 September 2026.** The product adopts the Claude Design system
+> (`docs/decisions/design-system-adoption.md`, Isabella, 14 September). Its five
+> token files at `docs/design-system/tokens/` are the source of truth for values;
+> `src/styles/tokens.css` is where they live in the code. Layers one (colours and
+> shadows) and two (corners) landed on 15 September; layer three (type and
+> spacing) is not built yet. What changed, in one place: the light theme's
+> surfaces (`--bg #e1e9f6`, cards pure white, `--surf2 #e9effb`, `--field
+> #e7eefb`), inks (`--text #121722`, `--muted #556074`, `--faint #667287`), lines
+> and tracks as alphas of the 23,40,80 ink, the two-layer `--shadow`, `--accent2
+> #1793c9`, the pill fills, the avatar and tab-bar colours, and every family the
+> code lacked (the blue ramp, the `--on-*` inks, both heat ramps, the named
+> lines, the rings); and **one radius, `--r: 8px`, for every element**, with
+> `--r-round` (50%) for circles, `--r-sheet` for bottom sheets, `--r-full`
+> (999px) for lozenges and `--r-knob` (3px) for the toggle knob — every older
+> radius name is an alias of `--r`. **The dark theme is frozen**: not one dark
+> colour changed, and the tokens that arrived without a dark value are
+> theme-neutral until Isabella rules on them. Three things of the previous system
+> survive by decision: `--hit-lg`/`--hit-md`, `--r-full`, and dark. Where the
+> sections below describe the earlier values (§2's token block, §3's contrast
+> figures, §7's radii), the token file wins and this document is corrected as
+> layer three lands.
+
 This document is derived from the client's **real** design system, extracted from
 `web/src/app/globals.css`. It is not a proposal and it is not a placeholder.
 

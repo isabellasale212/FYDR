@@ -128,7 +128,7 @@ export function AvatarUploadForm({
                depending on whether a photo exists. The width/height ATTRIBUTES
                stay 64 — they are the intrinsic size hint that avoids layout
                shift, not the rendered box. */
-            style={{ width: '4rem', height: '4rem', borderRadius: '50%', objectFit: 'cover', border: '1px solid var(--border)' }}
+            style={{ width: '4rem', height: '4rem', borderRadius: 'var(--r-round)', objectFit: 'cover', border: '1px solid var(--border)' }}
           />
         ) : (
           <div
@@ -141,7 +141,7 @@ export function AvatarUploadForm({
                  preference. */
               width: '4rem',
               height: '4rem',
-              borderRadius: '50%',
+              borderRadius: 'var(--r-round)',
               background: colour ? `var(--group-${colour.toLowerCase()})` : 'var(--surf2)',
               border: '1px solid var(--border)',
               display: 'flex',
@@ -205,7 +205,7 @@ export function AvatarUploadForm({
                       style={{
                         width: 10,
                         height: 10,
-                        borderRadius: '50%',
+                        borderRadius: 'var(--r-round)',
                         background: `var(--group-${name.toLowerCase()})`,
                         display: 'inline-block',
                       }}

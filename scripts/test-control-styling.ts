@@ -47,22 +47,24 @@ const rule = (name: string): string => {
 
 console.log('one radius, named once');
 {
-  assert(/--r-control:\s*6px;/.test(read(TOKENS)), '--r-control is 6px in tokens.css');
-  /* The legacy tokens keep their own values. Aliasing them to --r-control was
-     the first attempt and it silently reshaped three progress bars, which is
-     the opposite of a token keeping its meaning. */
-  assert(/--r-pill:\s*20px;/.test(read(TOKENS)), '--r-pill still means 20px, and still shapes the progress bars');
+  /* ONE RADIUS since 15 Sept 2026 (System A, docs/decisions/design-system-adoption.md): --r is 8px, every old name is an alias of it, a control reads var(--r).
+     The old "legacy tokens keep their own values" argument (a bar is not a
+     control) is closed by the decision: a bar, a card and a control cut
+     identically now, and the aliases exist so nothing breaks, not so anything
+     differs. */
+  assert(/--r:\s*8px;/.test(read(TOKENS)), '--r is 8px in tokens.css');
+  for (const alias of ['control', 'pill', 'card', 'field', 'tab', 'toggle', 'stat', 'band']) assert(new RegExp(`--r-${alias}:\\s*var\\(--r\\);`).test(read(TOKENS)), `--r-${alias} resolves to --r`);
+  assert(/--r-full:\s*999px;/.test(read(TOKENS)), '--r-full survives at 999px for lozenges');
   assert(
-    !/border-radius:\s*var\(--r-(pill|field|tab|toggle)\)/.test(
+    !/border-radius:\s*var\(--r-(pill|field|tab|toggle|control)\)/.test(
       [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
         .filter((m) => /btn|chip|\btab\b|segment|toggle|\bfield\b|input/i.test((m[1] ?? '').replace(/\/\*[\s\S]*?\*\//g, '')))
         .filter((m) => !/track|knob|bar\b/i.test(m[1] ?? ''))
         .map((m) => m[2])
         .join(''),
     ),
-    'and no control reads a legacy radius token any more',
+    'and no control reads an alias — controls name --r',
   );
-  assert(/--r-card:\s*18px;/.test(read(TOKENS)), '--r-card is untouched — a card is not a control');
 }
 
 console.log('\nnothing clickable is pill-shaped any more');
@@ -78,11 +80,8 @@ console.log('\nnothing clickable is pill-shaped any more');
   assert(pills.length === 0, `no control keeps a 20px+ or 999px radius (found ${pills.length})`);
   const pillReaders = [...css.matchAll(/([^{}]+)\{([^{}]*)\}/g)]
     .filter((m) => /border-radius:\s*var\(--r-pill\)/.test(m[2] ?? ''))
-    .map((m) => (m[1] ?? '').replace(/\/\*[\s\S]*?\*\//g, '').trim());
-  assert(
-    pillReaders.every((s) => /bar\b|track|fill/i.test(s)),
-    `--r-pill is read only by bars now (${pillReaders.join(', ') || 'nothing'})`,
-  );
+    .map((m) => (m[1] ?? '').trim());
+  assert(pillReaders.length === 0, `nothing reads --r-pill any more — bars, like everything else, read --r (${pillReaders.join(', ') || 'none'})`);
 }
 
 console.log('\nthe overrides that hid from the name heuristic stay fixed');
@@ -104,13 +103,13 @@ console.log('\nthe overrides that hid from the name heuristic stay fixed');
     const i = css.indexOf(`${sel} {`);
     const body = i === -1 ? '' : css.slice(i, css.indexOf('}', i));
     assert(
-      i !== -1 && (!/border-radius/.test(body) || /border-radius: var\(--r-control\)/.test(body)),
+      i !== -1 && (!/border-radius/.test(body) || /border-radius: var\(--r\)/.test(body)),
       `${sel} does not override the control radius`,
     );
   }
   const signin = css.slice(css.indexOf('.launch .signin-submit {'));
   assert(
-    /border-radius: var\(--r-control\)/.test(signin.slice(0, signin.indexOf('}'))),
+    /border-radius: var\(--r\)/.test(signin.slice(0, signin.indexOf('}'))),
     'and the sign-in button specifically reads the token — it computed to 14px on production after the first deploy',
   );
 }
@@ -132,8 +131,9 @@ console.log('\nthe guard has teeth');
     };
     assert(run('.btn-primary { border-radius: 20px; }') === 1, 'a 20px button fails');
     assert(run('.squad-chip { border-radius: 999px; }') === 1, 'a 999px chip fails');
-    assert(run('.btn-primary { border-radius: 6px; }') === 1, 'even a RAW 6px fails — the value is not the point, the token is');
-    assert(run('.btn-primary { border-radius: var(--r-control); }') === 0, 'the token passes');
+    assert(run('.btn-primary { border-radius: 8px; }') === 1, 'even a RAW 8px fails — the value is not the point, the token is');
+    assert(run('.btn-primary { border-radius: var(--r-control); }') === 1, 'the old alias fails on a control — it names --r');
+    assert(run('.btn-primary { border-radius: var(--r); }') === 0, 'the token passes');
     assert(run('.plan-switch-knob { border-radius: 50%; }') === 0, 'a knob is exempt by name, not by number');
     assert(run('.card { border-radius: 18px; }') === 0, 'and a card is not a control at all');
   } finally {

@@ -62,7 +62,7 @@ console.log('\nA3/A4. spacing, and a pinned header');
      is the same — a white surface on the tinted page, no border. */
   const card = rule('.gl-card');
   assert(!/border:/.test(card) && /background:\s*var\(--surf\)/.test(card), 'the exercise card is a white surface with no border');
-  assert(/border-radius:\s*var\(--r-toggle\)/.test(card), 'on the athlete card radius');
+  assert(/border-radius:\s*var\(--r\)/.test(card), 'on the one radius, --r (System A, 15 Sept 2026)');
   const head = rule('.gym-head');
   assert(/position:\s*sticky/.test(head) && /top:\s*0/.test(head) && /background:\s*var\(--phone-bg\)/.test(head) && /z-index/.test(head), 'the header is sticky on the shell ground');
   assert(/border-bottom:\s*1px solid var\(--hair\)/.test(head), 'and keeps its hairline — one of the two the board allows');

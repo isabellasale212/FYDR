@@ -146,8 +146,9 @@ console.log('\n3. no radius or font arriving through a JS-built style string');
 
 console.log('\n4. the stylesheet itself still holds');
 {
-  assert(findViolations(css).length === 0, 'every interactive rule reads --r-control or a named exemption');
-  assert(/--r-control:\s*6px/.test(tokens), '--r-control is still 6px');
+  assert(findViolations(css).length === 0, 'every interactive rule reads --r or a named exemption');
+  /* ONE RADIUS since 15 Sept 2026 (System A, docs/decisions/design-system-adoption.md): --r is 8px, every old name is an alias of it, a control reads var(--r). */
+  assert(/--r:\s*8px/.test(tokens) && /--r-control:\s*var\(--r\)/.test(tokens), '--r is 8px and --r-control is its alias');
   /* The four athlete pills, and the rule that they may read ONE token. */
   for (const name of ['sign-out', 'theme-seg', 'theme-seg-btn', 'md-seg']) {
     assert(ATHLETE_PILL_EXEMPT.includes(name), `${name} is exempt by name`);
@@ -179,10 +180,11 @@ console.log('\n5. the athlete controls the guard\'s NET misses are exactly the k
   /* .gym-set-key left this list on 2026-09-12 with the logger's rebuild
      (ATH-ADULT-09 C1): the chip reads var(--r-field), the 12px token, so it is
      no longer a raw radius. Two remain. */
-  const KNOWN: readonly { sel: string; value: string; why: string }[] = [
-    { sel: '.dots .opt > span', value: '14px', why: "the wellness sheet's 1-5 scale, rounded in screens 13/14" },
-    { sel: '.prog-item', value: '14px', why: 'Programme list rows, a screen the changelog leaves unchanged' },
-  ];
+  /* Both left the list on 15 Sept 2026 with System A's one radius: .dots .opt
+     > span and .prog-item read var(--r) like everything else. The list is
+     empty and stays a list, so a raw athlete radius still has nowhere to go
+     but here, visibly. */
+  const KNOWN: readonly { sel: string; value: string; why: string }[] = [];
   for (const { sel, value, why } of KNOWN) {
     const esc = sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
     const rule = new RegExp(`${esc}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? '';
@@ -215,7 +217,7 @@ console.log('\n5. the athlete controls the guard\'s NET misses are exactly the k
     const decl = /border-radius:\s*([^;]+);/.exec(m[2] ?? '');
     if (!decl) continue;
     const v = (decl[1] ?? '').trim();
-    if (v.startsWith('var(--r-')) continue;
+    if (v.startsWith('var(--r')) continue; /* --r, --r-round, --r-full, --r-knob, --r-sheet and the aliases */
     if (KNOWN.some((k) => sel === k.sel)) continue;
     /* A CIRCLE BY CONSTRUCTION, same test as check 1 rather than a fourth name
        on a list. `.sheet-x` is the sheet dismiss — 44x44 at 50%, pre-existing,

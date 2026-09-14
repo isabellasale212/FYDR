@@ -71,7 +71,7 @@ console.log('\nthe rules, from existing tokens');
 {
   const card = rule('.after-card');
   assert(/background:\s*var\(--wash-accent\)/.test(card) && /border:\s*1px solid var\(--border-accent-soft\)/.test(card), '.after-card: --wash-accent fill, --border-accent-soft edge (B2)');
-  assert(/border-radius:\s*var\(--r-toggle\)/.test(card) && /box-shadow:\s*var\(--shadow\)/.test(card) && /padding:\s*var\(--sp-18\)/.test(card), 'the athlete card radius, --shadow, --sp-18 padding');
+  assert(/border-radius:\s*var\(--r\)/.test(card) && /box-shadow:\s*var\(--shadow\)/.test(card) && /padding:\s*var\(--sp-18\)/.test(card), 'the athlete card radius, --shadow, --sp-18 padding');
   const heading = rule('.after-heading');
   assert(/font-size:\s*var\(--fs-28\)/.test(heading) && /font-weight:\s*800/.test(heading), '.after-heading --fs-28 / 800 (B1: the board\'s 30 has no step)');
   const fact = rule('.after-fact');

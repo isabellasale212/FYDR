@@ -47,7 +47,7 @@ export function PlanGateCard({
           style={{
             width: 30,
             height: 30,
-            borderRadius: 9,
+            borderRadius: 'var(--r)',
             background: 'rgb(var(--highlight-rgb) / 0.22)',
             display: 'grid',
             placeItems: 'center',

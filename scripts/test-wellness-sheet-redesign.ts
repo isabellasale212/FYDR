@@ -42,13 +42,16 @@ const form = strip(readFileSync('src/components/CheckInForm/CheckInForm.tsx', 'u
 const page = strip(readFileSync('src/app/(athlete)/check-in/page.tsx', 'utf8'));
 const scaleInput = strip(readFileSync('src/components/ScaleInput/ScaleInput.tsx', 'utf8'));
 
-console.log('the corner specs Isabella asked to keep, pinned for the whole redesign');
+console.log('the corner specs — one radius since System A, 15 Sept 2026');
 {
-  const RADII: ReadonlyArray<readonly [string, string]> = [
-    ['--r-card', '18px'], ['--r-tab', '14px'], ['--r-field', '12px'], ['--r-control', '6px'],
-  ];
-  for (const [name, value] of RADII) {
-    assert(new RegExp(`${name}:\\s*${value}\\s*;`).test(tokens), `${name} is still ${value}`);
+  /* The corner specs Isabella asked to keep for the redesign (18 / 14 / 12 /
+     6) were superseded by her adoption decision of 14 Sept 2026
+     (docs/decisions/design-system-adoption.md): one radius, --r 8px, and every
+     older name an alias of it. Pinned as that, so a second value cannot
+     quietly return under an old name. */
+  assert(/--r:\s*8px\s*;/.test(tokens), '--r is 8px');
+  for (const name of ['--r-card', '--r-tab', '--r-field', '--r-control']) {
+    assert(new RegExp(`${name}:\\s*var\\(--r\\)\\s*;`).test(tokens), `${name} resolves to --r`);
   }
   /* NO PILL TOKEN IS ASSERTED HERE, and the reason belongs in the file rather
      than in a conversation. `--r-pill` already exists at 20px and is read by
@@ -64,7 +67,7 @@ console.log('the corner specs Isabella asked to keep, pinned for the whole redes
      and theme toggle, the gym logger's badges and set keys — and is Isabella's
      to settle there, since exempting them reverses a guarded rule for the
      athlete app and would leave the staff app square. */
-  assert(/--r-pill:\s*20px\s*;/.test(tokens), 'and the existing --r-pill stays 20px, since three bar rules read it');
+  assert(/--r-pill:\s*var\(--r\)\s*;/.test(tokens), 'and --r-pill is an alias of --r since System A (15 Sept 2026) — the bars read --r; it used to stay 20px since three bar rules read it');
 }
 
 console.log('\nthe scale order matches the reference');

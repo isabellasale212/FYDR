@@ -25,7 +25,7 @@ export function GroupSwatch({ colour, size = 10 }: Props) {
       style={{
         width: size,
         height: size,
-        borderRadius: '50%',
+        borderRadius: 'var(--r-round)',
         background,
         flex: 'none',
         display: 'inline-block',

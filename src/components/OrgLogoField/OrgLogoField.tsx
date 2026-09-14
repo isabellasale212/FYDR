@@ -83,7 +83,7 @@ export function OrgLogoField({ orgId, orgName, initialLogoUrl }: Props) {
             width={48}
             height={48}
             /* 3rem to match the initials box beside it. */
-            style={{ width: '3rem', height: '3rem', borderRadius: 8, objectFit: 'contain', border: '1px solid var(--border)', background: 'var(--surf2)' }}
+            style={{ width: '3rem', height: '3rem', borderRadius: 'var(--r)', objectFit: 'contain', border: '1px solid var(--border)', background: 'var(--surf2)' }}
           />
         ) : (
           <div
@@ -93,7 +93,7 @@ export function OrgLogoField({ orgId, orgName, initialLogoUrl }: Props) {
                  argument. Its initials read var(--fs-16). */
               width: '3rem',
               height: '3rem',
-              borderRadius: 8,
+              borderRadius: 'var(--r)',
               background: 'var(--surf2)',
               border: '1px solid var(--border)',
               display: 'flex',

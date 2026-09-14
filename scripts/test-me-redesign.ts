@@ -125,7 +125,7 @@ console.log('\nthe first two pills, exempted by name rather than by changing the
     assert(ATHLETE_PILL_EXEMPT.includes(name), `${name} is exempt by name`);
   }
   assert(/--r-full: 999px/.test(tokens), 'a 999px token exists for them');
-  assert(/--r-pill:\s*20px/.test(tokens), 'and the existing --r-pill is still 20px, since three bar rules read it');
+  assert(/--r-pill:\s*var\(--r\)/.test(tokens), 'and --r-pill is an alias of --r since System A (15 Sept 2026) — the bars read --r');
   for (const sel of ['.sign-out', '.theme-seg-btn']) {
     const rule = new RegExp(`\\${sel}\\s*\\{([^}]*)\\}`).exec(css)?.[1] ?? '';
     assert(/var\(--r-full\)/.test(rule), `${sel} uses --r-full`);

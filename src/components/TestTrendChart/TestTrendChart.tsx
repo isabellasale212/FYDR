@@ -123,7 +123,7 @@ export function TestTrendChart({ rows, timezone, unit, decimalPlaces, higherIsBe
         <div style={{ display: 'flex', gap: 'var(--sp-14)', marginTop: 'var(--sp-6)' }}>
           {chartable.map(([side]) => (
             <span key={side} className="tiny" style={{ display: 'inline-flex', alignItems: 'center', gap: 'var(--sp-6)' }}>
-              <span style={{ width: 8, height: 8, borderRadius: 8, background: COLORS[side] ?? 'var(--accent)', display: 'inline-block' }} />
+              <span style={{ width: 8, height: 8, borderRadius: 'var(--r-round)', background: COLORS[side] ?? 'var(--accent)', display: 'inline-block' }} />
               {SIDE_LABEL[side] ?? side}
             </span>
           ))}

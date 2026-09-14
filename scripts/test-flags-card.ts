@@ -146,10 +146,10 @@ console.log('\nno raw hex, and no variables that do not exist');
 console.log('\nthe structural values from the spec');
 {
   const panel = rule('.dash-flags-panel');
-  assert(/border-radius: 10px/.test(panel), 'card radius 10px');
+  assert(/border-radius: var\(--r\)/.test(panel), 'card radius --r (System A\'s one radius, 15 Sept 2026; was 10px)');
   const badge = rule('.dash-flags-badge');
   assert(/width: 38px/.test(badge) && /height: 38px/.test(badge), 'icon badge is 38x38');
-  assert(/border-radius: 9px/.test(badge), 'with a 9px radius');
+  assert(/border-radius: var\(--r\)/.test(badge), 'with the one radius (was 9px)');
   const item = rule('.dash-flags-item');
   assert(/border-left: 3px solid/.test(item), 'each row carries a 3px severity bar');
 }

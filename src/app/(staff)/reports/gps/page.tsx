@@ -913,7 +913,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
                            default settings. */
                         width: '2.375rem',
                         height: '2.375rem',
-                        borderRadius: 12,
+                        borderRadius: 'var(--r)',
                         background: 'var(--avatar-bg)',
                         color: 'var(--avatar-text)',
                         display: 'grid',

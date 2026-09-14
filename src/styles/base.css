@@ -83,7 +83,7 @@ textarea.num,
 :focus-visible {
   outline: 2px solid var(--focus);
   outline-offset: 2px;
-  border-radius: 4px;
+  border-radius: var(--r);
 }
 
 button:disabled,
@@ -108,7 +108,7 @@ a {
   background: var(--surf);
   color: var(--text);
   padding: var(--sp-10) var(--sp-16);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   border: 1px solid var(--border);
 }
 .skip-link:focus {
@@ -615,7 +615,7 @@ a {
   background: var(--elev);
   color: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-14);
   min-height: 44px;
   font-size: var(--fs-12);
@@ -695,7 +695,7 @@ a {
 .card {
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  border-radius: var(--r);
   padding: var(--pad-card);
   box-shadow: var(--shadow);
 }
@@ -757,7 +757,7 @@ a {
   background: var(--accent);
   color: var(--on-accent);
   border: none;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-14) var(--sp-20);
   min-height: 44px;
   font-size: var(--fs-15);
@@ -784,7 +784,7 @@ a {
   background: none;
   color: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-16);
   min-height: 44px;
   font-size: var(--fs-13);
@@ -806,7 +806,7 @@ a {
   width: 100%;
   background: var(--field);
   border: 1px solid var(--border-strong);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--pad-field);
   min-height: 44px;
   color: var(--text);
@@ -836,7 +836,7 @@ a {
   font-weight: 600;
   padding: var(--sp-8) var(--sp-14);
   min-height: 44px;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   border: 1px solid var(--border);
   color: var(--muted);
   background: transparent;
@@ -886,7 +886,7 @@ a {
   font-size: var(--fs-12);
   font-weight: 600;
   padding: var(--sp-8) var(--sp-14);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   border: 1px solid var(--accent);
   color: var(--on-accent);
   background: var(--accent);
@@ -901,7 +901,7 @@ a {
   font-size: var(--fs-11);
   font-weight: 700;
   padding: var(--sp-4) var(--sp-10) var(--sp-4) var(--sp-8);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   display: inline-flex;
   align-items: center;
   gap: var(--sp-6);
@@ -970,7 +970,7 @@ a {
   gap: var(--sp-2);
   background: var(--border);
   border: 1px solid var(--border);
-  border-radius: var(--r-tab);
+  border-radius: var(--r);
   overflow: hidden;
 }
 @media (max-width: 640px) {
@@ -1187,7 +1187,7 @@ table.tbl td {
   }
   table.tbl.tbl-cards tr {
     border: 1px solid var(--border);
-    border-radius: var(--r-control);
+    border-radius: var(--r);
     padding: var(--sp-8) var(--sp-12);
     margin-top: var(--sp-10);
     background: var(--surf);
@@ -1311,7 +1311,7 @@ table.tbl.lb-table td.r {
    its border as any card's does. It was 11px/14px. */
 .banner {
   border: 1px solid var(--border);
-  border-radius: var(--r-tab);
+  border-radius: var(--r);
   padding: var(--pad-card);
   background: var(--surf2);
   display: flex;
@@ -1327,7 +1327,7 @@ table.tbl.lb-table td.r {
 
 .empty {
   border: 1px dashed var(--border-strong);
-  border-radius: var(--r-card);
+  border-radius: var(--r);
   background: var(--surf2);
   padding: var(--sp-20) var(--sp-18);
   text-align: center;
@@ -1356,7 +1356,7 @@ table.tbl.lb-table td.r {
 .pbar {
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  border-radius: var(--r);
   padding: var(--sp-14) var(--sp-16);
   box-shadow: var(--shadow);
   margin-bottom: var(--sp-14);
@@ -1427,13 +1427,13 @@ table.tbl.lb-table td.r {
 .legend i {
   width: 14px;
   height: 3px;
-  border-radius: 2px;
+  border-radius: var(--r);
   display: block;
 }
 .legend i.sq {
   width: 9px;
   height: 9px;
-  border-radius: 2px;
+  border-radius: var(--r);
 }
 
 /* ---------- athlete, mobile web ----------
@@ -1579,10 +1579,10 @@ body:has(.phone) {
      above keeps --r-card for the staff app. .empty, .avail-banner and
      .gym-ex-card, the athlete surfaces that draw a card by another class,
      follow it below and in their own blocks. */
-  border-radius: var(--r-toggle);
+  border-radius: var(--r);
 }
 .phone-body .empty {
-  border-radius: var(--r-toggle);
+  border-radius: var(--r);
 }
 /* Spec §7.3 gives the hero card 16px 18px 14px — two pixels less underneath,
    because a chart's own bottom padding already sits inside its box. Selected
@@ -1951,11 +1951,12 @@ body:has(.phone) {
   display: flex;
   align-items: flex-end;
 }
-/* Spec §4: chart bars are rounded at the top only — 7px 7px 3px 3px. */
+/* Spec §4: chart bars are rounded at the top only. One radius since 15 Sept
+   2026 (System A): the top takes --r, the bottom stays square. */
 .gb-bar {
   width: 100%;
   min-height: 8px;
-  border-radius: 7px 7px 3px 3px;
+  border-radius: var(--r) var(--r) 0 0;
   background: var(--accent-text);
 }
 /* The current week is INCOMPLETE, not low. Drawn in a tint of the same hue so
@@ -2317,7 +2318,7 @@ a.hist-row:focus-visible {
   gap: var(--sp-6);
   padding: var(--sp-6) 0;
   border: 1px solid transparent;
-  border-radius: 12px;
+  border-radius: var(--r);
 }
 .wk-day[data-kind='training'] {
   background: var(--wk-fill);
@@ -2348,7 +2349,7 @@ a.hist-row:focus-visible {
 .wk-day .wn {
   width: 30px;
   height: 30px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2432,7 +2433,7 @@ a.hist-row:focus-visible {
 .gl {
   width: 46px;
   height: 46px;
-  border-radius: 14px;
+  border-radius: var(--r);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -2516,7 +2517,7 @@ a.hist-row:focus-visible {
 .done-check {
   width: 44px;
   height: 44px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   background: rgb(var(--good-rgb) / 0.2);
   display: flex;
   align-items: center;
@@ -2634,7 +2635,7 @@ a.hist-row:focus-visible {
   align-items: flex-start;
   gap: var(--sp-10);
   padding: var(--pad-card);
-  border-radius: var(--r-tab);
+  border-radius: var(--r);
   border: 1px solid rgb(var(--warn-rgb) / 0.4);
   background: color-mix(in srgb, rgb(var(--warn-rgb)) 12%, var(--surf));
   color: var(--text);
@@ -2649,7 +2650,7 @@ a.hist-row:focus-visible {
   width: var(--sp-8);
   height: var(--sp-8);
   margin-top: var(--sp-6);
-  border-radius: var(--r-full);
+  border-radius: var(--r-round);
   background: var(--warn);
 }
 .avail-line[data-tone='bad'] {
@@ -2697,7 +2698,7 @@ a.hist-row:focus-visible {
 /* Spec §7.1: padding 16px 18px, gap 14. */
 .avail-banner {
   /* --r-toggle, the athlete card radius since 11 Sept 2026 — see .phone-body .card. */
-  border-radius: var(--r-toggle);
+  border-radius: var(--r);
   padding: var(--sp-16) var(--sp-18);
   display: flex;
   gap: var(--sp-14);
@@ -2754,7 +2755,7 @@ a.hist-row:focus-visible {
   font-size: var(--fs-11);
   font-weight: 700;
   padding: var(--sp-2) var(--sp-8);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--surf);
   color: inherit;
 }
@@ -2783,7 +2784,7 @@ a.hist-row:focus-visible {
   width: 100%;
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  border-radius: var(--r);
   box-shadow: var(--shadow);
   font-family: inherit;
   text-align: left;
@@ -2878,7 +2879,7 @@ a.hist-row:focus-visible {
   width: 44px;
   min-height: 44px;
   margin: -5px -5px 0 0;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   border: none;
   background: none;
   color: var(--muted);
@@ -2952,7 +2953,7 @@ a.hist-row:focus-visible {
 .step .btnc {
   width: 44px;
   min-height: 44px;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--accent-text);
@@ -3061,7 +3062,7 @@ a.hist-row:focus-visible {
      twenty-five times a morning with cold hands. */
   width: 100%;
   min-height: 44px;
-  border-radius: 14px;
+  border-radius: var(--r);
   border: 1px solid var(--border);
   /* --surf2, not transparent (ATH-ADULT-03 A9): a key with a fill reads as
      a key. Transparent keys on the blue shell ground read as outlines. */
@@ -3107,7 +3108,7 @@ a.hist-row:focus-visible {
   color: var(--muted);
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-4) var(--sp-8);
   white-space: nowrap;
 }
@@ -3117,7 +3118,7 @@ a.hist-row:focus-visible {
   font-weight: 600;
   padding: var(--sp-6) var(--sp-14);
   min-height: 32px;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   border: 1px solid var(--accent);
   color: var(--accent-text);
   background: none;
@@ -3196,7 +3197,7 @@ a.hist-row:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--r-full);
+  border-radius: var(--r-round);
   background: var(--wash-bad);
   color: var(--bad-pill-text);
   font-size: var(--fs-11);
@@ -3258,7 +3259,7 @@ a.hist-row:focus-visible {
 .after-card {
   background: var(--wash-accent);
   border: 1px solid var(--border-accent-soft);
-  border-radius: var(--r-toggle);
+  border-radius: var(--r);
   box-shadow: var(--shadow);
   padding: var(--sp-18);
 }
@@ -3365,7 +3366,7 @@ a.hist-row:focus-visible {
 .subm-count[data-complete] {
   background: var(--wash-good);
   border: 1px solid var(--border-good);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-4) var(--sp-8);
 }
 /* ATH-ADULT-08 C3 (12 Sept 2026): the limit stated before the athlete
@@ -3414,7 +3415,7 @@ a.hist-row:focus-visible {
 .subm .btn-primary,
 .subm .btn-ghost {
   padding: var(--sp-16) var(--sp-20);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   font-size: var(--fs-16);
   font-weight: 700;
 }
@@ -3463,7 +3464,7 @@ a.hist-row:focus-visible {
   justify-content: center;
   gap: var(--sp-2);
   height: 58px;
-  border-radius: var(--r-stat);
+  border-radius: var(--r);
   border: 1px solid var(--border);
   background: var(--surf);
   cursor: pointer;
@@ -3672,7 +3673,7 @@ a.hist-row:focus-visible {
   margin-bottom: var(--sp-14);
 }
 .form-error {
-  border-radius: var(--r-field);
+  border-radius: var(--r);
   background: rgb(var(--bad-rgb) / var(--pill-fill-alpha-bad));
   color: var(--bad-pill-text);
   border-inline-start: 2px solid rgb(var(--bad-rgb));
@@ -3702,7 +3703,7 @@ a.hist-row:focus-visible {
   width: 100%;
   padding: var(--sp-14);
   border: 1px solid var(--border);
-  border-radius: var(--r-stat);
+  border-radius: var(--r);
   background: var(--surf);
   color: var(--text);
   font-size: var(--fs-16);
@@ -3785,7 +3786,7 @@ a.hist-row:focus-visible {
 }
 .gym-progress-track {
   height: 6px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r);
   background: var(--track);
   flex: 1 1 auto;
   overflow: hidden;
@@ -3805,7 +3806,7 @@ a.hist-row:focus-visible {
      is one accent inside the logger, with the gold kept on the tab bar and
      the domain chips. */
   background: var(--accent);
-  border-radius: var(--r-pill);
+  border-radius: var(--r);
   transition: width var(--t-state);
 }
 .gym-body {
@@ -3841,7 +3842,7 @@ a.hist-row:focus-visible {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  border-radius: var(--r-field);
+  border-radius: var(--r);
   border: none;
   background: var(--surf2);
   color: var(--faint);
@@ -3873,7 +3874,7 @@ a.hist-row:focus-visible {
 /* The one exercise card. */
 .gl-card {
   background: var(--surf);
-  border-radius: var(--r-toggle); /* the athlete card radius since 11 Sept 2026 */
+  border-radius: var(--r); /* the athlete card radius since 11 Sept 2026 */
   padding: var(--sp-14) var(--sp-16) var(--sp-16);
   margin-bottom: var(--sp-14);
 }
@@ -3960,7 +3961,7 @@ a.hist-row:focus-visible {
   width: var(--hit-md);
   min-height: var(--hit-md);
   border: none;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--surf2);
   color: var(--accent-text);
   font-family: inherit;
@@ -3995,7 +3996,7 @@ a.hist-row:focus-visible {
   gap: var(--sp-10);
   margin-bottom: var(--sp-10);
   padding: var(--sp-10) var(--sp-14);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--wash-accent);
   font-size: var(--fs-13);
   font-weight: 600;
@@ -4046,7 +4047,7 @@ a.hist-row:focus-visible {
   gap: var(--sp-10);
   padding: var(--sp-12) var(--sp-16);
   background: var(--surf);
-  border-radius: var(--r-toggle);
+  border-radius: var(--r);
 }
 .gl-then-row .nm {
   font-size: var(--fs-14);
@@ -4232,7 +4233,7 @@ a.hist-row:focus-visible {
 .me-avatar {
   width: 46px;
   height: 46px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   background: var(--avatar-bg);
   color: var(--avatar-text);
   font-size: var(--fs-15);
@@ -4315,7 +4316,7 @@ img.me-avatar {
   bottom: calc(106px + env(safe-area-inset-bottom, 0px));
   background: var(--toast-bg);
   color: var(--toast-text);
-  border-radius: var(--r-stat);
+  border-radius: var(--r);
   padding: var(--sp-14) var(--sp-14);
   display: grid;
   grid-template-columns: minmax(0, 1fr) auto;
@@ -4406,7 +4407,7 @@ img.me-avatar {
   background: none;
   color: var(--muted);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-8) var(--sp-16);
   font-size: var(--fs-13);
   font-weight: 600;
@@ -4517,7 +4518,7 @@ img.me-avatar {
 .pp-avatar {
   width: 56px;
   height: 56px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   background: var(--accent);
   color: var(--on-accent);
   font-size: var(--fs-18);
@@ -4545,7 +4546,7 @@ img.me-avatar {
 .pp-wellness-mini {
   width: 62px;
   height: 62px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   border: 1px solid var(--border);
   display: flex;
   align-items: center;
@@ -4687,7 +4688,7 @@ img.me-avatar {
      let a later change to --sp-20 desync them silently. */
   margin-inline: calc(-1 * var(--sp-20));
   padding-inline: var(--sp-20);
-  border-radius: var(--r-band);
+  border-radius: var(--r);
 }
 .pp-bench-row[data-band='1'] {
   background: var(--band-1-wash);
@@ -4722,7 +4723,7 @@ img.me-avatar {
 }
 .pp-bench-bar {
   height: 7px;
-  border-radius: var(--r-pill);
+  border-radius: var(--r);
   background: var(--track);
   overflow: hidden;
   margin-top: var(--sp-8);
@@ -4802,7 +4803,7 @@ img.me-avatar {
   color: var(--faint);
 }
 .pp-ack-btn {
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-6) var(--sp-14);
   font-size: var(--fs-13);
   font-weight: 700;
@@ -4898,7 +4899,7 @@ img.me-avatar {
 }
 .pp-macro-tile {
   background: var(--surf2);
-  border-radius: var(--r-tab);
+  border-radius: var(--r);
   padding: var(--sp-14) var(--sp-10);
   text-align: center;
 }
@@ -5044,7 +5045,7 @@ img.me-avatar {
   margin: 0;
   padding: var(--sp-8) var(--sp-10);
   border: 1px solid var(--hair);
-  border-radius: 6px;
+  border-radius: var(--r);
   background: var(--surf2);
   color: var(--muted);
   font-size: var(--fs-12);
@@ -5074,7 +5075,7 @@ img.me-avatar {
   min-height: 44px;
   padding: 0;
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: none;
   color: var(--muted);
   font-size: var(--fs-9);
@@ -5133,7 +5134,7 @@ img.me-avatar {
 .plan-switch-track {
   width: 54px;
   height: 30px;
-  border-radius: 20px;
+  border-radius: var(--r-full);
   padding: var(--sp-4);
   cursor: default;
   flex: none;
@@ -5153,7 +5154,7 @@ img.me-avatar {
 .plan-switch-knob {
   width: 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--r-knob); /* System A: the knob reads square, 15 Sept 2026 */
   /* Was `#fff` and a bespoke 0.25 shadow — the file's last raw hex, and a
    * second elevation level the handoff's §8 "one shadow for the entire theme,
    * there is no elevation scale" rules out. The knob sits on a solid --accent
@@ -5184,7 +5185,7 @@ img.me-avatar {
   }
 }
 .plan-compare-card {
-  border-radius: 14px;
+  border-radius: var(--r);
   padding: var(--pad-card);
   border: 1px solid var(--border);
 }
@@ -5204,7 +5205,7 @@ img.me-avatar {
   font-size: var(--fs-10);
   font-weight: 700;
   padding: var(--sp-2) var(--sp-10);
-  border-radius: 20px;
+  border-radius: var(--r);
   background: rgb(var(--highlight-rgb) / 0.22);
   /* Same mispaired token as .pill-gold above, same fix — see its comment. */
   color: var(--highlight-pill-text);
@@ -5223,7 +5224,7 @@ img.me-avatar {
   border-top: none;
 }
 .set-row-btn {
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-16);
   font-size: var(--fs-13);
   font-weight: 700;
@@ -5521,7 +5522,7 @@ img.me-avatar {
   margin: auto;
   padding: 0;
   border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  border-radius: var(--r);
   background: var(--surf);
   color: var(--text);
   box-shadow: var(--shadow);
@@ -5573,7 +5574,7 @@ img.me-avatar {
   margin-top: var(--sp-12);
   padding: var(--sp-12) var(--sp-14);
   border: 1px solid var(--border-bad);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--wash-bad);
 }
 .ret-armed {
@@ -5589,7 +5590,7 @@ img.me-avatar {
 .pv-request {
   padding: var(--sp-12) var(--sp-14);
   border: 1px solid var(--border-accent-soft);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--wash-accent);
   font-size: var(--fs-14);
   line-height: 1.5;
@@ -5687,7 +5688,7 @@ img.me-avatar {
 .setup-bar-seg {
   flex: 1 1 0;
   height: 6px;
-  border-radius: var(--r-band);
+  border-radius: var(--r);
   background: var(--hair);
 }
 .setup-bar-done {
@@ -5718,7 +5719,7 @@ img.me-avatar {
   justify-content: center;
   width: 30px;
   height: 30px;
-  border-radius: var(--r-full);
+  border-radius: var(--r-round);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--muted);
@@ -5833,7 +5834,7 @@ img.me-avatar {
 .prog-item {
   display: block;
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-12);
   text-decoration: none;
   color: inherit;
@@ -5849,7 +5850,7 @@ img.me-avatar {
 }
 .prog-day {
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--r);
   overflow: hidden;
 }
 .prog-day-head {
@@ -5896,7 +5897,7 @@ img.me-avatar {
 .tr-mode-switch {
   display: inline-flex;
   background: var(--hair);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-4);
   gap: var(--sp-2);
 }
@@ -5904,7 +5905,7 @@ img.me-avatar {
   padding: var(--sp-8) var(--sp-18);
   font-size: var(--fs-13);
   font-weight: 700;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   text-decoration: none;
   color: var(--muted);
 }
@@ -5917,7 +5918,7 @@ img.me-avatar {
   align-items: baseline;
   gap: var(--sp-6);
   padding: var(--sp-8) var(--sp-16);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--text);
@@ -6022,7 +6023,7 @@ img.me-avatar {
 }
 .tr-scope-chip {
   padding: var(--sp-8) var(--sp-16);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   font-size: var(--fs-13);
   font-weight: 600;
   border: 1px solid var(--border);
@@ -6048,7 +6049,7 @@ img.me-avatar {
   align-items: center;
   padding: var(--sp-10) var(--sp-6);
   border-top: 1px solid var(--hair);
-  border-radius: 8px;
+  border-radius: var(--r);
   text-decoration: none;
   color: inherit;
 }
@@ -6063,14 +6064,14 @@ img.me-avatar {
 }
 .tr-bar-track {
   height: 4px;
-  border-radius: 20px;
+  border-radius: var(--r);
   background: var(--track);
   margin-top: var(--sp-4);
   overflow: hidden;
 }
 .tr-bar-fill {
   height: 100%;
-  border-radius: 20px;
+  border-radius: var(--r);
 }
 
 .tr-scatter-grid {
@@ -6108,7 +6109,7 @@ img.me-avatar {
 }
 .tr-scatter-dot {
   position: absolute;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   transform: translate(-50%, 50%);
   border-width: 2px;
   border-style: solid;
@@ -6142,7 +6143,7 @@ img.me-avatar {
   display: inline-block;
   width: 9px;
   height: 9px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   margin-right: var(--sp-6);
   vertical-align: -1px;
 }
@@ -6175,7 +6176,7 @@ img.me-avatar {
   display: grid;
   gap: var(--sp-6);
   padding: var(--sp-8) var(--sp-6);
-  border-radius: 8px;
+  border-radius: var(--r);
   align-items: center;
 }
 /* Well above their own high-speed norm. Sits before .selected so a selected
@@ -6247,7 +6248,7 @@ img.me-avatar {
    correct in dark mode, which fixed hexes would not. */
 .dash-flags-panel {
   border: 1px solid rgb(var(--bad-rgb) / 0.4);
-  border-radius: 10px;
+  border-radius: var(--r);
   background: var(--surf);
   box-shadow: var(--shadow);
   overflow: hidden;
@@ -6296,7 +6297,7 @@ img.me-avatar {
   width: 38px;
   height: 38px;
   flex: none;
-  border-radius: 9px;
+  border-radius: var(--r);
   background: rgb(var(--bad-rgb) / var(--pill-fill-alpha-bad));
   display: flex;
   align-items: center;
@@ -6628,7 +6629,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-stat-dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   flex: none;
 }
 .dash-stat-label {
@@ -6691,17 +6692,17 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .dash-stat-bar-track {
   height: 4px;
-  border-radius: 2px;
+  border-radius: var(--r);
   background: var(--track);
   overflow: hidden;
   margin-top: var(--sp-8);
 }
 .dash-stat-bar-fill {
   height: 100%;
-  border-radius: 2px;
+  border-radius: var(--r);
 }
 .dash-stat-bar-seg {
-  border-radius: 2px;
+  border-radius: var(--r);
   min-width: 2px;
 }
 .dash-stat-value {
@@ -6738,7 +6739,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-stat-expand {
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  border-radius: var(--r);
   box-shadow: var(--shadow);
   margin: var(--sp-10) 0 var(--sp-14);
   overflow: hidden;
@@ -6782,7 +6783,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   margin-top: var(--sp-14);
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  border-radius: var(--r);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -6883,7 +6884,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-week-act-dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   transform: translateY(-1px);
 }
 .dash-week-col-empty {
@@ -6918,7 +6919,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   margin-top: var(--sp-14);
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  border-radius: var(--r);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -7027,7 +7028,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-avatar {
   width: 28px;
   height: 28px;
-  border-radius: 9px;
+  border-radius: var(--r);
   background: var(--avatar-bg);
   color: var(--avatar-text);
   display: grid;
@@ -7060,7 +7061,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-clean-check {
   width: 18px;
   height: 18px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   background: var(--accent2);
   color: var(--on-accent);
   display: grid;
@@ -7146,7 +7147,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .dash-lead-list {
   padding: var(--sp-10) var(--sp-12);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   color: var(--text);
 }
 .dash-lead-list[data-tone='warn'] {
@@ -7256,7 +7257,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-squad-dot {
   width: 10px;
   height: 10px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
 }
 
 .dash-untied-row {
@@ -7277,14 +7278,14 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-track-bar-outer {
   position: relative;
   height: 6px;
-  border-radius: 20px;
+  border-radius: var(--r);
   background: var(--track);
   margin-top: var(--sp-6);
 }
 .dash-track-bar-fill {
   position: absolute;
   inset: 0;
-  border-radius: 20px;
+  border-radius: var(--r);
 }
 
 @media (max-width: 1200px) {
@@ -7366,7 +7367,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .nutr-plan-item,
 .nutr-daytype-item {
   display: grid;
-  border-radius: 14px;
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-12);
   border: 1px solid var(--border);
   background: transparent;
@@ -7382,7 +7383,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   align-items: center;
   gap: var(--sp-10);
   padding: var(--sp-10) var(--sp-12);
-  border-radius: 12px;
+  border-radius: var(--r);
 }
 .nutr-plan-item.is-selected,
 .nutr-daytype-item.is-selected {
@@ -7411,7 +7412,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .nutr-new-plan-btn {
   width: 100%;
   margin-top: var(--sp-10);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-18);
   font-size: var(--fs-13);
   min-height: 0;
@@ -7512,7 +7513,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .nutr-rule-tile {
   background: var(--surf2);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--r);
   padding: var(--sp-14);
 }
 .nutr-rule-label {
@@ -7531,7 +7532,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .nutr-stepper-btn {
   width: 32px;
   min-height: 32px;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--text);
@@ -7635,13 +7636,13 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .nutr-totals-track {
   position: relative;
   height: 8px;
-  border-radius: 4px;
+  border-radius: var(--r);
   background: var(--track);
   margin-top: var(--sp-6);
 }
 .nutr-totals-fill {
   height: 100%;
-  border-radius: 4px;
+  border-radius: var(--r);
   background: var(--accent);
 }
 .nutr-totals-fill.is-off {
@@ -7669,7 +7670,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   margin-top: var(--sp-18);
 }
 .nutr-meal-card {
-  border-radius: 14px;
+  border-radius: var(--r);
   border: 1px solid var(--border);
   overflow: hidden;
   background: var(--surf);
@@ -7784,7 +7785,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   gap: var(--sp-8);
   align-items: center;
   padding: var(--sp-8) var(--sp-6);
-  border-radius: 8px;
+  border-radius: var(--r);
   border: none;
   cursor: pointer;
   font-family: inherit;
@@ -7815,14 +7816,14 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   right: 4px;
   top: 5px;
   height: 2px;
-  border-radius: 1px;
+  border-radius: var(--r);
   background: var(--track);
 }
 .nutr-range-band {
   position: absolute;
   top: 3px;
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--r);
   background: rgb(var(--accent-rgb) / 0.16);
 }
 /* The STAFF-SET target range (migration 0060), deliberately not .nutr-range-band.
@@ -7839,7 +7840,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   top: 2px;
   height: 8px;
   border: 1px dashed var(--muted);
-  border-radius: 3px;
+  border-radius: var(--r);
   background: none;
 }
 .nutr-range-marker {
@@ -7847,7 +7848,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   top: 0;
   width: 3px;
   height: 12px;
-  border-radius: 1.5px;
+  border-radius: var(--r);
   transform: translateX(-50%);
 }
 /* The legend that names both bands in words. A visual convention nobody was told is
@@ -7862,7 +7863,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   display: inline-block;
   width: 18px;
   height: 6px;
-  border-radius: 3px;
+  border-radius: var(--r);
   background: rgb(var(--accent-rgb) / 0.16);
 }
 .nutr-legend-bracket {
@@ -7870,7 +7871,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   width: 18px;
   height: 8px;
   border: 1px dashed var(--muted);
-  border-radius: 3px;
+  border-radius: var(--r);
 }
 .nutr-range-caption {
   font-size: var(--fs-10);
@@ -7911,7 +7912,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .nutr-selected-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 13px;
+  border-radius: var(--r);
   background: var(--avatar-bg);
   color: var(--avatar-text);
   display: flex;
@@ -8017,7 +8018,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .nutr-logging-swatch {
   width: 20px;
   height: 20px;
-  border-radius: 5px;
+  border-radius: var(--r);
   background: transparent;
   border: 1px solid rgb(var(--bad-rgb) / 0.35);
 }
@@ -8056,7 +8057,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .nutr-checkin-cell {
   width: 28px;
   min-height: 28px;
-  border-radius: 6px;
+  border-radius: var(--r);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8086,7 +8087,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   padding: var(--sp-10) var(--sp-12);
   background: rgb(var(--accent-rgb) / 0.08);
   border: 1px solid rgb(var(--accent-rgb) / 0.25);
-  border-radius: 10px;
+  border-radius: var(--r);
   font-size: var(--fs-12);
   color: var(--accent-text);
 }
@@ -8332,7 +8333,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .lbw-segmented {
   display: inline-flex;
   background: var(--hair);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-4);
   gap: var(--sp-4);
 }
@@ -8341,7 +8342,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-size: var(--fs-13);
   font-weight: 700;
   padding: var(--sp-8) var(--sp-16);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   border: none;
   background: transparent;
   color: var(--muted);
@@ -8389,7 +8390,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   display: inline-block;
   width: 22px;
   height: 12px;
-  border-radius: 4px;
+  border-radius: var(--r);
 }
 
 /* ---------- The wall ---------- */
@@ -8459,7 +8460,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 
 .lbw-athlete-row {
   padding: var(--sp-8) var(--sp-6);
-  border-radius: 8px;
+  border-radius: var(--r);
   cursor: pointer;
   transition: background var(--t-state);
 }
@@ -8505,7 +8506,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   align-items: center;
   gap: var(--sp-8);
   padding: var(--sp-6) var(--sp-8);
-  border-radius: 7px;
+  border-radius: var(--r);
   font-variant-numeric: tabular-nums;
 }
 .lbw-value-marker {
@@ -8548,7 +8549,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .lbw-avatar {
   width: 40px;
   height: 40px;
-  border-radius: 13px;
+  border-radius: var(--r);
   background: var(--avatar-bg);
   color: var(--avatar-text);
   display: flex;
@@ -8598,7 +8599,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   padding: var(--sp-10) var(--sp-12);
   margin: var(--sp-12) -12px 0;
   background: var(--surf2);
-  border-radius: 10px;
+  border-radius: var(--r);
   font-size: var(--fs-10);
   font-weight: 600;
   letter-spacing: 0.1em;
@@ -8667,7 +8668,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .lbw-leader-tile {
   background: var(--surf2);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--r);
   padding: var(--sp-12);
 }
 .lbw-leader-board {
@@ -8776,13 +8777,13 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-segmented {
   display: inline-flex;
   background: rgb(var(--ink-rgb) / 0.05);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-4);
   gap: var(--sp-4);
 }
 .sg-segment {
   padding: var(--sp-8) var(--sp-16);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   font-size: var(--fs-13);
   font-weight: 700;
   font-family: inherit;
@@ -8806,7 +8807,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-weeknav-btn {
   width: 32px;
   height: 32px;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--muted);
@@ -8869,7 +8870,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   background: var(--accent);
   color: var(--on-accent);
   border: none;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-20);
   font-size: var(--fs-13);
   font-weight: 700;
@@ -8887,7 +8888,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-btn-discard {
   background: none;
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-16);
   font-size: var(--fs-13);
   font-weight: 600;
@@ -8913,7 +8914,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   background: var(--accent);
   color: var(--on-accent);
   border: none;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-18);
   font-size: var(--fs-13);
   font-weight: 700;
@@ -8950,7 +8951,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-clash {
   background: rgb(var(--warn-rgb) / 0.1);
   border: 1px solid rgb(var(--warn-rgb) / 0.45);
-  border-radius: 14px;
+  border-radius: var(--r);
   padding: var(--sp-12) var(--sp-16);
   display: grid;
   grid-template-columns: 8px minmax(0, 1fr) auto;
@@ -8961,7 +8962,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-clash-dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   background: var(--warn);
   align-self: center;
 }
@@ -9162,7 +9163,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   position: absolute;
   left: 2px;
   right: 2px;
-  border-radius: 4px;
+  border-radius: var(--r);
   padding: var(--sp-2) var(--sp-4);
   overflow: hidden;
   display: flex;
@@ -9205,7 +9206,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-wiz-pip {
   height: 3px;
   flex: 1;
-  border-radius: 2px;
+  border-radius: var(--r);
   background: rgb(var(--ink-rgb) / 0.14);
 }
 
@@ -9225,7 +9226,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   max-width: min(300px, calc(100vw - 32px));
   transform: translateY(-8px);
   cursor: default;
-  border-radius: 14px;
+  border-radius: var(--r);
   background: var(--panel);
   border: 1px solid rgb(var(--ink-rgb) / 0.14);
   box-shadow: 0 18px 44px rgb(0 0 0 / 0.34);
@@ -9253,7 +9254,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
     width: 100%;
     max-width: 100%;
     transform: none;
-    border-radius: 16px 16px 0 0;
+    border-radius: var(--r-sheet);
     max-height: 76vh;
     overflow-y: auto;
   }
@@ -9297,7 +9298,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   left: -4px;
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   background: var(--bad);
   transform: translateY(-50%);
   z-index: 7;
@@ -9306,7 +9307,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 /* -------- §5 blocks -------- */
 .sg-block {
   position: absolute;
-  border-radius: 10px;
+  border-radius: var(--r);
   padding: var(--sp-8) var(--sp-10);
   background: var(--surf);
   border: 1px solid var(--bc, var(--border));
@@ -9420,7 +9421,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   border: 1px solid rgb(var(--bad-rgb) / 0.32);
   border-top: 3px solid var(--bad);
   border-bottom: 1px dashed rgb(var(--bad-rgb) / 0.45);
-  border-radius: 0 0 8px 8px;
+  border-radius: 0 0 var(--r) var(--r);
   transition: background var(--t-state);
 }
 .sg-fixture:hover {
@@ -9463,7 +9464,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   text-transform: uppercase;
   color: var(--warn-pill-text);
   background: rgb(var(--warn-rgb) / var(--pill-fill-alpha-warn));
-  border-radius: 6px;
+  border-radius: var(--r);
   padding: 1px var(--sp-6);
   flex: none;
   white-space: nowrap;
@@ -9471,7 +9472,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-block-dot {
   width: 6px;
   height: 6px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   background: var(--warn);
   flex: none;
 }
@@ -9532,7 +9533,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-legend-swatch {
   width: 20px;
   height: 11px;
-  border-radius: 4px;
+  border-radius: var(--r);
   border-left: 3px solid var(--tone);
   /* background set inline per type (TYPE_STYLE.bg) — no single token covers
      every type's own tint. */
@@ -9596,7 +9597,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   padding: var(--sp-8) var(--sp-4);
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   color: var(--text);
   font: inherit;
   cursor: pointer;
@@ -9652,7 +9653,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   margin-top: var(--sp-10);
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-card);
+  border-radius: var(--r);
   box-shadow: var(--shadow);
   overflow: hidden;
 }
@@ -9696,7 +9697,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-phone-row-dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   flex: none;
 }
 .sg-phone-row-meta {
@@ -9802,7 +9803,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-stepper-btn {
   width: 38px;
   min-height: 40px;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--accent-text);
@@ -9823,7 +9824,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-stepper-value {
   min-height: 40px;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--field);
   display: flex;
   align-items: center;
@@ -9839,7 +9840,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-field-ro {
   margin-top: var(--sp-6);
   min-height: 40px;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--field);
   display: flex;
   align-items: center;
@@ -9857,7 +9858,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   background: none;
   border: 1px solid rgb(var(--bad-rgb) / 0.4);
   color: var(--bad-pill-text);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-16);
   font-size: var(--fs-13);
   font-weight: 600;
@@ -9884,7 +9885,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-preview-card {
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: var(--r);
   overflow: hidden;
 }
 .sg-preview-expects {
@@ -9946,7 +9947,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .sg-cmp-bar {
   width: 4px;
   height: 14px;
-  border-radius: 2px;
+  border-radius: var(--r);
   background: var(--tone);
   flex: none;
 }
@@ -10005,14 +10006,14 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-group-track {
   height: 6px;
-  border-radius: 20px;
+  border-radius: var(--r);
   background: var(--track);
   overflow: hidden;
   margin-top: var(--sp-6);
 }
 .sg-group-fill {
   height: 100%;
-  border-radius: 20px;
+  border-radius: var(--r);
 }
 .sg-group-foot {
   font-size: var(--fs-11);
@@ -10082,7 +10083,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   background: none;
   border: none;
   padding: 0;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   color: var(--faint);
   cursor: pointer;
   transition: color var(--t-state);
@@ -10155,7 +10156,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .nutr-totals-warning {
   margin: var(--sp-12) 0 0;
   padding: var(--sp-10) var(--sp-12);
-  border-radius: var(--r-field);
+  border-radius: var(--r);
   background: rgb(var(--warn-rgb) / 0.14);
   border-inline-start: 2px solid rgb(var(--warn-rgb));
   color: var(--warn-text);
@@ -10224,7 +10225,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .flag-notice-item {
   padding: var(--sp-10) var(--sp-12);
-  border-radius: var(--r-field);
+  border-radius: var(--r);
   background: rgb(var(--accent2-rgb) / 0.08);
   border-inline-start: 2px solid rgb(var(--accent2-rgb) / 0.6);
 }
@@ -10343,7 +10344,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   right: 0;
   top: 6px;
   height: 2px;
-  border-radius: 1px;
+  border-radius: var(--r);
   background: var(--track);
 }
 /* The unit's middle half. A hueless wash, not an accent one: it is a
@@ -10353,7 +10354,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   position: absolute;
   top: 3px;
   height: 8px;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: rgb(var(--ink-rgb) / 0.1);
 }
 .pc-median {
@@ -10362,7 +10363,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   width: 2px;
   height: 14px;
   margin-inline-start: -1px;
-  border-radius: 1px;
+  border-radius: var(--r);
   background: var(--muted);
 }
 /* This athlete. A filled accent dot with a card-coloured ring so it stays
@@ -10374,7 +10375,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   width: 10px;
   height: 10px;
   margin-inline-start: -5px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   background: var(--accent);
   box-shadow: 0 0 0 2px var(--surf);
 }
@@ -10483,7 +10484,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   gap: var(--sp-10);
   padding: var(--sp-10) var(--sp-12);
   border: 1px solid var(--border);
-  border-radius: var(--r-field);
+  border-radius: var(--r);
   background: var(--surf);
   min-width: 210px;
 }
@@ -10506,7 +10507,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   flex-wrap: wrap;
   padding: var(--sp-10) var(--sp-14);
   border: 1px solid var(--border);
-  border-radius: var(--r-field);
+  border-radius: var(--r);
   background: var(--surf);
 }
 .cmp-against-label {
@@ -10547,7 +10548,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   top: 0;
   transform: translate(-50%, 0);
   padding: var(--sp-4) var(--sp-8);
-  border-radius: var(--r-toggle);
+  border-radius: var(--r);
   background: var(--surf);
   border: 1px solid var(--border-strong);
   box-shadow: var(--shadow);
@@ -10582,7 +10583,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .ap-suppressed {
   border: 1px dashed var(--border-strong);
-  border-radius: var(--r-toggle);
+  border-radius: var(--r);
   padding: var(--sp-14);
   font-size: var(--fs-13);
   color: var(--muted);
@@ -10690,7 +10691,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .rep-dot {
   width: 7px;
   height: 7px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   flex: none;
   background: var(--rep-dot, var(--domain-recovery));
 }
@@ -10705,7 +10706,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .rep-source {
   padding: var(--sp-4) var(--sp-10);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   font-size: var(--fs-12);
   font-weight: 700;
   background: var(--rep-pill, rgb(var(--ink-rgb) / 0.06));
@@ -10807,7 +10808,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
    lightness at every step, not only in hue.
    --------------------------------------------------------------------------- */
 .tr-heat {
-  border-radius: 7px;
+  border-radius: var(--r);
   padding: var(--sp-6) var(--sp-8);
 }
 /* SYSTEM A's ramps, 15 Sept 2026 (docs/design-system/tokens/colors.css).
@@ -10844,7 +10845,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   text-decoration: none;
   color: inherit;
   cursor: pointer;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   transition: background var(--t-state);
 }
 .tr-board-row-link:hover {
@@ -11012,7 +11013,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .tr-heat-toggle-track {
   width: 40px;
   height: 22px;
-  border-radius: 999px;
+  border-radius: var(--r-full);
   background: var(--hair);
   position: relative;
   transition: background var(--t-state);
@@ -11025,7 +11026,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   left: 3px;
   width: 16px;
   height: 16px;
-  border-radius: 50%;
+  border-radius: var(--r-knob); /* System A: the knob reads square, 15 Sept 2026 */
   background: #fff;
   transition: transform var(--t-state);
 }
@@ -11038,7 +11039,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .tr-heat-toggle:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
 }
 
 /* PATTERN-S8 C13 (2026-09-13): the athlete's "Mute everything" — one switch
@@ -11084,7 +11085,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .mute-switch-track {
   width: 40px;
   height: 22px;
-  border-radius: 999px;
+  border-radius: var(--r-full);
   background: var(--hair);
   position: relative;
   transition: background var(--t-state);
@@ -11097,7 +11098,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   left: 3px;
   width: 16px;
   height: 16px;
-  border-radius: 50%;
+  border-radius: var(--r-knob); /* System A: the knob reads square, 15 Sept 2026 */
   background: #fff;
   transition: transform var(--t-state);
 }
@@ -11110,7 +11111,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .mute-switch:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
 }
 .mute-note {
   margin-top: var(--sp-8);
@@ -11124,7 +11125,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   gap: var(--sp-6);
   margin-bottom: var(--sp-12);
   padding: var(--sp-6) var(--sp-12) var(--sp-6) var(--sp-8);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   border: 1px solid var(--border);
   background: var(--surf);
   color: var(--muted);
@@ -11304,7 +11305,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   color: var(--faint);
 }
 .cmpl-row {
-  border-radius: 8px;
+  border-radius: var(--r);
 }
 .cmpl-row:hover {
   background: rgb(var(--accent-rgb) / 0.06);
@@ -11380,7 +11381,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   flex: 1;
   min-width: 0;
   height: 6px;
-  border-radius: 20px;
+  border-radius: var(--r);
   background: rgb(var(--ink-rgb) / 0.07);
   position: relative;
   overflow: hidden;
@@ -11399,7 +11400,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .cmpl-fill {
   display: block;
   height: 100%;
-  border-radius: 20px;
+  border-radius: var(--r);
 }
 .cmpl-tick {
   position: absolute;
@@ -11458,7 +11459,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .cmpl-swatch {
   width: 14px;
   height: 6px;
-  border-radius: 20px;
+  border-radius: var(--r);
   flex: none;
 }
 
@@ -11493,7 +11494,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   color: var(--faint);
 }
 .inj-row {
-  border-radius: 8px;
+  border-radius: var(--r);
   text-align: left;
   width: 100%;
   border: none;
@@ -11527,7 +11528,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .inj-dot {
   width: 7px;
   height: 7px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   flex: none;
 }
 .inj-dot[data-status='unavailable'] { background: var(--bad); }
@@ -11606,7 +11607,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .ath-avatar {
   width: 42px;
   height: 42px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   background: rgb(var(--accent-rgb) / 0.12);
   color: var(--accent-pill-text);
   display: grid;
@@ -11671,7 +11672,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   gap: var(--sp-10);
 }
 .ath-tile {
-  border-radius: 12px;
+  border-radius: var(--r);
   border: 1px solid var(--border);
   padding: var(--sp-10) var(--sp-12);
   display: flex;
@@ -11756,7 +11757,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   color: var(--faint);
 }
 .ath-test-row {
-  border-radius: 8px;
+  border-radius: var(--r);
   border-top: 1px solid var(--hair);
 }
 /* Only a result well off his own best gets a wash — otherwise every row is
@@ -11790,7 +11791,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
    panel with a title line over body copy, so this is its own thing rather than
    an override that would follow .note everywhere else. */
 .ath-note {
-  border-radius: 12px;
+  border-radius: var(--r);
   border: 1px solid rgb(var(--warn-rgb) / 0.6);
   background: rgb(var(--warn-rgb) / 0.16);
   padding: var(--sp-10) var(--sp-14);
@@ -11865,7 +11866,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   color: var(--faint);
 }
 .lb-row {
-  border-radius: 8px;
+  border-radius: var(--r);
   border-top: 1px solid var(--hair);
 }
 /* The podium, marked once by the row rather than by a badge on every line. */
@@ -11918,7 +11919,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lb-track {
   height: 8px;
-  border-radius: 20px;
+  border-radius: var(--r);
   background: rgb(var(--ink-rgb) / 0.07);
   overflow: hidden;
 }
@@ -11930,7 +11931,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .lb-fill {
   display: block;
   height: 100%;
-  border-radius: 20px;
+  border-radius: var(--r);
   background: rgb(var(--accent-rgb) / 0.4);
 }
 .lb-row[data-top='true'] .lb-fill { background: var(--accent); }
@@ -12026,7 +12027,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   color: var(--faint);
 }
 .pick-row {
-  border-radius: 8px;
+  border-radius: var(--r);
   border-top: 1px solid var(--hair);
   text-decoration: none;
   color: inherit;
@@ -12080,7 +12081,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .pick-wellness-track {
   width: 46px;
   height: 6px;
-  border-radius: 20px;
+  border-radius: var(--r);
   background: rgb(var(--ink-rgb) / 0.07);
   overflow: hidden;
   flex: none;
@@ -12093,7 +12094,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .pick-wellness-fill {
   display: block;
   height: 100%;
-  border-radius: 20px;
+  border-radius: var(--r);
   background: rgb(var(--accent-rgb) / 0.5);
 }
 .pick-wellness-fill[data-thin='true'] {
@@ -12162,7 +12163,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .pick-legend i {
   width: 7px;
   height: 7px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   flex: none;
 }
 
@@ -12327,7 +12328,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   align-items: center;
   gap: var(--sp-4);
   padding: var(--sp-6);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   border: 1px solid var(--border);
   background: var(--surf);
   box-shadow: var(--shadow);
@@ -12335,7 +12336,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .week-nav a,
 .week-nav span {
   padding: var(--sp-6) var(--sp-10);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   font-size: var(--fs-13);
   color: var(--muted);
   text-decoration: none;
@@ -12433,7 +12434,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
      the ramp. A snap to 32 would overlap it. Layout constant. */
   padding-inline-start: 36px;
   border: 1px solid var(--border-strong);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--field);
   color: var(--text);
   font-family: inherit;
@@ -12469,7 +12470,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   min-height: 44px;
   padding: 0 var(--sp-16);
   border: 1px solid var(--border-strong);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--surf);
   transition: border-color var(--t-state);
 }
@@ -12612,7 +12613,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   max-width: 100%;
   padding: var(--sp-4) var(--sp-10);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--surf2);
   color: var(--text);
   font-size: var(--fs-11);
@@ -13128,12 +13129,12 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 /* §7.2's field geometry, which the launch scene reuses: 48px tall, radius 14. */
 .launch .signin-fields .field {
   height: 48px;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
 }
 .launch .signin-submit {
   width: 100%;
   height: 48px;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
 }
 
 /* --- Fydr Staff Launch.dc.html: the same five beats, at desktop width ------
@@ -13456,7 +13457,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   gap: var(--sp-10);
   background: var(--wash-bad);
   border: 1px solid var(--border-bad);
-  border-radius: var(--r-tab);
+  border-radius: var(--r);
   padding: var(--pad-card);
   color: var(--text);
 }
@@ -13466,7 +13467,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   width: var(--sp-8);
   height: var(--sp-8);
   margin-top: var(--sp-6);
-  border-radius: var(--r-full);
+  border-radius: var(--r-round);
   background: var(--bad);
 }
 /* One attempt left (F2): the warn tone, same shape. */
@@ -13565,7 +13566,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   width: 100%;
   background: var(--field);
   border: 1px solid var(--border-strong);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   /* 26px on the end reserves the chevron's column so a long option label
      stops at the arrow instead of running under it. */
   padding: var(--sp-6) var(--sp-28) var(--sp-6) var(--sp-10);
@@ -13621,7 +13622,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .tst-pb-dot {
   width: 8px;
   height: 8px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   background: var(--accent);
   flex: none;
 }
@@ -13766,7 +13767,7 @@ main:has(.rhead) > .back-btn {
   margin-top: var(--sp-14);
   margin-bottom: 0;
   padding: var(--sp-8) var(--sp-14) var(--sp-8) var(--sp-12);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   font-size: var(--fs-14);
 }
 main:has(.rhead) > .back-btn > :first-child {
@@ -13781,7 +13782,7 @@ main:has(.rhead) > .back-btn > :first-child {
   margin-top: var(--sp-20);
 }
 .rhead-chip {
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-20);
   background: var(--surf);
   border: 1px solid var(--border);
@@ -13826,7 +13827,7 @@ main:has(.rhead) > .back-btn > :first-child {
 }
 .rhead-btn,
 .rhead-btn-primary {
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   font-family: inherit;
   text-decoration: none;
   cursor: pointer;
@@ -13873,7 +13874,7 @@ main:has(.rhead) > .back-btn > :first-child {
   display: inline-flex;
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-4);
 }
 /* The active tab carries NO background of its own: the canvas paints both the
@@ -13884,7 +13885,7 @@ main:has(.rhead) > .back-btn > :first-child {
 .rhead-tab {
   border: none;
   background: transparent;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-18);
   font-family: inherit;
   font-weight: 700;
@@ -13905,7 +13906,7 @@ main:has(.rhead) > .back-btn > :first-child {
 .rhead-tabrow .tr-mode-switch {
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-4);
   gap: 0;
 }
@@ -13913,7 +13914,7 @@ main:has(.rhead) > .back-btn > :first-child {
   padding: var(--sp-10) var(--sp-18);
   font-size: var(--fs-14);
   font-weight: 700;
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   color: var(--muted);
 }
 .rhead-tabrow .tr-mode-switch a[aria-current='true'] {
@@ -13945,7 +13946,7 @@ main:has(.rhead) > .back-btn > :first-child {
   -webkit-appearance: none;
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-40) var(--sp-10) var(--sp-16);
   min-width: 220px;
   font-family: inherit;
@@ -14110,12 +14111,12 @@ main:has(.rhead) > .back-btn > :first-child {
   display: inline-flex;
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-4);
 }
 .rhead-tabrow .sg-viewtab {
   padding: var(--sp-10) var(--sp-18);
-  border-radius: 20px;
+  border-radius: var(--r);
   font-weight: 700;
   font-size: var(--fs-14);
   color: var(--muted);
@@ -14175,7 +14176,7 @@ main:has(.rhead) > .back-btn > :first-child {
 .rhead-period .sg-weeknav {
   background: var(--surf);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-4) var(--sp-6);
 }
 
@@ -14424,7 +14425,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   .ph-tab:focus-visible {
     outline: 2px solid var(--focus);
     outline-offset: -2px;
-    border-radius: var(--r-control);
+    border-radius: var(--r);
   }
   .ph-tab-glyph {
     position: relative;
@@ -14473,7 +14474,7 @@ a.hist-row:active { background: var(--surf-sunken); }
     max-height: 80dvh;
     overflow-y: auto;
     background: var(--surf);
-    border-radius: var(--r-card) var(--r-card) 0 0;
+    border-radius: var(--r-sheet);
     box-shadow: var(--shadow);
     padding: var(--sp-12) var(--sp-16) calc(var(--sp-16) + env(safe-area-inset-bottom, 0px));
   }
@@ -14493,7 +14494,7 @@ a.hist-row:active { background: var(--surf-sunken); }
     min-height: 52px;
     padding: 0 var(--sp-6);
     border: none;
-    border-radius: var(--r-control);
+    border-radius: var(--r);
     background: none;
     font-family: inherit;
     font-size: var(--fs-15);
@@ -14628,7 +14629,7 @@ a.hist-row:active { background: var(--surf-sunken); }
 .empty-period {
   background: var(--wash-accent);
   border: 1px solid var(--border-accent-soft);
-  border-radius: var(--r-toggle);
+  border-radius: var(--r);
   padding: var(--sp-16) var(--sp-18);
 }
 .empty-period-title {
@@ -14676,7 +14677,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   margin-top: var(--sp-14);
   padding: var(--sp-12) var(--sp-14);
   border: 1px solid var(--border);
-  border-radius: var(--r-field);
+  border-radius: var(--r);
   background: var(--surf2);
 }
 .avail-audience-rows {
@@ -14704,7 +14705,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   display: inline-block;
   padding: var(--sp-8) var(--sp-12);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--surf2);
   font-size: var(--fs-13);
   color: var(--text);
@@ -14720,7 +14721,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   margin-top: var(--sp-14);
   padding: var(--sp-10) var(--sp-12);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--surf2);
 }
 .absence-well-k {
@@ -14743,7 +14744,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   margin-top: var(--sp-12);
   padding: var(--sp-10) var(--sp-12);
   border: 1px solid var(--border);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: var(--surf2);
 }
 .ro-owner-k {
@@ -14798,7 +14799,7 @@ a.hist-row:active { background: var(--surf-sunken); }
 .legal-pending {
   border: 1px dashed var(--border-pending);
   background: var(--pending-fill);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-10) var(--sp-12);
   margin-top: var(--sp-10);
   display: flex;
@@ -14845,7 +14846,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   background: var(--surf);
   color: var(--accent-text);
   border: 1px solid var(--accent);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   padding: var(--sp-14) var(--sp-20);
   font-size: var(--fs-15);
   font-weight: 700;
@@ -14926,7 +14927,7 @@ a.hist-row:active { background: var(--surf-sunken); }
      bad pill fill (rgb(var(--bad-rgb) / 0.24), the report card's own). */
   color: var(--bad-pill-text);
   background: rgb(var(--bad-rgb) / 0.24);
-  border-radius: 50%;
+  border-radius: var(--r-round);
   width: 18px;
   height: 18px;
   line-height: 18px;
@@ -14955,7 +14956,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   background: transparent;
   color: var(--muted);
   font-size: var(--fs-20);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   cursor: pointer;
 }
 .install-steps {
@@ -14977,7 +14978,7 @@ a.hist-row:active { background: var(--surf-sunken); }
 .install-step-n {
   flex: 0 0 24px;
   height: 24px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   background: var(--accent);
   color: var(--on-accent);
   font-weight: 700;
@@ -14988,7 +14989,7 @@ a.hist-row:active { background: var(--surf-sunken); }
 }
 .safari-bar {
   margin-top: var(--sp-12);
-  border-radius: var(--r-control);
+  border-radius: var(--r);
   background: rgb(234 237 241 / 0.94);
   color: #101217;
   padding: var(--sp-8) var(--sp-10);
@@ -15001,7 +15002,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   /* Safari's own address pill, drawn schematically; --r-pill is reserved for
      bars (check:control-radius), and a landmark of another vendor's UI is
      not a Fydr control, so its rounding is written plainly. */
-  border-radius: 10px;
+  border-radius: var(--r);
   padding: var(--sp-6) var(--sp-12);
   font-size: var(--fs-13);
   text-align: center;
@@ -15019,7 +15020,7 @@ a.hist-row:active { background: var(--surf-sunken); }
 .safari-share {
   width: 34px;
   height: 34px;
-  border-radius: 50%;
+  border-radius: var(--r-round);
   display: inline-flex;
   align-items: center;
   justify-content: center;

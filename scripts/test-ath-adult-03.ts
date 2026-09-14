@@ -137,7 +137,7 @@ console.log('\nA1/A3. the count is its own line, legible in every state, and a c
   assert(/font-size:\s*var\(--fs-13\)/.test(count) && /font-weight:\s*700/.test(count) && /color:\s*var\(--text\)/.test(count), '.subm-count is --fs-13 / 700 / --text (B6)');
   const complete = rule('.subm-count[data-complete]');
   assert(/background:\s*var\(--wash-good\)/.test(complete) && /border:\s*1px solid var\(--border-good\)/.test(complete), 'complete: --wash-good fill with --border-good — the 01/02 banner pair');
-  assert(/border-radius:\s*var\(--r-control\)/.test(complete) && /padding:\s*var\(--sp-4\) var\(--sp-8\)/.test(complete), 'at --r-control, padding --sp-4 --sp-8 (B2, B7)');
+  assert(/border-radius:\s*var\(--r\)/.test(complete) && /padding:\s*var\(--sp-4\) var\(--sp-8\)/.test(complete), 'at --r-control, padding --sp-4 --sp-8 (B2, B7)');
   assert(/countText/.test(checkIn) && /className="subm-count"/.test(checkIn) && /data-complete=\{blocked \? undefined : ''\}/.test(checkIn), 'CheckInForm renders it and flips the chip when nothing blocks');
   assert(/`\$\{answered\} of \$\{TOTAL_QUESTIONS\} answered · \$\{remaining\} to go`/.test(checkIn), '"N of 6 answered · M to go" while incomplete');
   assert(/'All six answered'/.test(checkIn), '"All six answered" when complete (board copy)');
@@ -223,10 +223,10 @@ console.log('\nA5/A6/A9. the scales: numbered ends, neutral "Not answered", no s
   assert(/\{1\} · \{copy\.low\}|1 · \{copy\.low\}/.test(scaleInput) && /5 · \{copy\.high\}/.test(scaleInput), 'the ends read "1 · {low}" and "5 · {high}"');
   const anchor = rule('.sc-a > span');
   assert(/font-size:\s*var\(--fs-11\)/.test(anchor) && /font-weight:\s*600/.test(anchor) && /color:\s*var\(--muted\)/.test(anchor), 'anchor chips at --fs-11 / 600 / --muted');
-  assert(/background:\s*var\(--surf\)/.test(anchor) && /border:\s*1px solid var\(--border\)/.test(anchor) && /border-radius:\s*var\(--r-control\)/.test(anchor) && /padding:\s*var\(--sp-4\) var\(--sp-8\)/.test(anchor), 'on --surf, 1px --border, --r-control, --sp-4 --sp-8 (B2, B7)');
+  assert(/background:\s*var\(--surf\)/.test(anchor) && /border:\s*1px solid var\(--border\)/.test(anchor) && /border-radius:\s*var\(--r\)/.test(anchor) && /padding:\s*var\(--sp-4\) var\(--sp-8\)/.test(anchor), 'on --surf, 1px --border, --r-control, --sp-4 --sp-8 (B2, B7)');
   const opt = rule('.dots .opt > span');
   assert(/background:\s*var\(--surf2\)/.test(opt), 'an unanswered option is filled --surf2 (A9)');
-  assert(/border-radius:\s*14px/.test(opt), 'and keeps its 14px radius — pinned by test-athlete-token-audit, not part of this change');
+  assert(/border-radius:\s*var\(--r\)/.test(opt), 'and reads --r (its 14px went to System A\'s one radius, 15 Sept 2026) — not part of this change');
   const chosen = rule('.dots .opt[data-selected] > span');
   assert(/background:\s*var\(--accent\)/.test(chosen) && /color:\s*var\(--on-accent\)/.test(chosen) && /box-shadow:\s*var\(--ring-accent\)/.test(chosen), 'the chosen option is --accent + --on-accent with --ring-accent (B5)');
 }
@@ -286,7 +286,7 @@ console.log('\nC-e/B9. out-of-range heart rate or body mass blocks Submit, inlin
   const err = rule('.err-line');
   assert(/font-size:\s*var\(--fs-13\)/.test(err) && /font-weight:\s*600/.test(err) && /color:\s*var\(--bad-text\)/.test(err), 'the message: --fs-13 / 600 / --bad-text');
   const dot = rule('.err-dot');
-  assert(/background:\s*var\(--wash-bad\)/.test(dot) && /color:\s*var\(--bad-pill-text\)/.test(dot) && /border-radius:\s*var\(--r-full\)/.test(dot), 'its glyph: --wash-bad / --bad-pill-text / --r-full');
+  assert(/background:\s*var\(--wash-bad\)/.test(dot) && /color:\s*var\(--bad-pill-text\)/.test(dot) && /border-radius:\s*var\(--r-round\)/.test(dot), 'its glyph: --wash-bad / --bad-pill-text / --r-round (a circle names itself since System A, 15 Sept 2026)');
   const help = rule('.help-line');
   assert(/font-size:\s*var\(--fs-12\)/.test(help) && /color:\s*var\(--muted\)/.test(help), 'helper text: --fs-12 --muted, under the field rather than as a placeholder, so it stays readable once a value is typed');
   assert(!/Answer all six before you send it/.test(checkIn) || /if \(blocked\) return;/.test(checkIn), 'the generic message can only be reached past the blocked guard');

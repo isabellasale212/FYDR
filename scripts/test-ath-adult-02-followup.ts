@@ -68,19 +68,23 @@ console.log('\n2. the greeting is the date line and the greeting');
 
 console.log('\n3. athlete cards take the existing 9px token; staff cards do not');
 {
-  assert(/--r-toggle:\s*9px;/.test(tokens), '--r-toggle is 9px in tokens.css, untouched');
-  assert(/--r-card:\s*18px;/.test(tokens), '--r-card is still 18px');
-  assert(/border-radius:\s*var\(--r-toggle\)/.test(rule('.phone-body .card')), '.phone-body .card is --r-toggle');
-  assert(/border-radius:\s*var\(--r-toggle\)/.test(rule('.phone-body .empty')), '.phone-body .empty (EmptyState on athlete screens) too');
-  assert(/border-radius:\s*var\(--r-toggle\)/.test(rule('.avail-banner')), '.avail-banner (athlete-only) too');
+  /* SUPERSEDED 15 Sept 2026 — System A's one radius (docs/decisions/
+     design-system-adoption.md): the athlete card's 9px and the staff card's
+     18px both become 8px, --r, and the two apps no longer diverge on the
+     corner. What this still pins is that the athlete surfaces read the
+     token, not a number. */
+  assert(/--r-toggle:\s*var\(--r\);/.test(tokens) && /--r-card:\s*var\(--r\);/.test(tokens) && /--r:\s*8px;/.test(tokens), '--r-toggle and --r-card resolve to --r, 8px (System A)');
+  assert(/border-radius:\s*var\(--r\)/.test(rule('.phone-body .card')), '.phone-body .card reads --r');
+  assert(/border-radius:\s*var\(--r\)/.test(rule('.phone-body .empty')), '.phone-body .empty (EmptyState on athlete screens) too');
+  assert(/border-radius:\s*var\(--r\)/.test(rule('.avail-banner')), '.avail-banner (athlete-only) too');
   /* .gym-ex-card became .gl-card with the logger's rebuild (ATH-ADULT-09 C1,
      2026-09-12); the athlete card radius travels with it. */
-  assert(/border-radius:\s*var\(--r-toggle\)/.test(rule('.gl-card')), '.gl-card (the gym logger\'s exercise card, athlete-only) too');
-  assert(/border-radius:\s*var\(--r-card\)/.test(rule('.card')), 'the global .card stays --r-card for the staff app');
+  assert(/border-radius:\s*var\(--r\)/.test(rule('.gl-card')), '.gl-card (the gym logger\'s exercise card, athlete-only) too');
+  assert(/border-radius:\s*var\(--r\)/.test(rule('.card')), 'the global .card reads --r too — same corner in both apps since System A (the staff app');
   /* .pp-banner was absorbed into the profile's status header (.pp-hero, a
      .card — STAFF-SS-02-05 C1, 2026-09-13), which keeps .card's radius. */
   for (const sel of ['.dash-week', '.dash-stat-expand', '.report-card']) {
-    assert(/border-radius:\s*var\(--r-card\)/.test(rule(sel)), `${sel} (staff) stays --r-card`);
+    assert(/border-radius:\s*var\(--r\)/.test(rule(sel)), `${sel} (staff) reads --r`);
   }
   const inCard = rule('.card > .subm');
   assert(/border-end-start-radius:\s*inherit/.test(inCard) && /border-end-end-radius:\s*inherit/.test(inCard), 'the report form\'s footer inherits its card\'s corners, so it follows either radius');

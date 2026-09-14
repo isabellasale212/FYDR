@@ -51,7 +51,7 @@ console.log('\n2. the legal gate');
   const comp = strip(read('src/components/LegalPlaceholder/LegalPlaceholder.tsx'));
   assert(/className="legal-pending"/.test(comp) && /data-legal=\{id\}/.test(comp) && /solicitor to supply/.test(comp), 'the drawn pattern: the reference and who supplies it');
   const css = strip(read('src/styles/base.css'));
-  assert(/\.legal-pending \{[^}]*border: 1px dashed var\(--border-pending\);[^}]*background: var\(--pending-fill\);[^}]*border-radius: var\(--r-control\);/.test(css), 'dashed --border-pending on --pending-fill at the control radius');
+  assert(/\.legal-pending \{[^}]*border: 1px dashed var\(--border-pending\);[^}]*background: var\(--pending-fill\);[^}]*border-radius: var\(--r\);/.test(css), 'dashed --border-pending on --pending-fill at the one radius');
   assert(/\.legal-pending\[data-lines='2'\] \{ min-height: 64px; \}/.test(css), 'sized for the expected length');
   const tokens = read('src/styles/tokens.css');
   assert(/--tap-min: 44px;/.test(tokens) && /--tap-commit: 56px;/.test(tokens), '--tap-min and --tap-commit named');

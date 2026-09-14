@@ -30,7 +30,7 @@ console.log('A1. Doubtful and Ruled out as tone cards (since 2026-09-13 the lead
   const block = css.slice(css.indexOf(".dash-lead-list[data-tone='warn'] {"), css.indexOf('.dash-lead-list-title {'));
   assert(/\.dash-lead-list\[data-tone='warn'\]\s*\{[^}]*background:\s*color-mix\(in srgb, rgb\(var\(--warn-rgb\)\) 12%, var\(--surf\)\)/.test(block), 'warn: the availability line\'s own 12% fill');
   assert(/\.dash-lead-list\[data-tone='warn'\]\s*\{[^}]*border:\s*1px solid rgb\(var\(--warn-rgb\) \/ 0\.4\)/.test(block), 'and its 0.4 border');
-  assert(/border-radius:\s*var\(--r-control\)/.test(rule('.dash-lead-list')), 'on the control radius');
+  assert(/border-radius:\s*var\(--r\)/.test(rule('.dash-lead-list')), 'on the one radius, --r');
   assert(/\.dash-lead-list\[data-tone='bad'\]\s*\{[^}]*rgb\(var\(--bad-rgb\)\) 12%[^}]*rgb\(var\(--bad-rgb\) \/ 0\.4\)/.test(block), 'bad: the same treatment in the bad family');
   assert(/color:\s*var\(--text\)/.test(rule('.dash-lead-list')) && !/--warn-text|--bad-text/.test(block), 'the card reads in --text, as the availability line does (the title and the count keep the tone\'s pill ink); --warn-text is 3.6:1 on --surf and lower on the fill');
 }

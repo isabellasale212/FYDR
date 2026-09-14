@@ -140,9 +140,10 @@ console.log('\n5. A3 the recovery link, A7 the banner, B4 the disclosure');
   const a = rule('.launch .signin-forgot a', css);
   assert(/min-height:\s*44px/.test(a) && /display:\s*inline-flex/.test(a) && /padding:\s*0 var\(--sp-12\)/.test(a), 'F3: "Forgot your password?" is a 44px target');
   const e = rule('.launch .form-error', css);
-  for (const t of ['--wash-bad', '--border-bad', '--r-tab', '--pad-card', '--text']) assert(e.includes(`var(${t})`), `A7: the refusal is the banner shape — ${t}`);
+  for (const t of ['--wash-bad', '--border-bad', '--r', '--pad-card', '--text']) assert(e.includes(`var(${t})`), `A7: the refusal is the banner shape — ${t}`);
   const dot = rule('.launch .form-error::before', css);
-  assert(/border-radius:\s*var\(--r-full\)/.test(dot) && /background:\s*var\(--bad\)/.test(dot) && /width:\s*var\(--sp-8\)/.test(dot), 'with the tone in a round dot, not in the type');
+  /* --r-round since 15 Sept 2026 (System A: a circle names itself; --r-full is for lozenges). Same render. */
+  assert(/border-radius:\s*var\(--r-round\)/.test(dot) && /background:\s*var\(--bad\)/.test(dot) && /width:\s*var\(--sp-8\)/.test(dot), 'with the tone in a round dot, not in the type');
   const f = rule('.launch .launch-foot');
   assert(/font-size:\s*var\(--fs-12\)/.test(f) && /text-align:\s*start/.test(f), 'B4: the disclosure is --fs-12 (no 11.5 step), left-aligned as drawn');
 }

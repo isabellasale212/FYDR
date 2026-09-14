@@ -1,5 +1,14 @@
 /* Nothing you can click may carry its own corner radius.
  *
+ * ONE RADIUS SINCE 15 SEPT 2026. System A (docs/decisions/design-system-adoption.md)
+ * has one radius for every element, --r at 8px; the 6px --r-control programme
+ * this guard was written for is superseded and --r-control is now an alias
+ * of --r. So the rule an interactive rule must satisfy is `var(--r)`. The
+ * shape of the guard is unchanged — the value is decided once in tokens.css
+ * and a raw number on a control fails the build — and the named exemptions
+ * (a switch's knob and track, an avatar, a swatch; the athlete pill
+ * controls on --r-full) are the same decisions as before.
+ *
  * WHY THIS EXISTS. Before the 6px sweep, 47 of the 58 interactive rules in
  * base.css set a RAW border-radius — 20px, 12px, 14px, 11px, 999px, fourteen
  * different values between them — and only 11 read a token. Every one of those
@@ -109,7 +118,7 @@ export function findViolations(css: string): Violation[] {
     const decl = /border-radius:\s*([^;]+);/.exec(m[2] ?? '');
     if (!decl) continue;
     const value = (decl[1] ?? '').trim();
-    if (value === 'var(--r-control)') continue;
+    if (value === 'var(--r)') continue;
     /* A NAMED EXEMPTION BUYS ONE VALUE, NOT A FREE HAND. Being on the list
        means "this athlete control is drawn as a pill", so it may read
        --r-full and nothing else — a raw 999px, or a 16px somebody liked,
@@ -130,9 +139,11 @@ if (violations.length > 0) {
   console.error(`\nControl radius: ${violations.length} interactive rule(s) in ${path} set their own corner radius.\n`);
   for (const v of violations) console.error(`  ${v.value.padEnd(18)} ${v.selector}`);
   console.error(`
-Use var(--r-control). The value lives in tokens.css and is 6px; a raw number
-here is a second opinion about a decision that has already been taken, and it
-is how the app ended up with fourteen different radii on its buttons.
+Use var(--r). The value lives in tokens.css and is 8px — System A's one
+radius for every element, 15 Sept 2026; a raw number here is a second opinion
+about a decision that has already been taken, and it is how the app ended up
+with fourteen different radii on its buttons. (var(--r-control) still
+resolves, as an alias, but a control names --r.)
 
 If this element is genuinely round — a switch knob, a track, an avatar, a
 legend swatch — name it so, and add that name to SHAPED_ON_PURPOSE in
@@ -147,4 +158,4 @@ and a long one means the rule has been abandoned rather than excepted.
   process.exit(1);
 }
 
-console.log(`Control radius: every interactive rule in ${path} reads var(--r-control).`);
+console.log(`Control radius: every interactive rule in ${path} reads var(--r).`);

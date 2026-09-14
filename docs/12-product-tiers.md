@@ -183,8 +183,8 @@ Every screen in the `02-information-architecture.md` §5 inventory.
 | Flags and thresholds | Both | Non-GPS domains. GPS-domain flags and thresholds are Premium because the data is. |
 | Leaderboards | Both | GPS-metric boards Premium. |
 | Reports, scheduled and formatted | Both | GPS sections absent without GPS data. |
-| Analytics builder, presets, saved views | Both | Full builder in both tiers; GPS metrics only in Premium (none are built yet). **Amended 2026-08-30:** the *bar chart* visualisation is Premium — the builder is not. Saved views are not built in either tier. See 3.3. |
-| Cross-domain correlation | Both | See 3.3. This is a deliberate change from the current spec. |
+| Analytics | **P, the whole destination (row 27)** | **Rewritten 15 September 2026** (`docs/decisions/decision-batch-2026-09-13.md`, "Premium contents"): this row said "Both" while §3.1 row 27 and the code made the destination Premium. Analytics is the four panels covering every metric, GPS included (`docs/decisions/absence-rule.md`, 14 September); gated at the database by `analytics_daily_rows` (0125) and absent under D-20 for a Basic club. The builder, presets and saved views this row used to describe no longer exist (the builder went with PATTERN-S7 C6). §3.3 below is the record of the earlier position, not current behaviour. |
+| Cross-domain correlation | P, when built | Was "Both — see 3.3"; a correlation is an analytics reading and analytics is the whole destination above. Not built in either tier. |
 | Data export, CSV, XLSX, JSON | **Both** | Ethical and legal floor. Section 4.2. |
 | Athlete portability export | Both | Article 20. Not a feature. |
 | API export | P, when built | Deferred past v1 (O-225). A commitment on the tier table, not a shipped feature. |
@@ -202,6 +202,10 @@ Every screen in the `02-information-architecture.md` §5 inventory.
 
 ### 3.3 Analytics: a recommended change to the current spec
 
+> **CLOSED, 15 September 2026.** Row 27 (§3.1) and the analytics row of §3.2 now agree
+> with the code: the whole destination is Premium, at the database and at the route. The
+> text below is kept as the record of the earlier position and is not current behaviour.
+>
 > **STILL OPEN, AND NOT CONTRADICTED BY THE BUILD. Amended 2026-08-30.**
 >
 > An earlier pass of this build read the client's instruction — *"for the setting page

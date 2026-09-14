@@ -1139,6 +1139,10 @@ export async function createMatchSessionForFixture(
 export type SessionDetail = Session & {
   groupIds: string[];
   hasRecordedData: boolean;
+  /** How many athletes have rated it (training_entries rows). PATTERN-S4 C4,
+   *  ruled 13 Sept 2026 (batch B6): a rated session opens read-only, and the
+   *  reason names the count. */
+  ratingCount: number;
 };
 
 export async function fetchSessionDetail(
@@ -1171,15 +1175,15 @@ export async function fetchSessionDetail(
       .limit(1),
     db
       .from('training_entries')
-      .select('id')
+      .select('id', { count: 'exact', head: true })
       .eq('org_id', orgId)
-      .eq('session_id', sessionId)
-      .limit(1),
+      .eq('session_id', sessionId),
   ]);
 
   if (participants.error) throw new Error(participants.error.message);
   if (attendance.error) throw new Error(attendance.error.message);
   if (entries.error) throw new Error(entries.error.message);
+  const ratingCount = entries.count ?? 0;
 
   const groupIds = (participants.data ?? [])
     .map((p) => p.group_id)
@@ -1188,7 +1192,8 @@ export async function fetchSessionDetail(
   return {
     ...session,
     groupIds,
-    hasRecordedData: (attendance.data?.length ?? 0) > 0 || (entries.data?.length ?? 0) > 0,
+    hasRecordedData: (attendance.data?.length ?? 0) > 0 || ratingCount > 0,
+    ratingCount,
   };
 }
 

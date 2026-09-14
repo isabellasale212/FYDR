@@ -39,7 +39,14 @@ where it is edited, cancelled or deleted.
 its matchday label where the week contains a fixture.
 
 **The session's details**, editable in place: title, kind, date, start time,
-length, location, and which groups are expected.
+length, location, and which groups are expected — **unless the session has
+been rated.** A session with at least one rating opens read-only, and the
+reason is said out loud in the edit form's place: "This session has been rated
+by 14 athletes. Ratings are tied to its date and duration, so it cannot be
+changed. Cancel it and create a new one if the details are wrong." The rating
+neither follows an edit nor detaches from one, so the edit is not offered;
+cancelling stays available (PATTERN-S4 C4, ruled 13 September 2026, built
+16 September).
 
 **Who is expected**, resolved from the groups attached to the session rather than
 listed by hand, so changing a group's membership changes the expectation.

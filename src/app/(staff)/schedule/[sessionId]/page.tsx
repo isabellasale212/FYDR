@@ -154,7 +154,22 @@ export default async function SessionDetailPage({
           canManage={hasAnyRole(claims.roles, SESSION_EDIT)} orgId={orgId} session={session} />
       </div>
 
-      {!cancelled ? (
+      {!cancelled && session.ratingCount > 0 ? (
+        /* PATTERN-S4 C4, ruled 13 Sept 2026 (batch B6), built 16 Sept: a rated
+           session opens READ-ONLY, with the reason said out loud. The rating
+           neither follows an edit nor detaches from it — so the edit is not
+           offered. Cancelling stays available above (SessionActions); a new
+           session is the way to change the date or the duration. */
+        <div className="card" style={{ marginTop: 'var(--sp-14)' }} data-rated-read-only>
+          <p className="sect" style={{ marginBottom: 'var(--sp-8)' }}>
+            Edit this session
+          </p>
+          <p style={{ margin: 0 }}>
+            This session has been rated by {session.ratingCount} {session.ratingCount === 1 ? 'athlete' : 'athletes'}. Ratings are
+            tied to its date and duration, so it cannot be changed. Cancel it and create a new one if the details are wrong.
+          </p>
+        </div>
+      ) : !cancelled ? (
         <div style={{ marginTop: 'var(--sp-14)' }}>
           <p className="sect" style={{ marginBottom: 'var(--sp-8)' }}>
             Edit this session

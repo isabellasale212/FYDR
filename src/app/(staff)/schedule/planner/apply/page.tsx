@@ -1,7 +1,7 @@
 import { redirect } from 'next/navigation';
 import Link from 'next/link';
 import { ApplyControls } from '@/components/ApplyControls/ApplyControls';
-import { buildApplyPlan, fetchTemplates, type ApplyStrategy } from '@/lib/queries/weekTemplates';
+import { buildApplyPlan, fetchTemplates } from '@/lib/queries/weekTemplates';
 import { fetchNextFixture, mondayOf, rangeBounds } from '@/lib/queries/schedule';
 import { dateInTz, daysBetween, formatDate, mdLabel, todayIso, zonedTimeToUtcIso } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
@@ -25,7 +25,6 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
 
   const weekStart = typeof sp.week === 'string' ? mondayOf(sp.week) : mondayOf(todayIso(timezone));
   const templateId = typeof sp.template === 'string' ? sp.template : null;
-  const strategy: ApplyStrategy = sp.strategy === 'replace_planned' || sp.strategy === 'fill_gaps' ? sp.strategy : 'add';
 
   // Real local midnight, not a literal UTC one — same bug class as
   // dashboard.ts's fetchNextFixture calls (see that file for the full
@@ -53,7 +52,7 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
   const selected = templateId ? usableTemplates.find((t) => t.id === templateId) : null;
 
   let previewRows: { date: string; md: string | null; existingTitles: string[]; templateTitles: string[]; result: string }[] = [];
-  let planSummary: { create: number; softDelete: number; keep: number; unmapped: number[] } | null = null;
+  let planSummary: { create: number; softDelete: number; keep: number; keepsMatch: boolean; unmapped: number[] } | null = null;
 
   if (selected) {
     const weekDates = Array.from({ length: 7 }, (_, i) => {
@@ -77,16 +76,36 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
     const weekBounds = rangeBounds(weekDates[0]!, weekDates[6]!, timezone);
     const { data: existingRows } = await db
       .from('sessions')
-      .select('id, title, starts_at, status')
+      .select('id, title, starts_at, status, session_type, fixture_id')
       .eq('org_id', orgId)
       .gte('starts_at', weekBounds.from)
       .lte('starts_at', weekBounds.to)
       .is('deleted_at', null);
 
+    // "Has recorded data" — attendance or a rating on the session — decides
+    // what the replace keeps, so the preview reads the same two tables the
+    // write does (applyTemplate, weekTemplates.ts). The old preview passed
+    // hasData: false for every row and could promise a removal the write
+    // then refused.
+    const sessionIds = (existingRows ?? []).map((r) => r.id);
+    const [attendanceRes, trainingRes] = await Promise.all([
+      sessionIds.length ? db.from('session_attendance').select('session_id').in('session_id', sessionIds) : Promise.resolve({ data: [] as { session_id: string | null }[] }),
+      sessionIds.length ? db.from('training_entries').select('session_id').in('session_id', sessionIds) : Promise.resolve({ data: [] as { session_id: string | null }[] }),
+    ]);
+    const idsWithData = new Set(
+      [...(attendanceRes.data ?? []), ...(trainingRes.data ?? [])].map((r) => r.session_id).filter((id): id is string => id !== null),
+    );
     // Local calendar date, not the UTC one — same bug class noted above.
-    const existing = (existingRows ?? []).map((r) => ({ id: r.id, date: dateInTz(new Date(r.starts_at), timezone), status: r.status, hasData: false }));
-    const plan = buildApplyPlan(selected.structure, week, existing, strategy);
-    planSummary = { create: plan.create.length, softDelete: plan.softDelete.length, keep: plan.keepCount, unmapped: plan.unmappedPositions };
+    const existing = (existingRows ?? []).map((r) => ({
+      id: r.id,
+      date: dateInTz(new Date(r.starts_at), timezone),
+      status: r.status,
+      hasData: idsWithData.has(r.id),
+      sessionType: r.session_type,
+      fixtureId: r.fixture_id,
+    }));
+    const plan = buildApplyPlan(selected.structure, week, existing);
+    planSummary = { create: plan.create.length, softDelete: plan.softDelete.length, keep: plan.keepCount, keepsMatch: plan.keepsMatch, unmapped: plan.unmappedPositions };
 
     const templateByDate = new Map<string, string[]>();
     for (const item of plan.create) {
@@ -169,7 +188,6 @@ export default async function ApplyTemplatePage({ searchParams }: { searchParams
           templates={usableTemplates.map((t) => ({ id: t.id, name: t.name }))}
           selectedTemplateId={selected?.id ?? null}
           weekStart={weekStart}
-          strategy={strategy}
           fixtureId={fixtureInWeek?.id ?? null}
           previewRows={previewRows}
           planSummary={planSummary}

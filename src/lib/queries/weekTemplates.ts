@@ -389,7 +389,17 @@ export async function duplicateTemplate(db: Db, orgId: string, userId: string, t
 // Apply
 // ---------------------------------------------------------------------------
 
-export type ApplyStrategy = 'add' | 'replace_planned' | 'fill_gaps';
+/* One way to apply, since 2026-09-14 (PATTERN-S4 C7, ruled 2026-09-13, batch
+ * B7): applying a template REPLACES the week. The three strategies this used
+ * to offer (add alongside / replace planned / fill gaps) are gone — a coach
+ * applying a week shape means the week should look like the shape. What
+ * replace keeps, because removing it would destroy something: a session with
+ * recorded attendance or ratings (the same rule that makes a rated session
+ * read-only), and the fixture's own match session, which the week is built
+ * around. A template's own MD-0 match is not created on a day that already
+ * has the fixture's, so applying never doubles the match. The consequence is
+ * named before the button, in B11's dialog. */
+export type ApplyStrategy = 'replace';
 
 export type ApplyPlanItem = {
   day: string;
@@ -402,31 +412,53 @@ export type ApplyPlanItem = {
 export type ApplyPlan = {
   create: ApplyPlanItem[];
   softDelete: string[];
+  /** Sessions that stay because they carry recorded attendance or ratings. */
   keepCount: number;
+  /** The fixture's own match session stays, and the template's MD-0 match
+   *  is skipped for it. */
+  keepsMatch: boolean;
   unmappedPositions: number[];
 };
 
 type WeekDay = { date: string; mdOffset: number | null };
-type ExistingSession = { id: string; date: string; status: string; hasData: boolean };
+export type ExistingSession = {
+  id: string;
+  date: string;
+  status: string;
+  hasData: boolean;
+  sessionType: string;
+  fixtureId: string | null;
+};
 
 /** Pure, deterministic — the same function the builder's preview and the
  *  eventual write both call, so the preview can never disagree with what
  *  actually gets created. screens/md-planner.md's own packages/core
  *  boundary, kept as one function in this file rather than a separate
  *  package this codebase doesn't otherwise have. */
-export function buildApplyPlan(structure: TemplateStructure, week: WeekDay[], existing: ExistingSession[], strategy: ApplyStrategy): ApplyPlan {
+export function buildApplyPlan(structure: TemplateStructure, week: WeekDay[], existing: ExistingSession[], _strategy: ApplyStrategy = 'replace'): ApplyPlan {
   const byOffset = new Map(week.map((w) => [w.mdOffset, w.date]));
-  const existingByDate = new Map<string, ExistingSession[]>();
-  for (const e of existing) {
-    const list = existingByDate.get(e.date) ?? [];
-    list.push(e);
-    existingByDate.set(e.date, list);
-  }
+  const weekDates = new Set(week.map((w) => w.date));
 
+  // Replace the week: every session already in it goes, except what carries
+  // recorded data and the fixture's own match.
   const create: ApplyPlanItem[] = [];
   const softDelete: string[] = [];
   const unmappedPositions: number[] = [];
   let keepCount = 0;
+  const fixtureMatchDates = new Set<string>();
+  for (const e of existing) {
+    if (!weekDates.has(e.date)) continue;
+    const isFixtureMatch = e.sessionType === 'match' && e.fixtureId !== null;
+    if (isFixtureMatch) {
+      fixtureMatchDates.add(e.date);
+      continue;
+    }
+    if (e.hasData) {
+      keepCount += 1;
+      continue;
+    }
+    softDelete.push(e.id);
+  }
 
   for (const day of structure.days) {
     const date = byOffset.get(day.mdOffset);
@@ -434,29 +466,15 @@ export function buildApplyPlan(structure: TemplateStructure, week: WeekDay[], ex
       if (day.sessions.length > 0) unmappedPositions.push(day.mdOffset);
       continue;
     }
-    const existingOnDay = existingByDate.get(date) ?? [];
-    const dayIsEmpty = existingOnDay.length === 0;
-
-    if (strategy === 'fill_gaps' && !dayIsEmpty) {
-      keepCount += existingOnDay.length;
-      continue;
-    }
-
-    if (strategy === 'replace_planned') {
-      for (const e of existingOnDay) {
-        if (e.status === 'planned' && !e.hasData) softDelete.push(e.id);
-        else keepCount += 1;
-      }
-    } else {
-      keepCount += existingOnDay.length;
-    }
-
     for (const session of day.sessions) {
+      // The fixture already has its match on this day; the template's is the
+      // same match, not a second one.
+      if (session.type === 'match' && fixtureMatchDates.has(date)) continue;
       create.push({ day: date, mdOffset: day.mdOffset === 0 ? 0 : day.mdOffset, templateKey: session.key, session, requires: day.requires });
     }
   }
 
-  return { create, softDelete, keepCount, unmappedPositions };
+  return { create, softDelete, keepCount, keepsMatch: fixtureMatchDates.size > 0, unmappedPositions };
 }
 
 export async function applyTemplate(
@@ -505,7 +523,7 @@ export async function applyTemplate(
   const weekBounds = rangeBounds(weekDates[0]!, weekDates[6]!, timezone);
   const { data: existingRows, error: existErr } = await db
     .from('sessions')
-    .select('id, starts_at, status')
+    .select('id, starts_at, status, session_type, fixture_id')
     .eq('org_id', orgId)
     .gte('starts_at', weekBounds.from)
     .lte('starts_at', weekBounds.to)
@@ -533,11 +551,13 @@ export async function applyTemplate(
     date: dateInTz(new Date(r.starts_at), timezone),
     status: r.status,
     hasData: idsWithData.has(r.id),
+    sessionType: r.session_type,
+    fixtureId: r.fixture_id,
   }));
 
   const plan = buildApplyPlan(template.structure, week, existing, input.strategy);
   if (plan.create.length === 0 && plan.softDelete.length === 0) {
-    return { created: 0, softDeleted: 0, error: 'Every position in this template already has sessions. Nothing would be created.' };
+    return { created: 0, softDeleted: 0, error: 'This template would change nothing in this week: nothing to add and nothing to remove.' };
   }
 
   if (plan.softDelete.length > 0) {

@@ -38,9 +38,16 @@ worth of sessions in one action, so it deserves reading carefully.
 
 **Which week** it is being applied to.
 
-**What will be created**, before anything is written.
+**What will happen**, before anything is written: the day-by-day table, and
+under it the consequence in one sentence — "This will remove 3 sessions
+already in this week and add 7 from the template." — with what stays named
+after it.
 
-**Apply and Cancel.**
+**Apply.** Pressing it opens B11's dialog (PATTERN-S4 C7, ruled 13 September
+2026, built 14 September), which carries the same consequence sentence before
+its two buttons: **Replace the week** and **Keep the week as it is**. It is the
+one confirmation in the planner, and it earns its keep because the removal is
+a soft delete nobody can undo from a screen.
 
 ---
 
@@ -60,16 +67,20 @@ That count is a plain count of what is about to be written, not a metric.
 |---|---|---|---|---|---|---|---|
 | Choose a template | Top | Selects the shape to apply | Stays here | Nothing | Coach and sport scientist | None | Never |
 | Choose a week | Top | Selects the week to apply it to | Stays here | Nothing | Same | None | Never |
-| **Apply** | Foot | Creates the sessions | Back to the schedule on that week | **Creates every session in the template.** This is the largest single write in the schedule area | Coach and sport scientist | Yes. The preview is the confirmation | Disabled while applying |
-| Cancel | Foot | Abandons | Back to the schedule | Nothing | Same | None | Never |
+| **Apply template** | Foot | Opens the dialog | Stays here | Nothing | Coach and sport scientist | — | Disabled while applying, after a successful apply, and when the template would change nothing |
+| **Replace the week** | The dialog | Replaces the week | Stays here, with the result and a link to the schedule | **Removes every session in the week without recorded data and creates every session in the template.** The largest single write in the schedule area | Coach and sport scientist | The dialog itself: the consequence sentence sits above the button | — |
+| Keep the week as it is | The dialog | Closes it | Stays here | Nothing | Same | None | Never |
 
-**What it does about a week that already has sessions.** It does not blindly add
-to it. Sessions already sitting in the positions the template would fill are
-**soft deleted**, meaning marked as removed rather than erased, and the new ones
-are created. If every position the template covers is already filled, it refuses
-outright and says so: *Every position in this template already has sessions.
-Nothing would be created.* The result reports both numbers, how many were created
-and how many were replaced, rather than only the additions.
+**Applying replaces the week** (PATTERN-S4 C7). Every session already in the
+week is **soft deleted** — marked as removed, not erased — and the template's
+sessions are created. Two things stay, because removing them would destroy
+something: a session with recorded attendance or ratings (the same rule that
+makes a rated session read-only), and the fixture's own match session, which
+the week is built around; a template's own MD-0 match is not created on a day
+that already has the fixture's, so applying never doubles the match. The
+three ways to apply this screen used to offer (add alongside, replace planned,
+fill gaps) are gone. If the template would change nothing, it refuses and says
+so. The result reports both numbers, created and removed.
 
 **What it does not do is detect that somebody else changed the week while you were
 looking at it.** The design called for the write to be refused in that case; that

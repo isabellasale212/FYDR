@@ -136,8 +136,14 @@
      read as the same weight of tint, which is the same dichromacy argument
      that raised the shared value from 0.16 in the first place. */
   --pill-fill-alpha: 0.22;
-  --pill-fill-alpha-warn: 0.28;
-  --pill-fill-alpha-bad: 0.24;
+  /* SYSTEM A's five pill fills, 15 Sept 2026: good 0.22, warn 0.2, bad
+     0.16, accent 0.1, highlight 0.22 (colors.css). The .pill rule composites
+     the tone at this alpha over --surf, so the fills are the same colours as
+     System A's rgba() pills on a white card. Light; dark restates 0.28 / 0.24
+     / 0.22 below, frozen. */
+  --pill-fill-alpha-warn: 0.2;
+  --pill-fill-alpha-bad: 0.16;
+  --pill-fill-alpha-accent: 0.1;
 
   /* Domain colour-coding, light-theme handoff §6: "used to distinguish where a
      number came from. One dot, bar segment, or tint per domain." Four of the
@@ -961,6 +967,9 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --accent2-rgb: 51 182 255;
   --avatar-text: #6f9bff;
   --tab-active: #6f9bff;
+  --pill-fill-alpha-warn: 0.28;
+  --pill-fill-alpha-bad: 0.24;
+  --pill-fill-alpha-accent: 0.22;
   /* Visual Lift variants 1a and 2b, the dark half of the same scheme:
      #182241 -> #202b4e. Lighter and bluer, so the dark shell reads as a
      surface rather than a void, and it is what the lift's "dark as the hero"
@@ -1126,6 +1135,9 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --accent2-rgb: 51 182 255;
     --avatar-text: #6f9bff;
     --tab-active: #6f9bff;
+    --pill-fill-alpha-warn: 0.28;
+    --pill-fill-alpha-bad: 0.24;
+    --pill-fill-alpha-accent: 0.22;
     /* Route 2 of the three ways dark arrives (§2.4). Must track
        :root[data-theme='dark'] exactly — this block was missed when the
        Visual Lift moved the dark ground, so an OS-dark viewer with no explicit

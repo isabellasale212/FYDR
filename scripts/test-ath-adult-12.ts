@@ -67,7 +67,7 @@ console.log('\nA3. the hero figure at the board\'s size');
 
 console.log('\nA4. a history row is a target');
 {
-  assert(/min-height:\s*44px/.test(rule('.hist-row')), '.hist-row has min-height 44px');
+  assert(/min-height:\s*(?:44px|var\(--tap-min\))/.test(rule('.hist-row')), '.hist-row has min-height 44px');
 }
 
 console.log('\nwhat this flow did NOT change (recorded, not built)');

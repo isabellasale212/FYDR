@@ -53,7 +53,7 @@ export default async function ReportProblemPage({
           <span aria-hidden="true">✕</span>
         </Link>
         <h1 className="t">Report a problem</h1>
-        <span style={{ width: 44 }} />
+        <span style={{ width: 'var(--tap-min)' }} />
       </div>
 
       {toastMessage ? <Toast message={toastMessage} clearHref="/report-problem" /> : null}

@@ -16,7 +16,7 @@ export default async function InstallPage() {
           <span aria-hidden="true">←</span>
         </Link>
         <h1 className="t">Add to Home Screen</h1>
-        <span style={{ width: 44 }} />
+        <span style={{ width: 'var(--tap-min)' }} />
       </div>
       <InstallCard canonical />
     </>

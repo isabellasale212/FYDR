@@ -125,7 +125,7 @@ export default async function ConsentGuardianPage({ searchParams }: { searchPara
         <button type="submit" className="btn-primary btn-commit">
           Send the link again
         </button>
-        <Link href="/report-problem?about=guardian" className="me-row" style={{ marginTop: 'var(--sp-8)', textDecoration: 'none', color: 'inherit', minHeight: 44 }}>
+        <Link href="/report-problem?about=guardian" className="me-row" style={{ marginTop: 'var(--sp-8)', textDecoration: 'none', color: 'inherit', minHeight: 'var(--tap-min)' }}>
           <span>This is not my guardian — tell the club</span>
           <span className="chev" aria-hidden="true">›</span>
         </Link>

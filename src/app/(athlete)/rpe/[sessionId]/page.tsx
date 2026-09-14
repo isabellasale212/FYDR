@@ -46,7 +46,7 @@ export default async function RpePage({
             <span aria-hidden="true">✕</span>
           </Link>
           <h1 className="t">Rate a session</h1>
-          <span style={{ width: 44 }} />
+          <span style={{ width: 'var(--tap-min)' }} />
         </div>
         <div className="after-card">
           <h2 className="after-heading">Nothing to rate</h2>
@@ -80,7 +80,7 @@ export default async function RpePage({
             <span aria-hidden="true">✕</span>
           </Link>
           <h1 className="t">Rate a session</h1>
-          <span style={{ width: 44 }} />
+          <span style={{ width: 'var(--tap-min)' }} />
         </div>
         <div className="after-card">
           <h2 className="after-heading">This session isn&rsquo;t there</h2>

@@ -17,7 +17,7 @@ export function EntryLocked({ state, title, closeLabel }: { state: ConsentState;
           <span aria-hidden="true">✕</span>
         </Link>
         <h1 className="t">{title}</h1>
-        <span style={{ width: 44 }} />
+        <span style={{ width: 'var(--tap-min)' }} />
       </div>
       <div className="after-card" data-entry-locked={state}>
         <h2 className="after-heading">Not open</h2>

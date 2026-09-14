@@ -63,7 +63,7 @@ console.log('\nthe read and the page');
   assert(/<EmptyPeriod /.test(page) && /period=\$\{copy\.action\.period\}|PERIOD_PARAM\}=\$\{copy\.action\.period\}/.test(page), 'the action is a Link that changes the period — never automatic');
   assert(!/title="Nothing logged yet"/.test(page) && !/title="Nothing in this window"/.test(page) && !/title="Nothing answered yet"/.test(page), 'the four old titles are gone');
   const css = strip(read('src/styles/base.css'));
-  assert(/\.empty-period-action\s*\{[^}]*min-height:\s*44px/.test(css), 'the action is a 44px full-width secondary');
+  assert(/\.empty-period-action\s*\{[^}]*min-height:\s*(?:44px|var\(--tap-min\))/.test(css), 'the action is a 44px full-width secondary');
 }
 
 console.log('\nthe spec');

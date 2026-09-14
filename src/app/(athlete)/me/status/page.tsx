@@ -78,7 +78,7 @@ export default async function MyStatusPage() {
           ) : (
             <ul className="pw-rules" aria-label="Restrictions">
               {q2.rows.map((r) => (
-                <li key={r} className="pw-rule" data-state="unmet" style={{ minHeight: 44, alignItems: 'center' }}>
+                <li key={r} className="pw-rule" data-state="unmet" style={{ minHeight: 'var(--tap-min)', alignItems: 'center' }}>
                   <span className="pw-rule-mark" aria-hidden="true">–</span>
                   <span>{r}</span>
                 </li>
@@ -111,7 +111,7 @@ export default async function MyStatusPage() {
             </p>
             <ol className="install-steps" aria-label="Stages">
               {ladder.map((r) => (
-                <li key={r.n} className="install-step" data-rung={r.state} style={{ minHeight: 44, alignItems: 'center' }}>
+                <li key={r.n} className="install-step" data-rung={r.state} style={{ minHeight: 'var(--tap-min)', alignItems: 'center' }}>
                   <span className="install-step-n" aria-hidden="true" style={r.state === 'now' ? undefined : { background: 'var(--surf2)', color: 'var(--muted)' }}>
                     {r.n}
                   </span>

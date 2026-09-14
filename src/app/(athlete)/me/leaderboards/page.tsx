@@ -34,7 +34,7 @@ export default async function MyLeaderboardsSettingsPage() {
           <span aria-hidden="true">←</span>
         </Link>
         <h1 className="t">Leaderboards</h1>
-        <span style={{ width: 44 }} />
+        <span style={{ width: 'var(--tap-min)' }} />
       </div>
 
       {isMinor ? (

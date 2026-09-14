@@ -112,7 +112,7 @@ export function StageLadder({
               <p className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
                 {RESTRICTION_HINT}
               </p>
-              <label className="tiny" style={{ display: 'flex', gap: 'var(--sp-8)', alignItems: 'center', marginTop: 'var(--sp-8)', minHeight: 44 }}>
+              <label className="tiny" style={{ display: 'flex', gap: 'var(--sp-8)', alignItems: 'center', marginTop: 'var(--sp-8)', minHeight: 'var(--tap-min)' }}>
                 <input type="checkbox" name="reviewed" value="1" required style={{ width: 18, height: 18, margin: 0 }} />
                 The criteria for stage {next} in the club’s protocol were reviewed.
               </label>

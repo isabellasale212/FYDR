@@ -209,7 +209,7 @@ console.log('\nA4/C-d. irreversibility is one line, the reasoning is behind a di
   assert(/font-size:\s*var\(--fs-12\)/.test(note) && /color:\s*var\(--muted\)/.test(note), 'the line is --fs-12 --muted');
   const why = rule('.subm-why-link');
   assert(/font-size:\s*var\(--fs-13\)/.test(why) && /font-weight:\s*(?:600|var\(--w-semi\))/.test(why) && /color:\s*var\(--accent-text\)/.test(why), 'the link is --fs-13 / 600 / --accent-text');
-  assert(/min-height:\s*44px/.test(rule('.subm-why summary')), 'and its summary is a 44px target');
+  assert(/min-height:\s*(?:44px|var\(--tap-min\))/.test(rule('.subm-why summary')), 'and its summary is a 44px target');
   assert(/Once this is sent it can’t be edited\./.test(rpe) && !/subm-why/.test(rpe), 'RpeForm keeps its full sentence — A4 was approved for /check-in only');
   assert(/Saved on this phone first — it sends even if your signal drops\./.test(nutrition) && !/change this after you submit/.test(nutrition), 'NutritionCheckinForm keeps its existing line — D7, the footer copy is blocked until the 3b board is final');
 }

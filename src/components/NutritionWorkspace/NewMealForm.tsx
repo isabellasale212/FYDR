@@ -196,7 +196,7 @@ export function NewMealForm({ onSubmit, onCancel, isSubmitting, error }: Props) 
                    "times, button" — the tooltip was never its name. */
                 aria-label="Remove item"
                 title="Remove item"
-                style={{ minHeight: 44 }}
+                style={{ minHeight: 'var(--tap-min)' }}
               >
                 <span aria-hidden="true">×</span>
               </button>

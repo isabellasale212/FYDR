@@ -35,7 +35,7 @@ console.log('A1. finishing early is not shaped like logging a set');
   assert(/border:\s*1px dashed var\(--border-strong\)/.test(early), 'dashed 1px --border-strong');
   assert(/background:\s*none/.test(early) || /background:\s*transparent/.test(early), 'no fill');
   assert(/color:\s*var\(--muted\)/.test(early), '--muted');
-  assert(/min-height:\s*44px/.test(early), '44px');
+  assert(/min-height:\s*(?:44px|var\(--tap-min\))/.test(early), '44px');
   assert(/Finish session/.test(logger) && /Finish early · \$\{doneCount\} of \$\{totalSets\} sets/.test(logger), 'both labels — the count now in the header control\'s label');
   assert(/completeMutation\.mutate\(\)/.test(logger), 'and it is still the one call that completes a session');
 }

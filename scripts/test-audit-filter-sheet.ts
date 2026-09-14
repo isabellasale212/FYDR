@@ -51,7 +51,7 @@ console.log('\n3. the screens');
   assert(/className="chiprow audit-type-chips"/.test(page), 'the kind chips are named so the phone can hide them');
   const css = strip(read('src/styles/base.css'));
   assert(/@media \(max-width: 767px\) \{\s*\.audit-filters-desktop,\s*\.audit-type-chips \{\s*display: none;/.test(css) && /\.audit-filters-phone \{\s*display: flex;/.test(css), 'below 768 the card and chips go, the button and sheet come');
-  assert(/\.audit-filters-open \{\s*min-height: 44px;/.test(css), 'the opener is 44px');
+  assert(/\.audit-filters-open \{\s*min-height: (?:44px|var\(--tap-min\));/.test(css), 'the opener is 44px');
   assert(/sheet/i.test(read('docs/screens/51-audit-log.md')) && /count/i.test(read('docs/screens/51-audit-log.md')), 'the spec says so');
 }
 

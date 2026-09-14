@@ -103,7 +103,7 @@ console.log('\n4. the CSS, below 768 only');
   const bar = rule('.ph-tabbar', pb);
   assert(/position:\s*fixed/.test(bar) && /grid-template-columns:\s*repeat\(5, 1fr\)/.test(bar), 'a fixed five-column bar');
   assert(/color-mix\(in srgb, var\(--elev\) 94%, transparent\)/.test(bar), 'on the athlete bar\'s own fill (no --tabbar-bg)');
-  assert(/min-height:\s*44px/.test(rule('.ph-tab', pb)), 'tabs at the floor');
+  assert(/min-height:\s*(?:44px|var\(--tap-min\))/.test(rule('.ph-tab', pb)), 'tabs at the floor');
   assert(/min-height:\s*52px/.test(rule('.ph-sheet-row', pb)), 'sheet rows at 52px');
   assert(/rgb\(var\(--ink-rgb\) \/ 0\.35\)/.test(rule('.ph-sheet-scrim', pb)), 'the scrim is --ink-rgb at 0.35 (no --scrim)');
   assert(/border-radius:\s*var\(--r-sheet\)/.test(rule('.ph-sheet', pb)), 'the sheet\'s top radius is --r-sheet (System A, 15 Sept 2026)');
@@ -132,7 +132,7 @@ console.log('\n5. the 44px floor for staff controls below 768');
   const block = pb;
   for (const sel of ['.main .back-btn', '.main .btn-ghost', '.main .btn-primary', '.main select', '.main .sg-stepper-btn', '.main .sg-btn-remove', '.main .sg-btn-add', '.main .sg-btn-publish', '.main .sg-btn-discard', '.main .nutr-stepper-btn', '.main .lbw-segmented button', '.main .theme-seg-btn', '.main .reorder-btn']) {
     const esc = sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    assert(new RegExp(`${esc}[^{]*\\{[^}]*min-height:\\s*44px`).test(block) || new RegExp(`(?:^|,)\\s*${esc}\\s*(?:,|\\{)[\\s\\S]{0,900}?min-height:\\s*44px`).test(block), `${sel} is at least 44px on a phone`);
+    assert(new RegExp(`${esc}[^{]*\\{[^}]*min-height:\\s*(?:44px|var\\(--tap-min\\))`).test(block) || new RegExp(`(?:^|,)\\s*${esc}\\s*(?:,|\\{)[\\s\\S]{0,900}?min-height:\\s*(?:44px|var\\(--tap-min\\))`).test(block), `${sel} is at least 44px on a phone`);
   }
   /* §0au (2026-09-12): the review measured what the class list missed —
      plain <button>s (the schedule's group chips, the mode segment, the flag
@@ -141,11 +141,11 @@ console.log('\n5. the 44px floor for staff controls below 768');
      column is floored (the grid's session blocks excepted — their height IS
      the session's length), the arrows get a width too, and inline links get
      a 20px line so 12 + 20 + 12 clears 44. */
-  assert(/\.main button:not\(\.sg-block\)[^{]*\{[^}]*min-height:\s*44px/.test(block), 'every button in the content column is floored, except the grid\'s session blocks');
-  assert(/\.main \.sg-weeknav-btn\s*\{[^}]*min-width:\s*44px/.test(block), 'the week arrows are 44 wide as well as tall');
+  assert(/\.main button:not\(\.sg-block\)[^{]*\{[^}]*min-height:\s*(?:44px|var\(--tap-min\))/.test(block), 'every button in the content column is floored, except the grid\'s session blocks');
+  assert(/\.main \.sg-weeknav-btn\s*\{[^}]*min-width:\s*(?:44px|var\(--tap-min\))/.test(block), 'the week arrows are 44 wide as well as tall');
   for (const sel of ['.main .sg-viewtab', '.main .squad-chip', '.main .sg-segment', '.main .btn-ghost-pill']) {
     const esc = sel.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
-    assert(new RegExp(`(?:^|,)\\s*${esc}\\s*(?:,|\\{)[\\s\\S]{0,900}?min-height:\\s*44px`, 'm').test(block), `${sel} is at least 44px on a phone (§0au)`);
+    assert(new RegExp(`(?:^|,)\\s*${esc}\\s*(?:,|\\{)[\\s\\S]{0,900}?min-height:\\s*(?:44px|var\\(--tap-min\\))`, 'm').test(block), `${sel} is at least 44px on a phone (§0au)`);
   }
   assert(/line-height:\s*20px/.test(/\.main a\.tiny,[\s\S]*?\{([^}]*)\}/.exec(block)?.[1] ?? ''), 'inline links sit on a 20px line, so the padding trick clears 44 (the roster names were 43)');
   for (const sel of ['.main table.tbl .nm', '.main .eyebrow a', '.main .tiny a', '.main a.tiny', '.main .pp-link']) {

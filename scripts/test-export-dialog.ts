@@ -40,7 +40,7 @@ console.log('\n2. the one dialog pattern (B11)');
   assert(/<dialog/.test(dlg) && /showModal\(\)/.test(dlg) && /onCancel=/.test(dlg) && /aria-labelledby=\{titleId\}/.test(dlg), 'the native dialog: showModal, cancel, a labelled title');
   const css = strip(read('src/styles/base.css'));
   assert(/\.dlg \{[^}]*width: min\(var\(--w-dialog\), calc\(100vw - 2 \* var\(--sp-16\)\)\)/.test(css) && /\.dlg::backdrop/.test(css), '--w-dialog wide, clamped to the viewport with the gutter, a scrim');
-  assert(/\.dlg-actions \.btn-primary,\s*\.dlg-actions \.btn-ghost \{[^}]*min-height: 44px/.test(css), 'its buttons are 44px');
+  assert(/\.dlg-actions \.btn-primary,\s*\.dlg-actions \.btn-ghost \{[^}]*min-height: (?:44px|var\(--tap-min\))/.test(css), 'its buttons are 44px');
   const users = ['src/components/ExportDialog/ExportDialog.tsx'].map((p) => strip(read(p)));
   assert(users.every((u) => /<Dialog/.test(u)), 'the export dialog uses it');
 }

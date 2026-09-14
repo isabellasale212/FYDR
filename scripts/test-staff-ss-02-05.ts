@@ -66,7 +66,7 @@ console.log('\nC2 / B4. the squad list on a phone: 60px rows, the name as the li
   assert(/\.roster thead \{[^}]*display:\s*none/.test(phone) && /table\.tbl\.roster td\.r \{[^}]*display:\s*none/.test(phone), 'the header row and the squad number are not drawn on a phone');
   assert(/\.roster td:nth-child\(4\) \{[^}]*grid-column:\s*2[^}]*grid-row:\s*1 \/ span 2/.test(phone), 'the pill sits right, across the name and position');
   assert(/table\.tbl\.roster td\.roster-restrictions\[data-empty\] \{[^}]*display:\s*none/.test(phone), 'an empty restriction line is not drawn');
-  assert(/table\.tbl\.roster td a\.nm \{[^}]*min-height:\s*44px/.test(phone) && /table\.tbl\.roster td a\.nm \{[^}]*font-size:\s*var\(--fs-16\)/.test(phone), 'the name is the tap target, at the row\'s size');
+  assert(/table\.tbl\.roster td a\.nm \{[^}]*min-height:\s*(?:44px|var\(--tap-min\))/.test(phone) && /table\.tbl\.roster td a\.nm \{[^}]*font-size:\s*var\(--fs-16\)/.test(phone), 'the name is the tap target, at the row\'s size');
 }
 
 console.log('\nC5. a read-only panel ends with its owner line (2026-09-12)');

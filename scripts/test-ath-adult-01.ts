@@ -127,7 +127,7 @@ console.log('\n4b. collision 1 closed 2026-09-11 — the component states reach 
     assert(rule(sel, block) === '', `and is no longer duplicated inside the phone block`);
   }
   assert(/box-shadow:\s*var\(--ring-accent\)/.test(rule('.launch .field:focus', outside)), 'A8: a focused field adds --ring-accent (the outline stays — the app never suppresses one)');
-  assert(/min-height:\s*44px/.test(rule('.launch .signin-forgot a', outside)), 'F3: the forgot link is a 44px target on desktop too');
+  assert(/min-height:\s*(?:44px|var\(--tap-min\))/.test(rule('.launch .signin-forgot a', outside)), 'F3: the forgot link is a 44px target on desktop too');
   /* The layout stays phone-only: the desktop panel keeps its own inset, its
      --field fills on the white panel, its centred foot. */
   for (const sel of ['.launch-page', '.launch .field', '.launch .launch-foot', '.launch .launch-head .launch-title']) {
@@ -138,7 +138,7 @@ console.log('\n4b. collision 1 closed 2026-09-11 — the component states reach 
 console.log('\n5. A3 the recovery link, A7 the banner, B4 the disclosure');
 {
   const a = rule('.launch .signin-forgot a', css);
-  assert(/min-height:\s*44px/.test(a) && /display:\s*inline-flex/.test(a) && /padding:\s*0 var\(--sp-12\)/.test(a), 'F3: "Forgot your password?" is a 44px target');
+  assert(/min-height:\s*(?:44px|var\(--tap-min\))/.test(a) && /display:\s*inline-flex/.test(a) && /padding:\s*0 var\(--sp-12\)/.test(a), 'F3: "Forgot your password?" is a 44px target');
   const e = rule('.launch .form-error', css);
   for (const t of ['--wash-bad', '--border-bad', '--r', '--pad-card', '--text']) assert(e.includes(`var(${t})`), `A7: the refusal is the banner shape — ${t}`);
   const dot = rule('.launch .form-error::before', css);

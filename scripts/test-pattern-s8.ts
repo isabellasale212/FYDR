@@ -33,8 +33,8 @@ console.log('A1. Log out is a button');
   assert(/<form action="\/auth\/sign-out" method="post" className="set-logout-form">/.test(hub), 'the form is no longer a list row');
   assert(/<button type="submit" className="btn-ghost set-logout">\s*Log out\s*<\/button>/.test(hub), 'a real button with its own label');
   assert(/Ends this session on this browser only/.test(hub), 'the session it ends named beside it');
-  assert(/min-height:\s*44px/.test(rule('.set-logout')), '44px');
-  assert(/\.main button:not\(\.sg-block\)\s*\{[^}]*min-height:\s*44px;\s*\}\s*\.main button\.set-logout\s*\{[^}]*min-height:\s*48px/.test(css), '48px on a phone — after the shell\'s 44px floor, so it wins');
+  assert(/min-height:\s*(?:44px|var\(--tap-min\))/.test(rule('.set-logout')), '44px');
+  assert(/\.main button:not\(\.sg-block\)\s*\{[^}]*min-height:\s*(?:44px|var\(--tap-min\));\s*\}\s*\.main button\.set-logout\s*\{[^}]*min-height:\s*48px/.test(css), '48px on a phone — after the shell\'s 44px floor, so it wins');
   assert(!/className="set-list-row" style=\{\{ width: '100%' \}\}/.test(hub), 'the 4.8px chevron target is gone');
 }
 
@@ -67,7 +67,7 @@ console.log('\nA5. the log says what it cannot show');
 console.log('\nA6. the reorder arrows');
 {
   const r = rule('.reorder-btn');
-  assert(/width:\s*44px/.test(r) && /min-height:\s*44px/.test(r), '44×44, from 28×22');
+  assert(/width:\s*(?:44px|var\(--tap-min\))/.test(r) && /min-height:\s*(?:44px|var\(--tap-min\))/.test(r), '44×44, from 28×22');
 }
 
 console.log('\nA7. Catapult');

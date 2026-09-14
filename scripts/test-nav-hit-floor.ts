@@ -62,7 +62,7 @@ console.log('1. the athlete Back button hits 44px tall without drawing any large
   const hit = rule('.phone-body .back-btn::after');
   assert(/position:\s*relative/.test(host), '.phone-body .back-btn positions its own hit box');
   assert(/content:\s*''/.test(hit) && /position:\s*absolute/.test(hit), 'and carries an absolutely positioned ::after');
-  assert(/height:\s*44px/.test(hit), `the hit box is ${FLOOR}px tall`);
+  assert(/height:\s*(?:44px|var\(--tap-min\))/.test(hit), `the hit box is ${FLOOR}px tall`);
   assert(/top:\s*0/.test(hit) && /left:\s*0/.test(hit) && /right:\s*0/.test(hit),
     'anchored to the top edge and the full button width (extending upward leaves the page at scroll-top and hits nothing)');
   assert(!/bottom:\s*0/.test(hit), 'and not stretched to the bottom, which would make it the button height rather than 44');

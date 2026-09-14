@@ -75,8 +75,8 @@ console.log('\n5. the CSS: no grid at 375, 74px tiles, 44px rows');
   assert(/\.sg-phone-strip\s*\{[^}]*overflow-x:\s*auto/.test(phone), 'the strip scrolls sideways — five fit, seven scroll');
   assert(/\.sg-phone-tile\s*\{[^}]*flex:\s*0 0 74px/.test(phone), 'a tile is 74px');
   assert(/\.sg-phone-tile\[aria-selected='true'\]\s*\{[^}]*var\(--accent\)/.test(phone), 'the selected tile carries the accent');
-  assert(/\.sg-phone-row\s*\{[^}]*min-height:\s*44px/.test(phone), 'a row is at least 44px');
-  assert(/\.sg-phone-add\s*\{[^}]*min-height:\s*44px[^}]*min-width:\s*44px/.test(phone) || /\.sg-phone-add\s*\{[^}]*min-width:\s*44px[^}]*min-height:\s*44px/.test(phone), 'the + is 44px');
+  assert(/\.sg-phone-row\s*\{[^}]*min-height:\s*(?:44px|var\(--tap-min\))/.test(phone), 'a row is at least 44px');
+  assert(/\.sg-phone-add\s*\{[^}]*min-height:\s*(?:44px|var\(--tap-min\))[^}]*min-width:\s*(?:44px|var\(--tap-min\))/.test(phone) || /\.sg-phone-add\s*\{[^}]*min-width:\s*(?:44px|var\(--tap-min\))[^}]*min-height:\s*(?:44px|var\(--tap-min\))/.test(phone), 'the + is 44px');
 }
 
 console.log('\n6. the spec');

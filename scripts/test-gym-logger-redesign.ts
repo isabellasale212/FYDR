@@ -121,7 +121,7 @@ console.log('\n6. the header, the footer, and the correction');
 {
   assert(/className="gym-head-row2"/.test(src) && /className="btn-ghost gym-finish-early"/.test(src), 'Finish early sits in the header (10 C1)');
   const early = rule('.gym-finish-early');
-  assert(/border:\s*1px dashed var\(--border-strong\)/.test(early) && /color:\s*var\(--muted\)/.test(early) && /min-height:\s*44px/.test(early), 'dashed, --muted, 44px');
+  assert(/border:\s*1px dashed var\(--border-strong\)/.test(early) && /color:\s*var\(--muted\)/.test(early) && /min-height:\s*(?:44px|var\(--tap-min\))/.test(early), 'dashed, --muted, 44px');
   assert(/aria-label=\{`Finish early · \$\{doneCount\} of \$\{totalSets\} sets`\}/.test(src), 'and says the count');
   assert(/\{!alreadyComplete && !allLogged \? \(/.test(src), 'only while sets remain');
   assert(/allLogged \? \(\s*<div className="subm">[\s\S]{0,400}Finish session/.test(src), '"Finish session" takes the footer once every set is logged');

@@ -617,7 +617,7 @@ a {
   border: 1px solid var(--border);
   border-radius: var(--r);
   padding: var(--sp-10) var(--sp-14);
-  min-height: 44px;
+  min-height: var(--tap-min);
   font-size: var(--fs-12);
   font-weight: var(--w-bold);
   font-family: inherit;
@@ -649,7 +649,7 @@ a {
   padding: var(--sp-4);
   border-radius: var(--r-full);
   background: var(--surf2);
-  min-height: 44px;
+  min-height: var(--tap-min);
 }
 .theme-seg-btn {
   appearance: none;
@@ -759,7 +759,7 @@ a {
   border: none;
   border-radius: var(--r);
   padding: var(--sp-14) var(--sp-20);
-  min-height: 44px;
+  min-height: var(--tap-min);
   font-size: var(--fs-15);
   font-weight: var(--w-bold);
   font-family: inherit;
@@ -786,7 +786,7 @@ a {
   border: 1px solid var(--border);
   border-radius: var(--r);
   padding: var(--sp-10) var(--sp-16);
-  min-height: 44px;
+  min-height: var(--tap-min);
   font-size: var(--fs-13);
   font-weight: var(--w-semi);
   font-family: inherit;
@@ -808,7 +808,7 @@ a {
   border: 1px solid var(--border-strong);
   border-radius: var(--r);
   padding: var(--pad-field);
-  min-height: 44px;
+  min-height: var(--tap-min);
   color: var(--text);
   font-size: var(--fs-15);
   font-family: inherit;
@@ -835,7 +835,7 @@ a {
   font-size: var(--fs-12);
   font-weight: var(--w-semi);
   padding: var(--sp-8) var(--sp-14);
-  min-height: 44px;
+  min-height: var(--tap-min);
   border-radius: var(--r);
   border: 1px solid var(--border);
   color: var(--muted);
@@ -1272,7 +1272,7 @@ table.tbl.lb-table td.r {
 }
 .row-link {
   display: block;
-  min-height: 44px;
+  min-height: var(--tap-min);
   display: flex;
   align-items: center;
 }
@@ -1336,7 +1336,7 @@ table.tbl.lb-table td.r {
    widening the window — under its sentence, 44px. */
 .empty .empty-action {
   display: inline-flex;
-  min-height: 44px;
+  min-height: var(--tap-min);
   margin-top: var(--sp-12);
 }
 .empty h2 {
@@ -1612,7 +1612,7 @@ body:has(.phone) {
      its own chrome. */
   gap: var(--sp-12);
   padding: calc(var(--s-11) + env(safe-area-inset-top, 0px)) 0 var(--s-7);
-  min-height: 44px;
+  min-height: var(--tap-min);
 }
 /* THE HEADER AVATAR IS GONE — ATH-ADULT-02 follow-up, Isabella's decision
    2026-09-11: the greeting is the date line and the name, as the board draws
@@ -1720,7 +1720,7 @@ body:has(.phone) {
   /* The board's "row 44px min" (ATH-ADULT-12): a row with one line on the
      left — a test with no result — landed at 39px from padding alone, and
      the gym rows are links. */
-  min-height: 44px;
+  min-height: var(--tap-min);
 }
 /* §7.3 says "12px/600 faint date". Muted instead, and this is the one place
    this app departs from a §2 literal on purpose.
@@ -2209,7 +2209,7 @@ a.hist-row:focus-visible {
      one row (Larger Text) does the track wrap to 3 + 2 (ATH-ADULT-12
      D1/B3/C9, 2026-09-12). The accent-filled live pill stays (D2 kept). */
   flex: 1 1 auto;
-  min-height: 44px;
+  min-height: var(--tap-min);
   display: inline-flex;
   align-items: center;
   justify-content: center;
@@ -2485,7 +2485,7 @@ a.hist-row:focus-visible {
   gap: var(--sp-12);
   padding: var(--sp-14);
   align-items: start;
-  min-height: 44px;
+  min-height: var(--tap-min);
 }
 .sess .tm {
   font-size: var(--fs-13);
@@ -2515,8 +2515,8 @@ a.hist-row:focus-visible {
   text-align: center;
 }
 .done-check {
-  width: 44px;
-  height: 44px;
+  width: var(--tap-min);
+  height: var(--tap-min);
   border-radius: var(--r-round);
   background: rgb(var(--good-rgb) / 0.2);
   display: flex;
@@ -2566,7 +2566,7 @@ a.hist-row:focus-visible {
   align-items: center;
   gap: var(--sp-14);
   padding: var(--pad-card-y) var(--pad-card-x);
-  min-height: 44px;
+  min-height: var(--tap-min);
   color: inherit;
   text-decoration: none;
 }
@@ -2642,7 +2642,7 @@ a.hist-row:focus-visible {
   font-size: var(--fs-13);
   font-weight: var(--w-semi);
   text-decoration: none;
-  min-height: 44px;
+  min-height: var(--tap-min);
 }
 .avail-line::before {
   content: '';
@@ -2876,8 +2876,8 @@ a.hist-row:focus-visible {
 /* Spec §7.2: a 34px round close, inside 44px of tap area per §8 — the circle
    is what you see, the hit box is what you hit. */
 .sheet-x {
-  width: 44px;
-  min-height: 44px;
+  width: var(--tap-min);
+  min-height: var(--tap-min);
   margin: -5px -5px 0 0;
   border-radius: var(--r-round);
   border: none;
@@ -2951,8 +2951,8 @@ a.hist-row:focus-visible {
 /* 44, not 46, and it matters: the grid above allots 44px tracks, so a 46px
    button overflowed its own column by a pixel each side. Radius 14 per §7.2. */
 .step .btnc {
-  width: 44px;
-  min-height: 44px;
+  width: var(--tap-min);
+  min-height: var(--tap-min);
   border-radius: var(--r);
   border: 1px solid var(--border);
   background: var(--surf);
@@ -3038,8 +3038,8 @@ a.hist-row:focus-visible {
 }
 .dots .opt {
   position: relative;
-  height: 44px;
-  min-height: 44px;
+  height: var(--tap-min);
+  min-height: var(--tap-min);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -3061,7 +3061,7 @@ a.hist-row:focus-visible {
      this is the control the whole 45-second promise runs through, tapped
      twenty-five times a morning with cold hands. */
   width: 100%;
-  min-height: 44px;
+  min-height: var(--tap-min);
   border-radius: var(--r);
   border: 1px solid var(--border);
   /* --surf2, not transparent (ATH-ADULT-03 A9): a key with a fill reads as
@@ -3149,7 +3149,7 @@ a.hist-row:focus-visible {
   display: flex;
   align-items: center;
   justify-content: space-between;
-  min-height: 44px;
+  min-height: var(--tap-min);
 }
 .disclose summary::-webkit-details-marker {
   display: none;
@@ -3242,7 +3242,7 @@ a.hist-row:focus-visible {
   border: 1px dashed var(--border-strong);
   background: none;
   color: var(--muted);
-  min-height: 44px;
+  min-height: var(--tap-min);
 }
 
 /* -------- the after-submit states, ATH-ADULT-04 / 06 / 08 (2026-09-12) --------
@@ -3387,7 +3387,7 @@ a.hist-row:focus-visible {
   align-items: center;
   justify-content: space-between;
   gap: var(--sp-12);
-  min-height: 44px;
+  min-height: var(--tap-min);
   cursor: pointer;
   list-style: none;
 }
@@ -4004,7 +4004,7 @@ a.hist-row:focus-visible {
 }
 .gl-strip-link {
   flex: none;
-  min-height: 44px;
+  min-height: var(--tap-min);
   padding: 0 var(--sp-4);
   border: none;
   background: none;
@@ -5078,8 +5078,8 @@ img.me-avatar {
 .reorder-btn {
   /* PATTERN-S8 A6 (2026-09-13): 44×44, from 28×22 — every control on the
      board is at least 44px, the reorder arrows included. */
-  width: 44px;
-  min-height: 44px;
+  width: var(--tap-min);
+  min-height: var(--tap-min);
   padding: 0;
   border: 1px solid var(--border);
   border-radius: var(--r);
@@ -5338,7 +5338,7 @@ img.me-avatar {
   max-width: 360px;
 }
 .um-filters .field {
-  min-height: 44px;
+  min-height: var(--tap-min);
 }
 .um-summary {
   margin: 0;
@@ -5425,7 +5425,7 @@ img.me-avatar {
   margin-top: var(--sp-12);
 }
 .um-change {
-  min-height: 44px;
+  min-height: var(--tap-min);
 }
 /* PATTERN-S8 C5 (2026-09-13): a group's rename and archive say what they
    touch before the button — the rename line inside the edit popover, the
@@ -5482,7 +5482,7 @@ img.me-avatar {
   display: none;
 }
 .audit-filters-open {
-  min-height: 44px;
+  min-height: var(--tap-min);
 }
 .audit-sheet-fields {
   display: grid;
@@ -5492,7 +5492,7 @@ img.me-avatar {
   display: flex;
   align-items: center;
   gap: var(--sp-8);
-  min-height: 44px;
+  min-height: var(--tap-min);
   font-size: var(--fs-13);
 }
 .audit-sheet-alltime input {
@@ -5559,7 +5559,7 @@ img.me-avatar {
 }
 .dlg-actions .btn-primary,
 .dlg-actions .btn-ghost {
-  min-height: 44px;
+  min-height: var(--tap-min);
   overflow-wrap: anywhere;
 }
 .dlg-lines {
@@ -5673,7 +5673,7 @@ img.me-avatar {
   align-items: center;
 }
 .held-pick {
-  min-height: 44px;
+  min-height: var(--tap-min);
   min-width: 200px;
 }
 @media (max-width: 767px) {
@@ -5756,7 +5756,7 @@ img.me-avatar {
   color: var(--muted);
 }
 .setup-cta {
-  min-height: 44px;
+  min-height: var(--tap-min);
   white-space: nowrap;
 }
 .setup-matters {
@@ -5775,7 +5775,7 @@ img.me-avatar {
   border-inline-start: 3px solid var(--warn);
 }
 .setup-line .btn-ghost {
-  min-height: 44px;
+  min-height: var(--tap-min);
 }
 @media (max-width: 767px) {
   .setup-step {
@@ -5798,7 +5798,7 @@ img.me-avatar {
   border-top: 1px solid var(--hair);
 }
 .set-logout {
-  min-height: 44px;
+  min-height: var(--tap-min);
   color: var(--bad-text);
 }
 .set-logout-note {
@@ -7118,7 +7118,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   display: flex;
   flex-direction: column;
   align-items: flex-start;
-  min-height: 44px;
+  min-height: var(--tap-min);
   color: inherit;
   text-decoration: none;
 }
@@ -7186,7 +7186,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   flex-direction: column;
   gap: var(--sp-2);
   padding: var(--sp-8) 0;
-  min-height: 44px;
+  min-height: var(--tap-min);
   border-top: 1px solid var(--hair);
   color: inherit;
   text-decoration: none;
@@ -9386,7 +9386,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   margin: 0;
 }
 .sg-failed-retry {
-  min-height: 44px;
+  min-height: var(--tap-min);
 }
 .sg-block[data-removed='true'] {
   opacity: 0.65;
@@ -9595,7 +9595,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .sg-phone-tile {
   flex: 0 0 74px;
-  min-height: 44px;
+  min-height: var(--tap-min);
   scroll-snap-align: start;
   display: flex;
   flex-direction: column;
@@ -9650,8 +9650,8 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   color: var(--muted);
 }
 .sg-phone-add {
-  min-width: 44px;
-  min-height: 44px;
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
   justify-content: center;
   font-size: var(--fs-18);
   line-height: 1;
@@ -9670,7 +9670,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   grid-template-columns: auto minmax(0, 1fr) auto;
   gap: var(--sp-12);
   align-items: center;
-  min-height: 44px;
+  min-height: var(--tap-min);
   padding: var(--sp-12) var(--sp-14);
   border-top: 1px solid var(--hair);
   color: inherit;
@@ -9728,7 +9728,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   display: flex;
   align-items: center;
   gap: var(--sp-8);
-  min-height: 44px;
+  min-height: var(--tap-min);
   margin-top: var(--sp-10);
   padding: 0 var(--sp-14);
   font-size: var(--fs-13);
@@ -10083,8 +10083,8 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   position: absolute;
   inset-block: 0;
   inset-inline-end: 0;
-  width: 44px;
-  min-height: 44px;
+  width: var(--tap-min);
+  min-height: var(--tap-min);
   display: grid;
   place-items: center;
   background: none;
@@ -10944,7 +10944,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   .main table.tbl.roster td a.nm {
     display: inline-flex;
     align-items: center;
-    min-height: 44px;
+    min-height: var(--tap-min);
     margin-block: 0;
     padding-block: 0;
     font-size: var(--fs-16);
@@ -11063,7 +11063,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   justify-content: space-between;
   gap: var(--sp-12);
   width: 100%;
-  min-height: 44px;
+  min-height: var(--tap-min);
   padding: var(--sp-4) 0;
   border: 0;
   background: none;
@@ -11186,7 +11186,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   top: 0;
   left: 0;
   right: 0;
-  height: 44px;
+  height: var(--tap-min);
 }
 /* §0w's other case: an inline link that is the only control on its screen.
    Vertical padding on an INLINE element changes no line box and paints
@@ -12435,7 +12435,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .exlib-search-input {
   width: 100%;
   min-width: 0;
-  min-height: 44px;
+  min-height: var(--tap-min);
   padding: var(--sp-10) var(--sp-14);
   /* Clears the absolutely-positioned search icon; sized to the icon, not to
      the ramp. A snap to 32 would overlap it. Layout constant. */
@@ -12474,7 +12474,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   gap: var(--sp-10);
   width: 360px;
   max-width: 100%;
-  min-height: 44px;
+  min-height: var(--tap-min);
   padding: 0 var(--sp-16);
   border: 1px solid var(--border-strong);
   border-radius: var(--r);
@@ -13452,7 +13452,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  min-height: 44px;
+  min-height: var(--tap-min);
   padding: 0 var(--sp-12);
 }
 /* The refusal as the banner shape (.banner's own radius and inset) with its
@@ -14156,7 +14156,7 @@ main:has(.rhead) > .back-btn > :first-child {
   gap: var(--sp-6);
 }
 .rhead-period-nav .rhead-btn {
-  min-height: 44px;
+  min-height: var(--tap-min);
 }
 .rhead-period-note {
   margin: 0;
@@ -14411,7 +14411,7 @@ a.hist-row:active { background: var(--surf-sunken); }
     align-items: center;
     justify-content: center;
     gap: var(--sp-6);
-    min-height: 44px;
+    min-height: var(--tap-min);
     padding: var(--sp-6) 0;
     border: none;
     background: none;
@@ -14568,10 +14568,10 @@ a.hist-row:active { background: var(--surf-sunken); }
   .main .lbw-segmented button,
   .main .theme-seg-btn,
   .main .reorder-btn {
-    min-height: 44px;
+    min-height: var(--tap-min);
   }
   .main .reorder-btn {
-    min-width: 44px;
+    min-width: var(--tap-min);
   }
   /* §0au (2026-09-12), the review's measurements on the built shell: the
      class list above missed every control that is a plain <button> (the
@@ -14583,7 +14583,7 @@ a.hist-row:active { background: var(--surf-sunken); }
      view tabs, chips and segment by class; and inline links on a 20px line
      so 12 + 20 + 12 clears the floor. */
   .main button:not(.sg-block) {
-    min-height: 44px;
+    min-height: var(--tap-min);
   }
   /* PATTERN-S8 A1: the one control the board draws taller than the floor —
      Log out at 48px on a phone. After the floor, same specificity, so it
@@ -14592,14 +14592,14 @@ a.hist-row:active { background: var(--surf-sunken); }
     min-height: 48px;
   }
   .main .sg-weeknav-btn {
-    min-width: 44px;
-    min-height: 44px;
+    min-width: var(--tap-min);
+    min-height: var(--tap-min);
   }
   .main .sg-viewtab,
   .main .squad-chip,
   .main .sg-segment,
   .main .btn-ghost-pill {
-    min-height: 44px;
+    min-height: var(--tap-min);
   }
   .main a.tiny,
   .main .pp-link,
@@ -14655,7 +14655,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   display: flex;
   justify-content: center;
   width: 100%;
-  min-height: 44px;
+  min-height: var(--tap-min);
   margin-top: var(--sp-12);
 }
 /* PATTERN-S6 (12 Sept 2026): the outbox's one status region on Today and
@@ -14787,7 +14787,7 @@ a.hist-row:active { background: var(--surf-sunken); }
 .pb-reads-only {
   display: inline-flex;
   align-items: center;
-  min-height: 44px;
+  min-height: var(--tap-min);
   color: var(--muted);
   font-weight: var(--w-num);
 }

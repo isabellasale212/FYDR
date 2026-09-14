@@ -66,7 +66,7 @@ console.log('\n4. the panel and the phone');
   const css = strip(read('src/styles/base.css'));
   assert(/\.um-row\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\) auto auto/.test(css), 'desktop: name, chips, status in one row');
   assert(/@media \(max-width: 767px\) \{[^}]*\.um-row\s*\{[^}]*grid-template-columns: minmax\(0, 1fr\)/.test(css), 'phone: the row stacks into a card, nothing scrolls sideways');
-  assert(/\.um-filters\s*\{/.test(css) && /\.um-filters \.field\s*\{[^}]*min-height: 44px/.test(css), 'the search field is 44px');
+  assert(/\.um-filters\s*\{/.test(css) && /\.um-filters \.field\s*\{[^}]*min-height: (?:44px|var\(--tap-min\))/.test(css), 'the search field is 44px');
   assert(/search by name or email/i.test(read('docs/screens/48-users.md')) && /card/i.test(read('docs/screens/48-users.md')), 'the spec says so');
 }
 

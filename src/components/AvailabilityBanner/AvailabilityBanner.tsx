@@ -172,7 +172,7 @@ export function AvailabilityBanner({
             answered in full, the ladder, the medical detail. The card stays
             as it was; the link is its last line. */}
         {status !== 'available' ? (
-          <Link href="/me/status" className="s" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, color: 'inherit', textDecoration: 'underline' }} data-status-link>
+          <Link href="/me/status" className="s" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 'var(--tap-min)', color: 'inherit', textDecoration: 'underline' }} data-status-link>
             What this means for you ›
           </Link>
         ) : null}

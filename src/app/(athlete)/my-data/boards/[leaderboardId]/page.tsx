@@ -48,7 +48,7 @@ export default async function MyBoardDetailPage({
             <span aria-hidden="true">←</span>
           </Link>
           <h1 className="t">Leaderboard</h1>
-          <span style={{ width: 44 }} />
+          <span style={{ width: 'var(--tap-min)' }} />
         </div>
         <div className="empty">
           <h2>This leaderboard is not available</h2>
@@ -88,7 +88,7 @@ export default async function MyBoardDetailPage({
             <span aria-hidden="true">←</span>
           </Link>
           <h1 className="t">Leaderboard</h1>
-          <span style={{ width: 44 }} />
+          <span style={{ width: 'var(--tap-min)' }} />
         </div>
         <div className="empty">
           <h2>Not on your club&rsquo;s plan</h2>
@@ -117,7 +117,7 @@ export default async function MyBoardDetailPage({
             <span aria-hidden="true">←</span>
           </Link>
           <h1 className="t">Leaderboard</h1>
-          <span style={{ width: 44 }} />
+          <span style={{ width: 'var(--tap-min)' }} />
         </div>
         <div className="empty">
           <h2>This leaderboard is not available</h2>
@@ -145,7 +145,7 @@ export default async function MyBoardDetailPage({
           <span aria-hidden="true">←</span>
         </Link>
         <h1 className="t">{board.name}</h1>
-        <span style={{ width: 44 }} />
+        <span style={{ width: 'var(--tap-min)' }} />
       </div>
 
       <p className="tiny" style={{ marginBottom: 'var(--sp-10)' }}>

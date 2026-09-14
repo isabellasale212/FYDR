@@ -76,7 +76,13 @@ console.log('\nwhat this flow did NOT change (recorded, not built)');
   assert(/'training'/.test(bar) && /'nutrition'/.test(bar), 'five segments (D1 reversed 2026-09-12; pinned in test-my-data-redesign.ts)');
   assert(rule(".rd-delta[data-dir='up']") === '', 'the delta is no longer coloured (D3 reversed 2026-09-12; pinned in test-my-data-redesign.ts)');
   assert(/BLANK/.test(page), "the training table keeps the app-wide table blank until its own rebuild (C2)");
-  assert(!/--chart-h|--chart-stroke|--blue-200|--t-num-hero/.test(read('src/styles/tokens.css')), 'no new token (B1, B2)');
+  /* B1's chart tokens and the hero numeral size are still not tokens. B2's
+     --blue-200 IS one since 15 Sept 2026 — System A's blue ramp arrived with
+     the adoption decision (docs/decisions/design-system-adoption.md), which
+     is a different decision from B2: the gym weeks were built on
+     --wash-accent-strong and still read it. --t-num-hero is layer three's. */
+  assert(!/--chart-h|--chart-stroke|--t-num-hero/.test(read('src/styles/tokens.css')), 'no new token for B1 or the hero numeral (B1, B2 as built)');
+  assert(/--blue-200:\s*#b3c6e6/.test(read('src/styles/tokens.css')), '--blue-200 exists as System A\'s ramp step, not as B2\'s proposal');
   /* B2, built 2026-09-13 once D7 was accepted, where a bar chart exists:
      the gym weeks — prior completed weeks in the wash (--wash-accent-strong),
      the latest in the accent. The readiness chart on this screen is a line

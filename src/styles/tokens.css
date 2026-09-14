@@ -410,6 +410,122 @@
   --o-disabled: 0.45;
   --o-gated: 0.62;
   --blur: 14px;
+
+  /* =====================================================================
+     SYSTEM A, 15 Sept 2026 — the families the code lacked, brought across
+     from docs/design-system/tokens/colors.css and shape.css exactly.
+
+     THEME-NEUTRAL, ON INSTRUCTION. System A's dark block covers eleven
+     tokens and none of these; Isabella's rule for tonight is that a token
+     arriving with no dark value is left theme-neutral and no dark value is
+     invented for it. So every value here renders the same in dark as in
+     light. NOTHING IN base.css READS THEM YET except the two heat ramps
+     (.tr-heat, wired in their own commit) — the rest are available to new
+     work and to layer three. Dark values, where they are needed, are
+     Isabella's to rule on from the dark-mode render.
+
+     Composed where this file composes: the pill fills and the rings are
+     written as rgb(var(--x-rgb) / a) rather than restating a hex (§4.5), so
+     in light they are byte-for-byte System A's rgba() and in dark they
+     follow the frozen dark triplets. Not a dark design; the same rule the
+     washes above already follow. ===================================== */
+
+  /* ---- blue ramp: one hue line, anchored on --accent (500) and
+         --brand-navy (900). Text on 50–300 is --text; on 400–900 it is
+         full-opacity #fff. ---- */
+  --blue-50: #eff3fb;
+  --blue-100: #d9e3f3;
+  --blue-200: #b3c6e6;
+  --blue-300: #7d9ed8;
+  --blue-400: #3465bd;
+  --blue-500: #17489b;
+  --blue-600: #16407f;
+  --blue-700: #153769;
+  --blue-800: #172e54;
+  --blue-900: #182241;
+
+  /* ---- text on the Tint 100 emphasised card (§4b) and on the white +
+         accent-ring selected card (§4c) ---- */
+  --on-tint-label: #40608a;
+  --on-tint-value: #101f3d;
+  --on-tint-meta: #5a7595;
+  --on-sel-label: #5b7590;
+  --on-sel-meta: #7e93ab;
+
+  /* ---- text-on-tint: a semantic colour is never used as text on white.
+         The -meta values are the SECOND line on a tinted fill — a second
+         line differs by colour and size, never by alpha. The existing
+         --good-text / --warn-text / --bad-text / --warn-pill-text stay the
+         theme-split names base.css reads; these are System A's names for
+         the same inks, single-valued. ---- */
+  --on-good: #0d5f75;
+  --on-good-strong: #0d7a96;
+  --on-good-meta: #17607a;
+  --on-warn: #6b4708;
+  --on-warn-strong: #b07d0a;
+  --on-warn-meta: #7a5a1a;
+  --on-bad: #8a2418;
+  --on-bad-meta: #96382c;
+  --on-highlight: #3a2e00;
+
+  /* ---- pill fills, paired with the --on-* colours above ---- */
+  --pill-good: rgb(var(--good-rgb) / 0.22);
+  --pill-warn: rgb(var(--warn-rgb) / 0.2);
+  --pill-bad: rgb(var(--bad-rgb) / 0.16);
+  --pill-accent: rgb(var(--accent-rgb) / 0.1);
+  --pill-highlight: rgb(var(--highlight-rgb) / 0.22);
+  --wash-sticky-bad: rgb(252, 235, 233);
+
+  /* ---- five-band heat ramp, the training report. All five bands are
+         LIGHT tints carrying one dark ink, #0f3557 — 11.9:1 on band 1 and
+         6.8:1 on band 5. Hue does the separating, not lightness. The
+         per-band --heat-ink-* names exist so markup keeps resolving. ---- */
+  --heat-1: #f4fbfd;
+  --heat-2: #dff2fb;
+  --heat-3: #c6e6f7;
+  --heat-4: #aed6f2;
+  --heat-5: #94c2ec;
+  --heat-ink-1: #0f3557;
+  --heat-ink-2: #0f3557;
+  --heat-ink-3: #0f3557;
+  --heat-ink-4: #0f3557;
+  --heat-ink-5: #0f3557;
+  --heat-hie: #e96da8;
+  --heat-hie-rgb: 233 109 168; /* the hue's triplet, this file's §4.5 convention */
+  /* ---- percentage bands (%max, completion, compliance): five LIGHT cyan
+         steps carrying one dark ink, #0a5265 — 5.3:1 on the darkest, 7.9:1
+         on the lightest. Replaces the dark green ramp. ---- */
+  --heat-pct-1: #f2fbfe;
+  --heat-pct-2: #ddf4fd;
+  --heat-pct-3: #c3ebfb;
+  --heat-pct-4: #a5e0f8;
+  --heat-pct-5: #86d5f5;
+  --heat-pct-text: #0a5265;
+
+  /* ---- named lines, so no component reaches for a raw rgba() again ---- */
+  --line-strong: rgba(23, 40, 80, 0.2);
+  --line-dashed: rgba(23, 40, 80, 0.18);
+  --track-off: rgba(23, 40, 80, 0.16);
+  --scrim: rgba(18, 23, 34, 0.38);
+
+  /* ---- rings (shape.css). Where a card carries both, the ring is listed
+         FIRST: box-shadow: var(--ring-select), var(--shadow). ---- */
+  --ring-select: 0 0 0 3px rgb(var(--accent-rgb) / 0.16);
+  --ring-action: 0 0 0 4px rgb(var(--accent-rgb) / 0.18);
+  --ring-action-hover: 0 0 0 5px rgb(var(--accent-rgb) / 0.24);
+  --ring-dot: 0 0 0 4px rgb(var(--accent-rgb) / 0.22);
+  --shadow-knob: 0 1px 3px rgba(23, 40, 80, 0.26);
+  /* A deeper raised level, for a plinth carrying a headline number. Cards
+     still own --shadow and nothing else may use this to out-rank them. */
+  --shadow-raised: 0 2px 4px rgba(23, 40, 80, 0.14), 0 8px 18px -6px rgba(23, 40, 80, 0.28);
+
+  /* ---- the sticky bars' blur grounds, and the page ground: there is no
+         wash. --page-wash is `none` so `background: var(--page-wash),
+         var(--bg)` markup keeps resolving; do not give it a value. ---- */
+  --bar-bg: rgba(225, 233, 246, 0.85);
+  --tabbar-bg: rgba(255, 255, 255, 0.94);
+  --page-wash: none;
+  --selection: rgba(51, 182, 255, 0.35);
 }
 
 /* ---------------------------------------------------------------------------

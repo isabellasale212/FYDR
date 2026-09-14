@@ -1,7 +1,8 @@
 # System A adoption — the finished build, after only
 
-**Rendered 15 September 2026 at commit `9afe226` (layers one and two of
-`docs/decisions/design-system-adoption.md`; layer three not built).** One
+**Rendered 15 September 2026 at commit `b36e2e8` (layers one, two and three of
+`docs/decisions/design-system-adoption.md`, the two contrast context inks and
+the heat ramps' dark values).** One
 screenshot per screen, width and theme — after only; the before-and-after
 pairs used for verification are not here. Full page, clipped at 2400px.
 Nothing is deployed from this folder; it is the set to review before
@@ -14,10 +15,10 @@ the plan page); 41–50 the athlete app as Dan Okonkwo; 61 the sign-in page
 with no account. Each screen is at 1440 and 390, light and dark: 42 screens,
 168 files.
 
-**The dark theme is frozen** — not one dark colour value changed. Diffed
-against the same screens rendered before layer one, dark differs only at
-the corners (layer two) and on the GPS report's heat cells, which are the
-theme-neutral tints listed in the build report for Isabella to rule on.
+**The dark theme is frozen** with one deliberate exception: the GPS report's
+two heat ramps took dark values on Isabella's ruling. Diffed against the same
+screens rendered before layer one, dark differs only at the corners (layer
+two) and on those heat cells.
 
 | NN | Screen | Route |
 |---|---|---|

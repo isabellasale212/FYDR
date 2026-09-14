@@ -6,6 +6,7 @@ import { SessionCard } from '@/components/SessionCard/SessionCard';
 import { fetchFixtureDetail, fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { enumLabel, formatLongDate, formatTime } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { fetchUnlinkedMatchSessions } from '@/lib/queries/matchParticipation';
 import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Fixture · Fydr' };
@@ -23,10 +24,13 @@ const STATUS_PILL: Record<string, string> = {
  *  20-route-map.md line 107. */
 export default async function FixtureDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ fixtureId: string }>;
+  searchParams: Promise<{ attach?: string }>;
 }) {
   const { fixtureId } = await params;
+  const sp = await searchParams;
   const { db, orgId, claims, timezone } = await requireStaff();
   /* Not a redirect, unlike /schedule/fixtures/new. A match in the calendar is
      information every staff role may read — a medic wants to know when the game
@@ -36,6 +40,14 @@ export default async function FixtureDetailPage({
 
   const fixture = await fetchFixtureDetail(db, orgId, fixtureId, timezone);
   if (!fixture) notFound();
+  /* 0127: the post-match sheet's rows for the door's count, and the club's
+     unlinked match sessions for the attach action (the orphan's answer). */
+  const [sheetRows, unlinked] = await Promise.all([
+    db.from('match_participation').select('athlete_id, minutes').eq('org_id', orgId).eq('fixture_id', fixtureId),
+    canEdit && fixture.weekSessions.every((s) => s.session_type !== 'match') ? fetchUnlinkedMatchSessions(db, orgId) : Promise.resolve([]),
+  ]);
+  const sheetCount = sheetRows.data?.length ?? 0;
+  const sheetMinutes = (sheetRows.data ?? []).filter((r) => r.minutes !== null).length;
 
   // MD-n per session, re-anchored to EACH session's own real calendar week
   // (anchorMdOffsetsToWeek, format.ts) rather than the raw stored md_offset
@@ -92,6 +104,59 @@ export default async function FixtureDetailPage({
       <div style={{ marginTop: 'var(--sp-14)' }}>
         {canEdit ? <FixtureActions orgId={orgId} fixture={fixture} /> : null}
       </div>
+
+      {/* The post-match sheet (0127): the fixture is the match, so the sheet
+          lives here. Every staff role reads the count and the report; the
+          coach and the sport scientist write. */}
+      <section className="card" style={{ marginTop: 'var(--sp-14)' }} aria-labelledby="sheet-door" data-sheet={sheetCount > 0 ? 'some' : 'none'}>
+        <h2 className="card-title" id="sheet-door">
+          Post-match sheet
+        </h2>
+        <p className="tiny" style={{ marginTop: 'var(--sp-2)' }}>
+          {sheetCount === 0
+            ? 'Nothing recorded against this fixture yet: who was selected, who started, who came on, and minutes played.'
+            : `${sheetCount} athlete${sheetCount === 1 ? '' : 's'} selected · minutes recorded for ${sheetMinutes} of ${sheetCount}.`}
+        </p>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-10)', flexWrap: 'wrap' }}>
+          {canEdit ? (
+            <Link href={`/schedule/fixtures/${fixtureId}/participation`} className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }} data-sheet-link>
+              {sheetCount === 0 ? 'Fill in the sheet' : 'Edit the sheet'}
+            </Link>
+          ) : null}
+          <Link href={`/reports/match?fixture=${fixtureId}`} className="btn-ghost" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+            Match report
+          </Link>
+        </div>
+      </section>
+
+      {/* The attach action: a fixture with no match session of its own may
+          take an existing unlinked one (a match session created before the
+          fixture existed). An action, never a backfill; audited as a session
+          update. Offered only while there is something to attach. */}
+      {canEdit && unlinked.length > 0 ? (
+        <section className="card" style={{ marginTop: 'var(--sp-14)' }} aria-labelledby="attach-title" data-attach>
+          <h2 className="card-title" id="attach-title">
+            Attach an existing match session
+          </h2>
+          <p className="tiny" style={{ marginTop: 'var(--sp-2)' }}>
+            This fixture has no match session anchored to it, and the club has {unlinked.length} match session{unlinked.length === 1 ? '' : 's'} with no fixture. Attaching one links its ratings and attendance to this match.
+          </p>
+          {sp.attach === 'done' ? <p className="tiny" role="status">Attached.</p> : sp.attach === 'failed' ? <p className="form-error" role="alert">Not attached. The session may already be linked, or attaching belongs to the coach and the sport scientist.</p> : null}
+          <form method="post" action={`/schedule/fixtures/${fixtureId}/attach`} style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center', marginTop: 'var(--sp-10)', flexWrap: 'wrap' }}>
+            <label className="visually-hidden" htmlFor="attach-session">Match session to attach</label>
+            <select id="attach-session" name="session" className="field" style={{ minWidth: 260 }}>
+              {unlinked.map((u) => (
+                <option key={u.id} value={u.id}>
+                  {u.title} · {formatLongDate(u.starts_at, timezone)}
+                </option>
+              ))}
+            </select>
+            <button type="submit" className="btn-ghost">
+              Attach to this fixture
+            </button>
+          </form>
+        </section>
+      ) : null}
 
       <section style={{ marginTop: 'var(--sp-14)' }} aria-labelledby="fixture-sessions">
         <p className="sect" id="fixture-sessions" style={{ marginBottom: 'var(--sp-8)' }}>

@@ -275,7 +275,9 @@ export const REPORT_ACCESS = [
  *  was two — `gps` is the per-session GPS board (premium; the key was
  *  `training` until then, and audit rows before that date say so) and
  *  `trainingLoad` is the RPE × minutes report, every club. */
-export type ReportKey = 'compliance' | 'injuries' | 'gps' | 'trainingLoad' | 'athlete' | 'squad' | 'testing';
+/** Eight since 15 September 2026: `match` is the match report — the
+ *  post-match sheet read as a report, every club (0127). */
+export type ReportKey = 'compliance' | 'injuries' | 'gps' | 'trainingLoad' | 'athlete' | 'squad' | 'testing' | 'match';
 
 export const REPORT_VISIBILITY: Record<ReportKey, readonly AppRole[]> = {
   compliance: ['sport_scientist', 'coach', 'medic', 'strength_conditioning', 'nutritionist'],
@@ -291,6 +293,7 @@ export const REPORT_VISIBILITY: Record<ReportKey, readonly AppRole[]> = {
      ever regenerated, this row is the one to check rather than trust. */
   squad: REPORT_ACCESS,
   testing: REPORT_ACCESS,
+  match: REPORT_ACCESS,
 };
 
 /** §3.4 Analytics and Build an analytics view: V/VEC for the sport scientist and

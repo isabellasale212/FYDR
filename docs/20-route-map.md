@@ -123,6 +123,8 @@ Deep links arriving from push are shell namespaced (`/staff/...`, `/athlete/...`
 | 28 | Reports | `/reports` | `screens/reports.md` | staff web, staff phone | coach, medical, admin (aggregate) | none |
 | 37 | GPS report *(was Training report; the catalogue addendum, 13 Sept 2026)* | `/reports/gps` — `/reports/training` redirects here, query and all | `screens/23-gps-report.md` | staff web | coach, medical | `/reports` |
 | 65 | Training load report *(the seventh, every club; 13 Sept 2026)* | `/reports/training-load` | `screens/65-training-load-report.md` | staff web, staff phone | coach, medical, S&C, sport scientist | `/reports` |
+| 67 | Match report *(the eighth, every club; 15 Sept 2026)* | `/reports/match` | `screens/67-match-report.md` | staff web, staff phone | coach, medical, S&C, sport scientist | `/reports` |
+| 11a | Post-match sheet *(15 Sept 2026)* | `/schedule/fixtures/:fixtureId/participation` | `screens/11-fixture-detail.md` | staff web, staff phone | coach, sport scientist | `/schedule/fixtures/:fixtureId` |
 | 25 | Testing results | `/reports/testing` | `screens/testing.md` | staff web | coach, medical | `/reports` |
 | 28 | Report schedules | `/reports/schedules` | `screens/reports.md` | staff web | coach, medical | `/reports` |
 | 28 | Report viewer | `/reports/runs/:runId` | `screens/reports.md` | staff web, staff phone | coach, medical, admin (aggregate) | `/reports` |

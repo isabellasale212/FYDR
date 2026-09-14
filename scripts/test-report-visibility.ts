@@ -32,6 +32,9 @@ const EXPECTED: Record<ReportKey, string[]> = {
   athlete:    ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
   squad:      ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
   testing:    ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
+  /* The eighth (15 Sept 2026): the post-match sheet read as a report. The
+     same set as the other squad reports; the nutritionist has no row on it. */
+  match:      ['sport_scientist', 'coach', 'medic', 'strength_conditioning'],
 };
 
 console.log('the grid says what the decision says');

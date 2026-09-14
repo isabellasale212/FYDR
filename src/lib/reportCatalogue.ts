@@ -12,10 +12,15 @@
  * is the GPS report (premium, `gps`, /reports/gps) and the RPE × minutes
  * Training load report (every club) is the seventh, `trainingLoad`,
  * /reports/training-load, with its own off state for a club that does not
- * collect RPE. The match board stays without a sentence: kept (decision
- * batch), its sentence not yet written. */
+ * collect RPE. The GPS match board (`/reports/gps?mode=match`) stays without a
+ * sentence. The MATCH REPORT — the post-match sheet read as a report, the
+ * eighth, every club, /reports/match — has its own sentence, confirmed by
+ * Isabella in docs/decisions/decision-batch-2026-09-13.md ("The match report,
+ * both halves approved"), which supersedes the source's draft; it lives in
+ * lib/matchReport.ts and is mirrored here. */
 
 import type { ReportKey } from '@/lib/access';
+import { MATCH_DEFINITION } from '@/lib/matchReport';
 
 export const REPORT_DEFINITIONS: Record<ReportKey, string | null> = {
   compliance:
@@ -29,6 +34,7 @@ export const REPORT_DEFINITIONS: Record<ReportKey, string | null> = {
   squad: 'The week Monday to Sunday, club local time. Each section states its own denominator.',
   testing:
     'The most recent result for each test inside the period. A test with no result in the window is not shown as zero, and an athlete who has never been assigned a test does not appear for it.',
+  match: MATCH_DEFINITION,
 };
 
 /** The seventh report (the addendum): RPE × minutes, every club. The same
@@ -44,9 +50,13 @@ export const TRAINING_LOAD_OFF_STATE =
 
 /** The sentence for a report, or null when it has none yet. The athlete
  *  report's is a template (see athleteDefinition). */
-export function reportDefinition(key: Exclude<ReportKey, 'athlete'>): string | null {
+export function reportDefinition(key: Exclude<ReportKey, 'athlete' | 'match'>): string | null {
   return REPORT_DEFINITIONS[key];
 }
+
+/** The match report's sentence, resolved for one fixture — "Everything
+ *  recorded against v Harlequins, Sat 18 Jul: …" (lib/matchReport). */
+export { matchDefinition } from '@/lib/matchReport';
 
 /** The athlete report's sentence, resolved for one athlete and one period —
  *  "Everything recorded for Dan Okonkwo between Mon 17 Aug and Sun 13 Sept. …" */

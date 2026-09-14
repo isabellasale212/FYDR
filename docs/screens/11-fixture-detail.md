@@ -42,6 +42,28 @@ home, away or neutral, and the competition.
 **The fixture's details**, editable in place: opponent, date, kick-off, venue,
 home or away, competition and importance.
 
+**The post-match sheet card** (15 September 2026, migration 0127): what is
+recorded against this fixture — "Nothing recorded against this fixture yet:
+who was selected, who started, who came on, and minutes played." or "23
+athletes selected · minutes recorded for 13 of 23." — with **Fill in the sheet
+/ Edit the sheet** (coach and sport scientist) and **Match report** (every staff
+role). The sheet is its own screen, `/schedule/fixtures/[fixtureId]/participation`:
+one row per athlete on the roster with availability as it stood at kick-off
+(read, not edited), a Selection control (Not selected · Started · Came on ·
+Selected, not used) and a Minutes field (blank = not recorded; 0 is a real
+value; 0 to 120). One button, **Save the sheet**, writes every row: an athlete
+set back to "Not selected" is removed from the sheet, and each change is
+audited (`match_participation.set` / `.remove`). Minutes on an athlete not
+marked selected are refused in words. Nothing else — no positions, no events,
+no score.
+
+**Attach an existing match session** (the orphan's answer — an attach action,
+never a backfill): shown to the coach and the sport scientist only while this
+fixture has no match session anchored to it and the club has a match session
+with no fixture. A select and one button; sets `sessions.fixture_id`, audited
+as a session update. The same action sits on an unlinked match session's own
+detail (`08-session-detail.md`), offering the fixtures within a week of it.
+
 **The sessions built around it**, each shown as a card with its matchday label,
 so the week reads as MD-3, MD-2, MD-1, MD. This is the point of separating
 fixtures from sessions: the match is one thing, the week around it is another,
@@ -71,6 +93,10 @@ registry entry.
 | Postpone | Actions | Marks the fixture postponed. It stays on the schedule | Stays here | Sets the fixture's status | Coach and sport scientist | None | Hidden when already in that status |
 | Cancel fixture | Actions | Marks the fixture cancelled. It stays on the schedule | Stays here | Sets the fixture's status | Coach and sport scientist | None | Hidden when already cancelled |
 | Mark as played | Actions | Records that the match happened | Stays here | Sets the fixture's status | Coach and sport scientist | None | Hidden when already played |
+| Fill in the sheet / Edit the sheet | Post-match sheet card | Opens the sheet | `/schedule/fixtures/[fixtureId]/participation` | Nothing | Coach and sport scientist | None | Other roles |
+| Save the sheet | The sheet | Writes every row of the sheet | Stays there, with the outcome in words | `match_participation` rows (upsert, remove) and an audit row per change | Coach and sport scientist; the database refuses everyone else | None — every row is on the screen and each change is audited | Never |
+| Match report | Post-match sheet card | Opens the report for this fixture | `/reports/match?fixture=` | Nothing | Any report role | None | Never |
+| Attach to this fixture | Attach card | Links an unlinked match session to this fixture | Stays here, `?attach=done` | `sessions.fixture_id` and a session audit row | Coach and sport scientist | None | A match session is already anchored, or none is unlinked |
 | A session card | Sessions list | Opens that session | `/schedule/[sessionId]` | Nothing | Any staff | None | Never |
 | Schedule breadcrumb | Header | Back to the week | `/schedule` | Nothing | Any staff | None | Never |
 

@@ -7,6 +7,7 @@ import { fetchGroups } from '@/lib/queries/groups';
 import { fetchSessionDetail, fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { dateInTz, enumLabel, formatLongDate, formatTime, mdLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
+import { fetchFixturesNear } from '@/lib/queries/matchParticipation';
 import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Session · Fydr' };
@@ -18,14 +19,22 @@ export const metadata = { title: 'Session · Fydr' };
  *  route-map-wins-on-naming rule. */
 export default async function SessionDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ sessionId: string }>;
+  searchParams: Promise<{ attach?: string }>;
 }) {
   const { sessionId } = await params;
+  const sp = await searchParams;
   const { db, orgId, timezone, claims } = await requireStaff();
 
   const session = await fetchSessionDetail(db, orgId, sessionId);
   if (!session) notFound();
+  /* 0127: an unlinked match session — the orphan — may be attached to a
+     fixture near its date (an action, never a backfill). Offered to the
+     coach and the sport scientist while it is unlinked. */
+  const canAttach = session.session_type === 'match' && session.fixture_id === null && hasAnyRole(claims.roles, SESSION_EDIT);
+  const nearFixtures = canAttach ? await fetchFixturesNear(db, orgId, session.starts_at) : [];
 
   // Local calendar date, not the UTC one — same bug class as schedule.ts's
   // own dayBounds()/rangeBounds() (see its header), one level down.
@@ -104,6 +113,39 @@ export default async function SessionDetailPage({
               View the fixture this session is anchored to →
             </Link>
           </p>
+        ) : session.session_type === 'match' ? (
+          <div style={{ marginTop: 'var(--sp-10)' }} data-orphan-match>
+            <p className="tiny" style={{ margin: 0 }}>
+              This match names no fixture. Its ratings and attendance stand on their own; the match report reads the fixture&rsquo;s sheet, so
+              attaching it to a fixture is what puts it on the report.
+            </p>
+            {sp.attach === 'failed' ? (
+              <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-6)' }}>
+                Not attached. The session may already be linked, or attaching belongs to the coach and the sport scientist.
+              </p>
+            ) : null}
+            {canAttach ? (
+              nearFixtures.length > 0 ? (
+                <form method="post" action={`/schedule/${session.id}/attach`} style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center', marginTop: 'var(--sp-8)', flexWrap: 'wrap' }}>
+                  <label className="visually-hidden" htmlFor="attach-fixture">Fixture to attach this match to</label>
+                  <select id="attach-fixture" name="fixture" className="field" style={{ minWidth: 260 }}>
+                    {nearFixtures.map((f) => (
+                      <option key={f.id} value={f.id}>
+                        v {f.opponent} · {formatLongDate(f.kickoff_at, timezone)}
+                      </option>
+                    ))}
+                  </select>
+                  <button type="submit" className="btn-ghost">
+                    Attach to this fixture
+                  </button>
+                </form>
+              ) : (
+                <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>
+                  No fixture within a week of this match to attach it to. <Link href="/schedule/fixtures/new">Add the fixture</Link> first.
+                </p>
+              )
+            ) : null}
+          </div>
         ) : null}
       </div>
 

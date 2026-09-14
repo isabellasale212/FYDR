@@ -62,10 +62,21 @@ GPS where the club has it.
 
 ---
 
+**An unlinked match session** (15 September 2026): a match that names no
+fixture says so — "This match names no fixture. Its ratings and attendance
+stand on their own; the match report reads the fixture's sheet, so attaching
+it to a fixture is what puts it on the report." — and offers the coach and the
+sport scientist **Attach to this fixture**: a select of the club's fixtures
+within a week either side, one button, `sessions.fixture_id` set and audited as
+a session update, landing on the fixture. With none within a week, the line
+points at adding the fixture first. The orphan seed session (11 July) stays an
+orphan until a coach attaches it; nothing backfills.
+
 ## 6. Every thing you can act on
 
 | Element and label | Where it sits | What happens when used | Where it takes you | What it writes | Permission | Confirmation | Disabled or hidden when |
 |---|---|---|---|---|---|---|---|
+| Attach to this fixture | The unlinked-match line | Links this match session to a fixture within a week | The fixture, `?attach=done` | `sessions.fixture_id` and a session audit row | Coach and sport scientist | None | The session is not a match, or already names a fixture |
 | Edit the session details | Details card | Changes title, kind, date, time, length, location, groups | Stays here | Updates the session | Coach and sport scientist | Form submission | Should be hidden for view only roles. **Not built** |
 | Cancel | Actions | Marks the session cancelled. It stays on the schedule, struck through, rather than vanishing | Stays here | Sets the session cancelled | Coach and sport scientist | **None. Cancelling fires straight away** | Hidden once already cancelled |
 | Reinstate | Actions | Undoes a cancellation | Stays here | Clears the cancelled state | Coach and sport scientist | None | Hidden unless cancelled |

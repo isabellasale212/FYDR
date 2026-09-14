@@ -813,6 +813,29 @@ create table injury_clinical (
   updated_at        timestamptz not null default now()
 );
 
+-- Match participation (0127, 15 September 2026): the coach's post-match sheet.
+-- One row per athlete selected for a fixture — started or came on (never both;
+-- neither = selected, not used), minutes (null = not recorded, never zero; 0 is
+-- a real value). No row = not selected. Availability at kick-off is not stored:
+-- the availability ledger below holds the row in force at fixtures.kickoff_at
+-- and the match report reads it. Written by the coach and the sport scientist
+-- (SESSION_EDIT); read by every staff role and by the athlete for their own
+-- row; every change audited (match_participation.set / .remove).
+create table match_participation (
+  id           uuid primary key default gen_random_uuid(),
+  org_id       uuid not null references organisations(id),
+  fixture_id   uuid not null references fixtures(id),
+  athlete_id   uuid not null references athletes(id),
+  started      boolean not null default false,
+  came_on      boolean not null default false,
+  minutes      int check (minutes between 0 and 120),
+  recorded_by  uuid references users(id),
+  recorded_at  timestamptz not null default now(),
+  updated_at   timestamptz not null default now(),
+  unique (fixture_id, athlete_id),
+  check (not (started and came_on))
+);
+
 create table availability (
   id             uuid primary key default gen_random_uuid(),
   org_id         uuid not null references organisations(id),

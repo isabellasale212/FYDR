@@ -1621,3 +1621,38 @@ explaining it will look broken.
 in `docs/decisions-required.md`.
 
 **Stage B1 is complete. Next: Stage B2, the access matrix.**
+
+---
+
+## MET-042. Minutes played
+
+**Name on screen.** Minutes, on the match report and the post-match sheet.
+
+**Surfaces.** Staff app. Readable by the athlete about themselves at the
+database; no athlete screen shows it yet.
+
+**What it means.** How many minutes an athlete played in one fixture, as the
+coach wrote it on the post-match sheet after the match. A recorded fact, not a
+calculation: nothing derives it from GPS, attendance or the session's length.
+
+**Exact calculation.** None. `match_participation.minutes`, a whole number
+from 0 to 120, entered by the coach or the sport scientist.
+
+**Inputs.** The post-match sheet (`docs/screens/11-fixture-detail.md`).
+
+**Time window.** One fixture.
+
+**Rounding and units.** Whole minutes.
+
+**When data is missing.** Null is "not recorded" and every surface prints it as
+such — never as zero. 0 is a real value (selected, used, no minutes) and prints
+as 0. The match report's figure counts athletes with minutes recorded over the
+athletes selected, so the gap is a number, not a blank.
+
+**Screens.** Match report, the post-match sheet.
+
+**Roles and tier.** Every staff role reads it; the coach and the sport
+scientist write it. Base.
+
+**Where it is built.** `supabase/migrations/0127_match_participation.sql`;
+`src/lib/matchReport.ts` holds the words.

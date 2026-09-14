@@ -2179,6 +2179,74 @@ export type Database = {
         }
       ]
     }
+    match_participation: {
+      Row: {
+        id: string
+        org_id: string
+        fixture_id: string
+        athlete_id: string
+        started: boolean
+        came_on: boolean
+        minutes: number | null
+        recorded_by: string | null
+        recorded_at: string
+        updated_at: string
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        fixture_id: string
+        athlete_id: string
+        started?: boolean
+        came_on?: boolean
+        minutes?: number | null
+        recorded_by?: string | null
+        recorded_at?: string
+        updated_at?: string
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        fixture_id?: string
+        athlete_id?: string
+        started?: boolean
+        came_on?: boolean
+        minutes?: number | null
+        recorded_by?: string | null
+        recorded_at?: string
+        updated_at?: string
+      }
+      Relationships: [
+        {
+          foreignKeyName: "match_participation_athlete_id_fkey"
+          columns: ["athlete_id"]
+          isOneToOne: false
+          referencedRelation: "athletes"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "match_participation_fixture_id_fkey"
+          columns: ["fixture_id"]
+          isOneToOne: false
+          referencedRelation: "fixtures"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "match_participation_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "match_participation_recorded_by_fkey"
+          columns: ["recorded_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
     meal_library: {
       Row: {
         id: string

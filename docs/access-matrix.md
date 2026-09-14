@@ -95,6 +95,8 @@ this block is the reason decision D-01 is ranked highest.
 | Injury and availability report | VP | VP | V | VP | **X** |
 | Return-to-play ladder (on the injury record, 0123) | **X** | **X** | VEC | **X** | **X** |
 | Rehab proposals list `/programmes/proposals` (0124) | **X** | **X** | VE (decide) | V | **X** |
+| Post-match sheet `/schedule/fixtures/:id/participation` (0127) | VEC | VEC | **X** | **X** | **X** |
+| Match report `/reports/match` (0127) | V | V | V | V | **X** |
 
 **Note on the medic row for Injury record.** A medic may create and edit an
 injury but **may not delete one**. An injury is closed, never deleted. Deletion

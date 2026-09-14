@@ -112,6 +112,21 @@ const REPORTS = [
     available: true,
     premiumGated: false,
   },
+  /* The eighth (15 September 2026, decision batch "The match report"): the
+     coach's post-match sheet read as a report — who was selected, started,
+     came on, and minutes, with availability at kick-off. Every club. */
+  {
+    key: 'match',
+    about: 'one',
+    tone: 'training',
+    source: 'post-match sheet',
+    exports: 'CSV · PDF',
+    title: 'Match report',
+    body: 'One fixture: who was selected, who started, who came on, and minutes played.',
+    href: '/reports/match',
+    available: true,
+    premiumGated: false,
+  },
 ] as const;
 
 /* PATTERN-S7 A1 (2026-09-13): the index is grouped by what the question is

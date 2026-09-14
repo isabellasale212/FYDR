@@ -226,7 +226,7 @@ export default async function LeaderboardDetailPage({
                   : 'All time'}
             </span>
           </div>
-          <p className="tiny" style={{ color: 'var(--muted)', margin: '8px 0 0', maxWidth: '84ch' }}>
+          <p className="tiny" style={{ color: 'var(--muted)', margin: 'var(--s-4) 0 0', maxWidth: '84ch' }}>
             Ranking {metric?.label ?? board.metric_key}, {board.aggregation}.
           </p>
         </div>
@@ -243,7 +243,7 @@ export default async function LeaderboardDetailPage({
         </div>
       </div>
 
-      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-14)', flexWrap: 'wrap', margin: '14px 0' }}>
+      <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-14)', flexWrap: 'wrap', margin: 'var(--s-7) 0' }}>
         <GroupFilter groups={groups} selected={groupIds} />
         {fullRanking.length > 0 ? (
           <span className="lb-stats">

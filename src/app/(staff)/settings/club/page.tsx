@@ -54,7 +54,7 @@ export default async function SettingsClubPage() {
             <h2 className="card-title" id="plan-title" style={{ margin: 0 }}>
               Plan
             </h2>
-            <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: '2px 0 0' }}>
+            <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: 'var(--s-1) 0 0' }}>
               {onPremium
                 ? 'Premium · the GPS import and everything built on it, and Analytics, are on.'
                 : 'Basic · everything but the Premium column below.'}
@@ -126,7 +126,7 @@ export default async function SettingsClubPage() {
         <h2 className="card-title" id="integrations-title" style={{ margin: 0 }}>
           Integrations
         </h2>
-        <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: '2px 0 0' }}>
+        <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: 'var(--s-1) 0 0' }}>
           Devices and files that write into Fydr.
         </p>
 
@@ -137,7 +137,7 @@ export default async function SettingsClubPage() {
                 <span style={{ fontSize: 'var(--fs-14)', fontWeight: 'var(--w-semi)' }}>Catapult Openfield</span>
                 {!onPremium ? <span className="gold-badge">Premium</span> : null}
               </div>
-              <p style={{ fontSize: 'var(--fs-12)', color: 'var(--muted)', margin: '2px 0 0' }}>
+              <p style={{ fontSize: 'var(--fs-12)', color: 'var(--muted)', margin: 'var(--s-1) 0 0' }}>
                 GPS session files, CSV import
               </p>
             </div>
@@ -176,7 +176,7 @@ export default async function SettingsClubPage() {
                 <span style={{ fontSize: 'var(--fs-14)', fontWeight: 'var(--w-semi)' }}>Vendor CSV import</span>
                 {!onPremium ? <span className="gold-badge">Premium</span> : null}
               </div>
-              <p style={{ fontSize: 'var(--fs-12)', color: 'var(--muted)', margin: '2px 0 0' }}>
+              <p style={{ fontSize: 'var(--fs-12)', color: 'var(--muted)', margin: 'var(--s-1) 0 0' }}>
                 Catapult, STATSports and Polar GPS session files
               </p>
             </div>
@@ -197,7 +197,7 @@ export default async function SettingsClubPage() {
           <h2 className="card-title" id="rpe-title" style={{ margin: 0 }}>
             Session RPE
           </h2>
-          <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: '2px 0 var(--sp-10)' }}>
+          <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: 'var(--s-1) 0 var(--sp-10)' }}>
             Whether athletes are asked to rate each session. The base tier&apos;s only load measure rests on it.
           </p>
           {isAdmin ? (
@@ -217,7 +217,7 @@ export default async function SettingsClubPage() {
           <h2 className="card-title" id="site-title" style={{ margin: 0 }}>
             Coaches and the injury site
           </h2>
-          <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: '2px 0 var(--sp-10)' }}>
+          <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: 'var(--s-1) 0 var(--sp-10)' }}>
             Whether a coach reads where an athlete&apos;s injury is. Off by default: a coach reads the status, the restriction line
             and the expected return, nothing else.
           </p>

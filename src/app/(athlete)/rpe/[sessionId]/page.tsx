@@ -135,7 +135,7 @@ export default async function RpePage({
         </span>
       </div>
 
-      <div className="sess" style={{ padding: '0 0 14px' }}>
+      <div className="sess" style={{ padding: '0 0 var(--s-7)' }}>
         <span className="tm num">{formatTime(session.starts_at, timezone)}</span>
         <div>
           <div className="ti">

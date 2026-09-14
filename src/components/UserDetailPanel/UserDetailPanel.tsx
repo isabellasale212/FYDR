@@ -321,7 +321,7 @@ export function UserDetailPanel({ orgId, currentUserId, currentActorRole, timezo
                 <p className="sub">Not linked.</p>
                 {roles.includes('athlete') && unlinkedAthletes.length > 0 ? (
                   <div style={{ display: 'flex', gap: 'var(--sp-8)', alignItems: 'center', marginTop: 'var(--sp-8)' }}>
-                    <select className="field" style={{ minHeight: 32, padding: '4px 8px', width: 'auto' }} value={linkChoice} onChange={(e) => setLinkChoice(e.target.value)}>
+                    <select className="field" style={{ minHeight: 32, padding: 'var(--s-2) var(--s-4)', width: 'auto' }} value={linkChoice} onChange={(e) => setLinkChoice(e.target.value)}>
                       <option value="">Pick one to link</option>
                       {unlinkedAthletes.map((a) => (
                         <option key={a.id} value={a.id}>

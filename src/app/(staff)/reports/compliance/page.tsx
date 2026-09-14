@@ -206,13 +206,13 @@ export default async function ComplianceReportPage({
               </p>
 
               {caveat ? (
-              <p className="sub" style={{ margin: '0 0 10px' }}>
+              <p className="sub" style={{ margin: '0 0 var(--s-5)' }}>
               {caveat}
               </p>
               ) : null}
 
               {usingLatestDataDefault ? (
-              <p className="sub" style={{ margin: '0 0 10px' }}>
+              <p className="sub" style={{ margin: '0 0 var(--s-5)' }}>
               Showing the most recent window with data, ending <b>{formatDate(today, timezone)}</b> — real today is{' '}
               {formatDate(realToday, timezone)}.{' '}
               <Link href={`/reports/compliance?${complianceQuery(period.key, realToday, groupIds)}`} className="linklike">
@@ -380,7 +380,7 @@ export default async function ComplianceReportPage({
                   className="cmpl-table"
                 >
                   {report.byAthlete.length === 0 ? (
-                    <p className="tiny" style={{ padding: '0 0 14px' }}>
+                    <p className="tiny" style={{ padding: '0 0 var(--s-7)' }}>
                       No athletes in this filter.
                     </p>
                   ) : (
@@ -472,7 +472,7 @@ export default async function ComplianceReportPage({
             content: (
               <div className="card cmpl-table">
                 {dayWeeks.length === 0 ? (
-                  <p className="tiny" style={{ padding: '0 0 14px' }}>
+                  <p className="tiny" style={{ padding: '0 0 var(--s-7)' }}>
                     No expectations in this period.
                   </p>
                 ) : (

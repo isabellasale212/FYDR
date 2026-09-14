@@ -93,7 +93,7 @@ export default async function ThresholdsPage() {
               <h2
                 className="sect"
                 id={`sec-${domain}`}
-                style={{ padding: '14px 16px 8px' }}
+                style={{ padding: 'var(--s-7) var(--s-8) var(--s-4)' }}
               >
                 {enumLabel(domain)}
                 <span className="tiny num">{rows.length}</span>

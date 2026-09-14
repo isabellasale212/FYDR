@@ -251,7 +251,7 @@ export function MfaEnrollment({ timezone, roleRequiresMfa, initialFactors }: Pro
               alt="QR code for your authenticator app"
               width={176}
               height={176}
-              style={{ display: 'block', margin: '10px 0', borderRadius: 'var(--r-field)', background: 'var(--on-accent)', padding: 'var(--sp-8)' }}
+              style={{ display: 'block', margin: 'var(--s-5) 0', borderRadius: 'var(--r-field)', background: 'var(--on-accent)', padding: 'var(--sp-8)' }}
             />
           ) : null}
           {secret ? (

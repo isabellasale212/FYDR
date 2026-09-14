@@ -150,7 +150,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
           background: 'none',
           border: 'none',
           cursor: 'pointer',
-          padding: '14px 18px',
+          padding: 'var(--s-7) var(--s-9)',
           display: 'flex',
           alignItems: 'center',
           gap: 'var(--sp-10)',
@@ -173,14 +173,14 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
       {expanded ? (
         <div style={{ borderTop: '1px solid var(--hair)' }}>
           {session.participants.length === 0 ? (
-            <p className="tiny" style={{ padding: '12px 18px' }}>
+            <p className="tiny" style={{ padding: 'var(--s-6) var(--s-9)' }}>
               No athletes expected in this filter.
             </p>
           ) : (
             <>
               <div
                 style={{
-                  padding: '10px 18px',
+                  padding: 'var(--s-5) var(--s-9)',
                   display: 'flex',
                   alignItems: 'center',
                   gap: 'var(--sp-10)',
@@ -210,7 +210,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
               </div>
 
               {conflictCount > 0 ? (
-                <div className="note" style={{ margin: '10px 18px', borderColor: 'var(--warn)' }}>
+                <div className="note" style={{ margin: 'var(--s-5) var(--s-9)', borderColor: 'var(--warn)' }}>
                   <div className="note-glyph" aria-hidden="true">⚠</div>
                   <p className="note-text">
                     {conflictCount} athlete{conflictCount === 1 ? '' : 's'} have restrictions this session may conflict with —
@@ -220,7 +220,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
               ) : null}
 
               {failure?.kind === 'bulk' ? (
-                <p className="form-error" role="alert" style={{ margin: '0 18px 10px' }}>
+                <p className="form-error" role="alert" style={{ margin: '0 var(--s-9) var(--s-5)' }}>
                   {failure.message}{' '}
                   <button
                     type="button"
@@ -245,7 +245,7 @@ export function TimetableSessionCard({ orgId, userId, actorRole, canRecord, sess
                   {session.participants.map((p, index) => (
                     <div key={p.athlete_id}>
                       {index > 0 ? <div className="hair" /> : null}
-                      <div style={{ padding: '10px 18px' }}>
+                      <div style={{ padding: 'var(--s-5) var(--s-9)' }}>
                         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
                           <span className="nm">
                             {p.first_name} {p.last_name}

@@ -131,7 +131,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
     <>
 
       {caveat ? (
-        <p className="sub" style={{ margin: '0 0 10px' }}>
+        <p className="sub" style={{ margin: '0 0 var(--s-5)' }}>
           {caveat}
         </p>
       ) : null}
@@ -253,7 +253,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                     </div>
                   ) : (
                     <div style={{ overflowX: 'auto' }}>
-                      <table className="tbl" style={{ margin: '0 16px 16px', minWidth: 480 }}>
+                      <table className="tbl" style={{ margin: '0 var(--s-8) var(--s-8)', minWidth: 480 }}>
                         <thead>
                           <tr>
                             <th scope="col">Athlete</th>
@@ -413,7 +413,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                       </TableShell>
 
                       <section className="card flush" aria-labelledby="longitudinal-title">
-                        <h2 className="card-title" id="longitudinal-title" style={{ padding: '16px 16px 0' }}>
+                        <h2 className="card-title" id="longitudinal-title" style={{ padding: 'var(--s-8) var(--s-8) 0' }}>
                           Squad median over time &mdash; {period.range.label.toLowerCase()}
                         </h2>
                         {longitudinal.length === 0 ? (
@@ -424,7 +424,7 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                           longitudinal.map((p, i) => (
                             <div key={p.date}>
                               {i > 0 ? <div className="hair" /> : null}
-                              <div className="load-row" style={{ gridTemplateColumns: '1fr auto auto', padding: '9px 16px' }}>
+                              <div className="load-row" style={{ gridTemplateColumns: '1fr auto auto', padding: 'var(--s-5) var(--s-8)' }}>
                                 <span className="sub num">{formatDate(p.date, timezone)}</span>
                                 <span className="tiny">n = {p.n}{p.median === null ? ' · fewer than five' : ''}</span>
                                 <span className="num nm">

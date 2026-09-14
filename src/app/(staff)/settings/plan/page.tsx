@@ -48,7 +48,7 @@ export default async function PlanPage() {
           <h2 className="card-title" id="plan-now-title" style={{ margin: 0 }}>
             This club is on {tierLabel(tier)}
           </h2>
-          <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: '2px 0 0' }}>
+          <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: 'var(--s-1) 0 0' }}>
             {onPremium
               ? 'Everything Premium contains is on, and everything in Basic with it.'
               : 'Wellness, gym, nutrition, the schedule, injuries, testing, reports and exports — everything but the list below.'}
@@ -69,7 +69,7 @@ export default async function PlanPage() {
           <h2 className="card-title" id="plan-contains-title" style={{ margin: 0 }}>
             What Premium contains
           </h2>
-          <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: '2px 0 var(--sp-10)' }}>
+          <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: 'var(--s-1) 0 var(--sp-10)' }}>
             {PREMIUM_INVENTORY.length} things. Everything else in the product is in both plans, and a Basic club is never shown a locked copy of any of these — they are absent, and this page is where they are named.
           </p>
           <ul style={{ listStyle: 'none', margin: 0, padding: 0 }} data-inventory>

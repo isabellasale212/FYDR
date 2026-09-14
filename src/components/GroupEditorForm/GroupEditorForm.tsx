@@ -78,7 +78,7 @@ export function GroupEditorForm({ orgId }: Props) {
         Used in filters across the app.
       </p>
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+      <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">Type</legend>
         <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {GROUP_TYPES.map((t) => (
@@ -107,7 +107,7 @@ export function GroupEditorForm({ orgId }: Props) {
         placeholder="Optional"
       />
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+      <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">Colour</legend>
         <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {GROUP_COLOURS.map((c) => (

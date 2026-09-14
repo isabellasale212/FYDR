@@ -112,8 +112,8 @@ a {
   border: 1px solid var(--border);
 }
 .skip-link:focus {
-  inset-inline-start: 8px;
-  top: 8px;
+  inset-inline-start: var(--s-4);
+  top: var(--s-4);
 }
 
 .visually-hidden {
@@ -1611,7 +1611,7 @@ body:has(.phone) {
      a base, never substituted, so a browser reporting no inset still clears
      its own chrome. */
   gap: var(--sp-12);
-  padding: calc(22px + env(safe-area-inset-top, 0px)) 0 14px;
+  padding: calc(var(--s-11) + env(safe-area-inset-top, 0px)) 0 var(--s-7);
   min-height: 44px;
 }
 /* THE HEADER AVATAR IS GONE — ATH-ADULT-02 follow-up, Isabella's decision
@@ -1645,7 +1645,7 @@ body:has(.phone) {
   /* Spec §6: 9px 6px 30px. That 30px is home-indicator clearance, which on a
      real device is env(safe-area-inset-bottom) — ADDED to a base, never
      substituted for it, so a browser with no inset still gets real padding. */
-  padding: 9px 6px calc(10px + env(safe-area-inset-bottom, 0px));
+  padding: 9px var(--s-3) calc(var(--s-5) + env(safe-area-inset-bottom, 0px));
   /* NO backdrop-filter, removed 2026-09-08 (audit item 3). It carried
      `blur(var(--blur))` over a 94%-opaque fill while sitting `position: static`
      in normal flow — so nothing ever passed behind it and the blur had nothing
@@ -1699,7 +1699,7 @@ body:has(.phone) {
   align-items: baseline;
   justify-content: space-between;
   gap: var(--sp-12);
-  padding: var(--sp-14) var(--pad-card-x, 18px) var(--sp-10);
+  padding: var(--sp-14) var(--pad-card-x, var(--s-9)) var(--sp-10);
 }
 .hist-n {
   font-size: var(--fs-13);
@@ -1716,7 +1716,7 @@ body:has(.phone) {
   grid-template-columns: minmax(0, 1fr) var(--hist-val-w, auto);
   gap: var(--sp-12);
   align-items: center;
-  padding: var(--sp-12) var(--pad-card-x, 18px);
+  padding: var(--sp-12) var(--pad-card-x, var(--s-9));
   /* The board's "row 44px min" (ATH-ADULT-12): a row with one line on the
      left — a test with no result — landed at 39px from padding alone, and
      the gym rows are links. */
@@ -1782,7 +1782,7 @@ body:has(.phone) {
 }
 .hist-foot {
   flex: none;
-  padding: var(--sp-14) var(--pad-card-x, 18px);
+  padding: var(--sp-14) var(--pad-card-x, var(--s-9));
   border-top: 1px solid var(--hair);
 }
 .hist-foot > :first-child {
@@ -1812,7 +1812,7 @@ body:has(.phone) {
   white-space: nowrap;
 }
 .hist-corrected {
-  padding: 0 var(--pad-card-x, 18px) var(--sp-12);
+  padding: 0 var(--pad-card-x, var(--s-9)) var(--sp-12);
   background: var(--surf2);
 }
 
@@ -2853,7 +2853,7 @@ a.hist-row:focus-visible {
  * 16px centred title between the close and the date, which read as a dialog's
  * chrome rather than as the name of the thing being done. */
 .sheet-head {
-  padding: calc(14px + env(safe-area-inset-top, 0px)) 0 12px;
+  padding: calc(var(--s-7) + env(safe-area-inset-top, 0px)) 0 var(--s-6);
   border-bottom: 1px solid var(--hair);
 }
 .sheet-head-row {
@@ -3572,8 +3572,8 @@ a.hist-row:focus-visible {
   display: flex;
   flex-direction: column;
   background: var(--surf);
-  padding: calc(40px + env(safe-area-inset-top, 0px)) 24px
-    calc(30px + env(safe-area-inset-bottom, 0px));
+  padding: calc(var(--s-14) + env(safe-area-inset-top, 0px)) var(--sp-24)
+    calc(var(--s-13) + env(safe-area-inset-bottom, 0px));
 }
 .login-card {
   width: 100%;
@@ -3744,7 +3744,7 @@ a.hist-row:focus-visible {
  * signal.", which is only true for the three screens that really queue. */
 .gym-head {
   flex: none;
-  padding: calc(16px + env(safe-area-inset-top, 0px)) 16px 12px;
+  padding: calc(var(--s-8) + env(safe-area-inset-top, 0px)) var(--s-8) var(--s-6);
   border-bottom: 1px solid var(--hair);
   /* ATH-ADULT-09 (2026-09-12): the header never scrolls away — programme,
      session name and the running count stay above the fold while the
@@ -4311,8 +4311,8 @@ img.me-avatar {
 /* ---------- toast, §13 ---------- */
 .toast {
   position: absolute;
-  left: 16px;
-  right: 16px;
+  left: var(--s-8);
+  right: var(--s-8);
   bottom: calc(106px + env(safe-area-inset-bottom, 0px));
   background: var(--toast-bg);
   color: var(--toast-text);
@@ -7819,8 +7819,8 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .nutr-range-track::before {
   content: '';
   position: absolute;
-  left: 4px;
-  right: 4px;
+  left: var(--s-2);
+  right: var(--s-2);
   top: 5px;
   height: 2px;
   border-radius: var(--r);
@@ -7844,7 +7844,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
  * under every common colour-vision deficiency, not only in full colour. */
 .nutr-target-bracket {
   position: absolute;
-  top: 2px;
+  top: var(--s-1);
   height: 8px;
   border: 1px dashed var(--muted);
   border-radius: var(--r);
@@ -8746,8 +8746,8 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   position: sticky;
   top: 0;
   z-index: 30;
-  margin: 0 calc(-1 * var(--main-pad, 28px)) 14px;
-  padding: var(--sp-10) var(--main-pad, 28px);
+  margin: 0 calc(-1 * var(--main-pad, var(--sp-28))) var(--s-7);
+  padding: var(--sp-10) var(--main-pad, var(--sp-28));
   background: color-mix(in srgb, var(--bg) 85%, transparent);
   backdrop-filter: blur(var(--blur));
   -webkit-backdrop-filter: blur(var(--blur));
@@ -9089,7 +9089,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
    line clipped the first label against the top of the grid. */
 .sg-hour-label {
   position: absolute;
-  right: 10px;
+  right: var(--s-5);
   font-size: var(--fs-11);
   color: var(--faint);
   white-space: nowrap;
@@ -9147,7 +9147,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 
 .wtp-hour {
   position: absolute;
-  right: 2px;
+  right: var(--s-1);
   transform: translateY(-50%);
   font-size: var(--fs-9);
   color: var(--faint);
@@ -9168,8 +9168,8 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 
 .wtp-block {
   position: absolute;
-  left: 2px;
-  right: 2px;
+  left: var(--s-1);
+  right: var(--s-1);
   border-radius: var(--r);
   padding: var(--sp-2) var(--sp-4);
   overflow: hidden;
@@ -9227,7 +9227,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 
 .sg-draft-pop {
   position: absolute;
-  left: 8px;
+  left: var(--s-4);
   z-index: 40;
   width: 300px;
   max-width: min(300px, calc(100vw - 32px));
@@ -9244,7 +9244,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
    measurement: the column count is fixed at seven. */
 .sg-day-col:nth-last-child(-n + 2) .sg-draft-pop {
   left: auto;
-  right: 8px;
+  right: var(--s-4);
 }
 
 /* On a phone the grid is too narrow for anything anchored to a column, so the
@@ -9416,8 +9416,8 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
  * was built for a category that was never drawn. */
 .sg-fixture {
   position: absolute;
-  left: 4px;
-  right: 4px;
+  left: var(--s-2);
+  right: var(--s-2);
   box-sizing: border-box;
   display: block;
   padding: var(--sp-4) var(--sp-8);
@@ -10349,7 +10349,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   position: absolute;
   left: 0;
   right: 0;
-  top: 6px;
+  top: var(--s-3);
   height: 2px;
   border-radius: var(--r);
   background: var(--track);
@@ -10378,7 +10378,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
  * for a mid-unit athlete. */
 .pc-marker {
   position: absolute;
-  top: 2px;
+  top: var(--s-1);
   width: 10px;
   height: 10px;
   margin-inline-start: -5px;
@@ -12782,7 +12782,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lockup-word {
   position: absolute;
-  left: 40px;
+  left: var(--s-14);
   top: 0;
   height: 343.8px;
   display: flex;
@@ -12935,7 +12935,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .launch-lockup {
   position: absolute;
   z-index: 1;
-  left: 30px;
+  left: var(--s-13);
   top: 92px;
   --lk-scale: 0.155;
   transform-origin: 0 0;
@@ -13205,7 +13205,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
        absolutely positioned at top 92px and is 86px tall, so its bottom edge is
        at 178px. */
     --claim-lead: 56px;
-    padding: calc(178px + var(--claim-lead)) var(--claim-x) 40px;
+    padding: calc(178px + var(--claim-lead)) var(--claim-x) var(--s-14);
   }
   /* ROBOTO, NOT SORA — decided 2026-09-11 (Isabella), closing collision 1.
      For three days this headline was the one thing outside the mark set in
@@ -13963,7 +13963,7 @@ main:has(.rhead) > .back-btn > :first-child {
   cursor: pointer;
 }
 .rhead .rsel-chev {
-  right: 14px;
+  right: var(--s-7);
   color: var(--faint);
   font-size: var(--fs-11);
 }
@@ -14403,7 +14403,7 @@ a.hist-row:active { background: var(--surf-sunken); }
     grid-template-columns: repeat(5, 1fr);
     background: color-mix(in srgb, var(--elev) 94%, transparent);
     border-top: 1px solid var(--border);
-    padding: 9px 6px calc(10px + env(safe-area-inset-bottom, 0px));
+    padding: 9px var(--s-3) calc(var(--s-5) + env(safe-area-inset-bottom, 0px));
   }
   .ph-tab {
     display: flex;

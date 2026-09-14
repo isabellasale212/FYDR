@@ -154,7 +154,7 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
           return (
           <div key={a.athlete_id}>
             {index > 0 ? <div className="hair" /> : null}
-            <div style={{ padding: '10px 16px' }}>
+            <div style={{ padding: 'var(--s-5) var(--s-8)' }}>
               <div style={{ display: 'flex', alignItems: 'baseline', gap: 'var(--sp-8)', marginBottom: 'var(--sp-6)', flexWrap: 'wrap' }}>
                 <Link href={`/testing/${testDefinitionId}/${a.athlete_id}`} className="nm">
                   {a.first_name} {a.last_name}
@@ -188,7 +188,7 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
                         className="field num"
                         style={{
                           width: 64,
-                          padding: '6px 4px',
+                          padding: 'var(--s-3) var(--s-2)',
                           textAlign: 'center',
                           borderColor:
                             cellStatus === 'error'
@@ -250,7 +250,7 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
                   <button
                     type="button"
                     className="btn-ghost"
-                    style={{ padding: '6px 10px', fontSize: 'var(--fs-12)', whiteSpace: 'nowrap' }}
+                    style={{ padding: 'var(--s-3) var(--s-5)', fontSize: 'var(--fs-12)', whiteSpace: 'nowrap' }}
                     aria-label={`Add attempt ${nextAttemptNumber} for ${a.first_name} ${a.last_name}`}
                     onClick={() => setRequestedAttempts((r) => ({ ...r, [a.athlete_id]: nextAttemptNumber }))}
                   >

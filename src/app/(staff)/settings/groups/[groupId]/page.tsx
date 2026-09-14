@@ -122,14 +122,14 @@ export default async function GroupDetailPage({
         />
 
         <section className="card flush" aria-labelledby="past-title">
-          <h2 className="card-title" id="past-title" style={{ padding: '16px 16px 8px' }}>
+          <h2 className="card-title" id="past-title" style={{ padding: 'var(--s-8) var(--s-8) var(--s-4)' }}>
             Past members{' '}
             <span className="tiny num" style={{ fontWeight: 'var(--w-regular)' }}>
               {past.length}
             </span>
           </h2>
           {past.length === 0 ? (
-            <p className="cap" style={{ padding: '0 16px 16px' }}>
+            <p className="cap" style={{ padding: '0 var(--s-8) var(--s-8)' }}>
               No athletes have been removed from this group.
             </p>
           ) : (

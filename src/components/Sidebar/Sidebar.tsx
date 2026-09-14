@@ -229,7 +229,7 @@ export function Sidebar({ roles, fullName, orgName, premium, previewingTier = fa
             style={{
               background: 'var(--wash-warn)',
               color: 'var(--warn-pill-text)',
-              margin: '0 0 10px',
+              margin: '0 0 var(--s-5)',
               textDecoration: 'none',
             }}
             title="You are previewing the Basic plan. Your club’s real plan is unchanged. Opens the Plan card, where you can switch back."

@@ -82,7 +82,7 @@ export default async function TeamAllocationPage({
 
       <p className="eyebrow">{groupScopeLabel(groups, groupIds)} · {orgName}</p>
 
-      <div style={{ margin: '10px 0' }}>
+      <div style={{ margin: 'var(--s-5) 0' }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 

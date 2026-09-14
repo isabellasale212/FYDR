@@ -442,7 +442,7 @@ export default async function AthleteReportPage({
                       </p>
                     )}
                     <div style={{ marginTop: 'var(--sp-12)', paddingTop: 'var(--sp-10)', borderTop: '1px solid var(--hair)' }}>
-                      <p style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-bold)', margin: '0 0 8px' }}>
+                      <p style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-bold)', margin: '0 0 var(--s-4)' }}>
                         Session load by day
                         {loadDaysWithValue.length > 0 ? (
                           <span className="tiny" style={{ fontWeight: 'var(--w-regular)', color: 'var(--faint)' }}>
@@ -678,7 +678,7 @@ export default async function AthleteReportPage({
                 )}
 
                 <section className="card flush" aria-labelledby="load-days-title">
-                  <h2 className="card-title" id="load-days-title" style={{ padding: '16px 16px 0' }}>
+                  <h2 className="card-title" id="load-days-title" style={{ padding: 'var(--s-8) var(--s-8) 0' }}>
                     Session load by day
                   </h2>
                   {loadDaysWithValue.length === 0 ? (
@@ -734,7 +734,7 @@ export default async function AthleteReportPage({
                       <EmptyState headingLevel={3} title={testsEmpty.title} body={testsEmpty.body} />
                     </div>
                   ) : (
-                    <table className="tbl" style={{ margin: '0 16px', width: 'calc(100% - 32px)' }}>
+                    <table className="tbl" style={{ margin: '0 var(--s-8)', width: 'calc(100% - 32px)' }}>
                       <thead>
                         <tr>
                           <th scope="col">Test</th>

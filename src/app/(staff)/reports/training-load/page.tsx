@@ -102,12 +102,12 @@ export default async function TrainingLoadReportPage({ searchParams }: { searchP
               {report.athleteCount} athlete{report.athleteCount === 1 ? '' : 's'}
             </p>
             {caveat ? (
-              <p className="sub" style={{ margin: '0 0 10px' }}>
+              <p className="sub" style={{ margin: '0 0 var(--s-5)' }}>
                 {caveat}
               </p>
             ) : null}
             {anchor.usingLatestData ? (
-              <p className="sub" style={{ margin: '0 0 10px' }}>
+              <p className="sub" style={{ margin: '0 0 var(--s-5)' }}>
                 Showing the most recent window with data, ending <b>{formatDate(today, timezone)}</b> — real today is {formatDate(realToday, timezone)}.{' '}
                 <Link href={`/reports/training-load?${trainingLoadQuery(period.key, realToday, groupIds)}`} className="linklike">
                   Jump to today instead

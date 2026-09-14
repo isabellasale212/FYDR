@@ -252,7 +252,7 @@ export function SelectedSessionPanel({
             onChange={(e) => onNameChange(e.target.value)}
             placeholder="Session name"
             maxLength={80}
-            style={{ fontSize: 'var(--fs-16)', fontWeight: 'var(--w-bold)', padding: '8px 10px' }}
+            style={{ fontSize: 'var(--fs-16)', fontWeight: 'var(--w-bold)', padding: 'var(--s-4) var(--s-5)' }}
           />
   );
 
@@ -424,7 +424,7 @@ export function SelectedSessionPanel({
              the session IS, and this is a screen people click around on — the
              three below (start, duration, groups) are adjustments and stay
              live. Opening these needs one deliberate press. */
-          <button type="button" className="btn-ghost" style={{ minHeight: 32, padding: '5px 12px' }} onClick={onUnlock}>
+          <button type="button" className="btn-ghost" style={{ minHeight: 32, padding: 'var(--s-3) var(--s-6)' }} onClick={onUnlock}>
             Edit
           </button>
         ) : (
@@ -442,7 +442,7 @@ export function SelectedSessionPanel({
       </div>
 
       {session.restrictionConflictCount > 0 ? (
-        <div className="note" style={{ margin: '0 0 14px', borderColor: 'var(--warn)' }}>
+        <div className="note" style={{ margin: '0 0 var(--s-7)', borderColor: 'var(--warn)' }}>
           <div className="note-glyph" aria-hidden="true">⚠</div>
           <p className="note-text">
             {session.restrictionConflictCount} athlete{session.restrictionConflictCount === 1 ? ' has' : 's have'} a

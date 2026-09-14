@@ -81,7 +81,7 @@ export default async function MatchReportPage({ searchParams }: { searchParams: 
             <p className="eyebrow" style={{ marginBottom: 'var(--sp-10)' }}>
               {scopeLabel} · {orgName} · {fx} · {formatLongDate(sheet.fixture.kickoff_at, timezone)}, kick off {formatTime(sheet.fixture.kickoff_at, timezone)} · {sheet.squad} athlete{sheet.squad === 1 ? '' : 's'} in {scopeLabel.toLowerCase()}
             </p>
-            <p className="sub" style={{ margin: '0 0 10px' }}>
+            <p className="sub" style={{ margin: '0 0 var(--s-5)' }}>
               {sheet.recorded.at ? `Sheet last saved ${formatDateTime(sheet.recorded.at, timezone)}${recordedBy ? ` by ${recordedBy.name}` : ''}.` : 'No sheet has been saved for this fixture.'}{' '}
               <Link href={`/schedule/fixtures/${sheet.fixture.id}`} className="linklike">
                 Open the fixture

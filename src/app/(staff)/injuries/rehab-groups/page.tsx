@@ -61,7 +61,7 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
 
       <p className="eyebrow">{groupScopeLabel(squadGroups, groupIds)} · {orgName}</p>
 
-      <div style={{ margin: '10px 0' }}>
+      <div style={{ margin: 'var(--s-5) 0' }}>
         <GroupFilter groups={squadGroups} selected={groupIds} />
       </div>
 

@@ -75,7 +75,7 @@ export function ViewOnlyNotice({
         </p>
       ) : null}
       {href && linkLabel ? (
-        <p style={{ margin: '10px 0 0' }}>
+        <p style={{ margin: 'var(--s-5) 0 0' }}>
           <Link href={href} className="btn-ghost-pill accent">
             {linkLabel} &rsaquo;
           </Link>

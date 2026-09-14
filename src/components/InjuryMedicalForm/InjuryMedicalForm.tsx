@@ -185,7 +185,7 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
         </div>
       </div>
 
-      <div className="hair" style={{ margin: '18px 0' }} />
+      <div className="hair" style={{ margin: 'var(--s-9) 0' }} />
 
       <p className="label" style={{ color: 'var(--bad-text)' }}>
         Clinical detail &mdash; medical only, never shown to a coach

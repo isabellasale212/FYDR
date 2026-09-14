@@ -245,7 +245,7 @@ export default async function ReportsPage() {
                     style={{
                       fontSize: 'var(--fs-10)',
                       fontWeight: 'var(--w-bold)',
-                      padding: '2px 9px',
+                      padding: 'var(--s-1) var(--s-5)',
                       borderRadius: 'var(--r-control)',
                       background: 'rgb(var(--highlight-rgb) / 0.22)',
                       color: 'var(--highlight-pill-text)',

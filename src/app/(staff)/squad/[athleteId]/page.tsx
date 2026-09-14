@@ -556,7 +556,7 @@ export default async function AthletePage({
           clipped window and a coerced one both mean the data on screen is not
           the window that was asked for, and neither is visible anywhere else. */}
       {profile.range.clipped || coercedFromChoice !== null ? (
-        <p className="cap" style={{ margin: '0 0 12px' }}>
+        <p className="cap" style={{ margin: '0 0 var(--s-6)' }}>
           {profile.range.clipped ? 'Clipped to the two-year maximum this app reads in one window.' : ''}
           {coercedFromChoice !== null
             ? ` "${coercedFromChoice}" is not available on this screen, so ${profile.range.label.toLowerCase()} is shown instead.`
@@ -777,7 +777,7 @@ export default async function AthletePage({
 
             {/* PATTERN-S3 C7 (2026-09-12): every change on record, one row per
                 change, for anyone who can read the availability line. */}
-            <Link href={`/squad/${athlete.id}/availability`} className="btn-ghost-pill" style={{ padding: '8px 16px', alignSelf: 'flex-start' }}>
+            <Link href={`/squad/${athlete.id}/availability`} className="btn-ghost-pill" style={{ padding: 'var(--s-4) var(--s-8)', alignSelf: 'flex-start' }}>
               Availability history &rsaquo;
             </Link>
 
@@ -788,7 +788,7 @@ export default async function AthletePage({
               <Link
                 href={`/injuries/new?athlete=${athlete.id}`}
                 className="btn-ghost-pill"
-                style={{ padding: '8px 16px', alignSelf: 'flex-start' }}
+                style={{ padding: 'var(--s-4) var(--s-8)', alignSelf: 'flex-start' }}
               >
                 + Log injury
               </Link>
@@ -1033,7 +1033,7 @@ export default async function AthletePage({
                     Body weight
                   </h2>
                   {bodyWeight.latestKg !== null ? (
-                    <p className="pp-weight-value num" style={{ margin: '2px 0 0' }}>
+                    <p className="pp-weight-value num" style={{ margin: 'var(--s-1) 0 0' }}>
                       {formatNumber(bodyWeight.latestKg, 1)}
                       <span className="u"> kg</span>
                     </p>

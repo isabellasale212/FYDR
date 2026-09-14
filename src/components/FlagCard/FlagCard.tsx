@@ -336,7 +336,7 @@ export function FlagCard({
            *  because acknowledgement is what sets athlete_visible_at
            *  (flags_self_select). So the sentence now names the staff audience
            *  in both states and only the athlete's part changes. */}
-          <p className="cap" style={{ margin: '6px 0 0' }}>
+          <p className="cap" style={{ margin: 'var(--s-3) 0 0' }}>
             {canAcknowledge
               ? `Every coach and medical staff member in the club can read this. ${flag.name.split(' ')[0]} sees it too once the flag is acknowledged.`
               : `Every coach and medical staff member in the club can read this, and so can ${flag.name.split(' ')[0]}, alongside the date the flag was raised.`}
@@ -349,7 +349,7 @@ export function FlagCard({
            *  audience note on the standalone-note mutation above for why
            *  removing the field from medical staff was rejected. */}
           {viewerIsMedical ? (
-            <p className="cap" style={{ margin: '6px 0 0', color: 'var(--warn-text)' }}>
+            <p className="cap" style={{ margin: 'var(--s-3) 0 0', color: 'var(--warn-text)' }}>
               Coaching staff read this field. Keep diagnosis and treatment detail out of
               it &mdash; that belongs on the injury record, where it stays with medical.
             </p>

@@ -107,7 +107,7 @@ export default async function SignInProbesPage() {
         <ProbeTable rows={probeRows} timeZone={timezone} />
       )}
 
-      <p className="sect" style={{ margin: '26px 0 8px' }}>
+      <p className="sect" style={{ margin: 'var(--s-12) 0 var(--s-4)' }}>
         Likely mistyped · {typoRows.length}
       </p>
       <p className="tiny" style={{ marginBottom: 'var(--sp-10)' }}>

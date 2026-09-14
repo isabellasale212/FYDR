@@ -247,7 +247,7 @@ export default async function AthleteWellnessPage({
       {/* The scope sentence goes with the control that made it necessary. A
           CLIPPED window still means the label and the data differ, so it stays. */}
       {range.clipped ? (
-        <p className="cap" style={{ margin: '0 0 12px' }}>
+        <p className="cap" style={{ margin: '0 0 var(--s-6)' }}>
           {range.label} is clipped to the two-year maximum this app reads in one window.
         </p>
       ) : null}

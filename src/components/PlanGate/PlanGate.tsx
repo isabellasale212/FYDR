@@ -62,7 +62,7 @@ export function PlanGateCard({
         <p style={{ fontSize: 'var(--fs-15)', fontWeight: 'var(--w-bold)', margin: 0 }}>{heading}</p>
       </div>
 
-      <p style={{ fontSize: 'var(--fs-13)', color: 'var(--text)', margin: '14px 0 0' }}>{body}</p>
+      <p style={{ fontSize: 'var(--fs-13)', color: 'var(--text)', margin: 'var(--s-7) 0 0' }}>{body}</p>
       <p className="num" style={{ fontSize: 'var(--fs-12)', color: 'var(--muted)', marginTop: 'var(--sp-12)' }}>
         {metadata}
       </p>

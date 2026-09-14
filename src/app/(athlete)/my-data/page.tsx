@@ -339,7 +339,7 @@ async function EmptyPeriod({
 
 function WindowLine({ range, timezone }: { range: ResolvedRange; timezone: string }) {
   return (
-    <p className="cap" style={{ margin: '6px 0 0' }}>
+    <p className="cap" style={{ margin: 'var(--s-3) 0 0' }}>
       {formatDate(range.from, timezone)} &ndash; {formatDate(range.to, timezone)} &middot;{' '}
       <span className="num">{range.days}</span> day{range.days === 1 ? '' : 's'}
       {range.clipped ? (
@@ -546,12 +546,12 @@ export default async function MyDataPage({
             />
             <WindowLine range={range} timezone={timezone} />
             {coercedFrom === 'day' ? (
-              <p className="cap" style={{ margin: '4px 0 0' }}>
+              <p className="cap" style={{ margin: 'var(--s-2) 0 0' }}>
                 A single day was asked for. Your usual range needs {ROLLING_DAYS} days to draw, so
                 this is showing {range.label.toLowerCase()} instead.
               </p>
             ) : coercedFrom === 'season' ? (
-              <p className="cap" style={{ margin: '4px 0 0' }}>
+              <p className="cap" style={{ margin: 'var(--s-2) 0 0' }}>
                 Your club hasn&rsquo;t set a current season up, so this is showing{' '}
                 {range.label.toLowerCase()} instead.
               </p>
@@ -999,7 +999,7 @@ async function WellnessTab({
                       : 'What you reported:'}
                   </p>
                   {corrected.priorRevisions.length > 0 ? (
-                    <ol className="cap" style={{ margin: '4px 0 0', paddingInlineStart: 18 }}>
+                    <ol className="cap" style={{ margin: 'var(--s-2) 0 0', paddingInlineStart: 18 }}>
                       {corrected.priorRevisions.map((rev) => (
                         <li key={rev.id} className="num">
                           {`sleep ${dash(rev.sleep_hours)} h · quality ${dash(
@@ -1186,7 +1186,7 @@ async function TrainingTab({
                               {corrected.priorRevisions.length > 0 ? (
                                 <ol
                                   className="cap"
-                                  style={{ margin: '4px 0 0', paddingInlineStart: 18 }}
+                                  style={{ margin: 'var(--s-2) 0 0', paddingInlineStart: 18 }}
                                 >
                                   {corrected.priorRevisions.map((rev) => (
                                     <li key={rev.id} className="num">

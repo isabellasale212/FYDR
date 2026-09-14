@@ -73,7 +73,7 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
       {/* Mirrors the toggle on /schedule — one sidebar entry, two real
        * routes (this page's write surface, attendance capture, has no
        * equivalent on the week-plan page). */}
-      <div className="chiprow" style={{ margin: '10px 0 14px' }}>
+      <div className="chiprow" style={{ margin: 'var(--s-5) 0 var(--s-7)' }}>
         <Link href="/schedule" className="squad-chip">
           Week plan
         </Link>

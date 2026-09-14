@@ -129,7 +129,7 @@ export function ExportBuilderForm({ domains, groupIds, groupLabel, athleteCount,
       <h2 className="card-title" id={legendId}>
         New export
       </h2>
-      <p className="sub" style={{ margin: '2px 0 14px' }}>
+      <p className="sub" style={{ margin: 'var(--s-1) 0 var(--s-7)' }}>
         {groupLabel} · {athleteCount} athlete{athleteCount === 1 ? '' : 's'} in scope
       </p>
 
@@ -147,7 +147,7 @@ export function ExportBuilderForm({ domains, groupIds, groupLabel, athleteCount,
         </div>
       ) : null}
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '0 0 18px' }}>
+      <fieldset style={{ border: 'none', padding: 0, margin: '0 0 var(--s-9)' }}>
         <legend className="label" style={{ fontSize: 'var(--fs-13)', marginBottom: 'var(--sp-8)' }}>
           What to include
         </legend>
@@ -168,7 +168,7 @@ export function ExportBuilderForm({ domains, groupIds, groupLabel, athleteCount,
         </div>
       </fieldset>
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '0 0 18px' }}>
+      <fieldset style={{ border: 'none', padding: 0, margin: '0 0 var(--s-9)' }}>
         <legend className="label" style={{ fontSize: 'var(--fs-13)', marginBottom: 'var(--sp-8)' }}>
           When
         </legend>

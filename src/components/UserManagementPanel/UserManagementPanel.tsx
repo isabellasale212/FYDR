@@ -159,13 +159,13 @@ export function UserManagementPanel({ orgId, currentUserId, currentActorRole, ti
               Isabella 2026-09-09 from the subheader audit. The 8px bottom padding
               moved onto the heading — the paragraph was carrying it, so deleting
               it outright would have butted the list against the title. */}
-          <h2 className="card-title" style={{ padding: '16px 16px 8px' }}>
+          <h2 className="card-title" style={{ padding: 'var(--s-8) var(--s-8) var(--s-4)' }}>
             Athlete records with no account
           </h2>
           {unlinked.map((a, index) => (
             <div key={a.id}>
               {index > 0 ? <div className="hair" /> : null}
-              <div className="load-row" style={{ gridTemplateColumns: '1fr auto', padding: '10px 16px' }}>
+              <div className="load-row" style={{ gridTemplateColumns: '1fr auto', padding: 'var(--s-5) var(--s-8)' }}>
                 <span className="nm">
                   {a.squad_number ? `#${a.squad_number} ` : ''}
                   {a.first_name} {a.last_name}
@@ -264,7 +264,7 @@ function CreateUserForm({
             them choose their own password.
           </p>
         )}
-        <p className="nm" style={{ fontSize: 'var(--fs-13)', padding: '10px 14px', background: 'var(--surf2)', borderRadius: 8, wordBreak: 'break-all' }}>
+        <p className="nm" style={{ fontSize: 'var(--fs-13)', padding: 'var(--s-5) var(--s-7)', background: 'var(--surf2)', borderRadius: 8, wordBreak: 'break-all' }}>
           {result.inviteUrl}
         </p>
         <p className="cap" style={{ marginBottom: 'var(--sp-12)' }}>
@@ -457,7 +457,7 @@ function UserRow({
         {user.roles.includes('athlete') && !user.athlete_id && unlinkedAthletes.length > 0 ? (
           <div style={{ display: 'flex', gap: 'var(--sp-8)', alignItems: 'center', marginTop: 'var(--sp-8)' }}>
             <span className="tiny">No linked athlete record —</span>
-            <select className="field" style={{ minHeight: 32, padding: '4px 8px', width: 'auto' }} value={linkChoice} onChange={(e) => setLinkChoice(e.target.value)}>
+            <select className="field" style={{ minHeight: 32, padding: 'var(--s-2) var(--s-4)', width: 'auto' }} value={linkChoice} onChange={(e) => setLinkChoice(e.target.value)}>
               <option value="">Pick one to link</option>
               {unlinkedAthletes.map((a) => (
                 <option key={a.id} value={a.id}>

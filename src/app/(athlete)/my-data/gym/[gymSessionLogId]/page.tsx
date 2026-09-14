@@ -115,7 +115,7 @@ export default async function GymSessionHistoryPage({
 
       <div className="stack">
         <section className="card flush">
-          <h2 className="card-title" style={{ padding: '16px 16px 0' }}>
+          <h2 className="card-title" style={{ padding: 'var(--s-8) var(--s-8) 0' }}>
             Sets
           </h2>
           <div style={{ padding: 'var(--sp-16)' }}>
@@ -159,7 +159,7 @@ export default async function GymSessionHistoryPage({
               .join(' ')}{' '}
             Both values are kept on record.
           </p>
-          <ol className="cap" style={{ margin: '4px 0 0', paddingInlineStart: 18 }}>
+          <ol className="cap" style={{ margin: 'var(--s-2) 0 0', paddingInlineStart: 18 }}>
             {corrected.map((c) => (
               <li key={c.current.id} className="num">
                 {`Set ${c.current.set_number}: `}

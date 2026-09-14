@@ -162,7 +162,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
           </p>
           <input
             className="field"
-            style={{ fontSize: 'var(--fs-22)', fontWeight: 'var(--w-bold)', border: 'none', padding: '4px 0', background: 'none' }}
+            style={{ fontSize: 'var(--fs-22)', fontWeight: 'var(--w-bold)', border: 'none', padding: 'var(--s-2) 0', background: 'none' }}
             value={name}
             onChange={(e) => {
               setName(e.target.value);
@@ -264,7 +264,7 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
             <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)' }}>
               <span style={{ fontWeight: 'var(--w-bold)', fontSize: 'var(--fs-14)' }}>{mdLabel(day.mdOffset)}</span>
               {day.sessions.length === 0 ? <span className="tiny" style={{ color: 'var(--faint)' }}>Off. Nothing scheduled.</span> : null}
-              <button type="button" className="btn-ghost" style={{ marginLeft: 'auto', minHeight: 32, padding: '5px 12px' }} onClick={() => setEditingPosition(day.mdOffset)}>
+              <button type="button" className="btn-ghost" style={{ marginLeft: 'auto', minHeight: 32, padding: 'var(--s-3) var(--s-6)' }} onClick={() => setEditingPosition(day.mdOffset)}>
                 + session
               </button>
             </div>
@@ -282,19 +282,19 @@ export function WeekTemplateBuilder({ orgId, userId, templateId, name: initialNa
                         {s.location ? ` · ${s.location}` : ''}
                       </div>
                     </div>
-                    <button type="button" className="btn-ghost" style={{ minHeight: 32, padding: '4px 8px' }} disabled={i === 0} onClick={() => moveSession(day.mdOffset, s.key, -1)}>
+                    <button type="button" className="btn-ghost" style={{ minHeight: 32, padding: 'var(--s-2) var(--s-4)' }} disabled={i === 0} onClick={() => moveSession(day.mdOffset, s.key, -1)}>
                       ↑
                     </button>
                     <button
                       type="button"
                       className="btn-ghost"
-                      style={{ minHeight: 32, padding: '4px 8px' }}
+                      style={{ minHeight: 32, padding: 'var(--s-2) var(--s-4)' }}
                       disabled={i === day.sessions.length - 1}
                       onClick={() => moveSession(day.mdOffset, s.key, 1)}
                     >
                       ↓
                     </button>
-                    <button type="button" className="btn-ghost" style={{ minHeight: 32, padding: '4px 8px', color: 'var(--bad-text)' }} onClick={() => removeSession(day.mdOffset, s.key)}>
+                    <button type="button" className="btn-ghost" style={{ minHeight: 32, padding: 'var(--s-2) var(--s-4)', color: 'var(--bad-text)' }} onClick={() => removeSession(day.mdOffset, s.key)}>
                       Delete
                     </button>
                   </div>

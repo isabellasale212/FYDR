@@ -137,7 +137,7 @@ export function SessionEditForm({ orgId, session, groups, timezone, titleSuggest
           ))}
       </datalist>
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+      <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">Type</legend>
         <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {SESSION_TYPES.map((t) => (
@@ -225,7 +225,7 @@ export function SessionEditForm({ orgId, session, groups, timezone, titleSuggest
         placeholder="Main pitch"
       />
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+      <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">Who&rsquo;s in it</legend>
         <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {groups.map((g) => (

@@ -174,7 +174,7 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
           Squad roster, choose one for their report
         </h2>
         {rows.length === 0 ? (
-          <p className="tiny" style={{ padding: '0 0 14px' }}>
+          <p className="tiny" style={{ padding: '0 0 var(--s-7)' }}>
             {q ? (
               <>
                 No athlete matches &ldquo;{q}&rdquo; in {groupScopeLabel(groups, groupIds)}

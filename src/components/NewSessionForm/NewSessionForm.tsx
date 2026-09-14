@@ -149,7 +149,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
           ))}
       </datalist>
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+      <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">Type</legend>
         <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {SESSION_TYPES.map((t) => (
@@ -239,7 +239,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
         placeholder="Main pitch"
       />
 
-      <fieldset ref={groupsRef} tabIndex={-1} style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+      <fieldset ref={groupsRef} tabIndex={-1} style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">Who&rsquo;s in it</legend>
         <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {groups.map((g) => (

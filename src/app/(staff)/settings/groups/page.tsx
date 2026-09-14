@@ -138,7 +138,7 @@ export default async function GroupsPage() {
               <h2
                 className="sect"
                 id={`sec-${type}`}
-                style={{ padding: '14px 16px 8px' }}
+                style={{ padding: 'var(--s-7) var(--s-8) var(--s-4)' }}
               >
                 {enumLabel(type)} groups
                 <span className="tiny num">{rows.length}</span>

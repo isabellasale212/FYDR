@@ -93,7 +93,7 @@ export function GroupMemberManager({
             display: 'flex',
             justifyContent: 'space-between',
             alignItems: 'center',
-            padding: '16px 16px 8px',
+            padding: 'var(--s-8) var(--s-8) var(--s-4)',
           }}
         >
           <h2 className="card-title" id="members-title" style={{ margin: 0 }}>
@@ -110,13 +110,13 @@ export function GroupMemberManager({
         </div>
 
         {error ? (
-          <p className="form-error" role="alert" style={{ padding: '0 16px' }}>
+          <p className="form-error" role="alert" style={{ padding: '0 var(--s-8)' }}>
             {error}
           </p>
         ) : null}
 
         {current.length === 0 ? (
-          <p className="cap" style={{ padding: '0 16px 16px' }}>
+          <p className="cap" style={{ padding: '0 var(--s-8) var(--s-8)' }}>
             No athletes in this group yet.
           </p>
         ) : (

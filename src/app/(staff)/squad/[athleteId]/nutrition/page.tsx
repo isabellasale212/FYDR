@@ -305,7 +305,7 @@ export default async function AthleteNutritionPage({
           window is still a real difference between the label and the data, so
           that one line survives. */}
       {range.clipped ? (
-        <p className="cap" style={{ margin: '0 0 12px' }}>
+        <p className="cap" style={{ margin: '0 0 var(--s-6)' }}>
           {range.label} is clipped to the two-year maximum this app reads in one window.
         </p>
       ) : null}
@@ -419,7 +419,7 @@ export default async function AthleteNutritionPage({
               {latestOwn ? `last weighed ${formatDate(latestOwn.measured_on, timezone)}` : 'no weigh-in on record'}
             </span>
           </div>
-          <p className="pp-weight-value num" style={{ margin: '6px 0 0' }}>
+          <p className="pp-weight-value num" style={{ margin: 'var(--s-3) 0 0' }}>
             {latestKg !== null ? formatNumber(latestKg, 1) : '—'}
             <span className="u"> kg</span>
           </p>

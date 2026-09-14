@@ -374,7 +374,7 @@ export default async function AthleteGymPage({
           A CLIPPED window is a different fact — the label and the data really
           do differ — so that line stays. */}
       {range.clipped ? (
-        <p className="cap" style={{ margin: '0 0 12px' }}>
+        <p className="cap" style={{ margin: '0 0 var(--s-6)' }}>
           {range.label} is clipped to the two-year maximum this app reads in one window.
         </p>
       ) : null}
@@ -433,7 +433,7 @@ export default async function AthleteGymPage({
                       {a.endsOn ? ` to ${formatDate(a.endsOn, timezone)}` : ''}
                     </span>
                   </div>
-                  <p style={{ margin: '8px 0 0' }}>
+                  <p style={{ margin: 'var(--s-4) 0 0' }}>
                     <Link href={`/programmes/${a.programmeId}/athlete/${athleteId}`} className="pp-link">
                       What this resolves to for {athlete.first_name} &rsaquo;
                     </Link>

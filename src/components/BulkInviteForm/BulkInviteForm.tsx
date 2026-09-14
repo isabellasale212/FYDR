@@ -167,7 +167,7 @@ export function BulkInviteForm({ unlinkedAthletes }: Props) {
                     {row.matchStatus === 'error' ? (
                       <span className="g-bad">{row.error}</span>
                     ) : row.matchStatus === 'needs_choice' ? (
-                      <select className="field" style={{ minHeight: 32, padding: '4px 8px' }} value={row.chosenAthleteId ?? ''} onChange={(e) => onPickCandidate(row.line, e.target.value)}>
+                      <select className="field" style={{ minHeight: 32, padding: 'var(--s-2) var(--s-4)' }} value={row.chosenAthleteId ?? ''} onChange={(e) => onPickCandidate(row.line, e.target.value)}>
                         <option value="">Choose which record…</option>
                         {row.candidates.map((c) => (
                           <option key={c.id} value={c.id}>

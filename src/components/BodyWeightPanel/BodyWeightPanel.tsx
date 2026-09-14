@@ -326,7 +326,7 @@ function TargetRangeForm({
 
       {history.length > 0 ? (
         <div className="pp-target-history">
-          <p className="label" style={{ margin: '4px 0 2px' }}>
+          <p className="label" style={{ margin: 'var(--s-2) 0 var(--s-1)' }}>
             Previous ranges
           </p>
           {history.map((r) => (

@@ -109,7 +109,7 @@ export function GroupEditForm({ orgId, groupId, initialName, initialDescription,
             placeholder="Optional"
           />
 
-          <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+          <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
             <legend className="label">Colour</legend>
             <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
               <button

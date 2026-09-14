@@ -153,7 +153,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
         ))}
       </select>
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+      <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">The rule</legend>
         <select
           className="field"
@@ -195,7 +195,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
         </div>
       </fieldset>
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+      <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">Compare against</legend>
         {BASELINES.map((b) => (
           <label
@@ -252,7 +252,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
         style={{ maxWidth: 120 }}
       />
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+      <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">Severity</legend>
         <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {SEVERITIES.map((s) => (
@@ -269,7 +269,7 @@ export function ThresholdEditorForm({ orgId, userId }: Props) {
         </div>
       </fieldset>
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+      <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">Notify</legend>
         <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {NOTIFY_OPTIONS.map((role) => (

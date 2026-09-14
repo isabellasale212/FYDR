@@ -99,13 +99,13 @@ export function EntryCorrectionPanel({
       <h2 className="card-title" id="pp-corrections-title">
         Entries and corrections
       </h2>
-      <p className="import-sub" style={{ margin: '4px 0 0' }}>
+      <p className="import-sub" style={{ margin: 'var(--s-2) 0 0' }}>
         The {WINDOW_LABEL} of {athleteFirstName}&rsquo;s wellness check-ins and session
         ratings. {canCorrect
           ? 'Correcting one keeps the original and records a new, dated revision against your name — entries are never overwritten. The window is a fixed 28 days. Gym set logs and the weekly nutrition check-in are not correctable here.'
           : 'Correcting an entry belongs to the sport scientist, the coach and the medic. The window is a fixed 28 days. Gym set logs and the weekly nutrition check-in are not correctable here.'}
       </p>
-      <p className="cap" style={{ margin: '6px 0 0' }}>
+      <p className="cap" style={{ margin: 'var(--s-3) 0 0' }}>
         {correctedWellness + correctedTraining === 0
           ? 'Nothing in this window has been corrected.'
           : `${correctedWellness + correctedTraining} of these entries carry a correction. Expand one to see what it said before.`}
@@ -287,7 +287,7 @@ function HistoryCell<T extends { id: string; submitted_at: string | null }>({
   return (
     <tr>
       <td colSpan={colSpan} style={{ background: 'var(--surf2)' }}>
-        <p className="cap" style={{ margin: '0 0 6px' }}>
+        <p className="cap" style={{ margin: '0 0 var(--s-3)' }}>
           {row.correctedAt
             ? `Current value recorded ${formatDateTime(row.correctedAt, timezone)}${
                 row.correctedBy ? ` by ${row.correctedBy}` : ' by a staff member'
@@ -345,7 +345,7 @@ function ActionsCell({
         <button
           type="button"
           className="btn-ghost"
-          style={{ padding: '4px 10px', marginInlineEnd: 6 }}
+          style={{ padding: 'var(--s-2) var(--s-5)', marginInlineEnd: 6 }}
           onClick={onToggleHistory}
           aria-expanded={historyOpen}
         >
@@ -354,7 +354,7 @@ function ActionsCell({
       ) : null}
       <BlockedButton
         className="btn-ghost"
-        style={{ padding: '4px 10px' }}
+        style={{ padding: 'var(--s-2) var(--s-5)' }}
         blocked={!canCorrect}
         reason="Correcting an entry belongs to the sport scientist, the coach and the medic."
         aria-expanded={canCorrect ? formOpen : undefined}
@@ -581,7 +581,7 @@ function WellnessCorrectionForm({
         setError(null);
         save.mutate();
       }}
-      style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-12)', alignItems: 'flex-end', padding: '10px 0' }}
+      style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-12)', alignItems: 'flex-end', padding: 'var(--s-5) 0' }}
     >
       <p className="cap" style={{ flexBasis: '100%', margin: 0 }}>
         Correcting {formatDate(entry.entry_date, timezone)}. Change only what is wrong —
@@ -680,7 +680,7 @@ function TrainingCorrectionForm({
         setError(null);
         save.mutate();
       }}
-      style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-12)', alignItems: 'flex-end', padding: '10px 0' }}
+      style={{ display: 'flex', flexWrap: 'wrap', gap: 'var(--sp-12)', alignItems: 'flex-end', padding: 'var(--s-5) 0' }}
     >
       <p className="cap" style={{ flexBasis: '100%', margin: 0 }}>
         Correcting the rating for {formatDate(entry.entry_date, timezone)}. Session load

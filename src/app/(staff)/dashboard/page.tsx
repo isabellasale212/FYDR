@@ -273,7 +273,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
         </div>
       </div>
 
-      <div style={{ margin: '10px 0 14px' }}>
+      <div style={{ margin: 'var(--s-5) 0 var(--s-7)' }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 
@@ -283,7 +283,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
           role="status"
           style={{
             marginBottom: 'var(--sp-14)',
-            padding: '10px 16px',
+            padding: 'var(--s-5) var(--s-8)',
             borderInlineStart: '3px solid var(--accent)',
             display: 'flex',
             gap: 'var(--sp-8)',
@@ -506,7 +506,7 @@ export default async function DashboardPage({ searchParams }: { searchParams: Se
                   <Link
                     href={`/schedule/${entry.id}`}
                     className="card dash-session-card"
-                    style={{ padding: '16px 18px', display: 'block', textDecoration: 'none', color: 'inherit' }}
+                    style={{ padding: 'var(--s-8) var(--s-9)', display: 'block', textDecoration: 'none', color: 'inherit' }}
                     data-past={entry.past}
                     data-severe={entry.countState === 'bad'}
                   >

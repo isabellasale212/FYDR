@@ -282,7 +282,7 @@ export default async function InjuryAvailabilityReportPage({
                      * two unavailable and three modified players. An empty list
                      * under an active filter proves something about the scope,
                      * never about the squad — so say which. */
-                    <p className="tiny" style={{ padding: '0 0 14px' }}>
+                    <p className="tiny" style={{ padding: '0 0 var(--s-7)' }}>
                       {groupIds.length > 0
                         ? `No unavailable or modified athletes in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check the whole squad.`
                         : 'Everyone is available.'}
@@ -441,7 +441,7 @@ export default async function InjuryAvailabilityReportPage({
                   <h2 className="ath-card-title" id="inj-who">
                     Who the days belong to
                   </h2>
-                  <p className="tiny" style={{ color: 'var(--muted)', margin: '6px 0 12px' }}>
+                  <p className="tiny" style={{ color: 'var(--muted)', margin: 'var(--s-3) 0 var(--s-6)' }}>
                     {report.byAthlete.length === 0
                       ? 'Nobody lost a day in this period.'
                       : `${report.byAthlete.length} athlete${report.byAthlete.length === 1 ? '' : 's'} account for all ${report.summary.daysLost} days. Nobody else lost one.`}
@@ -497,7 +497,7 @@ export default async function InjuryAvailabilityReportPage({
                   <h2 className="ath-card-title" id="inj-unit">
                     By positional unit
                   </h2>
-                  <p className="tiny" style={{ color: 'var(--muted)', margin: '6px 0 12px' }}>
+                  <p className="tiny" style={{ color: 'var(--muted)', margin: 'var(--s-3) 0 var(--s-6)' }}>
                     Where the squad is thin if it happens again.
                   </p>
                   {report.byUnit.length === 0 ? (

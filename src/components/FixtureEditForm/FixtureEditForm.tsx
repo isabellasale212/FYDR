@@ -104,7 +104,7 @@ export function FixtureEditForm({ orgId, fixture, timezone }: Props) {
         </div>
       </div>
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+      <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">Home, away or neutral</legend>
         <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {HOME_AWAY.map((h) => (
@@ -143,7 +143,7 @@ export function FixtureEditForm({ orgId, fixture, timezone }: Props) {
         placeholder="League"
       />
 
-      <fieldset style={{ border: 'none', padding: 0, margin: '14px 0 0' }}>
+      <fieldset style={{ border: 'none', padding: 0, margin: 'var(--s-7) 0 0' }}>
         <legend className="label">Importance</legend>
         <div className="chiprow" style={{ marginTop: 'var(--sp-6)' }}>
           {IMPORTANCE.map((i) => (

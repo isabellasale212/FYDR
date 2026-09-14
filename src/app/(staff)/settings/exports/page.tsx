@@ -64,7 +64,7 @@ export default async function ExportsPage({ searchParams }: { searchParams: Sear
         Every domain below, squad-wide. Medical records are never exported here.
       </p>
 
-      <div style={{ margin: '0 0 16px' }}>
+      <div style={{ margin: '0 0 var(--s-8)' }}>
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 

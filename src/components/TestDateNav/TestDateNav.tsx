@@ -49,7 +49,7 @@ export function TestDateNav({ testDefinitionId, testDate, timezone, groupIds, da
           <input
             type="date"
             className="field"
-            style={{ padding: '4px 8px' }}
+            style={{ padding: 'var(--s-2) var(--s-4)' }}
             value={testDate}
             onChange={(e) => go(e.target.value)}
             aria-label="Jump to a specific date"
@@ -62,7 +62,7 @@ export function TestDateNav({ testDefinitionId, testDate, timezone, groupIds, da
             </span>
             <select
               className="field"
-              style={{ padding: '4px 8px' }}
+              style={{ padding: 'var(--s-2) var(--s-4)' }}
               value={dates.some((d) => d.date === testDate) ? testDate : ''}
               onChange={(e) => go(e.target.value)}
               aria-label="Jump to a past testing session for this test"

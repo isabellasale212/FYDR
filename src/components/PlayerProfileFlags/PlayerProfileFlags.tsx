@@ -182,11 +182,11 @@ export function PlayerProfileFlags({
                 style={{ borderInlineStart: `3px solid ${TONE_VAR[flag.severity]}` }}
               >
                 <div className="pp-flag-top">
-                  <span className="pill pill-neutral" style={{ fontSize: 'var(--fs-11)', padding: '2px 9px' }} data-flag-domain>
+                  <span className="pill pill-neutral" style={{ fontSize: 'var(--fs-11)', padding: 'var(--s-1) var(--s-5)' }} data-flag-domain>
                     {flagDomainWord(enumLabel(flag.domain), flag.domain, premium)}
                   </span>
                   {flag.escalated ? (
-                    <span className={`pill ${canAck ? 'pill-bad' : 'pill-warn'}`} style={{ fontSize: 'var(--fs-11)', padding: '2px 9px' }}>
+                    <span className={`pill ${canAck ? 'pill-bad' : 'pill-warn'}`} style={{ fontSize: 'var(--fs-11)', padding: 'var(--s-1) var(--s-5)' }}>
                       {canAck ? 'Escalated' : 'Was escalated'}
                     </span>
                   ) : null}
@@ -232,13 +232,13 @@ export function PlayerProfileFlags({
                         athlete_visible_at. The previous copy ("stays with the
                         coaching staff") named a narrower audience than the policy
                         gives and read as confidentiality to a clinician. */}
-                    <p className="cap" style={{ margin: '6px 0 0' }}>
+                    <p className="cap" style={{ margin: 'var(--s-3) 0 0' }}>
                       {canAck
                         ? `Every coach and medical staff member in the club can read this. ${flag.name.split(' ')[0]} sees it too once the flag is acknowledged.`
                         : `Every coach and medical staff member in the club can read this, and so can ${flag.name.split(' ')[0]}, alongside the date the flag was raised.`}
                     </p>
                     {viewerIsMedical ? (
-                      <p className="cap" style={{ margin: '6px 0 0', color: 'var(--warn-text)' }}>
+                      <p className="cap" style={{ margin: 'var(--s-3) 0 0', color: 'var(--warn-text)' }}>
                         Coaching staff read this field. Keep diagnosis and treatment detail
                         out of it &mdash; that belongs on the injury record, where it stays
                         with medical.

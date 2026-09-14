@@ -50,7 +50,7 @@ export function MealLibraryPicker({ meals, addedIds, onAdd, onClose }: Props) {
                   alignItems: 'center',
                   justifyContent: 'space-between',
                   gap: 'var(--sp-10)',
-                  padding: '8px 10px',
+                  padding: 'var(--s-4) var(--s-5)',
                   border: '1px solid var(--border)',
                   borderRadius: 'var(--r-field)',
                 }}

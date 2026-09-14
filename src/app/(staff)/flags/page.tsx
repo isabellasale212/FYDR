@@ -73,7 +73,7 @@ export default async function FlagsPage({
       </div>
 
       {dateParam ? (
-        <p className="sub" style={{ margin: '0 0 10px' }}>
+        <p className="sub" style={{ margin: '0 0 var(--s-5)' }}>
           Filtered to flags raised on <b>{formatDate(dateParam, timezone)}</b> —{' '}
           <Link href={`/flags${groupIds.length > 0 ? `?groups=${groupIds.join(',')}` : ''}`} className="linklike">
             show every open flag

@@ -93,7 +93,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
             detail is a separate act from creating the record, which a coach may
             have done when the player went down. */}
         {canEditClinical && active ? (
-          <Link href={`/injuries/${active.id}`} className="btn-ghost-pill" style={{ padding: '8px 16px' }}>
+          <Link href={`/injuries/${active.id}`} className="btn-ghost-pill" style={{ padding: 'var(--s-4) var(--s-8)' }}>
             {clinical && Object.values(clinical).some((v) => v !== null && v !== '')
               ? 'Edit'
               : 'Add clinical detail'}
@@ -104,7 +104,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
       {!active ? (
         /* One line, nothing else. No empty-state graphic and no disabled fields:
            both would imply there is something here to reveal. */
-        <p className="import-sub" style={{ margin: '4px 0 0' }}>
+        <p className="import-sub" style={{ margin: 'var(--s-2) 0 0' }}>
           No current restrictions. This is not the same as being cleared.
         </p>
       ) : (
@@ -115,13 +115,13 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
             </span>
           </div>
 
-          <p className="nm" style={{ fontSize: 'var(--fs-15)', margin: '10px 0 0' }}>
+          <p className="nm" style={{ fontSize: 'var(--fs-15)', margin: 'var(--s-5) 0 0' }}>
             {bodyAreaPhrase(active)}
           </p>
 
           {clinical ? (
             <>
-              <p className="sub" style={{ margin: '6px 0 0' }}>
+              <p className="sub" style={{ margin: 'var(--s-3) 0 0' }}>
                 Onset {formatDate(active.onset_date, timezone)}
                 {/* occurred_in is the occurrence_context enum (training, match,
                     gym, other, unknown), so it goes through enumLabel like every
@@ -147,7 +147,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
                   text, there is no attachments table and no document to open, so
                   a link would promise something the data model cannot hold. */}
               {clinical.imaging || clinical.referral ? (
-                <p className="sub" style={{ margin: '12px 0 0' }}>
+                <p className="sub" style={{ margin: 'var(--s-6) 0 0' }}>
                   {clinical.imaging ? <b className="nm">Imaging: </b> : null}
                   {[clinical.imaging, clinical.referral].filter(Boolean).join(' · ')}
                 </p>
@@ -160,7 +160,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
                   <span className="nm" style={{ display: 'block' }}>
                     Treatment plan
                   </span>
-                  <p className="sub" style={{ margin: '2px 0 0' }}>
+                  <p className="sub" style={{ margin: 'var(--s-1) 0 0' }}>
                     {clinical.treatment_plan}
                   </p>
                 </>
@@ -171,7 +171,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
                   <span className="nm" style={{ display: 'block', marginTop: 'var(--sp-12)' }}>
                     Notes
                   </span>
-                  <p className="sub" style={{ margin: '2px 0 0' }}>
+                  <p className="sub" style={{ margin: 'var(--s-1) 0 0' }}>
                     {clinical.clinical_notes}
                   </p>
                 </>
@@ -193,7 +193,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
                   <hr className="hr" />
                   <div style={{ marginTop: 'var(--sp-12)' }}>
                     <span className="label">Rehab programme</span>
-                    <p className="import-sub" style={{ margin: '4px 0 0' }}>
+                    <p className="import-sub" style={{ margin: 'var(--s-2) 0 0' }}>
                       {programmeStatus === null || programmeStatus.kind === 'none' ? (
                         'No rehab programme yet.'
                       ) : programmeStatus.kind === 'proposed' ? (
@@ -238,7 +238,7 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
                   <summary>Past injuries ({past.length})</summary>
                   <div className="pp-injury-list" style={{ marginTop: 'var(--sp-8)' }}>
                     {past.map((p) => (
-                      <p className="sub" key={p.id} style={{ margin: '0 0 6px' }}>
+                      <p className="sub" key={p.id} style={{ margin: '0 0 var(--s-3)' }}>
                         <span className="pill pill-neutral">Closed</span>{' '}
                         <b className="nm" style={{ fontSize: 'var(--fs-13)' }}>
                           {bodyAreaPhrase(p)}
@@ -253,14 +253,14 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
             </>
           ) : (
             <>
-              <p className="sub" style={{ margin: '8px 0 0' }}>
+              <p className="sub" style={{ margin: 'var(--s-4) 0 0' }}>
                 {restrictions.length > 0
                   ? restrictions.map((r) => enumLabel(r)).join(' · ')
                   : 'No restrictions recorded.'}
               </p>
               {/* Said either way (PATTERN-S3, 2026-09-12): an expected return
                   nobody has set is "not known", not a missing line. */}
-              <p className="sub" style={{ margin: '6px 0 0' }}>
+              <p className="sub" style={{ margin: 'var(--s-3) 0 0' }}>
                 {active.expected_return
                   ? `Expected return ${formatDate(active.expected_return, timezone)}`
                   : 'Expected return not known'}

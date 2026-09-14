@@ -261,7 +261,7 @@ export default async function ProgrammesPage({
                             {detail.blocks.length > 1 ? <span className="tiny">{s.blockName}</span> : null}
                           </div>
                           {exercises.length === 0 ? (
-                            <p className="tiny" style={{ padding: '10px 12px' }}>
+                            <p className="tiny" style={{ padding: 'var(--s-5) var(--s-6)' }}>
                               No exercises prescribed yet.
                             </p>
                           ) : (

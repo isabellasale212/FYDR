@@ -272,7 +272,7 @@ export function PlayerProfileBio({
                 {error}
               </p>
             ) : null}
-            <button type="submit" className="btn-primary" disabled={busy} style={{ marginLeft: 'auto', padding: '8px 20px' }}>
+            <button type="submit" className="btn-primary" disabled={busy} style={{ marginLeft: 'auto', padding: 'var(--s-4) var(--s-10)' }}>
               {busy ? 'Saving…' : 'Save'}
             </button>
             <button type="button" className="btn-ghost" onClick={cancel} disabled={busy}>

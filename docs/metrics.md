@@ -25,6 +25,18 @@ superseded corrections filtered out. *Timezone* matters because a day boundary
 in the club's local time is not the same instant as a day boundary in UTC, and
 every window below is measured in the club's own local days.
 
+**How a bar on the Analytics screen aggregates a week (PATTERN-S7 C6, 14
+September 2026).** The four analytics panels draw one bar per day up to a
+fortnight and one bar per week beyond it. A week bar is not a new metric: it
+is the entry's own daily value collapsed by the rule its kind demands, and the
+panel's definition line says which. A *volume* measure — session load
+(MET-007), tonnage (MET-041) — is **summed** over the days in the week; a
+*scored* one — readiness (MET-002) — is **meaned** over the days that have a
+value; the *trailing ratio* (MET-010) is **the ratio as it stood on the last
+day of the week that has one**, because a mean of overlapping windows is a
+number with no definition. Days with no value are absent, never zero, and a
+week with none has no bar. `src/lib/analyticsPanels.ts` holds the rule.
+
 ---
 
 ## MET-001. Readiness score

@@ -1,12 +1,6 @@
 import { ACWR_BAND_TEXT, ACWR_CHRONIC_WINDOW_DAYS, ACWR_MIN_DAYS_WITH_DATA } from '@/lib/acwr';
-// `RangeKey` is imported as well as re-exported below: a bare `export { type X }
-// from` is a pass-through and does NOT put the name in this module's scope,
-// and chartUnavailableReason() below still needs it in scope. `addDays` was
-// only ever used by resolveRange and left with it.
-import type { RangeKey } from '@/lib/period';
-
-/* The analytics builder's vocabulary — metrics, timelines, chart types — and
- * nothing else. Pure: no database, no React, no `Db`. It exists so the page,
+/* The analytics vocabulary — the metric catalogue, and the RangeKey bridge —
+ * and nothing else. Pure: no database, no React, no `Db`. It exists so the page,
  * the query layer and the chart components all read the same catalogue rather
  * than three drifting copies of "what is a metric", which is the exact failure
  * lib/acwr.ts was created to undo for ACWR (see its header, audit S1).
@@ -206,17 +200,12 @@ export const METRICS: readonly MetricDef[] = [
   },
 ];
 
-const METRIC_BY_KEY = new Map(METRICS.map((m) => [m.key, m]));
-
-export const DEFAULT_METRIC: MetricKey = 'acwr';
-
-/** Resolve a raw `?metric=` value. An unknown value falls back to the default
- *  rather than throwing — a URL is user input and a stale bookmark should
- *  render a screen, not a 500. */
-export function resolveMetric(raw: string | string[] | undefined): MetricDef {
-  const key = typeof raw === 'string' ? raw : undefined;
-  return (key && METRIC_BY_KEY.get(key as MetricKey)) || METRIC_BY_KEY.get(DEFAULT_METRIC)!;
-}
+/* The builder's own resolveMetric / DEFAULT_METRIC, the chart catalogue
+ * (line / bar / table), chartUnavailableReason and chartIsPremium went with
+ * /analytics/build on 2026-09-14 (PATTERN-S7 C6; D2 "stays until C6 replaces
+ * it"). The four panels are fixed to their measures (lib/analyticsPanels);
+ * what remains here is the metric catalogue every analytics read resolves
+ * from, and the RangeKey bridge below. */
 
 /* ------------------------------------------------------------------ *
  * Timelines
@@ -249,69 +238,3 @@ export {
   type RangeKey,
   type ResolvedRange,
 } from '@/lib/period';
-
-/* ------------------------------------------------------------------ *
- * Chart types
- * ------------------------------------------------------------------ */
-
-export type ChartKey = 'line' | 'bar' | 'table';
-
-export const CHART_OPTIONS: readonly { key: ChartKey; label: string }[] = [
-  { key: 'line', label: 'Trend over time' },
-  { key: 'bar', label: 'Bar, by athlete' },
-  { key: 'table', label: 'Table' },
-];
-
-export const DEFAULT_CHART: ChartKey = 'line';
-
-export function isChartKey(raw: unknown): raw is ChartKey {
-  return typeof raw === 'string' && CHART_OPTIONS.some((c) => c.key === raw);
-}
-
-/**
- * analytics.md's rule that an illegal visualisation is "disabled with the
- * reason, not hidden". One day is one point, and a single point is not a
- * trend — the chart would render an axis and nothing on it. Rather than draw
- * that, the trend option is disabled for the `day` range and the page
- * substitutes another view, saying why.
- *
- * Returns null when the combination is legal.
- *
- * NOT the place for the tier lock. An illegal combination and a locked one are
- * different facts and are rendered differently: illegal is DISABLED in the
- * control (no amount of money makes a single day a trend), locked is CHOOSABLE
- * and shows what it would buy (see chartIsPremium below). Folding the two into
- * one function is how a purchasable feature ends up looking broken.
- */
-export function chartUnavailableReason(chart: ChartKey, range: RangeKey): string | null {
-  if (chart === 'line' && range === 'day') {
-    return 'A single day is one point, not a trend — widen the timeline for a line.';
-  }
-  return null;
-}
-
-/**
- * Which visualisations are Premium, in the one place the chart catalogue lives.
- *
- * The client's instruction was, verbatim: *"for the setting page move the
- * analytics bar chart and apple health connection onto the premium plan side"*.
- * This is the analytics half of it, scoped to what the sentence actually names:
- * the BAR CHART. The Analytics screen itself stays on both plans, so a Basic
- * club keeps the metric builder, the trend chart and the athlete table it
- * already has — and the byAthlete numbers the bar chart draws stay readable in
- * the table view, which is the same query and the same figures.
- *
- * Gating the whole route instead was considered and reverted: it deleted a
- * live, working screen from every existing `core` organisation, which
- * `docs/12-product-tiers.md` §3.3 names as "the highest-regret" kind of change
- * ("reversing it later is a downgrade for existing customers"), and it is
- * strictly wider than the sentence that authorised it. The Apple Health half of
- * that same sentence was implemented narrowly — a plan-card column move plus a
- * Locked state on one Settings row, no route gated — and the two halves of one
- * instruction should not have been read at two different scopes. (Apple
- * Health itself was removed from the product on 2026-09-13,
- * docs/platform-decision.md; the bar-chart half stands.)
- */
-export function chartIsPremium(chart: ChartKey): boolean {
-  return chart === 'bar';
-}

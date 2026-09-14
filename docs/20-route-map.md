@@ -147,7 +147,7 @@ describes that moved system accurately; it does not describe the wall, which has
 doc of its own yet — LEADERBOARD-SPEC.md is the only spec for it today.
 | 27 | Analytics | `/analytics` | `screens/analytics.md` | staff web, staff phone | coach, medical | none |
 | 27 | One preset | `/analytics/:presetId` | `screens/analytics.md` | staff web, staff phone | coach, medical | `/analytics` |
-| 27 | Query builder | `/analytics/builder` | `screens/analytics.md` | staff web | coach, medical | `/analytics` |
+| 27 | ~~Query builder~~ | ~~`/analytics/builder`~~ — removed 14 Sept 2026 with PATTERN-S7 C6 (the four panels replaced the builder; D2) | `screens/42-analytics.md` | — | — | — |
 | 29 | Settings | `/settings` | `screens/settings.md` | staff web, staff phone | coach, medical, admin | none |
 | 29 | Profile | `/settings/profile` | `screens/47-settings.md` | staff web, staff phone | every staff role | `/settings` |
 

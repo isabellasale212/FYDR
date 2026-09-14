@@ -1,0 +1,272 @@
+/* PATTERN-S7 C6 (Isabella, 2026-09-13; built 2026-09-14): analytics as four
+ * fixed panels of bars — one athlete against the squad's spread, or against
+ * the club's zone where one is set. Every rule the panels rest on is here,
+ * pure, so the guard can hold the words and the numbers:
+ *
+ *   - the grain: one bar per day up to a fortnight, one bar per week beyond;
+ *   - what a week bar is: summed for a volume measure, meaned for a scored
+ *     one, and for the trailing ratio the value standing at the end of the
+ *     week (a mean of overlapping windows is a number with no definition —
+ *     lib/analyticsBuilder's own rule for ACWR);
+ *   - the ground: the squad's mean ± 1 SD per period across the athletes in
+ *     scope with a value, under the one squad floor (lib/smallSample); or the
+ *     club's zone, drawn only when the club has set a fixed rule on the
+ *     panel's measure, named and dated — never a default line;
+ *   - the axis: zero-based, and the axis line says so in words;
+ *   - suppression: below MIN_POINTS bars with a value the panel is withheld
+ *     and says why, with one action;
+ *   - the words for a period with nothing: per measure, never a zero.
+ *
+ * Nothing here exports. A question worth keeping leaves as a report. */
+import type { MetricKey } from '@/lib/analyticsBuilder';
+import { belowSquadFloor, MIN_ATHLETES_WITH_DATA } from '@/lib/smallSample';
+
+export type PanelKey = 'load' | 'wellness' | 'gym' | 'acwr';
+export type Measure = 'volume' | 'scored' | 'ratio';
+export type Grain = 'day' | 'week';
+
+export type Panel = {
+  key: PanelKey;
+  title: string;
+  metric: MetricKey;
+  measure: Measure;
+  /** What one bar measures, in a sentence — the definition line's first clause. */
+  measures: string;
+  unit: string;
+  decimals: number;
+  /** The readout for a period with no value. */
+  missingWord: string;
+  /** The thresholds metric key a club zone may be set on; null = no zone exists for this measure. */
+  thresholdMetric: string | null;
+  /** A bounded scale keeps its ceiling so two windows read alike. */
+  axisTop: number | null;
+};
+
+export const PANELS: readonly Panel[] = [
+  {
+    key: 'load',
+    title: 'Training load',
+    metric: 'load',
+    measure: 'volume',
+    measures: 'Session load — RPE × minutes (MET-007), summed across every session logged',
+    unit: ' AU',
+    decimals: 0,
+    missingWord: 'No session logged',
+    thresholdMetric: null,
+    axisTop: null,
+  },
+  {
+    key: 'wellness',
+    title: 'Wellness',
+    metric: 'readiness',
+    measure: 'scored',
+    measures: 'Readiness — the five morning answers on 0 to 100, a day missing any answer has no value (MET-002)',
+    unit: '',
+    decimals: 0,
+    missingWord: 'Not submitted',
+    thresholdMetric: 'wellness.readiness_score',
+    axisTop: 100,
+  },
+  {
+    key: 'gym',
+    title: 'Gym volume',
+    metric: 'gym_volume',
+    measure: 'volume',
+    measures: 'Tonnage — load × reps across every working set (MET-041), summed',
+    unit: ' kg',
+    decimals: 0,
+    missingWord: 'No gym session',
+    thresholdMetric: null,
+    axisTop: null,
+  },
+  {
+    key: 'acwr',
+    title: 'Acute to chronic',
+    metric: 'acwr',
+    measure: 'ratio',
+    measures: 'Acute to chronic load ratio — the last 7 days of session load over the last 28 (MET-010)',
+    unit: '',
+    decimals: 2,
+    missingWord: 'Not enough days on record',
+    thresholdMetric: 'load.acwr',
+    axisTop: null,
+  },
+];
+
+/** The windows offered. Days, because every series is built per day. The
+ *  grain follows the window: a fortnight or less is read by the day, anything
+ *  longer by the week. */
+export const WINDOWS: readonly { days: number; label: string }[] = [
+  { days: 14, label: '14 days' },
+  { days: 42, label: '6 weeks' },
+  { days: 84, label: '12 weeks' },
+  { days: 182, label: '26 weeks' },
+];
+export const DEFAULT_WINDOW_DAYS = 84;
+export const DAY_GRAIN_MAX_DAYS = 14;
+
+export function grainFor(days: number): Grain {
+  return days <= DAY_GRAIN_MAX_DAYS ? 'day' : 'week';
+}
+
+/** Below this many bars with a value the panel is withheld: two bars are a
+ *  before-and-after, not a pattern. */
+export const MIN_POINTS = 3;
+
+export type Bucket = { start: string; end: string; label: string };
+
+function addDaysIso(iso: string, days: number): string {
+  const d = new Date(`${iso}T12:00:00Z`);
+  d.setUTCDate(d.getUTCDate() + days);
+  return d.toISOString().slice(0, 10);
+}
+
+/** Monday of the week the date falls in — a calendar fact, no timezone. */
+export function mondayOf(iso: string): string {
+  const d = new Date(`${iso}T12:00:00Z`);
+  const dow = (d.getUTCDay() + 6) % 7;
+  return addDaysIso(iso, -dow);
+}
+
+function shortDate(iso: string): string {
+  return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+}
+
+/** The periods a window splits into, oldest first. Day buckets are the days;
+ *  week buckets run Monday to Sunday and the first and last are clipped to
+ *  the window, so a bar never counts a day outside it. */
+export function bucketsFor(from: string, to: string, grain: Grain): Bucket[] {
+  const out: Bucket[] = [];
+  if (grain === 'day') {
+    for (let d = from; d <= to; d = addDaysIso(d, 1)) out.push({ start: d, end: d, label: shortDate(d) });
+    return out;
+  }
+  let start = from;
+  while (start <= to) {
+    const weekEnd = addDaysIso(mondayOf(start), 6);
+    const end = weekEnd < to ? weekEnd : to;
+    out.push({ start, end, label: `w/c ${shortDate(mondayOf(start))}` });
+    start = addDaysIso(end, 1);
+  }
+  return out;
+}
+
+/** One bar: the bucket's value for one athlete under the measure's rule. Null
+ *  when no day in the bucket has a value — never zero. */
+export function bucketValue(values: ReadonlyMap<string, number>, bucket: Bucket, measure: Measure): number | null {
+  const days: { date: string; v: number }[] = [];
+  for (let d = bucket.start; d <= bucket.end; d = addDaysIso(d, 1)) {
+    const v = values.get(d);
+    if (v !== undefined) days.push({ date: d, v });
+  }
+  if (days.length === 0) return null;
+  if (measure === 'volume') return days.reduce((s, p) => s + p.v, 0);
+  if (measure === 'scored') return days.reduce((s, p) => s + p.v, 0) / days.length;
+  return days[days.length - 1]!.v;
+}
+
+export type BandEdge = { lo: number; hi: number; n: number } | null;
+
+/** The squad's spread for one bucket: mean ± 1 SD across the athletes in scope
+ *  with a value in it, or null under the squad floor. `n` is the athletes
+ *  with data, which the definition line prints. */
+export function squadBand(perAthlete: ReadonlyMap<string, ReadonlyMap<string, number>>, bucket: Bucket, measure: Measure): BandEdge {
+  const vals: number[] = [];
+  for (const values of perAthlete.values()) {
+    const v = bucketValue(values, bucket, measure);
+    if (v !== null) vals.push(v);
+  }
+  if (belowSquadFloor(vals.length)) return null;
+  const mean = vals.reduce((s, v) => s + v, 0) / vals.length;
+  const sd = Math.sqrt(vals.reduce((s, v) => s + (v - mean) ** 2, 0) / vals.length);
+  return { lo: Math.max(0, mean - sd), hi: mean + sd, n: vals.length };
+}
+
+export type ZoneRule = {
+  metric: string;
+  comparison: string;
+  value: number;
+  name: string;
+  updated_at: string;
+  applies_to_group_id: string | null;
+  is_active: boolean;
+};
+
+export type Zone = { lo: number | null; hi: number | null; names: string[]; setAt: string };
+
+/** The club's zone on a panel: the club-wide, active, fixed (below / above)
+ *  rules on the panel's measure — a rule read against a personal baseline or
+ *  a z-score is not a line on a shared axis and draws nothing. `lo` from a
+ *  "below" rule, `hi` from an "above" one; either may be open. Null when the
+ *  club has set none: no default line, ever. */
+export function zoneFor(panel: Panel, rules: readonly ZoneRule[]): Zone | null {
+  if (!panel.thresholdMetric) return null;
+  const fixed = rules.filter((r) => r.metric === panel.thresholdMetric && r.is_active && r.applies_to_group_id === null && (r.comparison === 'below' || r.comparison === 'above'));
+  if (fixed.length === 0) return null;
+  const below = fixed.filter((r) => r.comparison === 'below').sort((a, b) => b.value - a.value)[0] ?? null;
+  const above = fixed.filter((r) => r.comparison === 'above').sort((a, b) => a.value - b.value)[0] ?? null;
+  const used = [below, above].filter((r): r is ZoneRule => r !== null);
+  return {
+    lo: below?.value ?? null,
+    hi: above?.value ?? null,
+    names: [...new Set(used.map((r) => r.name))],
+    setAt: used.map((r) => r.updated_at).sort().reverse()[0]!,
+  };
+}
+
+export function fmt(value: number, decimals: number): string {
+  return decimals === 0 ? Math.round(value).toLocaleString('en-GB') : value.toFixed(decimals);
+}
+
+/** "0.80 to 1.30 · Acute chronic ratio high · set by Jane Pemberton, 24 Aug". */
+export function zoneWords(zone: Zone, panel: Panel, setBy: string | null, setAtWords: string): string {
+  const range = zone.lo !== null && zone.hi !== null ? `${fmt(zone.lo, panel.decimals)} to ${fmt(zone.hi, panel.decimals)}` : zone.hi !== null ? `0 to ${fmt(zone.hi, panel.decimals)}` : `${fmt(zone.lo!, panel.decimals)} and above`;
+  return `${range}${panel.unit} · ${zone.names.join(', ')} · set by ${setBy ?? 'the club'}, ${setAtWords}`;
+}
+
+/** A nice ceiling above the data so the top bar has air and the axis reads as
+ *  a round number. Never below the panel's own fixed top. */
+export function axisTop(panel: Panel, values: readonly (number | null)[]): number {
+  const max = Math.max(0, ...values.filter((v): v is number => v !== null));
+  if (panel.axisTop !== null) return Math.max(panel.axisTop, max);
+  if (max === 0) return panel.measure === 'ratio' ? 2 : 1;
+  if (panel.measure === 'ratio') return Math.max(2, Math.ceil(max * 4) / 4);
+  const mag = 10 ** Math.floor(Math.log10(max));
+  const steps = [1, 1.2, 1.5, 2, 2.5, 3, 4, 5, 6, 8, 10];
+  for (const s of steps) if (max <= s * mag) return s * mag;
+  return 10 * mag;
+}
+
+/** The axis line, in words. */
+export function axisWords(panel: Panel, top: number, grain: Grain): string {
+  return `Axis 0 to ${fmt(top, panel.decimals)}${panel.unit} · one bar per ${grain} · hover or tap a bar for its value`;
+}
+
+/** The grain clause of the definition line. */
+export function grainWords(panel: Panel, grain: Grain): string {
+  if (grain === 'day') return 'one bar per day';
+  if (panel.measure === 'volume') return 'one bar per week, the week summed';
+  if (panel.measure === 'scored') return 'one bar per week, the week meaned';
+  return 'one bar per week, the ratio as it stood at the end of the week';
+}
+
+/** The ground clause: the band or the zone, and n. */
+export function groundWords(o: { zone: string | null; nWithData: number; scope: string; grain: Grain }): string {
+  if (o.zone) return `ground: the club's zone, ${o.zone}`;
+  if (o.nWithData < MIN_ATHLETES_WITH_DATA) return `ground: none — ${o.nWithData} athlete${o.nWithData === 1 ? '' : 's'} with data in ${o.scope}, fewer than ${MIN_ATHLETES_WITH_DATA}`;
+  return `ground: the squad's mean ± 1 SD per ${o.grain}, n = ${o.nWithData} athletes with data in ${o.scope}`;
+}
+
+export type Suppression = { reason: string; action: { label: string; href: string } };
+
+/** Withheld below MIN_POINTS bars with a value, with one action: widen the
+ *  window while a wider one exists, otherwise the athlete's own report. */
+export function suppression(o: { points: number; buckets: number; grain: Grain; days: number; athleteName: string; widenHref: string | null; reportHref: string }): Suppression | null {
+  if (o.points >= MIN_POINTS) return null;
+  const unit = o.grain === 'day' ? 'day' : 'week';
+  const have = o.points === 0 ? `no ${unit}` : o.points === 1 ? `1 ${unit}` : `${o.points} ${unit}s`;
+  return {
+    reason: `Not drawn: ${o.athleteName} has ${have} with a value in the last ${o.days} days, out of ${o.buckets} — fewer than ${MIN_POINTS}. Nothing here is estimated from less.`,
+    action: o.widenHref ? { label: 'Widen the window', href: o.widenHref } : { label: `Open ${o.athleteName}'s report`, href: o.reportHref },
+  };
+}

@@ -42,8 +42,11 @@ console.log('\n3. the sweep: every squad aggregate asks the rule');
   assert(/floored: byTest\.rows\.length > 0 && belowSquadFloor\(byTest\.rows\.length\),/.test(strip(read('src/app/(staff)/reports/testing/page.tsx'))), 'and the page says so (through the coverage sentence since S7 C2)');
   const compliance = strip(read('src/app/(staff)/reports/compliance/page.tsx'));
   assert(/const squadMean = measured\.length > 0 && !belowSquadFloor\(measured\.length\)/.test(compliance) && /squadFloorNote\('The squad mean', measured\.length\)/.test(compliance), 'the compliance squad mean is off below the floor, with the note');
-  const builder = strip(read('src/lib/queries/analytics.ts'));
-  assert(/value: belowSquadFloor\(values\.length\) \? null : values\.reduce/.test(builder), 'the analytics builder\'s population mean is null on a day fewer than five have a value');
+  /* Repointed 2026-09-14 (PATTERN-S7 C6): the builder's population mean went
+     with the builder; the panels' squad band is the aggregate now, in
+     lib/analyticsPanels, under the same floor. */
+  const panels = strip(read('src/lib/analyticsPanels.ts'));
+  assert(/if \(belowSquadFloor\(vals\.length\)\) return null;/.test(panels), 'the analytics panels\' squad band is null for a period fewer than five athletes have a value in');
 }
 
 console.log('\n4. the spec');

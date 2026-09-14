@@ -10520,6 +10520,77 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-variant-numeric: tabular-nums;
 }
 
+/* PATTERN-S7 C6 (2026-09-14): the four analytics panels. The plot is an SVG
+   stretched to the card (preserveAspectRatio none, non-scaling strokes); the
+   readout chip and the series labels are HTML placed by percentage over it,
+   so type never stretches. Composed from existing tokens only. */
+.ap-def {
+  font-size: var(--fs-12);
+  color: var(--muted);
+  margin: var(--sp-2) 0 var(--sp-10);
+  max-width: 100ch;
+}
+.ap-figure {
+  font-size: var(--fs-13);
+  margin: 0 0 var(--sp-10);
+  font-variant-numeric: tabular-nums;
+}
+.ap-plot {
+  position: relative;
+  width: 100%;
+}
+.ap-readout {
+  position: absolute;
+  top: 0;
+  transform: translate(-50%, 0);
+  padding: var(--sp-4) var(--sp-8);
+  border-radius: var(--r-toggle);
+  background: var(--surf);
+  border: 1px solid var(--border-strong);
+  box-shadow: var(--shadow);
+  font-size: var(--fs-12);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  pointer-events: none;
+  color: var(--text);
+}
+.ap-series-label {
+  position: absolute;
+  transform: translate(var(--sp-6), -50%);
+  font-size: var(--fs-11);
+  font-weight: 600;
+  color: var(--accent);
+  white-space: nowrap;
+  pointer-events: none;
+}
+.ap-x {
+  display: flex;
+  justify-content: space-between;
+  font-size: var(--fs-11);
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  margin-top: var(--sp-4);
+}
+.ap-axis {
+  font-size: var(--fs-11);
+  color: var(--faint);
+  margin: var(--sp-6) 0 0;
+  font-variant-numeric: tabular-nums;
+}
+.ap-suppressed {
+  border: 1px dashed var(--border-strong);
+  border-radius: var(--r-toggle);
+  padding: var(--sp-14);
+  font-size: var(--fs-13);
+  color: var(--muted);
+}
+.ap-suppressed .btn-ghost {
+  min-height: var(--tap-min);
+  display: inline-flex;
+  align-items: center;
+  margin-top: var(--sp-10);
+}
+
 /* A REHAB PROGRAMME IS MARKED IN THE LIST, not only once it is opened. The
    design gives it a red border and wash in both themes — its dark variant's
    own caption is "the rehab programme keeps its red border" — and the reason

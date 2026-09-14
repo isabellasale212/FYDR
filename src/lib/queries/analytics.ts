@@ -1,5 +1,4 @@
 import { ACWR_ACUTE_WINDOW_DAYS, ACWR_CHRONIC_WINDOW_DAYS, computeAcwr } from '@/lib/acwr';
-import { belowSquadFloor } from '@/lib/smallSample';
 import { readiness, rollingBand, zScore, type Band } from '@/lib/stats';
 import { addDays, todayIso } from '@/lib/format';
 import type { MetricDef, MetricSource } from '@/lib/analyticsBuilder';
@@ -277,63 +276,17 @@ export async function fetchWellnessTrend(
 
 
 /* =========================================================================
- * The builder
+ * The engine under the analytics panels (PATTERN-S7 C6, 2026-09-14)
  * =========================================================================
  *
- * One metric, one population, one window, three renderings. Everything below
- * this line is the builder; everything above it is the two original presets,
- * left untouched.
- *
- * Design note on why this is ONE query rather than one per chart type. The
- * three visualisations are not three questions — they are three readings of
- * the same answer, and if the bar chart ran its own aggregate the bar and the
- * table could disagree about the same athlete's number the moment a window or
- * rounding rule drifted between them. So fetchMetricSeries() returns both
- * derived shapes together, computed from one fetch of one set of rows:
- *
- *   series[]     one point per day over the window, for the population
- *   byAthlete[]  one row per athlete, aggregated over the same window
- *
- * The chart-type control picks which of those to draw. It never re-queries.
+ * One metric, one population, one window: fetchPerAthleteDaily() below turns
+ * the rows into one daily value per athlete per day — the collapse rule, the
+ * ACWR trailing ratio and the in_data denominator in one place — and the
+ * panels bucket those maps into bars and the squad's spread themselves
+ * (lib/analyticsPanels). This was the builder's query until the builder went
+ * (its series-plus-ranking half, fetchMetricSeries, with it); everything
+ * above this line is the two original presets, left untouched.
  */
-
-/** Per-athlete row behind the bar chart and the athlete table. */
-export type BuilderAthleteRow = {
-  athlete_id: string;
-  first_name: string;
-  last_name: string;
-  /** The metric aggregated over the whole window, per MetricDef.aggregate. */
-  value: number | null;
-  /** The most recent day in the window that has a value at all. */
-  latest: number | null;
-  latest_date: string | null;
-  /** Days inside the window with a value. NOT days in the window. */
-  days_with_data: number;
-  /** Where `latest` sits against this athlete's OWN trailing band, in
-   *  standard deviations. Null below the 10-observation guard — a z-score off
-   *  three readings is noise wearing a decimal point. Never a squad z. */
-  z: number | null;
-  /** ACWR only: too little history for a ratio to exist as of the last day of
-   *  the window. A suppressed athlete has no value, not a hidden one. */
-  suppressed: boolean;
-};
-
-export type BuilderResult = {
-  /** The visible window only, one entry per calendar day, in order. `value`
-   *  is null on a day the population submitted nothing — never zero, never
-   *  interpolated: a missing entry and a bad entry are different facts.
-   *  `mean`/`sd` are the trailing band, so this drops straight into
-   *  WellnessChart, which already takes exactly this shape. */
-  series: Band[];
-  byAthlete: BuilderAthleteRow[];
-  /** Athletes the group filter + athlete picker together resolved to. */
-  athletesInScope: number;
-  /** Days in the window where at least one athlete in scope had a value. */
-  daysWithData: number;
-  /** ACWR only. Counted so the page can say "9 suppressed" rather than
-   *  silently drawing a squad line off the three athletes who qualify. */
-  suppressedCount: number;
-};
 
 /* ═══ EVERY MULTI-ROW READ IN THIS FILE PAGES. NO EXCEPTIONS ══════════════
  *
@@ -577,23 +530,31 @@ function valueFor(metric: MetricDef, row: MetricRow): number | null {
   return typeof raw === 'number' ? raw : null;
 }
 
-/**
- * The builder query.
- *
- * `athleteId` null means the whole population in scope (group filter applied);
- * a real id narrows to that one athlete, and the population series then simply
- * IS their own line — which is the point: a mean over a population of one is
- * that one, so the single-athlete and squad views share every line of maths
- * rather than being two code paths that can disagree.
- */
-export async function fetchMetricSeries(
+/** One athlete's or the whole scope's DAILY values for a metric, athlete by
+ *  athlete, over the visible span plus the band run-up — the engine under
+ *  fetchMetricSeries (the builder's series) and the S7 analytics panels (one
+ *  athlete's bars against the squad's spread per period). One code path for
+ *  the collapse, the ACWR trailing ratio and the in_data denominator, so the
+ *  two screens cannot disagree about a day's number. */
+export type PerAthleteDaily = {
+  athletes: { id: string; first_name: string; last_name: string }[];
+  /** athlete id -> date -> the metric's value that day (absent = nothing). */
+  perAthlete: Map<string, Map<string, number>>;
+  /** ACWR only: athletes suppressed as of the last visible day. */
+  suppressedNow: Set<string>;
+  /** Every calendar day fetched, run-up included, in order. */
+  allDates: string[];
+  fetchFrom: string;
+};
+
+export async function fetchPerAthleteDaily(
   db: Db,
   orgId: string,
   metric: MetricDef,
   range: { from: string; to: string },
   groupIds: readonly string[],
   athleteId: string | null,
-): Promise<BuilderResult> {
+): Promise<PerAthleteDaily> {
   const runway = metric.key === 'acwr' ? BAND_RUNWAY_DAYS * 2 : BAND_RUNWAY_DAYS;
   const fetchFrom = addDays(range.from, -runway);
 
@@ -788,71 +749,9 @@ export async function fetchMetricSeries(
     for (const [k, v] of perAthlete) perAthleteMetric.set(k, v);
   }
 
-  /* The population series: the mean across the athletes who have a value that
-   * day. A day nobody submitted is null, not zero. */
-  const populationPoints = allDates.map((date) => {
-    const values: number[] = [];
-    for (const a of athletes) {
-      const v = perAthleteMetric.get(a.id)?.get(date);
-      if (v !== undefined) values.push(v);
-    }
-    /* PATTERN-S7 C8: a day fewer than five athletes have a value is null —
-       the squad floor, the one rule every aggregate reads. */
-    return { date, value: belowSquadFloor(values.length) ? null : values.reduce((s, v) => s + v, 0) / values.length };
-  });
-
-  // rollingBand/zScore from lib/stats.ts — the same trailing-band maths the
-  // wellness preset above and my-data already use. 28-observation window, 10
-  // minimum, identical to fetchWellnessTrend so the two screens cannot
-  // disagree about what an athlete's "own norm" is.
-  const series = rollingBand(populationPoints, 28, 10).filter((b) => b.date >= range.from);
-
-  const visibleDates = allDates.filter((d) => d >= range.from);
-
-  const byAthlete: BuilderAthleteRow[] = athletes.map((a) => {
-    const values = perAthleteMetric.get(a.id) ?? new Map<string, number>();
-    const observed = visibleDates
-      .map((date) => ({ date, value: values.get(date) ?? null }))
-      .filter((p): p is { date: string; value: number } => p.value !== null);
-    const last = observed.length > 0 ? observed[observed.length - 1] : null;
-
-    // A 'trailing' metric is already a windowed ratio; averaging a window of
-    // overlapping windows is not a longer-window ratio, it is a number with no
-    // definition. Take the standing value on the last day of the range.
-    const aggregated =
-      metric.aggregate === 'trailing'
-        ? (values.get(range.to) ?? null)
-        : observed.length === 0
-          ? null
-          : observed.reduce((s, p) => s + p.value, 0) / observed.length;
-
-    const ownBands = rollingBand(
-      allDates.map((date) => ({ date, value: values.get(date) ?? null })),
-      28,
-      10,
-    );
-    const atLast = last ? (ownBands.find((b) => b.date === last.date) ?? null) : null;
-
-    return {
-      athlete_id: a.id,
-      first_name: a.first_name,
-      last_name: a.last_name,
-      value: aggregated,
-      latest: last?.value ?? null,
-      latest_date: last?.date ?? null,
-      days_with_data: observed.length,
-      z: atLast ? zScore(atLast) : null,
-      suppressed: metric.key === 'acwr' && suppressedNow.has(a.id),
-    };
-  });
-
-  return {
-    series,
-    // Biggest first, nulls last: the bar chart reads as a ranking and the
-    // table is the same order, so the eye lands in the same place in both.
-    byAthlete: byAthlete.sort((a, b) => (b.value ?? -Infinity) - (a.value ?? -Infinity)),
-    athletesInScope: athletes.length,
-    daysWithData: series.filter((s) => s.value !== null).length,
-    suppressedCount: byAthlete.filter((r) => r.suppressed).length,
-  };
+  return { athletes, perAthlete: perAthleteMetric, suppressedNow, allDates, fetchFrom };
 }
+
+/* fetchMetricSeries — the builder's series-plus-ranking query — went with
+ * /analytics/build on 2026-09-14 (PATTERN-S7 C6). fetchPerAthleteDaily above
+ * is the engine that survived; the panels bucket its daily maps themselves. */

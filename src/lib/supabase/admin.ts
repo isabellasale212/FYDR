@@ -1,6 +1,7 @@
 import 'server-only';
 import { createClient as createSupabaseClient } from '@supabase/supabase-js';
 import type { Database } from '@/lib/types/database';
+import { timedFetch } from '@/lib/supabase/queryTiming';
 
 /* The service-role client. SUPABASE_SERVICE_ROLE_KEY bypasses RLS entirely
  * — every caller of this file is responsible for its own authorization
@@ -15,7 +16,9 @@ import type { Database } from '@/lib/types/database';
  * Client Component fails the build rather than shipping the service role
  * key to a browser bundle. */
 export function createAdminClient() {
+  const timed = timedFetch();
   return createSupabaseClient<Database>(process.env.NEXT_PUBLIC_SUPABASE_URL!, process.env.SUPABASE_SERVICE_ROLE_KEY!, {
     auth: { autoRefreshToken: false, persistSession: false },
+    ...(timed ? { global: { fetch: timed } } : {}),
   });
 }

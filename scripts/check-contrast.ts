@@ -96,6 +96,14 @@ export const KNOWN_BELOW_AA: ReadonlyArray<{ token: string; theme: string; why: 
   },
   /* bad-text (dark) was here at 4.47:1 on --surf. Fixed 11 Sept 2026: #ff7460,
      5.61:1 on --surf, 5.22 on --bg — see scripts/test-brand-accent.ts. */
+  {
+    token: 'faint', theme: 'light', why:
+      'System A adoption, 15 Sept 2026 (docs/decisions/design-system-adoption.md): ' +
+      '#667287 is the design system\'s own value, 4.86:1 on --surf and 3.98:1 on ' +
+      '--bg #e1e9f6. The previous #626a76 cleared the page ground at 4.57. Reported ' +
+      'to Isabella with the layer-one build; the accessibility sweep that runs ' +
+      'after conformance rules on it. Not a fix to make here.',
+  },
 ];
 
 const hexOf = (v: string): [number, number, number] | null => {

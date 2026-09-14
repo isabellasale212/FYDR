@@ -111,7 +111,7 @@
      the way --accent-rgb etc. are. Adding it here is a pure exposure, not a
      new colour: every existing rgba(16,18,23,X) constant in this file is
      unchanged. */
-  --ink-rgb: 16 18 23;
+  --ink-rgb: 23 40 80; /* System A's tint ink, 15 Sept 2026 — light; dark restates 16 18 23 below */
 
   /* §4.4. The status pill fill alpha. Raised from 0.16 so the fill separates
      under dichromacy; the text tokens in §3.7 are derived against this value.
@@ -458,8 +458,19 @@
      fields and the borders, which is exactly where the Visual Lift put it. The
      script refuses a ground above the ceiling rather than clipping to white and
      reporting success. */
-  --bg: #e4ebf9;
-  --surf: #fcfdfe;
+
+  /* SYSTEM A, 15 Sept 2026 — Isabella's adoption decision
+     (docs/decisions/design-system-adoption.md; the values are
+     docs/design-system/tokens/colors.css, the source of truth). The
+     derivation story above is history: the ground, the card, the raised
+     surface and the field are System A's own figures, and the card is pure
+     white again — "cards are the one true neutral in the palette, and the
+     page tint is what makes them read as lifted". scripts/derive-surface-
+     tokens.ts --check now verifies these against the System A file rather
+     than against the grey palette's ratios. --surf-sunken has no System A
+     counterpart and keeps its value. */
+  --bg: #e1e9f6;
+  --surf: #ffffff;
   /* The desk behind the app frame, and any inset well. Light-theme handoff §1.
      Distinct from --surf2 (#f3f5f8), which is a RAISED alt surface: this one
      sits below --bg, --surf2 sits above it. */
@@ -469,14 +480,19 @@
      the dark ground — measured at color(srgb 0.1947 0.1962 0.1976), R≈G≈B —
      because gold's near-zero blue cancels the dark surface's blue. The dark
      value carries more gold to stay gold. */
-  --surf2: #eff3fb;
+  --surf2: #e9effb;
   --gym-tint: #fef8e4;
   --wk-fill: rgba(31, 111, 234, 0.09);
   --wk-match-border: #17489b; /* the accent — 11 Sept 2026, Isabella's decision */
   --gym-on-tint: #6b4708;
-  --elev: #fcfdfe;
-  --text: #13161c;
-  --muted: #484e57;
+  --elev: #ffffff;
+  /* System A's ink scale, 15 Sept 2026. Its own note: all three clear 4.5:1
+     on --surf (white); --faint measures 4.86 there and 3.98 on --bg, which is
+     below the 4.5 the page ground had at #626a76 — recorded in
+     check-contrast's KNOWN_BELOW_AA with the date, for the accessibility
+     sweep that runs after conformance. */
+  --text: #121722;
+  --muted: #556074;
   /* AA-CORRECTED 2026-09-09, and it forced --muted to move with it.
 
      THIS BLOCK DESCRIBED THE CORRECTION FOR WEEKS BEFORE THE VALUES CARRIED
@@ -504,7 +520,7 @@
      between faint and muted. That is narrower than the old 2.14:1, and the
      narrowing is unavoidable rather than chosen: the old spacing was bought by
      putting the lightest level below AA. */
-  --faint: #626a76;
+  --faint: #667287;
   /* SOLID, not an ink alpha, 4 Sept 2026 — CHANGELOG-headers-spec.md measures
      #dce1e8 and the client asked the tokens to match. It is the one token in
      this group that no longer adapts to what is behind it: the old
@@ -514,9 +530,15 @@
      is what the canvas draws. --border-strong and --hair keep the ink alpha,
      because neither was measured and changing them would be my decision rather
      than the canvas's. */
-  --border: #d4dff5;
-  --border-strong: rgba(16, 18, 23, 0.52);
-  --hair: rgba(16, 18, 23, 0.05);
+  /* SEE-THROUGH AGAIN, 15 Sept 2026 — System A: every line and track is an
+     alpha of one ink, 23,40,80, "never 16,18,23", so a border reads the same
+     hue on the page and on a card. --border-strong and --barfill keep their
+     alphas on the new ink (System A names neither); the four lines it does
+     name — --line-strong, --line-dashed, --track-off, --scrim — are in the
+     shared block above. */
+  --border: rgba(23, 40, 80, 0.12);
+  --border-strong: rgba(23, 40, 80, 0.52);
+  --hair: rgba(23, 40, 80, 0.07);
   /* PATTERN-S9 (2026-09-13): wording that is not written yet — the seven
      LEGAL- placeholders — is one named pattern: a dashed line on the well
      fill. Two aliases, no new values, so the pattern is distinct from the
@@ -529,11 +551,14 @@
   /* Handoff §3 raises the unfilled track from 0.07 to 0.10 so a bar reads as
      an empty measure rather than as nothing, and adds --tick for a reference
      marker ON that track (the median mark), which has to out-read it. */
-  --track: rgba(16, 18, 23, 0.1);
-  --tick: rgba(16, 18, 23, 0.22);
-  --barfill: rgba(16, 18, 23, 0.155);
-  --field: #ebf0fa;
-  --shadow: 0 1px 3px rgba(16, 18, 23, 0.08);
+  --track: rgba(23, 40, 80, 0.09);
+  --tick: rgba(23, 40, 80, 0.4);
+  --barfill: rgba(23, 40, 80, 0.155);
+  --field: #e7eefb;
+  /* The one shadow, two-layer since 15 Sept 2026 (System A shape.css): a
+     tight contact shadow plus a wide negative-spread ambient one. Still not a
+     scale. */
+  --shadow: 0 1px 2px rgba(23, 40, 80, 0.07), 0 6px 16px -6px rgba(23, 40, 80, 0.14);
 
   /* §3.7, a coloured label on a plain surface, 4.5:1 against --bg.
      Handoff §5's on-*-strong column, applied as given EXCEPT where the given
@@ -588,7 +613,12 @@
      design decision, and Isabella took it. #626a76 / #484e57, 4.57 and 7.01
      on this ground. */
   --accent-text: #17489b; /* 11 Sept 2026, Isabella's decision */
-  --accent2-text: #006eb0;
+  /* #006eb0 -> #006daf, 15 Sept 2026: System A's ground #e1e9f6 is one step
+     darker than #e4ebf9 and the old value fell to 4.46:1 on it. Re-derived
+     the §3.7 way — hue and saturation held, first value clearing 4.5 on both
+     grounds: 4.52 on --bg, 5.52 on --surf. Not a System A value (it has no
+     accent2 ink); the code's own, moved one step for the code's own guard. */
+  --accent2-text: #006daf;
   --good-text: #0d5f75;
   --warn-text: #b07d0a;
   --bad-text: #8a2418;
@@ -635,7 +665,11 @@ Every alpha here is the handoff's own figure (§4 and §5),
      reverted under the handoff's High fidelity rule. The observation stands
      and is the designer's to act on, not this file's. */
   --wash-accent-soft: rgb(var(--accent-rgb) / 0.07);
-  --wash-accent: rgb(var(--accent-rgb) / 0.12);
+  /* System A's row and cell washes, 15 Sept 2026: accent 0.14, bad 0.12,
+     good 0.16, warn 0.14 — "strong enough to read as a state at a glance in
+     a dense table, still light enough that --text on top clears 4.5:1". The
+     soft and strong accent steps are this file's own and keep their values. */
+  --wash-accent: rgb(var(--accent-rgb) / 0.14);
   --wash-accent-strong: rgb(var(--accent-rgb) / 0.16);
   /* The ground the athlete app's cards sit on. Its own value, not --bg: the
      staff app is a neutral page of dense tables, and the phone is a short
@@ -652,11 +686,11 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --border-hover: rgb(var(--accent-rgb) / 0.4);
   --ring-accent: 0 0 0 3px rgb(var(--accent-rgb) / 0.16);
 
-  --wash-good: rgb(var(--good-rgb) / 0.13);
+  --wash-good: rgb(var(--good-rgb) / 0.16);
   --border-good: rgb(var(--good-rgb) / 0.5);
-  --wash-warn: rgb(var(--warn-rgb) / 0.16);
+  --wash-warn: rgb(var(--warn-rgb) / 0.14);
   --border-warn: rgb(var(--warn-rgb) / 0.6);
-  --wash-bad: rgb(var(--bad-rgb) / 0.13);
+  --wash-bad: rgb(var(--bad-rgb) / 0.12);
   --border-bad: rgb(var(--bad-rgb) / 0.55);
 
   /* Handoff §7's figures exactly. A benchmark row carries its percentile band
@@ -786,6 +820,12 @@ Every alpha here is the handoff's own figure (§4 and §5),
    --------------------------------------------------------------------------- */
 .dark-tokens,
 :root[data-theme='dark'] {
+  /* SYSTEM A ADOPTION, 15 Sept 2026 — DARK IS FROZEN (Isabella: "do not
+     touch a single dark colour value"). The tokens below were single-valued
+     before tonight and rendered these values in dark; System A moves the
+     shared value in the block above, so dark restates what it had, byte for
+     byte. Not a design of a dark System A — that is Isabella's to rule on. */
+  --ink-rgb: 16 18 23;
   /* Visual Lift variants 1a and 2b, the dark half of the same scheme:
      #182241 -> #202b4e. Lighter and bluer, so the dark shell reads as a
      surface rather than a void, and it is what the lift's "dark as the hero"
@@ -941,6 +981,12 @@ Every alpha here is the handoff's own figure (§4 and §5),
 
 @media (prefers-color-scheme: dark) {
   :root:not([data-theme]) {
+    /* SYSTEM A ADOPTION, 15 Sept 2026 — DARK IS FROZEN (Isabella: "do not
+       touch a single dark colour value"). The tokens below were single-valued
+       before tonight and rendered these values in dark; System A moves the
+       shared value in the block above, so dark restates what it had, byte for
+       byte. Not a design of a dark System A — that is Isabella's to rule on. */
+    --ink-rgb: 16 18 23;
     /* Route 2 of the three ways dark arrives (§2.4). Must track
        :root[data-theme='dark'] exactly — this block was missed when the
        Visual Lift moved the dark ground, so an OS-dark viewer with no explicit

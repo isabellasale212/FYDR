@@ -1,36 +1,27 @@
-/* The light theme's surfaces, derived from one ground colour.
+/* The light theme's surfaces track System A.
  *
- * WHY A SCRIPT AND NOT SEVEN HAND-PICKED HEXES. This ground has now moved three
- * times — #eaedf1 (Aug 6 handoff), #e4ebf9 (the designer's Visual Lift, 1 Sept),
- * back to #eaedf1 (4 Sept, on the client's instruction), and now to blue. Each
- * move used to mean re-picking every surface by eye and re-measuring, and the
- * thing that actually has to survive a move is not any single value but the
- * SEPARATIONS between them: how far a card sits above the page, how far a
- * border sits below it. Those are the design. Encoding them once and computing
- * the rest means the fourth move is one argument.
+ * SUPERSEDED, 15 Sept 2026. Everything below the CLI marker is the derivation
+ * this script used to run: seven surfaces computed from one ground so that the
+ * SEPARATIONS between them survived a move of the ground (which moved three
+ * times). Isabella's adoption decision (docs/decisions/design-system-adoption.md)
+ * makes docs/design-system/tokens/colors.css the source of truth for values,
+ * and its five surfaces — --bg, --surf, --surf2, --elev, --field — are given,
+ * not derived: the card is pure white again and the ground is #e1e9f6. So
+ * `--check` now asks the only question that still matters: does the light
+ * block in src/styles/tokens.css carry exactly the System A values? A drift
+ * from the file fails the build, which is the same protection the ratio check
+ * gave against a lone hand edit.
  *
- * THE RATIOS ARE DERIVED, NOT TRANSCRIBED. LEGACY_GREY below is the palette as
- * it stood before this change, and every ratio is measured from it at runtime.
- * A transcribed table would let a typo become the new spec silently.
+ * --surf-sunken and --border are not in the System A file (the border is an
+ * alpha there, rgba(23,40,80,0.12), and this file's --border carries it as
+ * such; the sunken surface has no counterpart) and are not checked here.
  *
- * DIRECTION MATTERS AND IS EASY TO LOSE. --surf, --surf2 and --field sit ABOVE
- * the ground; --surf-sunken and --border sit BELOW it. A first attempt at this
- * anchored everything to the card and preserved only the magnitudes, which
- * produced a border LIGHTER than the page it divides — a contrast ratio can be
- * right while the design is inverted.
- *
- * THE CEILING, which is the interesting constraint. The card must sit 1.1743:1
- * above the ground, and white is as light as a card can be, so the ground's
- * luminance cannot exceed (1.05 / 1.1743) - 0.05 = 0.8441. That is EXACTLY the
- * luminance of the old #eaedf1 — unsurprising once seen, because its card was
- * pure white, so the old grey was already sitting on the ceiling. The practical
- * consequence: preserving the current separations, this ground can only ever get
- * DARKER. A lighter blue cannot keep them, and the script refuses rather than
- * quietly clipping to white and reporting success.
+ * The derivation stays in the file, callable with a ground hex, because it is
+ * the record of what the separations were; it no longer gates anything.
  *
  * Usage:
- *   node --experimental-strip-types scripts/derive-surface-tokens.ts '#e4ebf9'
  *   node --experimental-strip-types scripts/derive-surface-tokens.ts --check
+ *   node --experimental-strip-types scripts/derive-surface-tokens.ts '#e4ebf9'   (history)
  */
 import { readFileSync } from 'node:fs';
 
@@ -153,28 +144,27 @@ function committed(): Record<Token, string> {
 const arg = process.argv[2];
 
 if (arg === '--check') {
-  const have = committed();
-  const want = derive(have['--bg']);
+  /* The System A file's :root block, the five surfaces it gives, against the
+     light block of tokens.css. */
+  const SYSTEM_A = 'docs/design-system/tokens/colors.css';
+  const systemA = readFileSync(SYSTEM_A, 'utf8');
+  const root = systemA.slice(systemA.indexOf(':root {'), systemA.indexOf('\n}', systemA.indexOf(':root {')));
+  const CHECKED: Token[] = ['--bg', '--surf', '--surf2', '--elev', '--field'];
+  const block = readLightBlock();
   let bad = 0;
-  console.log(`Light-theme surfaces, derived from --bg ${have['--bg']}:\n`);
-  for (const t of SURFACES) {
-    const ok = have[t] === want[t];
+  console.log(`Light-theme surfaces against ${SYSTEM_A}:\n`);
+  for (const t of CHECKED) {
+    const want = new RegExp(`${t}\\s*:\\s*(#[0-9a-fA-F]{3,6})\\s*;`).exec(root)?.[1]?.toLowerCase() ?? null;
+    const have = new RegExp(`${t}\\s*:\\s*(#[0-9a-fA-F]{3,6})\\s*;`).exec(block)?.[1]?.toLowerCase() ?? null;
+    const ok = want !== null && have === want;
     if (!ok) bad += 1;
-    const r = contrast(parse(have[t]), parse(have['--bg']));
-    const side = lum(parse(have[t])) > lum(parse(have['--bg'])) ? 'above' : 'below';
-    console.log(
-      `  ${ok ? 'ok  ' : 'FAIL'} ${t.padEnd(15)}${have[t]}  ${r.toFixed(4)}:1 ${side}` +
-        (ok ? '' : `   expected ${want[t]} (${SPEC[t].ratio.toFixed(4)}:1)`),
-    );
+    console.log(`  ${ok ? 'ok  ' : 'FAIL'} ${t.padEnd(10)}${have ?? '(not a hex literal)'}${ok ? '' : `   System A says ${want ?? '(missing from the file)'}`}`);
   }
   if (bad > 0) {
-    console.error(
-      `\n${bad} surface(s) have drifted from the ratios the grey palette set.\n` +
-        `Re-derive them:  node --experimental-strip-types ${process.argv[1]} '${have['--bg']}'`,
-    );
+    console.error(`\n${bad} surface(s) differ from ${SYSTEM_A}. The file is the source of truth; paste its value into the light block.`);
     process.exit(1);
   }
-  console.log(`\nAll ${SURFACES.length} surfaces hold their separation from the ground.`);
+  console.log(`\nAll ${CHECKED.length} surfaces carry the System A values.`);
 } else if (arg && !arg.startsWith('-')) {
   const out = derive(arg);
   console.log(`  --bg: ${out['--bg']};`);

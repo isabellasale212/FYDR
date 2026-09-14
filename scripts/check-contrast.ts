@@ -93,12 +93,11 @@ const COMPOSITED = new Set(['gym', 'highlight-fg']);
    ADDING A LINE HERE IS A DECISION, not a way past the build. Each needs the
    measured ratio and the reason. */
 export const KNOWN_BELOW_AA: ReadonlyArray<{ token: string; theme: string; why: string }> = [
-  {
-    token: 'warn-text', theme: 'light', why:
-      'P2, audit 2026-09-09: 3.57:1 on --surf. Clears the 3:1 large-text floor and ' +
-      'is used at heading sizes on flag callouts, but not at 11px. Re-derivation is ' +
-      'the same design decision --faint was, and has not been taken.',
-  },
+  /* warn-text (light) was here from the 9 Sept audit at 3.57:1 on --surf.
+     Gone 16 Sept 2026: the batch's fix moved every small amber text onto
+     --warn-pill-text, and base.css no longer paints --warn-text at all (the
+     one remaining reader is an SVG fill on My data, not text), so the guard
+     no longer sees it and the exemption would have outlived its subject. */
   {
     token: 'accent', theme: 'dark', why:
       'P2, audit 2026-09-09: --accent is a FILL token (25 background uses against ' +

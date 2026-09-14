@@ -63,6 +63,22 @@ development-plan line the old bar carried — "Development plan · In-Season max
 week 2 of 4 · ends Tue 29 Sept", or "Development plan · none assigned" — with
 its "View plan" / "Change plan" link. The separate plan bar is gone.
 
+**The panels, in one order** (STAFF-SS-02-05 C4, ruled 13 September 2026 and
+built 14 September; `lib/profilePanels.ts`). Every role reads the sport
+scientist's order — the board's own "All panels" sheet — with the panels that
+role cannot see simply absent, never locked: **Flags, Athleticism, ACWR and
+wellness rating, Availability, Entries and corrections, Body weight, Nutrition
+plan, Injury, Goals, S&C history log, Subject access request.** One exception:
+for the S&C and the nutritionist on their own, **Body weight moves above Flags**
+(roles add up, so an S&C who is also a coach reads the base order). Layout
+follows the sequence: on a desktop the column panels fill the two-column grid
+column-first — the first half down the left, the rest down the right — so
+"above" is above; on a phone the one column reads the list straight through.
+The two wide panels (Entries and corrections, the subject access request)
+stand full-width where the sequence puts them, and the grid breaks around
+them. The ACWR and wellness card is not on the board (its dial is in the
+header there) and sits directly after Athleticism.
+
 **Biographical details.** The facts about the person: position, squad number, and
 so on. Editable by a coach.
 

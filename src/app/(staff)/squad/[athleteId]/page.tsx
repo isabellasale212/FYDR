@@ -1,3 +1,4 @@
+import { Fragment, type ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
@@ -42,6 +43,7 @@ import { consentStateLabel } from '@/lib/consentState';
 import { GuardianCard } from '@/components/GuardianCard/GuardianCard';
 import { fetchLatestGuardianRequest } from '@/lib/guardianConsent';
 import { isUuid } from '@/lib/uuid';
+import { profilePanelOrder, profilePanelSegments, type ProfilePanelKey } from '@/lib/profilePanels';
 import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, NUTRITION_EDIT, PROGRAMME_AUTHOR, SETTINGS_ADMIN, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
 import { ReadOnlyOwner } from '@/components/ReadOnlyOwner/ReadOnlyOwner';
 import { fetchRules, resolveRuleForAthlete } from '@/lib/queries/nutritionRules';
@@ -494,6 +496,606 @@ export default async function AthletePage({
         })
       : null;
 
+  /* STAFF-SS-02-05 C4 (batch B5, 2026-09-13): the panels as a library, in
+     no order of their own — lib/profilePanels.ts decides the sequence per role,
+     and a panel this viewer cannot see is absent (null), never locked. */
+  const panels: Record<ProfilePanelKey, ReactNode> = {
+    flags: (
+      <>
+      {/* viewerIsMedical is wording, not authorisation (CLAUDE.md rule 2): a
+          flag note is written into a column every coach in the club reads, so
+          a clinician is told that before they type. */}
+      <PlayerProfileFlags
+        flags={profile.flags}
+        orgId={orgId}
+        userId={claims.userId}
+        today={today}
+        timezone={timezone}
+        viewerIsMedical={claims.roles.includes('medic')}
+        /* A list rather than a predicate: this card loops over its own
+           flags, so the answer differs per row and only the component
+           knows which row it is drawing -- but it is a Client Component,
+           and a function prop across that boundary is a runtime 500. */
+        editableFlagDomains={editableFlagDomains(claims.roles)}
+        premium={isPremium(tier)}
+      />
+      </>
+    ),
+    athleticism: (
+      <>
+      {/* §5: Athleticism and Position benchmarks are one card. */}
+      <section className="card pp-card" aria-labelledby="pp-athleticism-title">
+        <div className="pp-card-head">
+          <h2 className="card-title" id="pp-athleticism-title" style={{ margin: 0 }}>
+            Athleticism
+          </h2>
+          <span className="num s">
+            {athleticism.positionGroupName
+              ? `vs ${athleticism.positionGroupName} · ${athleticism.positionGroupSize} player${athleticism.positionGroupSize === 1 ? '' : 's'}`
+              : 'not in a positional group'}
+          </span>
+        </div>
+
+        <div className="pp-athleticism-row">
+          <Dial size={88} pct={athleticism.compositePct} tone={TONE_VAR[athleticism.band.tone]}>
+            <div>
+              <div className="num pp-dial-value">{athleticism.compositePct ?? EM_DASH}</div>
+              <div className="pp-dial-unit">athleticism</div>
+            </div>
+          </Dial>
+          <div>
+            <p className="pp-athleticism-band" style={{ color: TONE_TEXT_VAR[athleticism.band.tone], margin: 0 }}>
+              {athleticism.band.label}
+            </p>
+            <p className="pp-athleticism-desc">
+              Composite of the position-relative percentiles below.
+              {athleticism.positionGroupName ? ` 50 ≈ average for a ${athlete.position ?? athleticism.positionGroupName} player.` : ''}
+            </p>
+          </div>
+        </div>
+
+        <div className="pp-bench-head">
+          <p className="t" style={{ margin: 0 }}>
+            Position benchmarks
+          </p>
+          {/* Only the empty case now. "The 5 measures behind the score"
+              counted the rows immediately underneath it, which the reader
+              can see; "no tests defined for this club" is the one thing
+              an empty list cannot say for itself. */}
+          {athleticism.rows.length === 0 ? (
+            <p className="num s" style={{ margin: 0 }}>
+              no tests defined for this club
+            </p>
+          ) : null}
+        </div>
+
+        {/* Light-theme handoff §7's suppression notice. Shown only when
+            at least one row actually had its tint withheld, and it says
+            the percentiles are unchanged because they are — the row
+            still shows its band label, its bar and its n. */}
+        {athleticism.rows.some((r) => r.pct !== null && r.n < BAND_SHADING_MIN_N) ? (
+          <p className="pp-bench-suppressed">
+            Row shading is off where fewer than {BAND_SHADING_MIN_N} players have a result — a
+            percentile against three team-mates shades further than it should. The percentiles
+            themselves are unchanged.
+          </p>
+        ) : null}
+
+        {athleticism.rows.map((row) => (
+          <div
+            className="pp-bench-row"
+            key={row.testDefinitionId}
+            data-band={
+              row.pct !== null && row.n >= BAND_SHADING_MIN_N ? bandIndex(row.pct) : undefined
+            }
+          >
+            <div className="pp-bench-top">
+              <span className="pp-bench-name">{row.name}</span>
+              <span className="num pp-bench-value">
+                {row.value !== null ? `${formatNumber(row.value, row.decimals)} ${row.unit}` : EM_DASH}
+              </span>
+            </div>
+            <div className="pp-bench-bar">
+              <div
+                className="pp-bench-fill"
+                style={{
+                  width: `${row.pct ?? 0}%`,
+                  background: TONE_VAR[row.pct !== null ? bandTone(row.pct) : 'faint'],
+                }}
+              />
+            </div>
+            <div className="pp-bench-bottom">
+              <span
+                className="pp-bench-band"
+                style={{ color: row.pct !== null ? TONE_TEXT_VAR[bandTone(row.pct)] : 'var(--faint)' }}
+              >
+                {row.pct !== null ? `${ordinal(row.pct)} percentile` : 'No data'}
+              </span>
+              <span className="num pp-bench-meta">
+                {row.n > 0
+                  ? `median ${formatNumber(row.median, row.decimals)} · best ${formatNumber(row.best, row.decimals)} · n=${row.n}`
+                  : 'n=0'}
+              </span>
+            </div>
+          </div>
+        ))}
+      </section>
+      </>
+    ),
+    acwr: (
+      <>
+      {/* CORRECTED. This comment used to read "id is the Wellness domain chip's
+       * real destination ... no dedicated per-athlete wellness history page
+       * exists anywhere in this app, so this on-page section is the real, whole
+       * answer". Both halves are now out of date: the chip navigates to
+       * /squad/[athleteId]/wellness, and that page IS the dedicated history the
+       * note said did not exist. The id stays because the section is still
+       * aria-labelled by it and an existing anchor is somebody's bookmark; this
+       * summary stays because a coach scanning the profile wants ACWR and
+       * readiness at a glance without a second navigation. The two are a summary
+       * and its detail view, not a stand-in and a replacement. */}
+      <section className="card pp-card" id="pp-wellness-title" aria-label="ACWR and wellness rating">
+        <div className="pp-dials">
+          <div className="pp-dial-col">
+            <p className="pp-dial-title pp-dial-col-head">ACWR</p>
+            {/* Names its own fixed windows, and now says they are fixed:
+              * the header's period control does not reach this dial and
+              * cannot, because ACWR IS the 7-over-28 ratio. */}
+            <p className="num pp-dial-window pp-dial-col-head">fixed · acute 7d over chronic 28d</p>
+            <div className="pp-big-dial">
+              <Dial size={116} pct={acwr.pct} tone={TONE_VAR[acwr.status.tone]}>
+                <div>
+                  <div className="num pp-big-dial-value">{acwr.value !== null ? acwr.value.toFixed(2) : EM_DASH}</div>
+                  <div className="pp-big-dial-unit">ratio</div>
+                </div>
+              </Dial>
+            </div>
+            <p className="pp-dial-status" style={{ color: TONE_TEXT_VAR[acwr.status.tone] }}>
+              {acwr.status.label}
+            </p>
+            <p className="num pp-dial-meta">
+              {acwr.flagRuleValue !== null
+                ? `flags above ${acwr.flagRuleValue.toFixed(2)}`
+                : 'no flag rule active'}
+              {' · '}n = {acwr.sessionsN} sessions
+            </p>
+            {/* Migration 0118: the club setting (the absence rule). */}
+            {!collectsRpe ? (
+              <p className="tiny" data-rpe-off>{rpeOffLine('this ratio')}</p>
+            ) : null}
+          </div>
+          <div className="pp-dial-col">
+            <p className="pp-dial-title pp-dial-col-head">Wellness rating</p>
+            {/* THREE windows on this one card, and they are not the same
+              * — so each is named where it applies rather than one label
+              * being left to stand for all of them:
+              *   the MEAN  — trailing 28 days, capped (here)
+              *   the COUNT — the selected period (meta line below)
+              *   the BAND  — a 14-day rolling baseline (meta line below)
+              * The mean is capped because readiness is a fast signal and
+              * a dial collapses its window to one number; see
+              * queries/playerProfile.ts's header. */}
+            <p className="num pp-dial-window pp-dial-col-head">
+              mean readiness · last {wellnessRating.meanWindowDays} days
+            </p>
+            <div className="pp-big-dial">
+              <Dial size={116} pct={wellnessRating.meanPct} tone="var(--accent)">
+                <div>
+                  <div className="num pp-big-dial-value">
+                    {wellnessRating.meanPct !== null ? `${wellnessRating.meanPct}%` : EM_DASH}
+                  </div>
+                  <div className="pp-big-dial-unit">of 100</div>
+                </div>
+              </Dial>
+            </div>
+            <p className="pp-dial-status" style={{ color: TONE_TEXT_VAR[wellnessRating.status.tone] }}>
+              {wellnessRating.status.label}
+            </p>
+            <p className="num pp-dial-meta">
+              {wellnessRating.submittedN} of {wellnessRating.windowDays} days submitted ·{' '}
+              {wellnessRating.windowLabel.toLowerCase()}
+              {wellnessRating.meanWindowDays < wellnessRating.windowDays
+                ? ' — the count follows the period, the mean above does not'
+                : ''}
+              {' · '}status vs their own 14-day baseline
+            </p>
+          </div>
+        </div>
+      </section>
+      </>
+    ),
+    availability: (
+      <>
+      {/* ADR-008 / migration 0041: non-injury availability, reachable by
+       * coach or medical, without an injury record existing at all —
+       * the entry point the audit found missing (gameplan 2.6). Gated
+       * on the same two roles as the weigh-in button above, since
+       * availability_coach_insert_noninjury (0041) and
+       * availability_medical_insert (0012) are exactly those two roles. */}
+      {canSetAvailability ? (
+        <section className="card pp-card" aria-labelledby="pp-availability-title">
+          <h2 className="card-title" id="pp-availability-title">
+            Availability
+          </h2>
+          <SetAvailabilityFormCoach
+            orgId={orgId}
+            userId={claims.userId}
+            athleteId={athlete.id}
+            athleteName={`${athlete.first_name} ${athlete.last_name}`}
+            /* A non-injury absence this form could end: no injury link, a
+               real non-injury reason (the coach's update policy, 0068,
+               excludes a row with reason 'injury'), and not Available. */
+            currentAbsence={
+              !!availabilityRow &&
+              availabilityRow.injury_id === null &&
+              availabilityRow.reason_category !== null &&
+              availabilityRow.reason_category !== 'injury' &&
+              availabilityRow.status !== 'available'
+            }
+          />
+        </section>
+      ) : null}
+      </>
+    ),
+    entries: (
+      <>
+      {/* Full width, below the two-column grid rather than inside it: these are
+        * wide tables with a per-row expansion, and half a grid column would force
+        * either a horizontal scroll on every row or a truncated history. Placed
+        * above the admin-only subject-access block so the last thing a coach sees
+        * on the page is their own tool, not a compliance one. */}
+      {/* Captioned, not moved. CORRECTION_WINDOW_DAYS is a performance bound
+        * on a base-table read (see its own comment above), so the header's
+        * period control deliberately does not reach it — and a coach who has
+        * set the page to a year must be told that, or a correction they
+        * cannot find here reads as an entry that does not exist. */}
+      <p className="cap" style={{ margin: '0 0 -6px' }}>
+        Entry corrections cover a fixed {CORRECTION_WINDOW_DAYS} days ({formatDate(correctionRange.from, timezone)}{' '}
+        to {formatDate(correctionRange.to, timezone)}) and do not follow the period control &mdash; it is a
+        bound on how much of the entry base table this card reads, not a view window. An older entry is
+        still correctable, just not from here.
+      </p>
+
+      <EntryCorrectionPanel
+        athleteId={athlete.id}
+        athleteFirstName={athlete.first_name}
+        timezone={timezone}
+        canCorrect={canCorrect}
+        wellness={wellnessRevisions}
+        training={trainingRevisions}
+      />
+      </>
+    ),
+    bodyWeight: (
+      <>
+      {canSeeBodyMass ? (
+      <section className="card pp-card" aria-labelledby="pp-weight-title">
+        <div className="pp-weight-top">
+          <div>
+            <h2 className="card-title" id="pp-weight-title">
+              Body weight
+            </h2>
+            {bodyWeight.latestKg !== null ? (
+              <p className="pp-weight-value num" style={{ margin: 'var(--s-1) 0 0' }}>
+                {formatNumber(bodyWeight.latestKg, 1)}
+                <span className="u"> kg</span>
+              </p>
+            ) : (
+              <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
+                No weigh-in recorded. A trend needs three weigh-ins.
+              </p>
+            )}
+            {/* This note used to read "No target range on record." with no
+              * condition attached, because there was no column behind it.
+              * Migration 0060 gave it one, so it is now a real empty state OR a
+              * real range. It says "staff target" in words every time — this
+              * card also draws the athlete's own trend as an area fill, and a
+              * reader must never have to work out which band is which. */}
+            {liveTargetRange ? (
+              <p className="pp-weight-note">
+                <span className="pp-target-swatch" aria-hidden="true" /> Staff target{' '}
+                <span className="num">
+                  {liveTargetRange.target_low_kg.toFixed(1)}–
+                  {liveTargetRange.target_high_kg.toFixed(1)} kg
+                </span>
+                {targetState ? (
+                  <>
+                    {' · '}
+                    <span
+                      className={`pill ${
+                        targetState === 'in_range'
+                          ? 'pill-good'
+                          : targetState === 'above'
+                            ? 'pill-warn'
+                            : 'pill-bad'
+                      }`}
+                    >
+                      {targetState === 'in_range'
+                        ? 'On target'
+                        : targetState === 'above'
+                          ? 'Above target'
+                          : 'Below target'}
+                    </span>
+                  </>
+                ) : null}
+              </p>
+            ) : (
+              <p className="pp-weight-note">No staff target range set.</p>
+            )}
+            {liveTargetRange?.rationale ? (
+              <p className="pp-weight-note" style={{ marginTop: 'var(--sp-2)' }}>
+                {liveTargetRange.rationale}
+              </p>
+            ) : null}
+          </div>
+          {bodyWeight.deltaKg !== null && bodyWeight.deltaDays !== null ? (
+            <div className="pp-weight-right">
+              <p className="num pp-weight-trend" style={{ margin: 0 }}>
+                {bodyWeight.deltaKg === 0 ? '▬' : bodyWeight.deltaKg > 0 ? '▲' : '▼'}{' '}
+                {Math.abs(bodyWeight.deltaKg).toFixed(1)} kg · {bodyWeight.deltaDays}d
+              </p>
+            </div>
+          ) : null}
+        </div>
+
+        {spark ? (
+          <svg className="pp-sparkline" viewBox="0 0 600 90" preserveAspectRatio="none" aria-hidden="true">
+            {/* TWO BANDS, ONE CHART — and they must never be confusable.
+              *
+              * The weigh-in history is a FILLED area in --accent2: soft, hueless
+              * of judgement, "here is the data". The staff target range is an
+              * unfilled DASHED BRACKET in --muted: a rule somebody drew, not a
+              * measurement. Fill-versus-stroke, solid-versus-dashed, and blue-
+              * versus-neutral are three independent channels, so the distinction
+              * survives greyscale and every common colour-vision deficiency —
+              * and the note above the chart names the target range in words as
+              * well, because a visual convention alone is not a label. */}
+            {spark.band ? (
+              <rect
+                x="0"
+                y={spark.band.y}
+                width="600"
+                height={spark.band.height}
+                fill="none"
+                stroke="var(--muted)"
+                strokeWidth="1.2"
+                strokeDasharray="6 4"
+                vectorEffect="non-scaling-stroke"
+              />
+            ) : null}
+            <path d={spark.fill} fill="rgb(var(--accent2-rgb) / 0.14)" />
+            <path d={spark.line} fill="none" stroke="var(--accent2)" strokeWidth="2.4" strokeLinejoin="round" />
+          </svg>
+        ) : null}
+        {/* The sparkline's window was a silent, hardcoded 120 days. It is
+          * now whatever the header control says, and the line says which
+          * — with the real sample behind it, because a wide window with
+          * four weigh-ins in it is not the trend it looks like. */}
+        <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
+          {profile.range.label.toLowerCase()} · {bodyWeight.history.length} weigh-in
+          {bodyWeight.history.length === 1 ? '' : 's'} in this window
+          {bodyWeight.history.length < 3 ? ' — a trend needs three weigh-ins' : ''}
+          {spark?.band
+            ? ' · solid line and fill are logged weigh-ins, the dashed bracket is the staff target range'
+            : ''}
+        </p>
+
+        <BodyWeightPanel
+          orgId={orgId}
+          athleteId={athleteId}
+          userId={claims.userId}
+          timezone={timezone}
+          entries={weighIns}
+          canLog={canLogWeighIn}
+          targetRanges={targetRanges}
+        />
+      </section>
+      ) : null}
+      </>
+    ),
+    nutrition: (
+      <>
+      <section className="card pp-card" aria-labelledby="pp-nutrition-title">
+        <div className="pp-card-row">
+          <h2 className="card-title" id="pp-nutrition-title">
+            Nutrition plan
+          </h2>
+          {/* C5: Edit only for a role that may (NUTRITION_EDIT); a reader
+              gets View and the owner well at the panel's end. */}
+          {canEditNutrition ? (
+            <Link href="/nutrition" className="btn-ghost">
+              Edit
+            </Link>
+          ) : (
+            <Link href="/nutrition" className="btn-ghost">
+              View
+            </Link>
+          )}
+        </div>
+        {/* An empty panel states the requirement, never a zero
+            (STAFF-SS-02-05 C8, 2026-09-12): the targets are per
+            kilogram, so a plan without a weigh-in has nothing to scale. */}
+        {!nutrition ? (
+          <p className="cap" style={{ margin: '0 0 var(--sp-8)' }}>
+            No plan assigned. Targets are per kilogram, so a plan needs a weigh-in.
+          </p>
+        ) : bodyWeight.latestKg === null ? (
+          /* PATTERN-S5 C7 (2026-09-13): the figures below are real —
+             the resolver's absolute fallback — so say what they are
+             rather than "needs a weigh-in" above them. */
+          <p className="cap" style={{ margin: '0 0 var(--sp-8)' }}>
+            {noWeighInLine({ firstName: athlete.first_name, sourceScope: nutrition.source_scope })}
+          </p>
+        ) : null}
+        <div className="pp-macro-tiles">
+          <div className="pp-macro-tile">
+            <p className="num pp-macro-value" style={{ margin: 0 }}>
+              {nutrition?.energy_kcal !== null && nutrition?.energy_kcal !== undefined ? formatNumber(nutrition.energy_kcal, 0) : EM_DASH}
+            </p>
+            <p className="pp-macro-label" style={{ margin: 0 }}>
+              kcal
+            </p>
+          </div>
+          <div className="pp-macro-tile">
+            <p className="num pp-macro-value" style={{ margin: 0 }}>
+              {nutrition?.protein_g !== null && nutrition?.protein_g !== undefined ? formatNumber(nutrition.protein_g, 0) : EM_DASH}
+            </p>
+            <p className="pp-macro-label" style={{ margin: 0 }}>
+              protein g
+            </p>
+          </div>
+          <div className="pp-macro-tile">
+            <p className="num pp-macro-value" style={{ margin: 0 }}>
+              {nutrition?.carbs_g !== null && nutrition?.carbs_g !== undefined ? formatNumber(nutrition.carbs_g, 0) : EM_DASH}
+            </p>
+            <p className="pp-macro-label" style={{ margin: 0 }}>
+              carbs g
+            </p>
+          </div>
+          <div className="pp-macro-tile">
+            <p className="num pp-macro-value" style={{ margin: 0 }}>
+              {nutrition?.fat_g !== null && nutrition?.fat_g !== undefined ? formatNumber(nutrition.fat_g, 0) : EM_DASH}
+            </p>
+            <p className="pp-macro-label" style={{ margin: 0 }}>
+              fat g
+            </p>
+          </div>
+        </div>
+        {!canEditNutrition ? (
+          <ReadOnlyOwner
+            owner="the nutritionist or the sport scientist"
+            name={nutritionRule?.rule.created_by ? (ownerNames.get(nutritionRule.rule.created_by) ?? null) : null}
+            date={nutritionRule ? formatDate(nutritionRule.rule.effective_from, timezone) : null}
+            note={
+              nutritionRule?.source === 'group'
+                ? `Set for ${nutritionRule.rule.group_name ?? 'the group'}, not for this athlete alone.`
+                : nutritionRule?.source === 'org_default'
+                  ? 'The club default; nothing set for this athlete or their group.'
+                  : undefined
+            }
+          />
+        ) : null}
+      </section>
+      </>
+    ),
+    injury: (
+      <>
+      {/* The injury card, CHANGELOG-injury-card-spec.md. Position is
+          unchanged and already what the spec asks for: directly after the
+          S&C history log and before Flags, verified against this file
+          rather than against the reference build, which does not exist on
+          disk — see the spec's own "Reference build" section and the note
+          in InjuryCard's header. */}
+      <InjuryCard
+        injuries={profile.injuries}
+        /* Null for everyone but the medic, and not fetched at all for
+           them — see the fetch above. The component never has the data to
+           leak. */
+        clinical={activeInjuryClinical}
+        programmeStatus={programmeStatus}
+        restrictions={currentRestrictions}
+        canEditClinical={hasAnyRole(claims.roles, CLINICAL_ONLY)}
+        availabilitySetBy={availabilitySetBy}
+        timezone={timezone}
+      />
+
+      {/* PATTERN-S3 C7 (2026-09-12): every change on record, one row per
+          change, for anyone who can read the availability line. */}
+      <Link href={`/squad/${athlete.id}/availability`} className="btn-ghost-pill" style={{ padding: 'var(--s-4) var(--s-8)', alignSelf: 'flex-start' }}>
+        Availability history &rsaquo;
+      </Link>
+
+      {/* Logging an injury is separate from the card above: the card shows
+          the current one, this creates a new record, and §3.2 gives that
+          to all four injury roles rather than the medic alone. */}
+      {hasAnyRole(claims.roles, INJURY_ACCESS) ? (
+        <Link
+          href={`/injuries/new?athlete=${athlete.id}`}
+          className="btn-ghost-pill"
+          style={{ padding: 'var(--s-4) var(--s-8)', alignSelf: 'flex-start' }}
+        >
+          + Log injury
+        </Link>
+      ) : null}
+      </>
+    ),
+    goals: (
+      <>
+      <section className="card pp-card" aria-labelledby="pp-goals-title">
+        <div className="pp-card-row">
+          <h2 className="card-title" id="pp-goals-title">
+            Goals
+          </h2>
+          {programme ? (
+            <Link href={`/programmes/${programme.programmeId}`} className="pp-link">
+              {canAuthorProgramme ? 'Edit this programme' : 'View full detail'} ›
+            </Link>
+          ) : null}
+        </div>
+        <p className="pp-goal-line">
+          <span className="pp-goal-label">Goal:</span> {programme?.goal ?? 'No active programme goal on record.'}
+        </p>
+        <p className="pp-goal-note">
+          No coaching note on record — only the programme&apos;s own stated goal is shown
+          here.
+        </p>
+      </section>
+      </>
+    ),
+    scLog: (
+      <>
+      <section className="card pp-card" aria-labelledby="pp-sc-title">
+        <h2 className="card-title" id="pp-sc-title">
+          S&amp;C history log
+        </h2>
+        <EmptyState
+          headingLevel={3}
+          title="No adaptation log entries"
+          body="Adaptation notes are planned but not available yet. Nothing has been recorded here."
+        />
+      </section>
+      </>
+    ),
+    sar: (
+      <>
+      {claims.roles.includes('sport_scientist') ? (
+        <section className="card pp-card" aria-labelledby="sar-title">
+          <h2 className="card-title" id="sar-title">
+            Subject access request
+          </h2>
+          <p className="cap" style={{ marginBottom: 'var(--sp-10)' }}>
+            Article 15, UK GDPR. Generates every row referencing {athlete.first_name} across every
+            table, once medical has reviewed any clinical detail. Not part of the visual spec above —
+            kept here because it is real, working compliance functionality with no other home on this
+            page.
+          </p>
+          <form action={`/squad/${athleteId}/subject-access`} method="post">
+            <button type="submit" className="btn-ghost">
+              Generate subject access pack →
+            </button>
+          </form>
+        </section>
+      ) : null}
+      </>
+    ),
+  };
+  /* Presence, decided here from the same gates the panels use, so an absent
+     panel takes no place in the sequence or the column split. */
+  const present: Record<ProfilePanelKey, boolean> = {
+    flags: true,
+    athleticism: true,
+    acwr: true,
+    availability: canSetAvailability,
+    entries: true,
+    bodyWeight: canSeeBodyMass,
+    nutrition: true,
+    injury: true,
+    goals: true,
+    scLog: true,
+    sar: claims.roles.includes('sport_scientist'),
+  };
+  const segments = profilePanelSegments(profilePanelOrder(claims.roles), (key) => present[key]);
+
   return (
     <>
       <div className="topbar">
@@ -645,556 +1247,24 @@ export default async function AthletePage({
           />
         </section>
 
-        <div className="pp-grid">
-          <div className="pp-grid-col">
-            {/* §5: Athleticism and Position benchmarks are one card. */}
-            <section className="card pp-card" aria-labelledby="pp-athleticism-title">
-              <div className="pp-card-head">
-                <h2 className="card-title" id="pp-athleticism-title" style={{ margin: 0 }}>
-                  Athleticism
-                </h2>
-                <span className="num s">
-                  {athleticism.positionGroupName
-                    ? `vs ${athleticism.positionGroupName} · ${athleticism.positionGroupSize} player${athleticism.positionGroupSize === 1 ? '' : 's'}`
-                    : 'not in a positional group'}
-                </span>
+        {segments.map((segment, i) =>
+          segment.kind === 'full' ? (
+            <Fragment key={`${segment.key}-${i}`}>{panels[segment.key]}</Fragment>
+          ) : (
+            <div className="pp-grid" key={`grid-${i}`}>
+              <div className="pp-grid-col">
+                {segment.left.map((key) => (
+                  <Fragment key={key}>{panels[key]}</Fragment>
+                ))}
               </div>
-
-              <div className="pp-athleticism-row">
-                <Dial size={88} pct={athleticism.compositePct} tone={TONE_VAR[athleticism.band.tone]}>
-                  <div>
-                    <div className="num pp-dial-value">{athleticism.compositePct ?? EM_DASH}</div>
-                    <div className="pp-dial-unit">athleticism</div>
-                  </div>
-                </Dial>
-                <div>
-                  <p className="pp-athleticism-band" style={{ color: TONE_TEXT_VAR[athleticism.band.tone], margin: 0 }}>
-                    {athleticism.band.label}
-                  </p>
-                  <p className="pp-athleticism-desc">
-                    Composite of the position-relative percentiles below.
-                    {athleticism.positionGroupName ? ` 50 ≈ average for a ${athlete.position ?? athleticism.positionGroupName} player.` : ''}
-                  </p>
-                </div>
+              <div className="pp-grid-col">
+                {segment.right.map((key) => (
+                  <Fragment key={key}>{panels[key]}</Fragment>
+                ))}
               </div>
-
-              <div className="pp-bench-head">
-                <p className="t" style={{ margin: 0 }}>
-                  Position benchmarks
-                </p>
-                {/* Only the empty case now. "The 5 measures behind the score"
-                    counted the rows immediately underneath it, which the reader
-                    can see; "no tests defined for this club" is the one thing
-                    an empty list cannot say for itself. */}
-                {athleticism.rows.length === 0 ? (
-                  <p className="num s" style={{ margin: 0 }}>
-                    no tests defined for this club
-                  </p>
-                ) : null}
-              </div>
-
-              {/* Light-theme handoff §7's suppression notice. Shown only when
-                  at least one row actually had its tint withheld, and it says
-                  the percentiles are unchanged because they are — the row
-                  still shows its band label, its bar and its n. */}
-              {athleticism.rows.some((r) => r.pct !== null && r.n < BAND_SHADING_MIN_N) ? (
-                <p className="pp-bench-suppressed">
-                  Row shading is off where fewer than {BAND_SHADING_MIN_N} players have a result — a
-                  percentile against three team-mates shades further than it should. The percentiles
-                  themselves are unchanged.
-                </p>
-              ) : null}
-
-              {athleticism.rows.map((row) => (
-                <div
-                  className="pp-bench-row"
-                  key={row.testDefinitionId}
-                  data-band={
-                    row.pct !== null && row.n >= BAND_SHADING_MIN_N ? bandIndex(row.pct) : undefined
-                  }
-                >
-                  <div className="pp-bench-top">
-                    <span className="pp-bench-name">{row.name}</span>
-                    <span className="num pp-bench-value">
-                      {row.value !== null ? `${formatNumber(row.value, row.decimals)} ${row.unit}` : EM_DASH}
-                    </span>
-                  </div>
-                  <div className="pp-bench-bar">
-                    <div
-                      className="pp-bench-fill"
-                      style={{
-                        width: `${row.pct ?? 0}%`,
-                        background: TONE_VAR[row.pct !== null ? bandTone(row.pct) : 'faint'],
-                      }}
-                    />
-                  </div>
-                  <div className="pp-bench-bottom">
-                    <span
-                      className="pp-bench-band"
-                      style={{ color: row.pct !== null ? TONE_TEXT_VAR[bandTone(row.pct)] : 'var(--faint)' }}
-                    >
-                      {row.pct !== null ? `${ordinal(row.pct)} percentile` : 'No data'}
-                    </span>
-                    <span className="num pp-bench-meta">
-                      {row.n > 0
-                        ? `median ${formatNumber(row.median, row.decimals)} · best ${formatNumber(row.best, row.decimals)} · n=${row.n}`
-                        : 'n=0'}
-                    </span>
-                  </div>
-                </div>
-              ))}
-            </section>
-
-            <section className="card pp-card" aria-labelledby="pp-sc-title">
-              <h2 className="card-title" id="pp-sc-title">
-                S&amp;C history log
-              </h2>
-              <EmptyState
-                headingLevel={3}
-                title="No adaptation log entries"
-                body="Adaptation notes are planned but not available yet. Nothing has been recorded here."
-              />
-            </section>
-
-            {/* The injury card, CHANGELOG-injury-card-spec.md. Position is
-                unchanged and already what the spec asks for: directly after the
-                S&C history log and before Flags, verified against this file
-                rather than against the reference build, which does not exist on
-                disk — see the spec's own "Reference build" section and the note
-                in InjuryCard's header. */}
-            <InjuryCard
-              injuries={profile.injuries}
-              /* Null for everyone but the medic, and not fetched at all for
-                 them — see the fetch above. The component never has the data to
-                 leak. */
-              clinical={activeInjuryClinical}
-              programmeStatus={programmeStatus}
-              restrictions={currentRestrictions}
-              canEditClinical={hasAnyRole(claims.roles, CLINICAL_ONLY)}
-              availabilitySetBy={availabilitySetBy}
-              timezone={timezone}
-            />
-
-            {/* PATTERN-S3 C7 (2026-09-12): every change on record, one row per
-                change, for anyone who can read the availability line. */}
-            <Link href={`/squad/${athlete.id}/availability`} className="btn-ghost-pill" style={{ padding: 'var(--s-4) var(--s-8)', alignSelf: 'flex-start' }}>
-              Availability history &rsaquo;
-            </Link>
-
-            {/* Logging an injury is separate from the card above: the card shows
-                the current one, this creates a new record, and §3.2 gives that
-                to all four injury roles rather than the medic alone. */}
-            {hasAnyRole(claims.roles, INJURY_ACCESS) ? (
-              <Link
-                href={`/injuries/new?athlete=${athlete.id}`}
-                className="btn-ghost-pill"
-                style={{ padding: 'var(--s-4) var(--s-8)', alignSelf: 'flex-start' }}
-              >
-                + Log injury
-              </Link>
-            ) : null}
-
-            {/* ADR-008 / migration 0041: non-injury availability, reachable by
-             * coach or medical, without an injury record existing at all —
-             * the entry point the audit found missing (gameplan 2.6). Gated
-             * on the same two roles as the weigh-in button above, since
-             * availability_coach_insert_noninjury (0041) and
-             * availability_medical_insert (0012) are exactly those two roles. */}
-            {canSetAvailability ? (
-              <section className="card pp-card" aria-labelledby="pp-availability-title">
-                <h2 className="card-title" id="pp-availability-title">
-                  Availability
-                </h2>
-                <SetAvailabilityFormCoach
-                  orgId={orgId}
-                  userId={claims.userId}
-                  athleteId={athlete.id}
-                  athleteName={`${athlete.first_name} ${athlete.last_name}`}
-                  /* A non-injury absence this form could end: no injury link, a
-                     real non-injury reason (the coach's update policy, 0068,
-                     excludes a row with reason 'injury'), and not Available. */
-                  currentAbsence={
-                    !!availabilityRow &&
-                    availabilityRow.injury_id === null &&
-                    availabilityRow.reason_category !== null &&
-                    availabilityRow.reason_category !== 'injury' &&
-                    availabilityRow.status !== 'available'
-                  }
-                />
-              </section>
-            ) : null}
-          </div>
-
-          <div className="pp-grid-col">
-            {/* viewerIsMedical is wording, not authorisation (CLAUDE.md rule 2): a
-                flag note is written into a column every coach in the club reads, so
-                a clinician is told that before they type. */}
-            <PlayerProfileFlags
-              flags={profile.flags}
-              orgId={orgId}
-              userId={claims.userId}
-              today={today}
-              timezone={timezone}
-              viewerIsMedical={claims.roles.includes('medic')}
-              /* A list rather than a predicate: this card loops over its own
-                 flags, so the answer differs per row and only the component
-                 knows which row it is drawing -- but it is a Client Component,
-                 and a function prop across that boundary is a runtime 500. */
-              editableFlagDomains={editableFlagDomains(claims.roles)}
-              premium={isPremium(tier)}
-            />
-
-            {/* CORRECTED. This comment used to read "id is the Wellness domain chip's
-             * real destination ... no dedicated per-athlete wellness history page
-             * exists anywhere in this app, so this on-page section is the real, whole
-             * answer". Both halves are now out of date: the chip navigates to
-             * /squad/[athleteId]/wellness, and that page IS the dedicated history the
-             * note said did not exist. The id stays because the section is still
-             * aria-labelled by it and an existing anchor is somebody's bookmark; this
-             * summary stays because a coach scanning the profile wants ACWR and
-             * readiness at a glance without a second navigation. The two are a summary
-             * and its detail view, not a stand-in and a replacement. */}
-            <section className="card pp-card" id="pp-wellness-title" aria-label="ACWR and wellness rating">
-              <div className="pp-dials">
-                <div className="pp-dial-col">
-                  <p className="pp-dial-title pp-dial-col-head">ACWR</p>
-                  {/* Names its own fixed windows, and now says they are fixed:
-                    * the header's period control does not reach this dial and
-                    * cannot, because ACWR IS the 7-over-28 ratio. */}
-                  <p className="num pp-dial-window pp-dial-col-head">fixed · acute 7d over chronic 28d</p>
-                  <div className="pp-big-dial">
-                    <Dial size={116} pct={acwr.pct} tone={TONE_VAR[acwr.status.tone]}>
-                      <div>
-                        <div className="num pp-big-dial-value">{acwr.value !== null ? acwr.value.toFixed(2) : EM_DASH}</div>
-                        <div className="pp-big-dial-unit">ratio</div>
-                      </div>
-                    </Dial>
-                  </div>
-                  <p className="pp-dial-status" style={{ color: TONE_TEXT_VAR[acwr.status.tone] }}>
-                    {acwr.status.label}
-                  </p>
-                  <p className="num pp-dial-meta">
-                    {acwr.flagRuleValue !== null
-                      ? `flags above ${acwr.flagRuleValue.toFixed(2)}`
-                      : 'no flag rule active'}
-                    {' · '}n = {acwr.sessionsN} sessions
-                  </p>
-                  {/* Migration 0118: the club setting (the absence rule). */}
-                  {!collectsRpe ? (
-                    <p className="tiny" data-rpe-off>{rpeOffLine('this ratio')}</p>
-                  ) : null}
-                </div>
-                <div className="pp-dial-col">
-                  <p className="pp-dial-title pp-dial-col-head">Wellness rating</p>
-                  {/* THREE windows on this one card, and they are not the same
-                    * — so each is named where it applies rather than one label
-                    * being left to stand for all of them:
-                    *   the MEAN  — trailing 28 days, capped (here)
-                    *   the COUNT — the selected period (meta line below)
-                    *   the BAND  — a 14-day rolling baseline (meta line below)
-                    * The mean is capped because readiness is a fast signal and
-                    * a dial collapses its window to one number; see
-                    * queries/playerProfile.ts's header. */}
-                  <p className="num pp-dial-window pp-dial-col-head">
-                    mean readiness · last {wellnessRating.meanWindowDays} days
-                  </p>
-                  <div className="pp-big-dial">
-                    <Dial size={116} pct={wellnessRating.meanPct} tone="var(--accent)">
-                      <div>
-                        <div className="num pp-big-dial-value">
-                          {wellnessRating.meanPct !== null ? `${wellnessRating.meanPct}%` : EM_DASH}
-                        </div>
-                        <div className="pp-big-dial-unit">of 100</div>
-                      </div>
-                    </Dial>
-                  </div>
-                  <p className="pp-dial-status" style={{ color: TONE_TEXT_VAR[wellnessRating.status.tone] }}>
-                    {wellnessRating.status.label}
-                  </p>
-                  <p className="num pp-dial-meta">
-                    {wellnessRating.submittedN} of {wellnessRating.windowDays} days submitted ·{' '}
-                    {wellnessRating.windowLabel.toLowerCase()}
-                    {wellnessRating.meanWindowDays < wellnessRating.windowDays
-                      ? ' — the count follows the period, the mean above does not'
-                      : ''}
-                    {' · '}status vs their own 14-day baseline
-                  </p>
-                </div>
-              </div>
-            </section>
-
-            <section className="card pp-card" aria-labelledby="pp-goals-title">
-              <div className="pp-card-row">
-                <h2 className="card-title" id="pp-goals-title">
-                  Goals
-                </h2>
-                {programme ? (
-                  <Link href={`/programmes/${programme.programmeId}`} className="pp-link">
-                    {canAuthorProgramme ? 'Edit this programme' : 'View full detail'} ›
-                  </Link>
-                ) : null}
-              </div>
-              <p className="pp-goal-line">
-                <span className="pp-goal-label">Goal:</span> {programme?.goal ?? 'No active programme goal on record.'}
-              </p>
-              <p className="pp-goal-note">
-                No coaching note on record — only the programme&apos;s own stated goal is shown
-                here.
-              </p>
-            </section>
-
-            <section className="card pp-card" aria-labelledby="pp-nutrition-title">
-              <div className="pp-card-row">
-                <h2 className="card-title" id="pp-nutrition-title">
-                  Nutrition plan
-                </h2>
-                {/* C5: Edit only for a role that may (NUTRITION_EDIT); a reader
-                    gets View and the owner well at the panel's end. */}
-                {canEditNutrition ? (
-                  <Link href="/nutrition" className="btn-ghost">
-                    Edit
-                  </Link>
-                ) : (
-                  <Link href="/nutrition" className="btn-ghost">
-                    View
-                  </Link>
-                )}
-              </div>
-              {/* An empty panel states the requirement, never a zero
-                  (STAFF-SS-02-05 C8, 2026-09-12): the targets are per
-                  kilogram, so a plan without a weigh-in has nothing to scale. */}
-              {!nutrition ? (
-                <p className="cap" style={{ margin: '0 0 var(--sp-8)' }}>
-                  No plan assigned. Targets are per kilogram, so a plan needs a weigh-in.
-                </p>
-              ) : bodyWeight.latestKg === null ? (
-                /* PATTERN-S5 C7 (2026-09-13): the figures below are real —
-                   the resolver's absolute fallback — so say what they are
-                   rather than "needs a weigh-in" above them. */
-                <p className="cap" style={{ margin: '0 0 var(--sp-8)' }}>
-                  {noWeighInLine({ firstName: athlete.first_name, sourceScope: nutrition.source_scope })}
-                </p>
-              ) : null}
-              <div className="pp-macro-tiles">
-                <div className="pp-macro-tile">
-                  <p className="num pp-macro-value" style={{ margin: 0 }}>
-                    {nutrition?.energy_kcal !== null && nutrition?.energy_kcal !== undefined ? formatNumber(nutrition.energy_kcal, 0) : EM_DASH}
-                  </p>
-                  <p className="pp-macro-label" style={{ margin: 0 }}>
-                    kcal
-                  </p>
-                </div>
-                <div className="pp-macro-tile">
-                  <p className="num pp-macro-value" style={{ margin: 0 }}>
-                    {nutrition?.protein_g !== null && nutrition?.protein_g !== undefined ? formatNumber(nutrition.protein_g, 0) : EM_DASH}
-                  </p>
-                  <p className="pp-macro-label" style={{ margin: 0 }}>
-                    protein g
-                  </p>
-                </div>
-                <div className="pp-macro-tile">
-                  <p className="num pp-macro-value" style={{ margin: 0 }}>
-                    {nutrition?.carbs_g !== null && nutrition?.carbs_g !== undefined ? formatNumber(nutrition.carbs_g, 0) : EM_DASH}
-                  </p>
-                  <p className="pp-macro-label" style={{ margin: 0 }}>
-                    carbs g
-                  </p>
-                </div>
-                <div className="pp-macro-tile">
-                  <p className="num pp-macro-value" style={{ margin: 0 }}>
-                    {nutrition?.fat_g !== null && nutrition?.fat_g !== undefined ? formatNumber(nutrition.fat_g, 0) : EM_DASH}
-                  </p>
-                  <p className="pp-macro-label" style={{ margin: 0 }}>
-                    fat g
-                  </p>
-                </div>
-              </div>
-              {!canEditNutrition ? (
-                <ReadOnlyOwner
-                  owner="the nutritionist or the sport scientist"
-                  name={nutritionRule?.rule.created_by ? (ownerNames.get(nutritionRule.rule.created_by) ?? null) : null}
-                  date={nutritionRule ? formatDate(nutritionRule.rule.effective_from, timezone) : null}
-                  note={
-                    nutritionRule?.source === 'group'
-                      ? `Set for ${nutritionRule.rule.group_name ?? 'the group'}, not for this athlete alone.`
-                      : nutritionRule?.source === 'org_default'
-                        ? 'The club default; nothing set for this athlete or their group.'
-                        : undefined
-                  }
-                />
-              ) : null}
-            </section>
-
-            {canSeeBodyMass ? (
-            <section className="card pp-card" aria-labelledby="pp-weight-title">
-              <div className="pp-weight-top">
-                <div>
-                  <h2 className="card-title" id="pp-weight-title">
-                    Body weight
-                  </h2>
-                  {bodyWeight.latestKg !== null ? (
-                    <p className="pp-weight-value num" style={{ margin: 'var(--s-1) 0 0' }}>
-                      {formatNumber(bodyWeight.latestKg, 1)}
-                      <span className="u"> kg</span>
-                    </p>
-                  ) : (
-                    <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
-                      No weigh-in recorded. A trend needs three weigh-ins.
-                    </p>
-                  )}
-                  {/* This note used to read "No target range on record." with no
-                    * condition attached, because there was no column behind it.
-                    * Migration 0060 gave it one, so it is now a real empty state OR a
-                    * real range. It says "staff target" in words every time — this
-                    * card also draws the athlete's own trend as an area fill, and a
-                    * reader must never have to work out which band is which. */}
-                  {liveTargetRange ? (
-                    <p className="pp-weight-note">
-                      <span className="pp-target-swatch" aria-hidden="true" /> Staff target{' '}
-                      <span className="num">
-                        {liveTargetRange.target_low_kg.toFixed(1)}–
-                        {liveTargetRange.target_high_kg.toFixed(1)} kg
-                      </span>
-                      {targetState ? (
-                        <>
-                          {' · '}
-                          <span
-                            className={`pill ${
-                              targetState === 'in_range'
-                                ? 'pill-good'
-                                : targetState === 'above'
-                                  ? 'pill-warn'
-                                  : 'pill-bad'
-                            }`}
-                          >
-                            {targetState === 'in_range'
-                              ? 'On target'
-                              : targetState === 'above'
-                                ? 'Above target'
-                                : 'Below target'}
-                          </span>
-                        </>
-                      ) : null}
-                    </p>
-                  ) : (
-                    <p className="pp-weight-note">No staff target range set.</p>
-                  )}
-                  {liveTargetRange?.rationale ? (
-                    <p className="pp-weight-note" style={{ marginTop: 'var(--sp-2)' }}>
-                      {liveTargetRange.rationale}
-                    </p>
-                  ) : null}
-                </div>
-                {bodyWeight.deltaKg !== null && bodyWeight.deltaDays !== null ? (
-                  <div className="pp-weight-right">
-                    <p className="num pp-weight-trend" style={{ margin: 0 }}>
-                      {bodyWeight.deltaKg === 0 ? '▬' : bodyWeight.deltaKg > 0 ? '▲' : '▼'}{' '}
-                      {Math.abs(bodyWeight.deltaKg).toFixed(1)} kg · {bodyWeight.deltaDays}d
-                    </p>
-                  </div>
-                ) : null}
-              </div>
-
-              {spark ? (
-                <svg className="pp-sparkline" viewBox="0 0 600 90" preserveAspectRatio="none" aria-hidden="true">
-                  {/* TWO BANDS, ONE CHART — and they must never be confusable.
-                    *
-                    * The weigh-in history is a FILLED area in --accent2: soft, hueless
-                    * of judgement, "here is the data". The staff target range is an
-                    * unfilled DASHED BRACKET in --muted: a rule somebody drew, not a
-                    * measurement. Fill-versus-stroke, solid-versus-dashed, and blue-
-                    * versus-neutral are three independent channels, so the distinction
-                    * survives greyscale and every common colour-vision deficiency —
-                    * and the note above the chart names the target range in words as
-                    * well, because a visual convention alone is not a label. */}
-                  {spark.band ? (
-                    <rect
-                      x="0"
-                      y={spark.band.y}
-                      width="600"
-                      height={spark.band.height}
-                      fill="none"
-                      stroke="var(--muted)"
-                      strokeWidth="1.2"
-                      strokeDasharray="6 4"
-                      vectorEffect="non-scaling-stroke"
-                    />
-                  ) : null}
-                  <path d={spark.fill} fill="rgb(var(--accent2-rgb) / 0.14)" />
-                  <path d={spark.line} fill="none" stroke="var(--accent2)" strokeWidth="2.4" strokeLinejoin="round" />
-                </svg>
-              ) : null}
-              {/* The sparkline's window was a silent, hardcoded 120 days. It is
-                * now whatever the header control says, and the line says which
-                * — with the real sample behind it, because a wide window with
-                * four weigh-ins in it is not the trend it looks like. */}
-              <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
-                {profile.range.label.toLowerCase()} · {bodyWeight.history.length} weigh-in
-                {bodyWeight.history.length === 1 ? '' : 's'} in this window
-                {bodyWeight.history.length < 3 ? ' — a trend needs three weigh-ins' : ''}
-                {spark?.band
-                  ? ' · solid line and fill are logged weigh-ins, the dashed bracket is the staff target range'
-                  : ''}
-              </p>
-
-              <BodyWeightPanel
-                orgId={orgId}
-                athleteId={athleteId}
-                userId={claims.userId}
-                timezone={timezone}
-                entries={weighIns}
-                canLog={canLogWeighIn}
-                targetRanges={targetRanges}
-              />
-            </section>
-            ) : null}
-          </div>
-        </div>
-
-        {/* Full width, below the two-column grid rather than inside it: these are
-          * wide tables with a per-row expansion, and half a grid column would force
-          * either a horizontal scroll on every row or a truncated history. Placed
-          * above the admin-only subject-access block so the last thing a coach sees
-          * on the page is their own tool, not a compliance one. */}
-        {/* Captioned, not moved. CORRECTION_WINDOW_DAYS is a performance bound
-          * on a base-table read (see its own comment above), so the header's
-          * period control deliberately does not reach it — and a coach who has
-          * set the page to a year must be told that, or a correction they
-          * cannot find here reads as an entry that does not exist. */}
-        <p className="cap" style={{ margin: '0 0 -6px' }}>
-          Entry corrections cover a fixed {CORRECTION_WINDOW_DAYS} days ({formatDate(correctionRange.from, timezone)}{' '}
-          to {formatDate(correctionRange.to, timezone)}) and do not follow the period control &mdash; it is a
-          bound on how much of the entry base table this card reads, not a view window. An older entry is
-          still correctable, just not from here.
-        </p>
-
-        <EntryCorrectionPanel
-          athleteId={athlete.id}
-          athleteFirstName={athlete.first_name}
-          timezone={timezone}
-          canCorrect={canCorrect}
-          wellness={wellnessRevisions}
-          training={trainingRevisions}
-        />
-
-        {claims.roles.includes('sport_scientist') ? (
-          <section className="card pp-card" aria-labelledby="sar-title">
-            <h2 className="card-title" id="sar-title">
-              Subject access request
-            </h2>
-            <p className="cap" style={{ marginBottom: 'var(--sp-10)' }}>
-              Article 15, UK GDPR. Generates every row referencing {athlete.first_name} across every
-              table, once medical has reviewed any clinical detail. Not part of the visual spec above —
-              kept here because it is real, working compliance functionality with no other home on this
-              page.
-            </p>
-            <form action={`/squad/${athleteId}/subject-access`} method="post">
-              <button type="submit" className="btn-ghost">
-                Generate subject access pack →
-              </button>
-            </form>
-          </section>
-        ) : null}
+            </div>
+          ),
+        )}
       </div>
     </>
   );

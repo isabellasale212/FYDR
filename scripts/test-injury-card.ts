@@ -78,12 +78,19 @@ console.log('\nthe header button is medic-only and absent otherwise');
 assert(/canEditClinical && active \? \(/.test(cardCode), 'the button renders only for a medic with an active injury');
 assert(/Add clinical detail/.test(card) && /'Edit'/.test(card), 'and switches label on whether clinical detail exists');
 
-console.log('\ncard position: after the S&C history log, before Flags');
-const sc = pageCode.indexOf('pp-sc-title');
-const inj = pageCode.indexOf('<InjuryCard');
-const flags = pageCode.indexOf('<PlayerProfileFlags');
-assert(sc > -1 && inj > sc, 'the injury card comes after the S&C history log');
-assert(flags > inj, 'and before Flags');
+console.log('\ncard position: where the one panel order puts it (STAFF-SS-02-05 C4, batch B5)');
+/* The card used to be pinned "after the S&C history log and before Flags"
+   (CHANGELOG-injury-card-spec.md). Since 2026-09-14 the profile's sequence is
+   lib/profilePanels.ts's, one order for every role: Injury sits after
+   Nutrition plan and before Goals, with the S&C history log after Goals. The
+   page renders from that list, so the pin reads the list. */
+const orderSrc = readFileSync('src/lib/profilePanels.ts', 'utf8');
+const orderBlock = orderSrc.slice(orderSrc.indexOf('SPORT_SCIENTIST_PANEL_ORDER'), orderSrc.indexOf('];', orderSrc.indexOf('SPORT_SCIENTIST_PANEL_ORDER')));
+const pos = (key: string) => orderBlock.indexOf(`'${key}'`);
+assert(pos('injury') > -1 && pos('nutrition') > -1 && pos('injury') > pos('nutrition'), 'the injury card comes after the nutrition plan');
+assert(pos('goals') > pos('injury'), 'and before Goals');
+assert(pos('scLog') > pos('goals'), 'with the S&C history log after Goals, not before the injury card as it once was');
+assert(/panels\[segment\.key\]|panels\[key\]/.test(pageCode) && /profilePanelOrder\(claims\.roles\)/.test(pageCode), 'and the page renders its panels from that order, per role');
 
 console.log(`\n${passed} passed, ${failed} failed`);
 process.exit(failed ? 1 : 0);

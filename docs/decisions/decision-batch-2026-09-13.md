@@ -193,6 +193,29 @@ The fixture-to-session link is largely already done: `sessions.fixture_id` has
 been written since 9 September and three of the four seeded match sessions are
 linked. The orphan stays, with an attach action rather than a backfill.
 
+## The My data hero cards are CUT, 14 September 2026
+
+ATH-ADULT-12 C2 and C3 are cut from v1, not deferred. The athlete's My data
+screen keeps its charts and loses the plain-English summary line above them.
+
+**Why.** The cards need two rules that do not exist and cannot be invented by a
+builder, because they are sports science judgements: what counts as "steady"
+rather than rising or falling, and the minimum sample before a trend is
+described at all. Both are answerable in ten minutes, but the cards are polish
+on a screen that already works, and cutting them starts the closing sweeps a day
+earlier.
+
+**If they are ever revived**, the defaults put to Isabella were: steady means the
+most recent 7-day mean within 5 percent of the 28-day mean; minimum sample is 8
+entries in the 28-day window and 3 in the most recent 7 days. The 5 percent
+figure needs sanity-checking against a 1 to 5 wellness scale, where it is a very
+small move. And the tests tab will almost always report too few results, because
+a club may run a CMJ twice a season, so its wording has to say why rather than
+looking broken.
+
+**Consequence: the feature work for v1 is complete.** The only remaining build
+is the accessibility sweep and then the design system conformance pass.
+
 ## Group C: the order of the big briefs
 
 Each is a day or more and needs its own brief. Agreed order, 13 September 2026:

@@ -5168,7 +5168,7 @@ img.me-avatar {
    * track when on, so --on-accent is the token for its face. */
   background: var(--knob-fill);
   box-shadow: var(--shadow);
-  transition: transform 0.15s;
+  transition: transform var(--dur);
 }
 /* Knob travel = track width − padding×2 − knob width = 54 − 6 − 24 = 24px,
  * SETTINGS-SPEC.md §3's own arithmetic, kept literal rather than reduced
@@ -6353,7 +6353,7 @@ img.me-avatar {
   line-height: 1;
   color: var(--faint);
   transform: rotate(0deg);
-  transition: transform 150ms ease;
+  transition: transform var(--dur) ease;
 }
 .dash-flags-head-chevron[data-open='true'] {
   transform: rotate(180deg);

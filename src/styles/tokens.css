@@ -493,8 +493,9 @@
   --pill-highlight: rgb(var(--highlight-rgb) / 0.22);
   --wash-sticky-bad: rgb(252, 235, 233);
 
-  /* ---- five-band heat ramp, the training report. All five bands are
-         LIGHT tints carrying one dark ink, #0f3557 — 11.9:1 on band 1 and
+  /* ---- five-band heat ramp, the training report. Light: all five bands
+         are LIGHT tints carrying one dark ink, #0f3557 (dark has its own
+         values in both dark blocks since 15 Sept 2026 — Isabella's ruling) — 11.9:1 on band 1 and
          6.8:1 on band 5. Hue does the separating, not lightness. The
          per-band --heat-ink-* names exist so markup keeps resolving. ---- */
   --heat-1: #f4fbfd;
@@ -1001,6 +1002,35 @@ Every alpha here is the handoff's own figure (§4 and §5),
      every dark ground, so both alias them and no dark colour changes. */
   --faint-on-tint: var(--faint);
   --muted-on-tint: var(--muted);
+  /* THE HEAT RAMPS' DARK VALUES — 15 Sept 2026, Isabella's ruling: the one
+     place tonight a dark colour changes, deliberately. System A's ramps are
+     light tints under one dark ink, which in a dark table rendered as light
+     islands — legible but loud. These keep the ramps' shape (five bands, one
+     ink per ramp, hue walking toward the tone) on dark's own ground: the
+     load ramp is the dark accent (42,109,223) over --surf at 0.10 / 0.24 /
+     0.40 / 0.56 / 0.72, the percentage ramp is --good (79,214,255) over
+     --surf at 0.06 / 0.13 / 0.20 / 0.27 / 0.34 — cyan is bright, so its
+     top band stops where the ink still clears — both written solid so a
+     row tint beneath cannot move them. One ink each, --text: 11.5 / 9.9 /
+     8.3 / 6.8 / 5.7 on the load bands, 11.2 / 9.5 / 8.0 / 6.7 / 5.6 on the
+     percentage bands (check-contrast measures every pair). End-to-end
+     separation 2.0:1 on both, against light's 1.8 and 1.6. */
+  --heat-1: #1e2d53;
+  --heat-2: #203768;
+  --heat-3: #224281;
+  --heat-4: #244e9a;
+  --heat-5: #2659b3;
+  --heat-ink-1: #e9edfa;
+  --heat-ink-2: #e9edfa;
+  --heat-ink-3: #e9edfa;
+  --heat-ink-4: #e9edfa;
+  --heat-ink-5: #e9edfa;
+  --heat-pct-1: #20314e;
+  --heat-pct-2: #243d5b;
+  --heat-pct-3: #274969;
+  --heat-pct-4: #2b5676;
+  --heat-pct-5: #2e6283;
+  --heat-pct-text: #e9edfa;
   /* Visual Lift variants 1a and 2b, the dark half of the same scheme:
      #182241 -> #202b4e. Lighter and bluer, so the dark shell reads as a
      surface rather than a void, and it is what the lift's "dark as the hero"
@@ -1171,6 +1201,35 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --pill-fill-alpha-accent: 0.22;
     --faint-on-tint: var(--faint);
     --muted-on-tint: var(--muted);
+  /* THE HEAT RAMPS' DARK VALUES — 15 Sept 2026, Isabella's ruling: the one
+       place tonight a dark colour changes, deliberately. System A's ramps are
+       light tints under one dark ink, which in a dark table rendered as light
+       islands — legible but loud. These keep the ramps' shape (five bands, one
+       ink per ramp, hue walking toward the tone) on dark's own ground: the
+       load ramp is the dark accent (42,109,223) over --surf at 0.10 / 0.24 /
+       0.40 / 0.56 / 0.72, the percentage ramp is --good (79,214,255) over
+       --surf at 0.06 / 0.13 / 0.20 / 0.27 / 0.34 — cyan is bright, so its
+       top band stops where the ink still clears — both written solid so a
+       row tint beneath cannot move them. One ink each, --text: 11.5 / 9.9 /
+       8.3 / 6.8 / 5.7 on the load bands, 11.2 / 9.5 / 8.0 / 6.7 / 5.6 on the
+       percentage bands (check-contrast measures every pair). End-to-end
+       separation 2.0:1 on both, against light's 1.8 and 1.6. */
+    --heat-1: #1e2d53;
+    --heat-2: #203768;
+    --heat-3: #224281;
+    --heat-4: #244e9a;
+    --heat-5: #2659b3;
+    --heat-ink-1: #e9edfa;
+    --heat-ink-2: #e9edfa;
+    --heat-ink-3: #e9edfa;
+    --heat-ink-4: #e9edfa;
+    --heat-ink-5: #e9edfa;
+    --heat-pct-1: #20314e;
+    --heat-pct-2: #243d5b;
+    --heat-pct-3: #274969;
+    --heat-pct-4: #2b5676;
+    --heat-pct-5: #2e6283;
+    --heat-pct-text: #e9edfa;
     /* Route 2 of the three ways dark arrives (§2.4). Must track
        :root[data-theme='dark'] exactly — this block was missed when the
        Visual Lift moved the dark ground, so an OS-dark viewer with no explicit

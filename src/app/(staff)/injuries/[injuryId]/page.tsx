@@ -134,14 +134,7 @@ export default async function InjuryDetailPage({
           </div>
 
           <div style={{ marginTop: 'var(--sp-14)' }}>
-            <InjuryTimeline
-              orgId={orgId}
-              userId={claims.userId}
-              injuryId={injury.id}
-              events={timeline}
-              proposals={proposals}
-              timezone={timezone}
-            />
+            <InjuryTimeline events={timeline} proposals={proposals} timezone={timezone} />
           </div>
         </>
       ) : (

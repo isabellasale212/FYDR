@@ -1,6 +1,5 @@
 import type { AppRole, InjuryTimelineEventType, Json } from '@/lib/types/database';
 import type { Db } from './groups';
-import { mustAffect } from '@/lib/write';
 
 /** The injury <-> S&C programme link: one timeline per injury, and a programme
  *  assignment that is not live until the medic signs it off.
@@ -131,15 +130,18 @@ export type InjuryProposal = {
   programme_name: string;
   starts_on: string;
   ends_on: string | null;
-  status: 'proposed' | 'active';
+  /** 'returned' since 0124 (PATTERN-S3 C6): the medic sent it back with a
+   *  reason, carried on the row so the S&C reads it on the proposals list. */
+  status: 'proposed' | 'active' | 'returned';
+  return_reason: string | null;
 };
 
-/** Proposals against one injury, both still-pending and already signed off.
+/** Proposals against one injury: pending, signed off and returned.
  *
- *  Both, rather than only 'proposed', because the medic's screen has to be able
- *  to say "signed off" about the one they approved a minute ago. Filtering to
- *  pending would make an approved proposal vanish from the screen that approved
- *  it, which reads as a failed write. */
+ *  All three, rather than only 'proposed', because the medic's screen has to
+ *  be able to say "signed off" or "returned" about the one they decided a
+ *  minute ago. Filtering to pending would make a decided proposal vanish from
+ *  the screen that decided it, which reads as a failed write. */
 export async function fetchInjuryProposals(
   db: Db,
   orgId: string,
@@ -147,10 +149,10 @@ export async function fetchInjuryProposals(
 ): Promise<InjuryProposal[]> {
   const { data, error } = await db
     .from('programme_assignments')
-    .select('id, programme_id, starts_on, ends_on, status, programmes(name)')
+    .select('id, programme_id, starts_on, ends_on, status, return_reason, programmes(name)')
     .eq('org_id', orgId)
     .eq('injury_id', injuryId)
-    .in('status', ['proposed', 'active'])
+    .in('status', ['proposed', 'active', 'returned'])
     .order('starts_on', { ascending: false });
   if (error) throw new Error(error.message);
   type Row = {
@@ -158,7 +160,8 @@ export async function fetchInjuryProposals(
     programme_id: string;
     starts_on: string;
     ends_on: string | null;
-    status: 'proposed' | 'active';
+    status: 'proposed' | 'active' | 'returned';
+    return_reason: string | null;
     programmes: { name: string } | null;
   };
   return ((data ?? []) as unknown as Row[]).map((r) => ({
@@ -168,6 +171,7 @@ export async function fetchInjuryProposals(
     starts_on: r.starts_on,
     ends_on: r.ends_on,
     status: r.status,
+    return_reason: r.return_reason,
   }));
 }
 
@@ -219,61 +223,40 @@ export async function recordInjuryEvent(
     : { error: error.message };
 }
 
-/** The medic makes a proposed block live.
+/** The medic approves a proposal — the block goes live for the athlete.
  *
- *  Two writes, assignment first. If the event write fails the assignment is
- *  still active, which is the right way round: the athlete has their programme
- *  and the log is short one line, rather than a log that claims a sign-off that
- *  did not happen. */
-export async function signOffProposal(
-  db: Db,
-  orgId: string,
-  userId: string,
-  input: { assignmentId: string; injuryId: string; programmeName: string },
-): Promise<{ error: string | null }> {
-  const activated = await mustAffect(
-    db
-      .from('programme_assignments')
-      .update({ status: 'active' })
-      .eq('org_id', orgId)
-      .eq('id', input.assignmentId)
-      .select('id'),
-    { refusal: 'Not signed off: making an injury-linked block live belongs to the medic.' },
-  );
-  if (activated.error) return activated;
+ *  0124 (PATTERN-S3 C6): one write for both surfaces. decide_proposal sets
+ *  'active', stamps decided_by/decided_at and writes the programme_signed_off
+ *  event itself, so this screen and /programmes/proposals cannot disagree
+ *  about what approval is. */
+export async function signOffProposal(db: Db, assignmentId: string): Promise<{ error: string | null }> {
+  const { error } = await db.rpc('decide_proposal', { p_assignment_id: assignmentId, p_decision: 'approve', p_reason: '' });
+  if (error) return { error: proposalDecisionError(error.message) };
+  return { error: null };
+}
 
-  return recordInjuryEvent(db, orgId, userId, 'medic', {
-    injuryId: input.injuryId,
-    type: 'programme_signed_off',
-    payload: { assignment_id: input.assignmentId, programme: input.programmeName },
-  });
+function proposalDecisionError(message: string): string {
+  if (/42501|belongs to the medic/.test(message)) return 'Not saved: deciding an injury-linked block belongs to the medic.';
+  if (/not_a_proposal/.test(message)) return 'Not saved: that block has already been decided.';
+  if (/reason_required/.test(message)) return 'Say what needs changing — the S&C reads the reason on the proposals list.';
+  return message;
 }
 
 /** The medic sends a proposal back, with a reason.
  *
- *  The reason becomes its own `note` event authored by the medic and linked to
- *  the proposal (decided 2026-09-06) rather than a field on the assignment. Two
- *  consequences worth stating: a second round of changes appends a second note
- *  instead of overwriting the first, so the back-and-forth survives; and the
- *  reason is medic-readable only, like everything else on this timeline.
- *
- *  The assignment itself is left at 'proposed' and is not modified at all — the
- *  S&C edits their own draft in place, which migration 0080's policy allows
- *  precisely so this loop works without a second status. */
-export async function requestProposalChanges(
-  db: Db,
-  orgId: string,
-  userId: string,
-  input: { assignmentId: string; injuryId: string; reason: string },
-): Promise<{ error: string | null }> {
-  const reason = input.reason.trim();
-  if (reason === '') return { error: 'Say what needs changing — the S&C only sees the reason you give.' };
-
-  return recordInjuryEvent(db, orgId, userId, 'medic', {
-    injuryId: input.injuryId,
-    type: 'note',
-    payload: { assignment_id: input.assignmentId, text: reason, kind: 'changes_requested' },
-  });
+ *  0124 (PATTERN-S3 C6) replaced the 2026-09-06 shape. The reason now lives on
+ *  the assignment row (`return_reason`), which the S&C reads on
+ *  /programmes/proposals — the board's "one list both roles see" — and the
+ *  status moves to 'returned'. decide_proposal still appends the reason to
+ *  the injury timeline as the medic's `note` event, so the clinical log is
+ *  unchanged and a second round is a second note. The S&C answers a returned
+ *  proposal by assigning again; the returned row stays as the record. */
+export async function requestProposalChanges(db: Db, assignmentId: string, rawReason: string): Promise<{ error: string | null }> {
+  const reason = rawReason.trim();
+  if (reason === '') return { error: 'Say what needs changing — the S&C reads the reason on the proposals list.' };
+  const { error } = await db.rpc('decide_proposal', { p_assignment_id: assignmentId, p_decision: 'return', p_reason: reason });
+  if (error) return { error: proposalDecisionError(error.message) };
+  return { error: null };
 }
 
 /** What the profile card says about this injury's rehab programme.

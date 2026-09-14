@@ -15,7 +15,7 @@ coach and a medic open the same address and see materially different pages.
 |---|---|---|---|---|---|---|
 | Sport scientist | Yes | Body area, side, onset, status, expected return, actual return, how it happened, and availability | Nothing on the clinical record | **Diagnosis, mechanism, severity, tissue type, imaging, referral, clinical notes, treatment plan**, and the return-to-play ladder | Base | Route guard, then the database refuses the clinical table |
 | Coach | Yes | Same, **without the body area and side while the club's setting is off** (`/settings/club#injury-site`, migration 0122, off by default): the title reads "Injury" | Nothing | The same eight, the ladder, and the site and side | Base | Same; the `injuries_staff` view masks the two columns and the table does not grant them |
-| Medic | Yes | All of the above, **the full clinical record, and the return-to-play ladder** (migration 0123) | Create and edit the clinical record. Set availability. Open a protocol, advance a stage, set a stage. **Cannot delete the injury** | None | Base | The clinical form and the ladder appear only for a medic, and the database allows only a medic |
+| Medic | Yes | All of the above, **the full clinical record, and the return-to-play ladder** (migration 0123) | Create and edit the clinical record. Set availability. Open a protocol, advance a stage, set a stage. Sign off or return an S&C's proposal. **Cannot delete the injury** | None | Base | The clinical form and the ladder appear only for a medic, and the database allows only a medic |
 | S&C | Yes | Same as coach | Nothing | The same eight | Base | **NOT BUILT** |
 | Nutritionist | **No** | Nothing | Nothing | **The whole page** | Base | **NOT BUILT.** Decision D-01 |
 | Athlete | **No** | Nothing here. An athlete sees their own injury minus the clinical notes, in their own app | Nothing | The whole page | n/a | Middleware, then guard, then database |
@@ -74,6 +74,13 @@ row. `lib/restrictions.ts` keeps stripping protocol and stage words from every
 restriction line at every read, for every viewer, so the stage data can only
 be read through the ladder (medic) and the athlete's own status screen.
 
+**Gym work proposed for this injury** (PATTERN-S3 C6, migration 0124): each
+S&C proposal against this injury with its state — Awaiting your sign-off,
+Signed off, Returned with your reason. Sign off is one press and assigns the
+block; Request changes opens a required reason and returns the block. Both go
+through `decide_proposal`, the same function the proposals list uses, so the
+two screens cannot disagree (`docs/screens/66-rehab-proposals.md`).
+
 ---
 
 ## 5. Every number on this page
@@ -96,6 +103,7 @@ be read through the ladder (medic) and the athlete's own status screen.
 | Open a protocol | Return-to-play card | Starts a protocol with a stage count (1–12) at stage 0 | Stays here, `?stage=opened` | `injury_protocols`, a stage-0 event, an audit row | **Medic only, enforced by the database** | Form submission | Absent for every other role; absent once a protocol exists or the injury is closed |
 | Advance one stage | Return-to-play card | Moves to the next stage with the rewritten restriction line and the criteria-reviewed confirmation | Stays here, `?stage=advanced` | A stage event; the open availability row's restrictions; a timeline event; an audit row | **Medic only** | Form submission; the line and the confirmation are required | Absent at the last stage, or once closed |
 | Set a stage | Return-to-play card | Moves to any other stage with a reason (and an optional new line) | Stays here, `?stage=set` | The same rows, with the reason | **Medic only** | Form submission; the reason is required | Absent once closed |
+| Sign off / Request changes | Gym work proposed card | Approves the block (it goes live) or returns it with a required reason | Stays here | `decide_proposal`: the assignment's status, who decided, when, the reason; a timeline event; an audit row | **Medic only** | One press to approve; the reason to return | Absent once decided |
 | Injuries breadcrumb | Header | Back to the list | `/injuries` | Nothing | Any staff today | None | Never |
 
 **There is no delete.** By design.

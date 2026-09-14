@@ -570,10 +570,17 @@ create table programme_assignments (
   group_id      uuid references groups(id),
   starts_on     date not null,
   ends_on       date,
-  status        assignment_status not null default 'active',  -- active|suspended|completed|cancelled
+  status        assignment_status not null default 'active',  -- active|suspended|completed|cancelled|proposed (0079)|returned (0124)
   suspended_reason text,
   assigned_by   uuid references users(id),
   created_at    timestamptz not null default now(),
+  -- PATTERN-S3 C6 (0124): an injury-linked proposal's decision, on the row both the S&C and
+  -- the medic read. 'proposed' waits on the medic; decide_proposal(id, 'approve', '') sets
+  -- 'active' (approval assigns) and decide_proposal(id, 'return', reason) sets 'returned' —
+  -- the reason may not be empty. Null while proposed. The S&C re-proposes by assigning again.
+  decided_by    uuid references users(id),
+  decided_at    timestamptz,
+  return_reason text,
   check (num_nonnulls(athlete_id, group_id) = 1)
 );
 ```

@@ -130,6 +130,7 @@ Deep links arriving from push are shell namespaced (`/staff/...`, `/athlete/...`
 | 23 | Gym programme | `/programmes` | `screens/gym-programmes.md` | staff web, staff phone | coach, medical | none |
 | 22 | Programme builder | `/programmes/:programmeId` | `screens/programme-builder.md` | staff web | coach, medical | `/programmes` |
 | 22 | Exercise library | `/programmes/exercises` | `screens/programme-builder.md` | staff web | coach, medical | `/programmes` |
+| 66 | Rehab proposals *(PATTERN-S3 C6, 14 Sept 2026)* | `/programmes/proposals` | `screens/66-rehab-proposals.md` | staff web, staff phone | S&C, medic | `/programmes` |
 | 26 | Leaderboard (testing wall) | `/leaderboards` | `LEADERBOARD-SPEC.md` | staff web | coach, medical, admin | none |
 | 26 | Manage leaderboards | `/leaderboards/manage` | `screens/leaderboards.md` | staff web, staff phone | coach, medical, admin (aggregate) | `/leaderboards` |
 | 26 | New leaderboard | `/leaderboards/new` | `screens/leaderboards.md` | staff web, staff phone | coach, medical | `/leaderboards/manage` |

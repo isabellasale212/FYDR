@@ -181,48 +181,33 @@ assert(
   /if \(!text\) \{\s*setError\(/.test(timelineCode),
   'and the component refuses one too, so the medic finds out while typing',
 );
+/* 0124 (PATTERN-S3 C6, 2026-09-14) replaced the 2026-09-06 shape. The reason
+   still becomes the medic's own note event and the sign-off still writes the
+   programme_signed_off event, but both happen inside decide_proposal(), the
+   one SECURITY DEFINER write the proposals list uses too — so the assertions
+   below pin the function call, and the migration pins the events. The
+   assignment no longer "stays proposed": it moves to 'returned' with the
+   reason on the row, where the S&C reads it. */
 assert(
-  /type: 'note'/.test(queriesCode) && /kind: 'changes_requested'/.test(queriesCode),
-  'the reason becomes its own note event authored by the medic (decided 2026-09-06)',
-);
-assert(
-  /assignment_id: input\.assignmentId/.test(queriesCode),
-  'linked to the proposal it is about',
+  /rpc\('decide_proposal', \{ p_assignment_id: assignmentId, p_decision: 'return', p_reason: reason \}\)/.test(queriesCode),
+  'the reason goes to decide_proposal, which writes the note event and the returned state together (0124)',
 );
 {
-  /* BOUNDED AT THE NEXT EXPORT, and it was not before. The slice ran to the END
-     OF THE FILE, so this assertion covered every function declared after
-     requestProposalChanges as well as the one it names. It went red the moment
-     fetchInjuryProgrammeStatus was added below it — that function reads
-     programme_assignments, correctly and by design — and it stayed red unnoticed
-     because this suite is not in prebuild. The code under test never changed.
-
-     A body-slice with no end is the same defect twice in one night; if a third
-     one turns up, this wants to be a shared helper rather than a third fix. */
   const start = queriesCode.indexOf('export async function requestProposalChanges');
   const next = queriesCode.indexOf('\nexport ', start + 1);
   const fn = queriesCode.slice(start, next === -1 ? undefined : next);
-  assert(
-    start !== -1 && fn.length > 0,
-    'requestProposalChanges is found, so the assertion below is measuring something',
-  );
-  assert(
-    !fn.includes("from('programme_assignments')"),
-    'and does not touch the assignment — it stays proposed so the S&C edits the same draft',
-  );
+  assert(start !== -1 && fn.length > 0, 'requestProposalChanges is found, so the assertion below is measuring something');
+  assert(!fn.includes("from('programme_assignments')") && !fn.includes('recordInjuryEvent'), 'and touches neither the assignment nor the timeline directly — one function, one truth');
 }
 
-console.log('\nsign-off writes the assignment first and the log second');
+console.log('\nsign-off goes through the same function');
 {
   const fn = queriesCode.slice(queriesCode.indexOf('export async function signOffProposal'));
   const body = fn.slice(0, fn.indexOf('\n}\n'));
-  const assignAt = body.indexOf("from('programme_assignments')");
-  const eventAt = body.indexOf('recordInjuryEvent');
-  assert(assignAt > -1 && eventAt > assignAt, 'the assignment is activated before the event is written');
-  assert(
-    /mustAffect\(/.test(body) && /refusal:/.test(body),
-    'through mustAffect, so an UPDATE that matches no row is reported rather than reading as success',
-  );
+  assert(/rpc\('decide_proposal', \{ p_assignment_id: assignmentId, p_decision: 'approve', p_reason: '' \}\)/.test(body), 'approve is decide_proposal too: active, decided_by/at and the programme_signed_off event in one transaction');
+  assert(!/from\('programme_assignments'\)/.test(body) && !/mustAffect\(/.test(body), 'no client-side UPDATE to fall short of');
+  const mig = readFileSync('supabase/migrations/0124_proposal_states.sql', 'utf8');
+  assert(/'programme_signed_off'/.test(mig) && /'note'/.test(mig) && /changes_requested/.test(mig), 'the migration writes the same two timeline events the client used to');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

@@ -94,6 +94,7 @@ this block is the reason decision D-01 is ranked highest.
 | Team allocation | VE | VE | VP | VP | **X** |
 | Injury and availability report | VP | VP | V | VP | **X** |
 | Return-to-play ladder (on the injury record, 0123) | **X** | **X** | VEC | **X** | **X** |
+| Rehab proposals list `/programmes/proposals` (0124) | **X** | **X** | VE (decide) | V | **X** |
 
 **Note on the medic row for Injury record.** A medic may create and edit an
 injury but **may not delete one**. An injury is closed, never deleted. Deletion
@@ -234,6 +235,11 @@ write grants, and two SECURITY DEFINER functions the medic alone may call.
 `lib/restrictions.ts` strips protocol and stage words from every restriction
 line at every read, for every viewer, so the stage cannot leak through the
 line either.
+
+**Rehab proposals** (PATTERN-S3 C6, migration 0124): the S&C and the medic
+read the same list; `decide_proposal` is the medic's only (approve, or return
+with a required reason). The return reason sits on the assignment row so the
+S&C reads it there; the medic's timeline note stays medic-only.
 
 **What only the medic sees.** The whole clinical record, which is a separate
 table: **diagnosis, mechanism, severity, tissue type, imaging, referral, clinical

@@ -8,7 +8,7 @@ import {
 } from '@/lib/queries/programmes';
 import { enumLabel, mdLabel } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
-import { PROGRAMME_AUTHOR, PROGRAMME_EDIT, REHAB_PROGRAMME, hasAnyRole } from '@/lib/access';
+import { CLINICAL_ONLY, INJURY_PROGRAMME_PROPOSER, PROGRAMME_AUTHOR, PROGRAMME_EDIT, REHAB_PROGRAMME, hasAnyRole } from '@/lib/access';
 
 export const metadata = { title: 'Gym programme · Fydr' };
 
@@ -118,6 +118,14 @@ export default async function ProgrammesPage({
           <h1>Gym programme</h1>
         </div>
         <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+          {/* PATTERN-S3 C6: the one list of rehab proposals the S&C and the
+              medic both see. Nobody else has a row on it, so nobody else gets
+              the door. */}
+          {hasAnyRole(claims.roles, [...INJURY_PROGRAMME_PROPOSER, ...CLINICAL_ONLY]) ? (
+            <Link href="/programmes/proposals" className="btn-ghost">
+              Rehab proposals
+            </Link>
+          ) : null}
           <Link href="/programmes/exercises" className="btn-ghost">
             Exercise library
           </Link>

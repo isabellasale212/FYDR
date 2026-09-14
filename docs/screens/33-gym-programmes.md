@@ -45,6 +45,7 @@ for an individual, the override is named rather than silently applied.
 |---|---|---|---|---|---|---|---|
 | Group filter chips | Header | Narrows the list | Stays here | Nothing | Any staff today | None | Never |
 | New programme | Header | Opens the builder | `/programmes/new` | Nothing | S&C and sport scientist | None | Should be hidden from view only roles. **Not built** |
+| Rehab proposals | Header | Opens the proposals list (PATTERN-S3 C6, 14 September 2026) | `/programmes/proposals` | Nothing | S&C and medic | None | Absent for every other role — nobody else has a row on it |
 | Exercise library | Header | Opens the library | `/programmes/exercises` | Nothing | Any staff today | None | Never |
 | A programme's name | The list | Opens it | `/programmes/[programmeId]` | Nothing | Any staff | None | Never |
 

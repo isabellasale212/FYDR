@@ -20,11 +20,10 @@ import { enumLabel, formatDate, formatDateTime } from '@/lib/format';
  *  has both: a policy cannot be refactored away, and not rendering means a
  *  future bug shows an empty card rather than a leak.
  *
- *  The S&C never sees this. They see their own assignment sitting at
- *  'proposed' on the programme screen, and the medic's reason for sending it
- *  back reaches them the same way any other instruction does — in person. That
- *  is a deliberate limit of this build, not an oversight, and it is written
- *  down here because the obvious next request is to show them the note.
+ *  The S&C never sees this timeline. Since 0124 (PATTERN-S3 C6) they do see
+ *  the decision: the same proposal sits on /programmes/proposals as Proposed,
+ *  Approved or Returned, with the medic's return reason on the row. Both
+ *  surfaces write through decide_proposal, so they cannot disagree.
  *
  *  NO EDIT AND NO DELETE, anywhere in this component. There is no grant for
  *  either (0080), so a second thought becomes a second event rather than a
@@ -53,31 +52,14 @@ function eventSentence(event: InjuryTimelineEvent): string {
   }
 }
 
-function ProposalRow({
-  proposal,
-  injuryId,
-  orgId,
-  userId,
-  timezone,
-}: {
-  proposal: InjuryProposal;
-  injuryId: string;
-  orgId: string;
-  userId: string;
-  timezone: string;
-}) {
+function ProposalRow({ proposal, timezone }: { proposal: InjuryProposal; timezone: string }) {
   const router = useRouter();
   const [error, setError] = useState<string | null>(null);
   const [requesting, setRequesting] = useState(false);
   const [reason, setReason] = useState('');
 
   const signOffMutation = useMutation({
-    mutationFn: () =>
-      signOffProposal(createClient(), orgId, userId, {
-        assignmentId: proposal.assignment_id,
-        injuryId,
-        programmeName: proposal.programme_name,
-      }),
+    mutationFn: () => signOffProposal(createClient(), proposal.assignment_id),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
       setError(null);
@@ -86,12 +68,7 @@ function ProposalRow({
   });
 
   const changesMutation = useMutation({
-    mutationFn: (text: string) =>
-      requestProposalChanges(createClient(), orgId, userId, {
-        assignmentId: proposal.assignment_id,
-        injuryId,
-        reason: text,
-      }),
+    mutationFn: (text: string) => requestProposalChanges(createClient(), proposal.assignment_id, text),
     onSuccess: (result) => {
       if (result.error) return setError(result.error);
       setError(null);
@@ -119,6 +96,8 @@ function ProposalRow({
   }
 
   const live = proposal.status === 'active';
+  const returned = proposal.status === 'returned';
+  const decided = live || returned;
 
   return (
     <div
@@ -128,8 +107,8 @@ function ProposalRow({
       <div style={{ minWidth: 0 }}>
         <div style={{ display: 'flex', gap: 'var(--sp-8)', alignItems: 'baseline', flexWrap: 'wrap' }}>
           <span className="nm">{proposal.programme_name}</span>
-          <span className={`pill ${live ? 'pill-good' : 'pill-warn'}`}>
-            {live ? 'Signed off' : 'Awaiting your sign-off'}
+          <span className={`pill ${live ? 'pill-good' : returned ? 'pill-neutral' : 'pill-warn'}`}>
+            {live ? 'Signed off' : returned ? 'Returned' : 'Awaiting your sign-off'}
           </span>
         </div>
         <div className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
@@ -137,6 +116,11 @@ function ProposalRow({
           {proposal.ends_on ? ` to ${formatDate(proposal.ends_on, timezone)}` : ''}
           {live ? '' : ' · not visible to the athlete yet'}
         </div>
+        {returned && proposal.return_reason ? (
+          <p className="tiny" style={{ marginTop: 'var(--sp-4)' }} data-return-reason>
+            Your reason: {proposal.return_reason}
+          </p>
+        ) : null}
 
         {requesting ? (
           <div className="report-note-form">
@@ -154,8 +138,9 @@ function ProposalRow({
               aria-describedby={`reason-help-${proposal.assignment_id}`}
             />
             <p className="tiny" id={`reason-help-${proposal.assignment_id}`} style={{ marginTop: 'var(--sp-4)' }}>
-              Required. This goes on the timeline as your note and the block stays as a proposal
-              — nothing reaches the athlete until you sign it off.
+              Required. The S&amp;C reads it on the proposals list, and it goes on the timeline as
+              your note. The block is returned — nothing reaches the athlete unless it is proposed
+              again and signed off.
             </p>
             <div style={{ display: 'flex', gap: 'var(--sp-8)', marginTop: 'var(--sp-8)' }}>
               <button type="button" className="btn-primary" onClick={submitChanges} disabled={pending}>
@@ -184,7 +169,7 @@ function ProposalRow({
         ) : null}
       </div>
 
-      {live ? null : (
+      {decided ? null : (
         <div style={{ display: 'flex', flexDirection: 'column', gap: 'var(--sp-6)' }}>
           <button
             type="button"
@@ -214,16 +199,10 @@ function ProposalRow({
 }
 
 export function InjuryTimeline({
-  orgId,
-  userId,
-  injuryId,
   events,
   proposals,
   timezone,
 }: {
-  orgId: string;
-  userId: string;
-  injuryId: string;
   events: readonly InjuryTimelineEvent[];
   proposals: readonly InjuryProposal[];
   timezone: string;
@@ -234,18 +213,12 @@ export function InjuryTimeline({
         <section className="card">
           <h2 className="card-title">Gym work proposed for this injury</h2>
           <p className="tiny" style={{ marginTop: 'var(--sp-2)' }}>
-            The S&amp;C drafts the block; it reaches the athlete only once you sign it off.
+            The S&amp;C drafts the block; it reaches the athlete only once you sign it off. A
+            returned one carries your reason to the S&amp;C on the proposals list.
           </p>
           <div className="stack" style={{ gap: 'var(--sp-6)', marginTop: 'var(--sp-10)' }}>
             {proposals.map((p) => (
-              <ProposalRow
-                key={p.assignment_id}
-                proposal={p}
-                injuryId={injuryId}
-                orgId={orgId}
-                userId={userId}
-                timezone={timezone}
-              />
+              <ProposalRow key={p.assignment_id} proposal={p} timezone={timezone} />
             ))}
           </div>
         </section>

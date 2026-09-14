@@ -2,6 +2,7 @@ import { cookies } from 'next/headers';
 import { createServerClient } from '@supabase/ssr';
 import type { Database } from '@/lib/types/database';
 import { timedFetch } from '@/lib/supabase/queryTiming';
+import { memoisedFetch } from '@/lib/supabase/requestMemo';
 
 export type FydrServerClient = Awaited<ReturnType<typeof createClient>>;
 
@@ -13,7 +14,9 @@ export type FydrServerClient = Awaited<ReturnType<typeof createClient>>;
  *  other caller leaves this empty and is unaffected. */
 export async function createClient(forwardedHeaders: Record<string, string> = {}) {
   const cookieStore = await cookies();
-  const timed = timedFetch();
+  /* Reads are memoised per render (requestMemo.ts); the timer, when on,
+     sits inside the memo so a memo hit is not counted as a round trip. */
+  const fetcher = memoisedFetch(timedFetch() ?? fetch);
 
   return createServerClient<Database>(
     process.env.NEXT_PUBLIC_SUPABASE_URL!,
@@ -21,8 +24,7 @@ export async function createClient(forwardedHeaders: Record<string, string> = {}
     {
       global: {
         ...(Object.keys(forwardedHeaders).length > 0 ? { headers: forwardedHeaders } : {}),
-        /* undefined unless FYDR_QUERY_TIMING=1 — see lib/supabase/queryTiming.ts. */
-        ...(timed ? { fetch: timed } : {}),
+        fetch: fetcher,
       },
       cookies: {
         getAll() {

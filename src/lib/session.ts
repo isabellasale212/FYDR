@@ -1,5 +1,6 @@
 import { cookies } from 'next/headers';
 import { redirect } from 'next/navigation';
+import { cache } from 'react';
 import { createClient } from '@/lib/supabase/server';
 import { TIER_PREVIEW_COOKIE, effectiveTier, isPreviewingTier } from '@/lib/tierPreview';
 import { ageFrom } from '@/lib/format';
@@ -85,7 +86,11 @@ export type AthleteContext = {
   };
 };
 
-async function base() {
+/* One chain per render, 16 Sept 2026: the layout and the page both guard,
+   and both used to pay getUser → users + organisations. React's cache()
+   scopes this to the request, so the second caller gets the first's
+   answer; a redirect thrown inside still throws for both. */
+const base = cache(async function base() {
   const supabase = await createClient();
   const claims = await getClaims(supabase);
   if (!claims) redirect('/login');
@@ -105,32 +110,35 @@ async function base() {
      instead of within the hour.
      A MISSING ROW IS STALE, not absent-therefore-fine: a user deleted or hidden
      by RLS mid-session must stop, and this is the one place that can tell. */
-  const { data: live } = await supabase
-    .from('users')
-    .select('claims_version, full_name')
-    .eq('id', claims.userId)
-    .maybeSingle();
+  /* The organisation row rides in the same round as the revocation check
+     (16 Sept 2026, the performance pass): both need only the claims, and
+     reading them together takes one round trip off every guarded request.
+     One select serves both shells — the staff shell reads name, the athlete
+     shell does not, and the four columns are one row either way. */
+  const [{ data: live }, org] = await Promise.all([
+    supabase
+      .from('users')
+      .select('claims_version, full_name')
+      .eq('id', claims.userId)
+      .maybeSingle(),
+    supabase
+      .from('organisations')
+      .select('name, timezone, tier, collects_rpe')
+      .eq('id', claims.orgId)
+      .maybeSingle(),
+  ]);
   if (!live || claimsStale(claims.claimsVersion, live.claims_version)) {
     redirect('/auth/stale-claims');
   }
 
-  return { supabase, claims, orgId: claims.orgId, fullName: live.full_name ?? '' };
-}
+  return { supabase, claims, orgId: claims.orgId, fullName: live.full_name ?? '', org };
+});
 
 /** Server-side gate for the staff shell. The middleware has already turned an
  *  athlete away; this is the second lock, and RLS is the third. */
 export async function requireStaff(): Promise<StaffContext> {
-  const { supabase, claims, orgId, fullName } = await base();
+  const { supabase, claims, orgId, fullName, org } = await base();
   if (!isStaff(claims)) redirect('/today');
-
-  /* base() already read this user's row for the revocation check, and took
-     full_name in the same statement — so the extra round trip that check costs
-     is offset here rather than added on top of a second users query. */
-  const org = await supabase
-    .from('organisations')
-    .select('name, timezone, tier, collects_rpe')
-    .eq('id', orgId)
-    .maybeSingle();
 
   /* The preview is a FYDR-STAFF affordance, checked here rather than only in
    * the UI that offers it: the cookie is browser-written, so anyone who set it
@@ -333,18 +341,15 @@ export async function requirePlatformStaff(): Promise<StaffContext> {
  *  the app, only out of the entry forms"). Declined and withdrawn open the
  *  app the same way. */
 export async function requireAthlete(opts: { allowUndecided?: boolean } = {}): Promise<AthleteContext> {
-  const { supabase, claims, orgId } = await base();
+  const { supabase, claims, orgId, org } = await base();
   if (!isAthlete(claims)) redirect('/dashboard');
   if (!claims.athleteId) redirect('/login?e=no-roles');
 
-  const [org, athlete] = await Promise.all([
-    supabase.from('organisations').select('timezone, tier, collects_rpe').eq('id', orgId).maybeSingle(),
-    supabase
-      .from('athletes')
-      .select('first_name, last_name, date_of_birth, in_data, consent_given_at, consent_declined_at, consent_withdrawn_at, health_consent_given_at, health_consent_declined_at, health_consent_withdrawn_at, guardian_name, guardian_email, consent_version')
-      .eq('id', claims.athleteId)
-      .maybeSingle(),
-  ]);
+  const athlete = await supabase
+    .from('athletes')
+    .select('first_name, last_name, date_of_birth, in_data, consent_given_at, consent_declined_at, consent_withdrawn_at, health_consent_given_at, health_consent_declined_at, health_consent_withdrawn_at, guardian_name, guardian_email, consent_version')
+    .eq('id', claims.athleteId)
+    .maybeSingle();
 
   const timezone = org.data?.timezone ?? 'Europe/London';
   /* PATTERN-S9 (0120): the consent state travels with the context so the

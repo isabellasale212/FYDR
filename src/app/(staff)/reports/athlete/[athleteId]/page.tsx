@@ -105,17 +105,26 @@ export default async function AthleteReportPage({
   const period = await resolveAthletePeriod(db, orgId, athleteId, timezone, periodParamsFrom(sp));
   const caveat = periodCaveat(period);
 
-  const report = await fetchAthleteReport(db, orgId, athleteId, timezone, { from: period.from, to: period.to });
+  /* PATTERN-S6 C8: the wellness card's empty state names the most recent
+     check-in on record, any period — the same read the athlete's own My data
+     makes for its empty period (12 C6). The two recency reads need only the
+     athlete, so they ride alongside the report rather than after it, as does
+     the audit row (16 Sept 2026, the performance pass). */
+  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
+  const [report, latestWellnessOnRecord, latestGpsOnRecord] = await Promise.all([
+    fetchAthleteReport(db, orgId, athleteId, timezone, { from: period.from, to: period.to }),
+    fetchMyLatestRecord(db, athleteId, 'wellness'),
+    fetchMyLatestRecord(db, athleteId, 'gps'),
+    recordReportView(db, orgId, claims.userId, actorRole, 'athlete', {
+      athlete_id: athleteId,
+      from: period.from,
+      to: period.to,
+      period: period.key,
+    }),
+  ]);
   if (!report) notFound();
 
   const { athlete, openFlags, currentProgrammes } = report.summary;
-  /* PATTERN-S6 C8: the wellness card's empty state names the most recent
-     check-in on record, any period — the same read the athlete's own My data
-     makes for its empty period (12 C6). */
-  const [latestWellnessOnRecord, latestGpsOnRecord] = await Promise.all([
-    fetchMyLatestRecord(db, athleteId, 'wellness'),
-    fetchMyLatestRecord(db, athleteId, 'gps'),
-  ]);
   const gpsEmpty = staffEmptyCopy({
     domain: 'gps',
     firstName: athlete.first_name,
@@ -152,14 +161,6 @@ export default async function AthleteReportPage({
   const restrictions = athlete.availability?.restrictions ?? [];
   const age = ageFrom(athlete.date_of_birth, timezone);
   const openInjury = athlete.open_injuries[0];
-
-  const actorRole = (claims.roles.includes('medic') ? 'medic' : claims.roles.includes('coach') ? 'coach' : claims.roles[0]) as AppRole;
-  await recordReportView(db, orgId, claims.userId, actorRole, 'athlete', {
-    athlete_id: athleteId,
-    from: report.from,
-    to: report.to,
-    period: period.key,
-  });
 
   /* Narrowed, not just filtered: the predicate tells TypeScript the load is a
      number so the bar arithmetic below does not have to re-check it. */

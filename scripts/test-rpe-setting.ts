@@ -25,7 +25,10 @@ console.log('1. the setting');
   assert(/collects_rpe = false/.test(read('supabase/tests/730_org_collects_rpe_test.sql')) && /the coach cannot flip it/.test(read('supabase/tests/730_org_collects_rpe_test.sql')), 'pgTAP 730 covers the default, the off state and who can flip it');
   const session = strip(read('src/lib/session.ts'));
   assert((session.match(/collectsRpe: boolean;/g) ?? []).length === 2, 'StaffContext and AthleteContext both carry collectsRpe');
-  assert((session.match(/collects_rpe/g) ?? []).length >= 4, 'read from organisations in both contexts');
+  /* One read since 16 Sept 2026 (the performance pass): base() reads the
+     organisation row — collects_rpe among its columns — in the same round as
+     the revocation check, and both contexts take it from there. */
+  assert(/select\('name, timezone, tier, collects_rpe'\)/.test(session) && (session.match(/collects_rpe \?\? true/g) ?? []).length === 2, 'read from organisations once, in base(), and carried into both contexts');
   const details = strip(read('src/lib/queries/orgDetails.ts'));
   assert(/export async function setCollectsRpe/.test(details) && /org\.collects_rpe\.changed/.test(details), 'setCollectsRpe writes the audit row');
 }

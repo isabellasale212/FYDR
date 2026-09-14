@@ -145,3 +145,65 @@ worth making.
 - **Out:** indexes (no query is slow), policy rewrites (RLS is not where the
   time is — every policy-gated read is at the floor), and any skeleton on a
   route that the fixes bring under a few hundred milliseconds of wait.
+
+---
+
+## After the fixes (piece two), same harness, same database, same night
+
+Three changes, none of them a cache and none of them touching a query's
+shape except where noted:
+
+1. **One read per render** (`src/lib/supabase/requestMemo.ts`): the server
+   Supabase client memoises GET/HEAD requests per render, keyed on method,
+   URL and the answer-shaping headers (Accept, Prefer, Range), scoped by
+   React's `cache()` so nothing outlives the request. Writes and every rpc
+   (POST) are never memoised. A byte-identical read that used to run
+   fourteen times runs once.
+2. **The guard chain, once and shorter** (`src/lib/session.ts`): `base()` is
+   `cache()`d so the layout and the page share one `getUser` → (`users` +
+   `organisations`) chain, and those two reads run in the same round — two
+   rounds where there were three, paid once where it was paid twice.
+3. **Two pages' own chains flattened** (`/reports/gps`, `/reports/athlete/[id]`):
+   the group filter, the group list and the session picker in one round;
+   the comparison and the audit row alongside the overview and the board;
+   the recency reads alongside the report. Nothing reordered that depends
+   on something else.
+
+| Route | before total | after total | queries before → after | rounds before → after |
+|---|---|---|---|---|
+| `/reports/gps` | 2343 | 1523 | 36 → 27 | 9 → 8 |
+| `/reports/gps?mode=week` | 2737 | 1576 | 36 → 27 | 9 → 8 |
+| `/reports/gps?mode=match` | — | 782 | — | 6 |
+| `/reports/athlete/[id]` | 3094 (2025 on the first run) | 1330 | 38 → 35 | 11 → 11 |
+| `/reports/squad` | 1320 | 1520 (jitter; db span 1190 → 1053) | 54 → 33 | 28 → 12 |
+| `/squad/[id]` | 1618 | 1344 | 37 → 33 | 9 → 10 |
+| `/dashboard` | 1403 | 1144 | 51 → 36 | 29 → 20 |
+| `/analytics` | 1032 | 673 | 19 → 12 | 4 → 4 |
+| `/reports/testing` | 1626 | 785 | 19 → 13 | 3 → 3 |
+| `/reports/training-load` | 930 | 827 | 14 → 10 | 2 → 2 |
+| `/squad` | 862 | 441 | 12 → 8 | 5 → 4 |
+| `/flags` | 1061 | 610 | 11 → 7 | 3 → 3 |
+| `/settings/imports` | 1380 | 599 | 11 → 8 | 5 → 5 |
+| `/reports` | 882 | 646 | 7 → 4 | 2 → 2 |
+
+(Two runs of the same route on this link differ by ±20% on their own — the
+floor jitters between 55 and 270ms — so the query and round counts are the
+reliable columns; the totals are indicative.)
+
+**What survives the fixes.** Four routes still spend a second or more on
+this link, and their remaining rounds are inside their own query modules,
+each round a lookup that genuinely needs the one before it: `/dashboard` (20
+rounds across `queries/dashboard.ts`'s tiles), `/reports/squad` (12, its
+sections' entries → logs → sessions → results tail), `/squad/[id]` (10), and
+`/reports/athlete/[id]` (11: entries → sessions → participants → attendance).
+Flattening those means restructuring the modules, which is a day's work
+each and is not tonight's; they are the routes that take a streaming
+skeleton in piece three. `/reports/gps` at 8 rounds sits with them. On
+Vercel every one of these is a fraction of the figure here, but a route
+that waits on ten dependent rounds waits on ten wherever it runs.
+
+**Not done, and why.** No index: no query is slow. No policy change: every
+RLS-gated read is at the floor. No cache: a memo that lives for one render
+is not a cache. `gps_records` `select *` survives in one place, the SAR
+pack assembly (`queries/sarPackAssembly.ts`), which needs every column by
+design.

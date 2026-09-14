@@ -31,7 +31,9 @@ import {
   type ComparisonScope,
   type ComparisonTable,
   type DialScore,
+  type MatchSessionOption,
   type ReportMode,
+  type TrainingSessionOption,
 } from '@/lib/queries/trainingReport';
 import { recordReportView } from '@/lib/queries/reports';
 import { addDays, formatDate, mdLabel } from '@/lib/format';
@@ -266,9 +268,15 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
   if (!isPremium(tier)) await refuse(db, 'gps_report_premium', '/reports/gps');
 
   const sp = await searchParams;
-  const groupIds = await resolveGroupFilter(sp.groups);
   const mode: ReportMode = sp.mode === 'match' ? 'match' : 'training';
-  const groups = await fetchGroups(db, orgId);
+  /* The group filter, the group list and the session picker's list do not
+     depend on each other — one round, not three. */
+  const [groupIds, groups, matchSessions, trainingSessions] = await Promise.all([
+    resolveGroupFilter(sp.groups),
+    fetchGroups(db, orgId),
+    mode === 'match' ? fetchMatchSessions(db, orgId, timezone, DATE_PICKER_LIMIT) : Promise.resolve([] as MatchSessionOption[]),
+    mode === 'training' ? fetchTrainingSessions(db, orgId, timezone, DATE_PICKER_LIMIT) : Promise.resolve([] as TrainingSessionOption[]),
+  ]);
   const groupsQs = groupIds.length > 0 ? groupIds.join(',') : undefined;
   // Carried as the raw URL value, not the resolved `selected.sessionId` —
   // both export routes already default to the most recent session when
@@ -361,7 +369,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
 
   // -------------------------------------------------------------------------
   if (mode === 'match') {
-    const sessions = await fetchMatchSessions(db, orgId, timezone, DATE_PICKER_LIMIT);
+    const sessions = matchSessions;
     const selected = sessions.find((s) => s.sessionId === sp.session) ?? sessions[0] ?? null;
 
     if (!selected) {
@@ -384,6 +392,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
       fetchComparableSessionsComparison(db, orgId, groupIds, 'match', selected.sessionId, null),
       fetchGroupAthleteIds(db, orgId, groupIds),
       fetchSquadSize(db, orgId),
+      recordReportView(db, orgId, claims.userId, actorRole, 'gps', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode }),
     ]);
     const scopeSize = scopeIds ? scopeIds.length : squadSize;
     const matchFilterEmpty = filterEmptyCopy({
@@ -392,8 +401,6 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
       scopeLabel: groupScopeLabel(groups, groupIds),
       why: 'played in this match with a GPS record',
     });
-
-    await recordReportView(db, orgId, claims.userId, actorRole, 'gps', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode });
 
     const resultGood = selected.result?.startsWith('W');
 
@@ -570,7 +577,7 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
 
   // -------------------------------------------------------------------------
   // Training mode
-  const sessions = await fetchTrainingSessions(db, orgId, timezone, DATE_PICKER_LIMIT);
+  const sessions = trainingSessions;
   const selected = sessions.find((s) => s.sessionId === sp.session) ?? sessions[0] ?? null;
 
   if (!selected) {
@@ -618,11 +625,12 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
   );
 
   if (range === 'week') {
-    const weekComparison = await fetchRestOfWeekComparison(db, orgId, groupIds, selected.sessionId, selected.date, timezone);
+    const [weekComparison] = await Promise.all([
+      fetchRestOfWeekComparison(db, orgId, groupIds, selected.sessionId, selected.date, timezone),
+      recordReportView(db, orgId, claims.userId, actorRole, 'gps', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode, range }),
+    ]);
     const weekStart = mondayOf(selected.date);
     const weekEnd = addDays(weekStart, 6);
-
-    await recordReportView(db, orgId, claims.userId, actorRole, 'gps', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode, range });
 
     return (
       <>
@@ -651,7 +659,20 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
     : 'restOfWeek';
   const lens = sp.lens === 'position' ? 'position' : 'self';
 
-  const [overview, board, scatter, scopeIds, squadSize] = await Promise.all([
+  /* The comparison and the audit row depend only on the selected session,
+     so they ride in the same round as the overview, the board and the
+     scatter rather than after them (16 Sept 2026, the performance pass:
+     this page's time was seven sequential rounds of queries that mostly
+     did not need each other). */
+  const comparisonFetch =
+    scope === 'restOfWeek'
+      ? fetchRestOfWeekComparison(db, orgId, groupIds, selected.sessionId, selected.date, timezone)
+      : scope === 'comparableSessions'
+        ? fetchComparableSessionsComparison(db, orgId, groupIds, 'training', selected.sessionId, selected.title)
+        : scope === 'position'
+          ? fetchPositionComparison(db, orgId, groupIds, 'training', selected.sessionId, selected.title)
+          : fetchAthleteComparison(db, orgId, groupIds, 'training', selected.sessionId, selected.title);
+  const [overview, board, scatter, scopeIds, squadSize, comparison] = await Promise.all([
     fetchTrainingOverview(db, orgId, groupIds, selected),
     fetchTrainingBoard(db, orgId, groupIds, selected),
     fetchScatterData(db, orgId, groupIds, selected, lens),
@@ -660,6 +681,8 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
        silently absent. */
     fetchGroupAthleteIds(db, orgId, groupIds),
     fetchSquadSize(db, orgId),
+    comparisonFetch,
+    recordReportView(db, orgId, claims.userId, actorRole, 'gps', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode }),
   ]);
   const scopeSize = scopeIds ? scopeIds.length : squadSize;
   const trainingFilterEmpty = filterEmptyCopy({
@@ -668,15 +691,6 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
     scopeLabel: groupScopeLabel(groups, groupIds),
     why: 'has a GPS record for this session',
   });
-
-  const comparison =
-    scope === 'restOfWeek'
-      ? await fetchRestOfWeekComparison(db, orgId, groupIds, selected.sessionId, selected.date, timezone)
-      : scope === 'comparableSessions'
-        ? await fetchComparableSessionsComparison(db, orgId, groupIds, 'training', selected.sessionId, selected.title)
-        : scope === 'position'
-          ? await fetchPositionComparison(db, orgId, groupIds, 'training', selected.sessionId, selected.title)
-          : await fetchAthleteComparison(db, orgId, groupIds, 'training', selected.sessionId, selected.title);
 
   // SQUAD_VIEW is a real, explicit third state, not just "no param yet" —
   // selecting it from the dropdown below forces the squad-wide view even
@@ -706,7 +720,6 @@ export default async function GpsReportPage({ searchParams }: { searchParams: Se
     .sort((a, b) => a[1].localeCompare(b[1]))
     .map(([value, label]) => ({ value, label }));
 
-  await recordReportView(db, orgId, claims.userId, actorRole, 'gps', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode });
 
   const md = mdLabel(selected.mdOffset);
 

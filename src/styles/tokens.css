@@ -571,6 +571,14 @@
      to each other, and whether the --fs and --sp scales are renamed onto these, is a
      ruling the layer-three report asks for; nothing here changes a value.
 
+     RULED, 15 Sept 2026 (docs/decisions/design-system-adoption.md, "two
+     vocabularies, one mechanism"): --fs-* and --sp-* STAY the working
+     scale and their reads are not renamed. Where a System A role name maps
+     to exactly the same value as a code step, the role name points at the
+     step — new work writes the role name, old work keeps resolving, and one
+     value has one home. A role name whose value is not a code step (13.5px,
+     11.5px, 17px, 22px spacing …) keeps its own value below.
+
      TYPE IN REM, NOT PX. System A writes its sizes in px. This file writes
      the same sizes in rem (px ÷ 16) for the reason the 9 Sept scale did and
      check-font-scaling enforces: a px font-size ignores the browser's
@@ -592,47 +600,47 @@
   --t-hero-tracking: -0.035em;
   --t-page: 1.875rem; /* 30px */
   --t-page-tracking: -0.03em;
-  --t-section: 1.5rem; /* 24px */
+  --t-section: var(--fs-24); /* 24px */
   --t-section-tracking: -0.02em;
   --t-subhead: 1.1875rem; /* 19px */
-  --t-card-lg: 1.25rem; /* 20px */
-  --t-card: 1rem; /* 16px */
-  --t-card-sm: 0.9375rem; /* 15px */
+  --t-card-lg: var(--fs-20); /* 20px */
+  --t-card: var(--fs-16); /* 16px */
+  --t-card-sm: var(--fs-15); /* 15px */
 
   /* ---- numerals (tabular-nums wherever a value sits in a column) ---- */
   --t-num-hero: 2.125rem; /* 34px */
   --t-num-stat: 1.9375rem; /* 31px */
-  --t-num-stat-sm: 1.75rem; /* 28px */
-  --t-num-dial: 1.5rem; /* 24px */
-  --t-num-dial-sm: 1.375rem; /* 22px */
-  --t-num-lead: 1.25rem; /* 20px */
+  --t-num-stat-sm: var(--fs-28); /* 28px */
+  --t-num-dial: var(--fs-24); /* 24px */
+  --t-num-dial-sm: var(--fs-22); /* 22px */
+  --t-num-lead: var(--fs-20); /* 20px */
   --t-num-row: 1.0625rem; /* 17px */
-  --t-num-body: 0.9375rem; /* 15px */
+  --t-num-body: var(--fs-15); /* 15px */
   --t-num-cell: 0.84375rem; /* 13.5px */
-  --t-num-cell-sm: 0.8125rem; /* 13px */
-  --t-num-meta: 0.75rem; /* 12px */
+  --t-num-cell-sm: var(--fs-13); /* 13px */
+  --t-num-meta: var(--fs-12); /* 12px */
   --t-num-caption: 0.71875rem; /* 11.5px */
   --t-num-micro: 0.65625rem; /* 10.5px */
   --t-num-nano: 0.59375rem; /* 9.5px */
 
   /* ---- body ---- */
   --t-body-lg: 1.0625rem; /* 17px */
-  --t-body: 0.875rem; /* 14px */
+  --t-body: var(--fs-14); /* 14px */
   --t-body-sm: 0.84375rem; /* 13.5px */
-  --t-body-xs: 0.8125rem; /* 13px */
+  --t-body-xs: var(--fs-13); /* 13px */
   --t-body-2xs: 0.78125rem; /* 12.5px */
 
   /* ---- labels and captions ---- */
-  --t-label: 0.75rem; /* 12px */
+  --t-label: var(--fs-12); /* 12px */
   --t-caption: 0.71875rem; /* 11.5px */
-  --t-eyebrow: 0.6875rem; /* 11px */
+  --t-eyebrow: var(--fs-11); /* 11px */
   --t-eyebrow-tracking: 0.12em;
-  --t-colhead: 0.6875rem; /* 11px */
+  --t-colhead: var(--fs-11); /* 11px */
   --t-colhead-tracking: 0.1em;
   --t-micro: 0.65625rem; /* 10.5px */
-  --t-pill: 0.6875rem; /* 11px */
+  --t-pill: var(--fs-11); /* 11px */
   --t-pill-sm: 0.65625rem; /* 10.5px */
-  --t-pill-xs: 0.625rem; /* 10px */
+  --t-pill-xs: var(--fs-10); /* 10px */
 
   --lh-base: 1.5;
   --lh-tight: 1.25;
@@ -640,24 +648,25 @@
   --lh-hero: 1.02;
 
   /* ---- the 4px spacing grid with the half-steps the product uses. The
-         first ten coincide with --sp-2 … --sp-20 exactly; 22, 26, 30 and 44
-         are steps this file never had; --sp-24, --sp-28, --sp-32 and
-         --sp-48 are steps System A does not have and stay this file's. ---- */
-  --s-1: 2px;
-  --s-2: 4px;
-  --s-3: 6px;
-  --s-4: 8px;
-  --s-5: 10px;
-  --s-6: 12px;
-  --s-7: 14px;
-  --s-8: 16px;
-  --s-9: 18px;
-  --s-10: 20px;
+         first ten and --s-14 ARE code steps (--sp-2 … --sp-20, --sp-40) and
+         point at them, per the ruling; 22, 26, 30 and 44 are steps this
+         file never had; --sp-24, --sp-28, --sp-32 and --sp-48 are steps
+         System A does not have and stay this file's. ---- */
+  --s-1: var(--sp-2);
+  --s-2: var(--sp-4);
+  --s-3: var(--sp-6);
+  --s-4: var(--sp-8);
+  --s-5: var(--sp-10);
+  --s-6: var(--sp-12);
+  --s-7: var(--sp-14);
+  --s-8: var(--sp-16);
+  --s-9: var(--sp-18);
+  --s-10: var(--sp-20);
   --s-11: 22px;
   --s-12: 26px;
   --s-13: 30px;
-  --s-14: 40px;
-  --s-15: 44px;
+  --s-14: var(--sp-40);
+  --s-15: var(--tap-min);
 
   /* ---- named jobs. --gap-card and --gap-tile are the jobs this file
          already names as --gap-stack (14px) and --gap-grid (12px), so they
@@ -668,8 +677,8 @@
          System A's and new, read by nothing yet. ---- */
   --gap-card: var(--gap-stack);
   --gap-tile: var(--gap-grid);
-  --gap-chip: 6px;
-  --gap-row: 8px;
+  --gap-chip: var(--sp-6);
+  --gap-row: var(--sp-8);
   --pad-card-wide: 18px 20px;
   --pad-card-lead: 20px 22px;
   --pad-cell: 8px 6px;

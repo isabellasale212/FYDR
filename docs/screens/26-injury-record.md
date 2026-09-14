@@ -13,9 +13,9 @@ coach and a medic open the same address and see materially different pages.
 
 | Role | Can reach the page | What they can see | What they can change | Fields hidden or masked | Tier required | Where this is enforced |
 |---|---|---|---|---|---|---|
-| Sport scientist | Yes | Body area, side, onset, status, expected return, actual return, how it happened, and availability | Nothing on the clinical record | **Diagnosis, mechanism, severity, tissue type, imaging, referral, clinical notes, treatment plan** | Base | Route guard, then the database refuses the clinical table |
-| Coach | Yes | Same | Nothing | The same eight | Base | Same |
-| Medic | Yes | All of the above **and the full clinical record** | Create and edit the clinical record. Set availability. **Cannot delete the injury** | None | Base | The clinical form appears only for a medic, and the database allows only a medic |
+| Sport scientist | Yes | Body area, side, onset, status, expected return, actual return, how it happened, and availability | Nothing on the clinical record | **Diagnosis, mechanism, severity, tissue type, imaging, referral, clinical notes, treatment plan**, and the return-to-play ladder | Base | Route guard, then the database refuses the clinical table |
+| Coach | Yes | Same, **without the body area and side while the club's setting is off** (`/settings/club#injury-site`, migration 0122, off by default): the title reads "Injury" | Nothing | The same eight, the ladder, and the site and side | Base | Same; the `injuries_staff` view masks the two columns and the table does not grant them |
+| Medic | Yes | All of the above, **the full clinical record, and the return-to-play ladder** (migration 0123) | Create and edit the clinical record. Set availability. Open a protocol, advance a stage, set a stage. **Cannot delete the injury** | None | Base | The clinical form and the ladder appear only for a medic, and the database allows only a medic |
 | S&C | Yes | Same as coach | Nothing | The same eight | Base | **NOT BUILT** |
 | Nutritionist | **No** | Nothing | Nothing | **The whole page** | Base | **NOT BUILT.** Decision D-01 |
 | Athlete | **No** | Nothing here. An athlete sees their own injury minus the clinical notes, in their own app | Nothing | The whole page | n/a | Middleware, then guard, then database |
@@ -52,6 +52,28 @@ them.
 which is correct: telling a coach "there is a diagnosis you cannot see" is itself
 a disclosure.
 
+**Only a medic sees the return-to-play ladder** (PATTERN-S3 C3, migration
+0123, `injury_protocols` and `injury_stage_events`). A protocol is a count of
+stages (1 to 12) opened against the injury — stages are numbered, never named,
+because the club's protocol document holds the names and criteria and the
+product does not restate them. The ladder shows every stage with a state word —
+Done, Now, Next, Later — and the history beneath it, one row per move with who,
+when, the line and the reason. **Advancing moves one stage** and asks for two
+things: the restriction line rewritten for the new stage, which is what the
+coach and the athlete read, and a confirmation that the criteria in the club's
+protocol were reviewed. **Any other stage** (back, or a jump) needs a reason in
+words. The database refuses an advance without the line or the confirmation, a
+set without a reason, and any line that names a protocol, a stage or a
+diagnosis (`restriction_line_is_clean`). On an advance the athlete's open
+availability row is closed and a new one opened with the same status, reason
+and note and the new line — the availability table is a ledger
+(`63-availability-history.md`), never rewritten in place — so the coach's
+screens change at the same moment, the history shows the line before, and
+Today tells the athlete once more, dated to the move. Each move writes a `stage_change` timeline event and an audit
+row. `lib/restrictions.ts` keeps stripping protocol and stage words from every
+restriction line at every read, for every viewer, so the stage data can only
+be read through the ladder (medic) and the athlete's own status screen.
+
 ---
 
 ## 5. Every number on this page
@@ -71,6 +93,9 @@ a disclosure.
 | Set availability | Availability card | Records a new status with reason and restrictions | Stays here | A new availability record; the previous one is closed | Medic, and coach today | Form submission | Should be limited under the agreed model |
 | Record clinical detail | Clinical card | Creates or updates the clinical record | Stays here | Writes to the clinical table | **Medic only, enforced by the database** | Form submission | **The whole card is absent for anyone else** |
 | Close the injury | Status control | Marks it closed with an actual return date | Stays here | Updates the injury | Medic, and coach today | Form submission | Hidden once closed |
+| Open a protocol | Return-to-play card | Starts a protocol with a stage count (1–12) at stage 0 | Stays here, `?stage=opened` | `injury_protocols`, a stage-0 event, an audit row | **Medic only, enforced by the database** | Form submission | Absent for every other role; absent once a protocol exists or the injury is closed |
+| Advance one stage | Return-to-play card | Moves to the next stage with the rewritten restriction line and the criteria-reviewed confirmation | Stays here, `?stage=advanced` | A stage event; the open availability row's restrictions; a timeline event; an audit row | **Medic only** | Form submission; the line and the confirmation are required | Absent at the last stage, or once closed |
+| Set a stage | Return-to-play card | Moves to any other stage with a reason (and an optional new line) | Stays here, `?stage=set` | The same rows, with the reason | **Medic only** | Form submission; the reason is required | Absent once closed |
 | Injuries breadcrumb | Header | Back to the list | `/injuries` | Nothing | Any staff today | None | Never |
 
 **There is no delete.** By design.

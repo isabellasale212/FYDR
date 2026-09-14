@@ -248,6 +248,18 @@ export default async function MePage() {
         <ChangePasswordForm />
 
         <div className="card flush me-set">
+          {/* PATTERN-S3 C2: the status screen's standing door — the told card
+              on Today is the other, and it goes once the screen has been opened. */}
+          <Link href="/me/status" className="me-row" data-status-row>
+            <span className="k">
+              My status
+              <span className="s">can I train, what can I do, when am I back</span>
+            </span>
+            <span className="chev" aria-hidden="true">
+              ›
+            </span>
+          </Link>
+          <div className="hair" />
           <Link href="/me/notifications" className="me-row">
             <span className="k">
               Notifications

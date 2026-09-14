@@ -23,13 +23,12 @@ export default async function DataConsentPage({ searchParams }: { searchParams: 
   if (consent.state === 'guardian_pending') {
     return (
       <>
-        <div className="sheet-head">
-          <Link href="/me" className="sheet-x" aria-label="Back to Me">
-            <span aria-hidden="true">←</span>
-          </Link>
-          <h1 className="t">Data consent</h1>
-          <span style={{ width: 44 }} />
+        <div className="hd">
+          <h1 className="d">Data consent</h1>
         </div>
+        <p className="tiny">
+          <Link href="/me">← Me</Link>
+        </p>
         <div className="after-card">
           <h2 className="after-heading">A guardian answers this one</h2>
           <p className="after-note">The decision about your data is your guardian’s while you are under 18 on the club’s record.</p>

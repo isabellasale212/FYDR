@@ -93,6 +93,7 @@ this block is the reason decision D-01 is ranked highest.
 | Rehab groups | VE | VP | VE | VE | **X** |
 | Team allocation | VE | VE | VP | VP | **X** |
 | Injury and availability report | VP | VP | V | VP | **X** |
+| Return-to-play ladder (on the injury record, 0123) | **X** | **X** | VEC | **X** | **X** |
 
 **Note on the medic row for Injury record.** A medic may create and edit an
 injury but **may not delete one**. An injury is closed, never deleted. Deletion
@@ -226,6 +227,13 @@ as "Injury" / "Site withheld", never as a blank. So by default a coach can tell
 that a player is unavailable, is expected back on the 18th, and must not
 sprint — not where the injury is.
 
+**The return-to-play stage is the medic's and the athlete's, nowhere else**
+(PATTERN-S3 C3, migration 0123): `injury_protocols` and `injury_stage_events`
+carry SELECT policies for the medic and for the athlete's own row only, no
+write grants, and two SECURITY DEFINER functions the medic alone may call.
+`lib/restrictions.ts` strips protocol and stage words from every restriction
+line at every read, for every viewer, so the stage cannot leak through the
+line either.
 
 **What only the medic sees.** The whole clinical record, which is a separate
 table: **diagnosis, mechanism, severity, tissue type, imaging, referral, clinical

@@ -1,4 +1,5 @@
 import type { CSSProperties } from 'react';
+import Link from 'next/link';
 import type { AvailabilityReason, AvailabilityStatus } from '@/lib/types/database';
 import type { OpenInjury } from '@/lib/queries/availability';
 import { availabilityStatus } from '@/lib/status';
@@ -167,6 +168,14 @@ export function AvailabilityBanner({
         {/* Below the instruction, not instead of it: the instruction is the
             same on every restricted day and the note is what changes. */}
         {status !== 'available' && note ? <div className="s">{note}</div> : null}
+        {/* PATTERN-S3 C2: the door to the status screen — the three questions
+            answered in full, the ladder, the medical detail. The card stays
+            as it was; the link is its last line. */}
+        {status !== 'available' ? (
+          <Link href="/me/status" className="s" style={{ display: 'inline-flex', alignItems: 'center', minHeight: 44, color: 'inherit', textDecoration: 'underline' }} data-status-link>
+            What this means for you ›
+          </Link>
+        ) : null}
       </div>
     </div>
   );

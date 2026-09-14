@@ -1,3 +1,4 @@
+import { SITE_WITHHELD_WORD } from '@/lib/reportFigures';
 import { notFound } from 'next/navigation';
 import { CLINICAL_ONLY, hasAnyRole } from '@/lib/access';
 import Link from 'next/link';
@@ -6,6 +7,8 @@ import { SetAvailabilityForm } from '@/components/SetAvailabilityForm/SetAvailab
 import { fetchInjuryDetail, fetchInjuryClinical } from '@/lib/queries/injuries';
 import { fetchInjuryProposals, fetchInjuryTimeline } from '@/lib/queries/injuryTimeline';
 import { InjuryTimeline } from '@/components/InjuryTimeline/InjuryTimeline';
+import { StageLadder } from '@/components/StageLadder/StageLadder';
+import { fetchInjuryProtocol, fetchStageEvents } from '@/lib/queries/injuryStages';
 import { enumLabel, formatDate } from '@/lib/format';
 import { requireInjuryAccess } from '@/lib/session';
 
@@ -28,8 +31,10 @@ const AVAIL_PILL: Record<string, string> = {
  *  spec states explicitly for this exact boundary. */
 export default async function InjuryDetailPage({
   params,
+  searchParams,
 }: {
   params: Promise<{ injuryId: string }>;
+  searchParams: Promise<{ stage?: string }>;
 }) {
   const { injuryId } = await params;
   const { db, orgId, claims, timezone } = await requireInjuryAccess();
@@ -48,6 +53,18 @@ export default async function InjuryDetailPage({
      awaiting sign-off is the whole point of the status. */
   const timeline = isMedical ? await fetchInjuryTimeline(db, orgId, injuryId) : [];
   const proposals = await fetchInjuryProposals(db, orgId, injuryId);
+  /* PATTERN-S3 C3 (0123): the protocol and its moves — the medic's; a coach's
+     session reads nothing here at the database. */
+  const [protocol, stageEvents] = isMedical ? await Promise.all([fetchInjuryProtocol(db, injuryId), fetchStageEvents(db, injuryId)]) : [null, []];
+  const stageNames = new Map<string, string>();
+  if (isMedical) {
+    const ids = [...new Set(stageEvents.map((e) => e.moved_by).filter((x): x is string => !!x))];
+    if (ids.length > 0) {
+      const { data: users } = await db.from('users').select('id, full_name').eq('org_id', orgId).in('id', ids);
+      for (const u of users ?? []) stageNames.set(u.id, u.full_name);
+    }
+  }
+  const sp = await searchParams;
 
   return (
     <>
@@ -65,8 +82,10 @@ export default async function InjuryDetailPage({
       <div className="card">
         <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-10)', flexWrap: 'wrap' }}>
           <span className="pill pill-neutral">{enumLabel(injury.status)}</span>
+          {/* 0122: null body_area is the club's setting withholding the site
+              from a coach — the pill says so rather than printing a blank. */}
           <span className="pill pill-neutral">
-            {enumLabel(injury.body_area)}
+            {injury.body_area ? enumLabel(injury.body_area) : SITE_WITHHELD_WORD}
             {injury.side ? ` · ${enumLabel(injury.side)}` : ''}
           </span>
           {injury.availability_status ? (
@@ -108,6 +127,10 @@ export default async function InjuryDetailPage({
               Edit this record
             </p>
             <InjuryMedicalForm orgId={orgId} userId={claims.userId} injury={injury} clinical={clinical} />
+          </div>
+
+          <div style={{ marginTop: 'var(--sp-14)' }}>
+            <StageLadder injuryId={injury.id} protocol={protocol} events={stageEvents} timezone={timezone} notice={typeof sp.stage === 'string' ? sp.stage : null} closed={injury.status === 'closed'} namesById={stageNames} />
           </div>
 
           <div style={{ marginTop: 'var(--sp-14)' }}>

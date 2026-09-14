@@ -104,6 +104,9 @@ screen an athlete reads when something is wrong:
   stage, and the expected return date — "Right shoulder · Rehab · Expected
   return Tue 15 Sept". See §5 for when each part appears.
 - Then "Everything else is on. Speak to medical staff."
+- Then, since 13 September 2026 (PATTERN-S3 C2), the card's last line is a
+  link: **What this means for you ›** to `/me/status`, the status screen that
+  answers the three questions in full (`22-my-status.md`).
 
 Everything from the note downwards appears **only when the status is not
 `available`**. A cleared athlete sees the status word and "Everything is on."
@@ -201,6 +204,7 @@ stated here rather than left to be rediscovered:
 | A number on the rating row | The rating row's CR-10 grid | Sends the rating for that session with its scheduled minutes | stays here; the row becomes the receipt | `training_entries` (through the outbox) | **no — one tap**; the coach corrects a wrong one | the rating is not owed, or was sent |
 | "change or add a note" | The rating row's line | Opens the full rating screen | `/rpe/[id]` | nothing | no | the rating was sent, or the session has no scheduled length (then the whole row hands over: "Rate on the next screen") |
 | See what it means | The "Your status changed" card | Opens the status screen, which marks the row seen | `/me/status` | `availability.athlete_seen_at` (on arrival, through `mark_availability_seen`) | no | the row has been seen, or was not set by staff |
+| What this means for you › | The availability card's last line | Opens the status screen | `/me/status` | nothing | no | available |
 | Report a problem | Below the list | Opens the problem form | `/report-problem` | nothing | no | never |
 | Tab bar | Fixed, bottom | Switches tab | the tab | nothing | no | never |
 

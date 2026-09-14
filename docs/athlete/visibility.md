@@ -25,6 +25,7 @@ they can leave.**
 | Test results and personal bests | Yes | shown on My data | `src/app/(athlete)/my-data/page.tsx` |
 | **Injuries: body area, side, status, dates** | **Yes** | `injuries_self_select`, `athlete_id = auth_athlete_id()`; since 0122 the body area and side are read through the `injuries_staff` view, which returns the athlete's own unmasked whatever the club's coach setting says | `0012_rls_policies.sql:656`, `0122_availability_seen_and_injury_site_setting.sql` |
 | **Availability and restrictions** | **Yes** | `availability_self_select` | `0012_rls_policies.sql:725` |
+| **Their own return-to-play stage** (stage n of total, the moves, the lines) | **Yes**, on `/me/status` only | `injury_protocols_self_select`, `injury_stage_events_self_select` — the athlete and the medic are the only readers; no coach, sport scientist or S&C policy exists | `0123_injury_protocol_stages.sql` |
 | **Diagnosis, mechanism, severity, tissue type, imaging, referral, treatment plan** | **Yes** | `injury_clinical_athlete_view` | `0010_helper_functions_and_triggers.sql` |
 | **The physio's private clinical notes** | **No** | deliberately excluded from the view | same |
 | GPS records | Permitted, but no screen shows them | `gps_records_self_select` | `0023_gps_records.sql:132` |

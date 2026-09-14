@@ -824,6 +824,39 @@ create table availability (
                                                    -- mark_availability_seen() writes it, the athlete's own open row only.
   created_at     timestamptz not null default now()
 );
+
+-- PATTERN-S3 C3 (0123): return-to-play stages as data. A protocol is a count of stages
+-- against one injury — numbered, never named; the club's protocol document holds the
+-- names and criteria. Readers: the medic and the athlete's own (no coach, sport scientist
+-- or S&C policy). Writers: open_injury_protocol() and move_injury_stage() only.
+create table injury_protocols (
+  injury_id     uuid primary key references injuries(id) on delete cascade,
+  org_id        uuid not null references organisations(id),
+  total_stages  int not null check (total_stages between 1 and 12),
+  current_stage int not null default 0,          -- 0 = opened, not yet on a stage
+  opened_by     uuid references users(id),
+  opened_at     timestamptz not null default now()
+);
+
+-- Append-only, one row per move. Advancing (to = from + 1) carries the restriction line
+-- rewritten for the new stage — move_injury_stage closes the athlete's open availability
+-- row and opens a new one carrying it (the ledger, never a rewrite), so the coach reads
+-- it and the athlete is told — and criteria_reviewed = true. Any other move
+-- carries a reason. restriction_line_is_clean() refuses a line naming a protocol, a stage
+-- or a diagnosis. Each move writes a 'stage_change' timeline event and an audit row.
+create table injury_stage_events (
+  id                uuid primary key default gen_random_uuid(),
+  seq               bigint generated always as identity,   -- the order of moves; moved_at is constant within a transaction
+  org_id            uuid not null references organisations(id),
+  injury_id         uuid not null references injuries(id) on delete cascade,
+  from_stage        int not null,
+  to_stage          int not null,
+  moved_by          uuid references users(id),
+  moved_at          timestamptz not null default now(),
+  restriction_line  text,
+  criteria_reviewed boolean not null default false,
+  reason            text
+);
 ```
 
 **Write access is split by whether a row is injury-linked, not by table.** Medical may

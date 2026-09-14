@@ -130,17 +130,6 @@ function readLightBlock(): string {
   return css.slice(open, end);
 }
 
-function committed(): Record<Token, string> {
-  const block = readLightBlock();
-  const out: Record<string, string> = {};
-  for (const t of ['--bg', ...SURFACES]) {
-    const m = new RegExp(`${t}\\s*:\\s*(#[0-9a-fA-F]{3,6})\\s*;`).exec(block);
-    if (!m?.[1]) throw new Error(`${t} is not set to a hex literal in the light block`);
-    out[t] = m[1].toLowerCase();
-  }
-  return out as Record<Token, string>;
-}
-
 const arg = process.argv[2];
 
 if (arg === '--check') {

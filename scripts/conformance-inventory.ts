@@ -34,7 +34,6 @@
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
 
-type Token = { name: string; value: string; theme: 'light' | 'dark' | 'scale' };
 type Family = 'radius' | 'spacing' | 'dimension' | 'size' | 'weight' | 'colour' | 'border' | 'shadow';
 
 const TOKENS_PATH = 'src/styles/tokens.css';
@@ -152,8 +151,6 @@ type Finding = {
   theme: 'light' | 'dark' | 'both';
   group: string;
 };
-
-const CONSTITUTION_EXEMPT = /rank|heat|deviation|--dev-|band|tint/i;
 
 function nearestLength(px: number, candidates: Map<string, string>, allowed: RegExp): { token: string; value: string; diff: number } | null {
   let best: { token: string; value: string; diff: number } | null = null;

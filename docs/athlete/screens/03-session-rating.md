@@ -79,6 +79,13 @@ because an unread parameter is the kind of thing that gets quietly re-wired late
 
 ## 7. Offline and sync
 
+**A rating chosen and a note half typed survive** (PATTERN-S6 C3, ruled 13
+September 2026, built 14 September; `lib/formDraft.ts`). Held on this phone
+per athlete and session, restored when the screen is opened again — after
+the session expires and the sign-in brings them back, after a phone call —
+and cleared when the rating is sent. The duration counts as held only once it
+differs from the scheduled one.
+
 The entry is saved on the phone first and sent when there is signal
 (`src/lib/outbox.ts`). Its own header states the rule: an athlete standing in a
 gym with no bars must never be shown a network error for something they have

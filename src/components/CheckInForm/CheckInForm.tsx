@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { clearDraft, useFormDraft } from '@/lib/formDraft';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { ScaleInput } from '@/components/ScaleInput/ScaleInput';
 import { createClient } from '@/lib/supabase/client';
@@ -111,6 +112,35 @@ export function CheckInForm({
   const [scales, setScales] = useState<Scales>(EMPTY);
   const [invalid, setInvalid] = useState<string | null>(null);
 
+  /* PATTERN-S6 C3 (batch B9): the answers so far survive the session
+     expiring, a phone call or a closed tab — held on this phone per athlete
+     and day, restored on the way back in, cleared when sent. */
+  const draftKey = `check-in-${athleteId}-${entryDate}`;
+  const draft = useMemo(
+    () => ({ sleepHours, restingHr, bodyMassKg, comment, scales }),
+    [sleepHours, restingHr, bodyMassKg, comment, scales],
+  );
+  useFormDraft(
+    draftKey,
+    draft,
+    useCallback((d: typeof draft) => {
+      setSleepHours(d.sleepHours ?? null);
+      setRestingHr(d.restingHr ?? '');
+      setBodyMassKg(d.bodyMassKg ?? '');
+      setComment(d.comment ?? '');
+      setScales({ ...EMPTY, ...(d.scales ?? {}) });
+    }, []),
+    useCallback(
+      (d: typeof draft) =>
+        d.sleepHours !== null ||
+        d.restingHr !== '' ||
+        d.bodyMassKg !== '' ||
+        d.comment !== '' ||
+        Object.values(d.scales).some((v) => v !== null),
+      [],
+    ),
+  );
+
   const submitMutation = useMutation({
     mutationFn: async (input: WellnessEntryInput) => {
       await submitWellnessEntry(createClient(), input, {
@@ -190,6 +220,7 @@ export function CheckInForm({
     }
 
     setInvalid(null);
+    clearDraft(draftKey);
     submitMutation.mutate(parsed.data);
     router.push('/today?submitted=1');
   }

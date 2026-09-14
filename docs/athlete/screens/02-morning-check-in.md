@@ -102,6 +102,16 @@ answers and then refuse them.
 
 ## 7. Offline and sync
 
+**A part-filled sheet survives** (PATTERN-S6 C3, ruled 13 September 2026,
+built 14 September; `lib/formDraft.ts`, the gym logger's own mechanism). The
+answers given so far — sleep, the five scales, resting heart rate, body mass,
+the note — are held on this phone as they are given, keyed to this athlete
+and this day, and restored when the sheet is opened again: after the session
+expires mid-form and the sign-in brings them back to `/check-in`, after a
+phone call, after a closed tab. Cleared the moment the entry is sent, or when
+every answer is taken back. A draft is not an entry: nothing reaches the
+outbox or the database until the send.
+
 The entry is saved on the phone first and sent when there is signal
 (`src/lib/outbox.ts`). Its own header states the rule: an athlete standing in a
 gym with no bars must never be shown a network error for something they have

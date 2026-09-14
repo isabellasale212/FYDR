@@ -1,7 +1,8 @@
 'use client';
 
 import { useRouter } from 'next/navigation';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { clearDraft, useFormDraft } from '@/lib/formDraft';
 import { useMutation, useQueryClient } from '@tanstack/react-query';
 import { CR10List } from '@/components/CR10List/CR10List';
 import { createClient } from '@/lib/supabase/client';
@@ -70,6 +71,24 @@ export function RpeForm({
   const [noteOpen, setNoteOpen] = useState(false);
   const [invalid, setInvalid] = useState<string | null>(null);
 
+  /* PATTERN-S6 C3 (batch B9): a rating chosen and a note half typed survive
+     the session expiring — held on this phone per session, restored on the
+     way back in, cleared when sent. The duration counts as content only once
+     it differs from the scheduled one. */
+  const draftKey = `rating-${athleteId}-${sessionId}`;
+  const draft = useMemo(() => ({ rpe, duration, note }), [rpe, duration, note]);
+  useFormDraft(
+    draftKey,
+    draft,
+    useCallback((d: typeof draft) => {
+      setRpe(d.rpe ?? null);
+      setDuration(d.duration ?? null);
+      setNote(d.note ?? '');
+      if (d.note) setNoteOpen(true);
+    }, []),
+    useCallback((d: typeof draft) => d.rpe !== null || d.note !== '' || d.duration !== scheduledDurationMin, [scheduledDurationMin]),
+  );
+
   const submitMutation = useMutation({
     mutationFn: async (input: TrainingEntryInput) => {
       await submitTrainingEntry(createClient(), input, { orgId, athleteId, userId });
@@ -127,6 +146,7 @@ export function RpeForm({
     }
 
     setInvalid(null);
+    clearDraft(draftKey);
     submitMutation.mutate(parsed.data);
     router.push(
       `/today?submitted=rpe&rpe=${rpe}&session=${encodeURIComponent(sessionTitle)}`,

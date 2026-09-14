@@ -2,7 +2,8 @@
 
 import Link from 'next/link';
 
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
+import { clearDraft, useFormDraft } from '@/lib/formDraft';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -48,6 +49,23 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
   const [note, setNote] = useState(correction?.initialNote ?? '');
   const [noteOpen, setNoteOpen] = useState(!!correction?.initialNote);
   const [error, setError] = useState<string | null>(null);
+
+  /* PATTERN-S6 C3 (batch B9): the answer and a note half typed survive the
+     session expiring — held on this phone per athlete and week, restored on
+     the way back in, cleared when sent. Not for a correction, which starts
+     from the sent entry, not from a draft. */
+  const draftKey = correction ? null : `nutrition-check-in-${athleteId}-${weekStart}`;
+  const draft = useMemo(() => ({ answer, note }), [answer, note]);
+  useFormDraft(
+    draftKey,
+    draft,
+    useCallback((d: typeof draft) => {
+      setAnswer(d.answer ?? null);
+      setNote(d.note ?? '');
+      if (d.note) setNoteOpen(true);
+    }, []),
+    useCallback((d: typeof draft) => d.answer !== null || d.note !== '', []),
+  );
   /* Blocked until one of the three answers is chosen (A2); `pending`, below,
    * only while the send is in flight. */
   const blocked = !answer;
@@ -130,6 +148,7 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
       setError('Something on this answer did not check out. Try again.');
       return;
     }
+    if (draftKey) clearDraft(draftKey);
     submitMutation.mutate(parsed.data);
     /* On our way immediately, same as the wellness check-in: the answer is
        queued on the phone whatever the network does next. */

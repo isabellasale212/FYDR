@@ -61,6 +61,11 @@ None.
 
 ## 7. Offline and sync
 
+**The answer and a note half typed survive** (PATTERN-S6 C3, ruled 13
+September 2026, built 14 September; `lib/formDraft.ts`). Held on this phone
+per athlete and week, restored when the screen is opened again, cleared when
+sent. Not for a correction, which starts from the sent entry.
+
 The entry is saved on the phone first and sent when there is signal
 (`src/lib/outbox.ts`). Its own header states the rule: an athlete standing in a
 gym with no bars must never be shown a network error for something they have

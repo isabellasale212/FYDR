@@ -4,12 +4,14 @@ import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { InjuryClinical } from '@/components/InjuryClinical/InjuryClinical';
 import { OutboxFlusher } from '@/components/OutboxFlusher/OutboxFlusher';
 import { TodayRpeRow } from '@/components/TodayRpeRow/TodayRpeRow';
+import { TodayGymRow } from '@/components/TodayGymRow/TodayGymRow';
 import { InstallCard } from '@/components/InstallCard/InstallCard';
 import { StatusToldCard } from '@/components/StatusToldCard/StatusToldCard';
 import { fetchStaffName } from '@/lib/queries/staffName';
 import { fetchAthleteAvailability } from '@/lib/queries/availability';
 import { fetchAthleteInjuryClinical } from '@/lib/queries/athleteInjuryClinical';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
+import { fetchMyOpenGymSessionToday } from '@/lib/queries/programmes';
 import { availabilityStatus } from '@/lib/status';
 import { availabilityLine, rpeWhen, sessionMeta } from '@/lib/todayRows';
 import {
@@ -72,10 +74,13 @@ const WEEKDAY_INITIAL = ['M', 'T', 'W', 'T', 'F', 'S', 'S'];
  * nutrition-targets card (§11); showing standing targets in both places
  * was two homes for one real number.
  *
- * Gym never appears in "to do" here: fetchMyOutstanding only resolves
- * wellness and training_rpe (see its own header), and detecting "today has
- * an unfinished gym session" is a real, separate query this pass doesn't
- * add — Programme and the session itself are still the real entry points.
+ * The gym row — PATTERN-S6 C2, ruled 2026-09-13 (batch B8), built
+ * 2026-09-14: a gym session the athlete has opened today and not finished is
+ * a row of its own, "Lower A · 6 of 12 sets · 2 waiting to send"
+ * (fetchMyOpenGymSessionToday, the separate query the note here used to say
+ * this pass did not add). fetchMyOutstanding still resolves only wellness and
+ * training_rpe; Programme is still where a session is started, this row is
+ * the way back into one under way.
  */
 export default async function TodayPage({
   searchParams,
@@ -108,6 +113,7 @@ export default async function TodayPage({
     weekSessionTypes,
     nextFixture,
     sessions,
+    openGym,
   ] = await Promise.all([
       fetchAthleteAvailability(db, orgId, athleteId),
       fetchMyOutstanding(db, athleteId, today, Date.now(), { collectsRpe }),
@@ -121,6 +127,8 @@ export default async function TodayPage({
          gone, and "working towards" a match already played is nonsense. */
       fetchNextFixture(db, orgId, new Date().toISOString()),
       fetchAthleteDaySessions(db, orgId, athleteId, today, timezone),
+      /* PATTERN-S6 C2: the gym session under way, for its own row. */
+      formsOpen ? fetchMyOpenGymSessionToday(db, orgId, athleteId, today) : Promise.resolve(null),
     ]);
 
   /* Sequential rather than joined to the Promise.all above, because it needs
@@ -153,7 +161,23 @@ export default async function TodayPage({
          entry date is the session's own club-local day — the same rule the
          rating screen uses, so a rating from either lands on one row. */
       session: item.domain === 'training_rpe' ? item.session : null,
+      gym: null,
     })),
+    /* The gym session under way sits after what the morning owes (wellness,
+       a rating) and before the weekly check-in — the one row that is about
+       right now. */
+    ...(openGym
+      ? [
+          {
+            domain: 'gym' as const,
+            href: `/gym/${openGym.programmeSessionId}`,
+            name: openGym.name,
+            sub: `${openGym.logged} of ${openGym.total} sets`,
+            session: null,
+            gym: openGym,
+          },
+        ]
+      : []),
     ...(!nutritionCheckin
       ? [
           {
@@ -162,6 +186,7 @@ export default async function TodayPage({
             name: 'Weekly nutrition check-in',
             sub: 'about 10 sec',
             session: null,
+            gym: null,
           },
         ]
       : []),
@@ -348,7 +373,16 @@ export default async function TodayPage({
               </span>
             </Link>
           ) : todoItems.length > 0 ? (
-            todoItems.map((item, index) => item.session ? (
+            todoItems.map((item, index) => item.gym ? (
+              <TodayGymRow
+                key={`gym-${item.gym.sessionLogId}`}
+                programmeSessionId={item.gym.programmeSessionId}
+                sessionLogId={item.gym.sessionLogId}
+                name={item.gym.name}
+                logged={item.gym.logged}
+                total={item.gym.total}
+              />
+            ) : item.session ? (
               <TodayRpeRow
                 key={`${item.domain}-${index}`}
                 orgId={orgId}

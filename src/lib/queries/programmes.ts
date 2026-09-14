@@ -1019,6 +1019,58 @@ export type LoggedSet = {
 /** Reads gym_set_logs_current (migration 0044), not the base table — ADR-005 rule 3: a
  *  corrected set's superseded original must never double-count here, the same discipline
  *  wellness_entries_current/training_entries_current already enforce for their domains. */
+/** PATTERN-S6 C2 (ruled 2026-09-13, batch B8): Today lists the athlete's gym
+ *  session as a row with its count — "6 of 12 sets · 2 waiting to send". The
+ *  session is the one they have OPENED today and not finished: a
+ *  gym_session_logs row of theirs, dated today, in_progress. A programme
+ *  session carries no calendar date (week and day numbers only), so "today's
+ *  gym session" before it is opened is not a thing the data can name;
+ *  Programme stays the entry point for starting one, and this row is the way
+ *  back into one under way. Complete and abandoned logs are not owed, so they
+ *  are not rows. The count is what the logger's own progress row counts:
+ *  sets that have reached the server over the session's prescribed total
+ *  (resolved for this athlete — an exempted exercise is not owed); "waiting
+ *  to send" is the phone's outbox, read on the client by the row itself.
+ *  With several open today (a second programme, a rehab block) the earliest
+ *  started is the row. Three round trips, only when a log exists. */
+export type MyOpenGymSession = {
+  sessionLogId: string;
+  programmeSessionId: string;
+  name: string;
+  logged: number;
+  total: number;
+};
+
+export async function fetchMyOpenGymSessionToday(
+  db: Db,
+  orgId: string,
+  athleteId: string,
+  today: string,
+): Promise<MyOpenGymSession | null> {
+  const { data: log, error } = await db
+    .from('gym_session_logs')
+    .select('id, programme_session_id')
+    .eq('org_id', orgId)
+    .eq('athlete_id', athleteId)
+    .eq('entry_date', today)
+    .eq('status', 'in_progress')
+    .order('started_at', { ascending: true, nullsFirst: false })
+    .limit(1)
+    .maybeSingle();
+  if (error) throw new Error(error.message);
+  if (!log || !log.programme_session_id) return null;
+
+  const [exercises, mine, sets] = await Promise.all([
+    fetchSessionExercises(db, log.programme_session_id, athleteId),
+    fetchMyProgrammeSessions(db, athleteId),
+    db.from('gym_set_logs_current').select('id', { count: 'exact', head: true }).eq('gym_session_log_id', log.id),
+  ]);
+  if (sets.error) throw new Error(sets.error.message);
+  const total = exercises.reduce((sum, ex) => sum + ex.sets, 0);
+  const name = mine.find((r) => r.session_id === log.programme_session_id)?.session_name ?? 'Gym session';
+  return { sessionLogId: log.id, programmeSessionId: log.programme_session_id, name, logged: sets.count ?? 0, total };
+}
+
 export async function fetchLoggedSets(db: Db, gymSessionLogId: string): Promise<LoggedSet[]> {
   const { data, error } = await db
     .from('gym_set_logs_current')

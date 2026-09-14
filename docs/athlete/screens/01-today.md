@@ -74,6 +74,19 @@ receipt.
 since none is specified); "Weekly nutrition check-in · about 10 sec"
 (`08-notifications.md`, "three answers, under 10 seconds").
 
+**The gym row** (PATTERN-S6 C2, ruled 13 September 2026, built 14 September):
+a gym session the athlete has opened today and not finished is a row of its
+own — the session's name over "6 of 12 sets", and "· 2 waiting to send" when
+this phone's outbox holds sets for it — opening the session at
+`/gym/[sessionId]`. It sits after what the morning owes (Wellness, a rating)
+and before the weekly check-in. The count is the logger's own: sets that have
+reached the server over the session's prescribed total, resolved for this
+athlete; the waiting count is read from the outbox on the phone and follows
+its change event. A programme session carries no calendar date, so a session
+not yet opened is not a row — Programme is where one is started; a complete
+or abandoned log is not owed and is not a row either. With two open today the
+earliest started is the row.
+
 **When a session's rating is owed.** From thirty minutes after the session
 ends until the end of the following day in club time — `lib/rpeDue.ts`, the
 one rule the row and the rating screen both read. A row therefore never opens

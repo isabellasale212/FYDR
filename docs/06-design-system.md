@@ -9,8 +9,8 @@
 > (`docs/decisions/design-system-adoption.md`, Isabella, 14 September). Its five
 > token files at `docs/design-system/tokens/` are the source of truth for values;
 > `src/styles/tokens.css` is where they live in the code. Layers one (colours and
-> shadows) and two (corners) landed on 15 September; layer three (type and
-> spacing) is not built yet. What changed, in one place: the light theme's
+> shadows), two (corners) and three (type, spacing and motion) landed on 15
+> September. What changed, in one place: the light theme's
 > surfaces (`--bg #e1e9f6`, cards pure white, `--surf2 #e9effb`, `--field
 > #e7eefb`), inks (`--text #121722`, `--muted #556074`, `--faint #667287`), lines
 > and tracks as alphas of the 23,40,80 ink, the two-layer `--shadow`, `--accent2
@@ -21,11 +21,22 @@
 > (999px) for lozenges and `--r-knob` (3px) for the toggle knob — every older
 > radius name is an alias of `--r`. **The dark theme is frozen**: not one dark
 > colour changed, and the tokens that arrived without a dark value are
-> theme-neutral until Isabella rules on them. Three things of the previous system
-> survive by decision: `--hit-lg`/`--hit-md`, `--r-full`, and dark. Where the
-> sections below describe the earlier values (§2's token block, §3's contrast
-> figures, §7's radii), the token file wins and this document is corrected as
-> layer three lands.
+> theme-neutral until Isabella rules on them — except the two heat ramps, which
+> took dark values on her ruling the same day, and the two context inks
+> (`--faint-on-tint`, `--muted-on-tint`) that carry captions on a tinted ground
+> and muted text on an emphasised card at 4.5:1. Layer three added System A's six
+> weights (`--w-*`), its type scale (`--t-*`, written in rem), the three tracking
+> values, four line heights, the 4px grid (`--s-1`…`--s-15`) with its named jobs,
+> the shell dimensions and the motion tokens (`--dur`, `--dur-ring`,
+> `--ease-ring`, `--t-select`), and repointed every raw weight, every exact
+> tracking, line height, spacing and 44px hit floor onto them — a value with no
+> exact token stays a literal and is listed, with the reason, in
+> `docs/design-system-adoption-log/`. The code's own `--fs-*` (rem) and `--sp-*`
+> scales stay beside System A's names, value for value. Three things of the
+> previous system survive by decision: `--hit-lg`/`--hit-md`, `--r-full`, and
+> dark. Where the sections below describe the earlier values (§2's token block,
+> §3's contrast figures, §6's type, §7's radii), the token file wins and this
+> document is corrected as the sections are revisited.
 
 This document is derived from the client's **real** design system, extracted from
 `web/src/app/globals.css`. It is not a proposal and it is not a placeholder.

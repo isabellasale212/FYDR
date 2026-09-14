@@ -43,6 +43,9 @@ export type PanelMeasure = {
 
 export type Panel = {
   key: PanelKey;
+  /** The panel's own name. Where the panel offers a choice of measure the
+   *  heading shown is the MEASURE's name (titleFor), so the card says what
+   *  its number is; this stays the panel's identity for the URL and tests. */
   title: string;
   /** What the panel can measure; the first is its default. Only Training
    *  load offers a choice — the GPS family joined it on 14 September 2026
@@ -61,10 +64,18 @@ const GPS_VOLUME = (metric: MetricKey, sentence: string, unit: string): PanelMea
 export const PANELS: readonly Panel[] = [
   {
     key: 'load',
+    /* The default is session load, not total distance (Isabella, 15
+     * September 2026): a premium club that has not yet imported a GPS file
+     * opens Analytics and must not meet an empty panel; session load exists
+     * for every club collecting RPE, so it is the measure most likely to
+     * have data on first open. The GPS family stays in the select. The
+     * panel's TITLE follows the selected measure (titleFor below) — a card
+     * called "Training load" while it draws total distance would break the
+     * rule that a screen says what its number is. */
     title: 'Training load',
     measures: [
-      GPS_VOLUME('gps_distance', 'Total distance — metres from the GPS unit (MET-017), summed across every session it was worn', ' m'),
       { metric: 'load', measure: 'volume', sentence: 'Session load — RPE × minutes (MET-007), summed across every session logged', unit: ' AU', decimals: 0, missingWord: 'No session logged' },
+      GPS_VOLUME('gps_distance', 'Total distance — metres from the GPS unit (MET-017), summed across every session it was worn', ' m'),
       GPS_VOLUME('gps_high_speed_distance', 'High speed distance — metres above the vendor’s high-speed threshold (MET-018), summed', ' m'),
       GPS_VOLUME('gps_sprint_distance', 'Sprint distance — metres above the vendor’s sprint threshold (MET-019), summed', ' m'),
       GPS_VOLUME('gps_player_load', 'Player load — the vendor’s accelerometer load (MET-021), summed', ''),
@@ -100,6 +111,19 @@ export const PANELS: readonly Panel[] = [
     axisTop: null,
   },
 ];
+
+/** The measure's own short name — the sentence's first clause ("Session
+ *  load", "Total distance"). */
+export function measureName(m: PanelMeasure): string {
+  return m.sentence.split(' — ')[0]!;
+}
+
+/** The heading a panel shows: the selected measure's name where the panel
+ *  offers a choice, else the panel's title. Select changes measure, heading
+ *  and definition together (Isabella, 15 September 2026). */
+export function titleFor(panel: Panel, m: PanelMeasure): string {
+  return panel.param ? measureName(m) : panel.title;
+}
 
 /** The measure a panel draws: the URL's choice when the panel offers one and
  *  the value is on its list, else the default. A stale link degrades. */

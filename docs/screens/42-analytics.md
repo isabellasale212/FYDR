@@ -4,9 +4,10 @@
 
 **Analytics**, at `/analytics`.
 
-Four fixed panels of bars — **Training load**, **Wellness**, **Gym volume**,
-**Acute to chronic** — one athlete against the squad's spread, or against the
-club's zone where one is set; or two athletes side by side. **A wholly premium
+Four fixed panels of bars — **the load panel** (headed by the measure it draws:
+Session load by default, or one of the GPS family), **Wellness**, **Gym
+volume**, **Acute to chronic** — one athlete against the squad's spread, or
+against the club's zone where one is set; or two athletes side by side. **A wholly premium
 destination covering every metric, GPS included, and sport scientist only**
 (`docs/decisions/absence-rule.md`, "Analytics is premium", 14 September 2026).
 PATTERN-S7 C6, built 14 September 2026 from `docs/designs/PATTERN-S7-final /`
@@ -60,13 +61,22 @@ one).
 **Four panels, two by two** (one column below 1100px), each a card:
 
 - **The title** and, right, who is drawn ("Okonkwo", "Okonkwo and Aholelei") —
-  and on **Training load** the **Measure** select: Total distance (MET-017, the
-  default), Session load (MET-007), High speed distance (MET-018), Sprint
+  and on the load panel the **Measure** select: Session load (MET-007, **the
+  default**), Total distance (MET-017), High speed distance (MET-018), Sprint
   distance (MET-019), Player load (MET-021), Accelerations (MET-022),
   Decelerations (MET-023). All volumes, summed per day and per week; `?load=`
-  carries the choice and a stale value degrades to the default. The other three
-  panels are fixed to one measure. GPS joined the panels on 14 September 2026:
-  analytics covers every metric.
+  carries the choice and a stale value degrades to the default. **The heading
+  follows the selected measure** — "Session load", "Total distance" — and so
+  does the definition line: the select changes measure, heading and definition
+  together, because a card called "Training load" while it draws total
+  distance would break the rule that a screen says what its number is
+  (Isabella, 15 September 2026). Session load is the default because a premium
+  club that has not yet imported a GPS file must not open Analytics to an empty
+  panel: session load exists for every club collecting RPE, so it is the
+  measure most likely to have data on first open. The other three panels are
+  fixed to one measure and keep their titles. GPS joined the panels on 14
+  September 2026 as a select, not a fifth panel: readiness, tonnage and the
+  ratio have no GPS reading, so a fifth panel would carry one measure.
 - **The definition line**, one sentence under the title and never a tooltip:
   what the bar measures with its registry ID, the window in dates, the grain
   and how a week is collapsed, and the ground with its n — "Session load — RPE
@@ -124,9 +134,9 @@ report carry a definition, a row count, a print layout and an audit row.
 
 | Metric ID | Label on screen | What it means | Time window | When missing |
 |---|---|---|---|---|
-| MET-017 | Training load · Total distance, m (the default) | Metres from the GPS unit, summed over the period | The window, by day or week | A dashed stub: "No unit worn" |
-| MET-007 | Training load · Session load, AU | RPE × minutes, summed over the period | The window, by day or week | "No session logged" |
-| MET-018, MET-019, MET-021, MET-022, MET-023 | Training load · High speed distance, Sprint distance, Player load, Accelerations, Decelerations | The GPS family, each summed over the period | The window | "No unit worn" |
+| MET-007 | Session load, AU (the load panel's default) | RPE × minutes, summed over the period | The window, by day or week | A dashed stub: "No session logged" |
+| MET-017 | Total distance, m | Metres from the GPS unit, summed over the period | The window, by day or week | "No unit worn" |
+| MET-018, MET-019, MET-021, MET-022, MET-023 | High speed distance, Sprint distance, Player load, Accelerations, Decelerations | The GPS family, each summed over the period; the panel is headed by whichever is selected | The window | "No unit worn" |
 | MET-002 | Wellness | Readiness 0–100, the strict version; a day missing any answer has no value | The window, meaned per week | "Not submitted" |
 | MET-041 | Gym volume, kg | Tonnage, load × reps across working sets, summed over the period | The window, by day or week | "No gym session" |
 | MET-010 | Acute to chronic | The last 7 days of load over the last 28, as it stood at the end of the period | The window | "Not enough days on record" (21 of 28 days needed) |
@@ -146,7 +156,7 @@ show MET-001.
 | Compare two | Header | Adds a second athlete, named at the end of their bars | `?compare=1` | Nothing | Sport scientist | None | Never |
 | Compared with | Header | Chooses the second athlete | `?b=` | Nothing | Sport scientist | None | Not comparing |
 | Window | Header | 14 days · 6 weeks · 12 weeks · 26 weeks; the grain follows | `?w=` | Nothing | Sport scientist | None | Never |
-| Measure | The Training load panel's head | Session load or one of the GPS family | `?load=` | Nothing | Sport scientist | None | Never (the other panels have no measure control) |
+| Measure | The load panel's head | Session load (default) or one of the GPS family; the heading and the definition line change with it | `?load=` | Nothing | Sport scientist | None | Never (the other panels have no measure control) |
 | Group filter chips | Compare against | Narrows the population every ground is computed from | Stays here; the shared cookie | Nothing | Sport scientist | None | Never |
 | A bar (hover / tap) | The plot | Shows the readout; a tap pins it | Stays here | Nothing | Sport scientist | None | Never |
 | Widen the window / Open {name}'s report | A withheld panel | The one action | `?w=` wider, or `/reports/athlete/[id]` | Nothing | Sport scientist | None | The panel is drawn |
@@ -175,7 +185,7 @@ refuses through the denied screen (logged), and the database returns no rows —
 no upsell page. **Not the sport scientist.** The denied screen, logged. **Nobody in
 scope.** Says so. **A withheld panel.** Its reason and one action (§4).
 **Session RPE off for this club** (`organisations.collects_rpe`, migration
-0118): Acute to chronic, and Training load while its measure is session load,
+0118): Acute to chronic, and the load panel while its measure is session load,
 keep their cards and say "This club does not collect session RPE, so … has
 nothing to show. A sport scientist can switch it on in Settings › Club."; the
 GPS measures, Wellness and Gym volume draw. **Ground

@@ -17,8 +17,10 @@ import {
   grainWords,
   groundWords,
   measureFor,
+  measureName,
   squadBand,
   suppression,
+  titleFor,
   zoneFor,
   zoneWords,
   type PanelMeasure,
@@ -42,8 +44,9 @@ export const metadata = { title: 'Analytics · Fydr' };
  * refuses at the URL — no upsell page, discovery lives on the Settings plan
  * page — and at the database analytics_daily_rows (0125) returns nothing to
  * a club that is not premium, whatever the page does. Four fixed panels of
- * bars — Training load (session load or any of the GPS family), Wellness,
- * Gym volume, Acute to chronic — one athlete against the squad's spread, or
+ * bars — the load panel (session load by default, or any of the GPS family;
+ * its heading follows the measure), Wellness, Gym volume, Acute to chronic
+ * — one athlete against the squad's spread, or
  * against the club's zone where one is set; Compare two names each series at
  * the end of its own bars; the group filter is the population compared
  * against. Every panel states what it measures, over
@@ -247,8 +250,10 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
             return (
               <section key={panel.key} className="card" aria-labelledby={`p-${panel.key}`} data-panel={panel.key} data-measure={m.metric}>
                 <div className="cmp-card-head">
+                  {/* The heading is the selected measure's name where the
+                      panel offers a choice: the card says what its number is. */}
                   <h2 className="cmp-card-title" id={`p-${panel.key}`}>
-                    {panel.title}
+                    {titleFor(panel, m)}
                   </h2>
                   <div className="cmp-card-controls">
                     {d.rpeOff ? null : (
@@ -266,7 +271,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
                         label="Measure"
                         paramKey={panel.param}
                         value={m.metric}
-                        options={panel.measures.map((x) => ({ value: x.metric, label: x.sentence.split(' — ')[0]! }))}
+                        options={panel.measures.map((x) => ({ value: x.metric, label: measureName(x) }))}
                         clearValue={panel.measures[0]!.metric}
                         ariaLabel={`Measure for the ${panel.title} panel`}
                       />
@@ -277,7 +282,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
                   /* Migration 0118: the club setting. The panel keeps its
                      place and says why the plot is not drawn (the absence rule). */
                   <p className="import-sub" style={{ marginBottom: 0 }} data-rpe-off>
-                    {rpeOffLine(`${METRICS.find((y) => y.key === m.metric)?.label.toLowerCase() ?? panel.title.toLowerCase()} on this panel`)}
+                    {rpeOffLine(`${measureName(m).toLowerCase()} on this panel`)}
                   </p>
                 ) : (
                   <>
@@ -307,7 +312,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
                           )}
                         </p>
                         <AnalyticsPanel
-                          title={panel.title}
+                          title={titleFor(panel, m)}
                           unit={m.unit}
                           decimals={m.decimals}
                           missingWord={m.missingWord}

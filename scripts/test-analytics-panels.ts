@@ -21,8 +21,10 @@ import {
   grainWords,
   groundWords,
   measureFor,
+  measureName,
   squadBand,
   suppression,
+  titleFor,
   zoneFor,
   zoneWords,
 } from '@/lib/analyticsPanels';
@@ -47,12 +49,14 @@ console.log('1. four fixed panels, each naming its measure and its registry entr
   assert(PANELS.every((p) => p.measures.every((m) => /MET-0\d\d/.test(m.sentence))), 'every measure\'s sentence names its MET- id');
   assert(first('wellness').metric === 'readiness' && panel('wellness').axisTop === 100, 'wellness is MET-002 on 0 to 100 (D1 "out of 5" declined)');
   assert(first('load').measure === 'volume' && first('gym').measure === 'volume' && first('wellness').measure === 'scored' && first('acwr').measure === 'ratio', 'volume, scored, volume, ratio');
-  assert(PANELS.map((p) => first(p.key).missingWord).join(' | ') === 'No unit worn | Not submitted | No gym session | Not enough days on record', 'a period with nothing has its own words, never a zero');
+  assert(PANELS.map((p) => first(p.key).missingWord).join(' | ') === 'No session logged | Not submitted | No gym session | Not enough days on record', 'a period with nothing has its own words, never a zero');
   const load = panel('load');
-  assert(load.param === 'load' && load.measures.map((m) => m.metric).join() === 'gps_distance,load,gps_high_speed_distance,gps_sprint_distance,gps_player_load,gps_accelerations,gps_decelerations', 'Training load offers the GPS family and session load; total distance is the default (14 Sept: analytics covers every metric, GPS included)');
+  assert(load.param === 'load' && load.measures.map((m) => m.metric).join() === 'load,gps_distance,gps_high_speed_distance,gps_sprint_distance,gps_player_load,gps_accelerations,gps_decelerations', 'the load panel offers session load and the GPS family; SESSION LOAD is the default (15 Sept: the measure most likely to have data on first open — a premium club with no GPS import yet must not meet an empty panel)');
   assert(load.measures.every((m) => m.measure === 'volume'), 'every load measure is a volume: summed per day and per week');
   assert(PANELS.filter((p) => p.key !== 'load').every((p) => p.param === null && p.measures.length === 1), 'the other three panels are fixed to one measure');
-  assert(measureFor(load, 'gps_sprint_distance').metric === 'gps_sprint_distance' && measureFor(load, 'nonsense').metric === 'gps_distance' && measureFor(panel('wellness'), 'load').metric === 'readiness', 'the URL picks a listed measure; anything else is the default; a fixed panel ignores it');
+  assert(measureFor(load, 'gps_sprint_distance').metric === 'gps_sprint_distance' && measureFor(load, 'nonsense').metric === 'load' && measureFor(panel('wellness'), 'load').metric === 'readiness', 'the URL picks a listed measure; anything else is the default; a fixed panel ignores it');
+  assert(titleFor(load, first('load')) === 'Session load' && titleFor(load, measureFor(load, 'gps_distance')) === 'Total distance' && titleFor(panel('wellness'), first('wellness')) === 'Wellness', 'the heading follows the selected measure where the panel offers one — the card says what its number is; a fixed panel keeps its title');
+  assert(measureName(measureFor(load, 'gps_player_load')) === 'Player load' && load.measures.every((m) => /^[A-Z][a-z ]+$/.test(measureName(m))), 'the measure\'s name is the sentence\'s first clause');
   for (const m of load.measures) assert(METRICS.some((d) => d.key === m.metric && (d.source === 'gps' || d.key === 'load')), `${m.metric} is in the catalogue`);
   assert(METRICS.filter((d) => d.source === 'gps').every((d) => SOURCE_TABLE[d.source] === 'gps_records'), 'GPS-ness is the source table, never a key prefix');
 }
@@ -106,7 +110,7 @@ console.log('\n5. the axis starts at zero and says so');
 {
   const acwrP = panel('acwr');
   assert(axisTop(panel('load'), first('load'), [1711, 2600, null]) === 3000 && axisTop(panel('wellness'), first('wellness'), [73, 84]) === 100 && axisTop(acwrP, first('acwr'), [0.9, 1.3]) === 2, 'a nice ceiling above the data; a bounded scale keeps its top; the ratio never below 2');
-  assert(axisWords(panel('load').measures[1]!, 3000, 'week') === 'Axis 0 to 3,000 AU · one bar per week · hover or tap a bar for its value', '"Axis 0 to 3,000 AU · one bar per week · hover or tap a bar for its value"');
+  assert(axisWords(first('load'), 3000, 'week') === 'Axis 0 to 3,000 AU · one bar per week · hover or tap a bar for its value', '"Axis 0 to 3,000 AU · one bar per week · hover or tap a bar for its value"');
   const cmp = strip(read('src/components/AnalyticsPanel/AnalyticsPanel.tsx'));
   assert(/fill="var\(--accent\)"/.test(cmp) && !/--cmp-b|--chart-load|--chart-wellness|--chart-gym/.test(cmp), 'one accent: every bar, both series');
   assert(/data-series-label/.test(cmp) && /lastIndex/.test(cmp), 'a comparison names each series at the end of its own bars');
@@ -132,6 +136,7 @@ console.log('\n6. suppression and the page');
   assert(/ap-suppressed/.test(page) && /btn-ghost/.test(page), 'the withheld card carries its 44px action');
   assert(!/analytics\/build/.test(page), 'no builder link');
   assert(/data-measure=\{m\.metric\}/.test(page) && /label="Measure"/.test(page) && /paramKey=\{panel\.param\}/.test(page), 'the load panel carries its measure control; each panel its own URL key');
+  assert(/<h2 className="cmp-card-title" id=\{`p-\$\{panel\.key\}`\}>\s*\{titleFor\(panel, m\)\}/.test(page) && /\{m\.sentence\} · \{windowWords\}/.test(page) && !/\{panel\.title\}\s*<\/h2>/.test(page), 'select changes measure, heading and definition together');
 }
 
 console.log('\n7. premium: gone under D-20, and gated at the database (0125)');

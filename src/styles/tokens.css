@@ -686,11 +686,15 @@
   --pad-page-wide: 30px 44px 80px;
   --pad-bar: 11px 40px;
 
-  /* ---- shell. --sidebar-w is System A's 214px; the built sidebar is
-         236px (base.css .app's grid) and layout is out of scope tonight, so
-         the token exists and the grid does not read it — in the report.
-         --touch-min is --tap-min's name in System A. ---- */
-  --sidebar-w: 214px;
+  /* ---- shell. --sidebar-w is the BUILT sidebar, 236px, not System A's
+         214px — a deliberate divergence, Isabella's ruling 15 Sept 2026
+         (docs/decisions/design-system-adoption.md; the sheet carries the
+         row): that is layout, layout was out of scope for the whole
+         adoption, and moving a sidebar moves every page's content column.
+         The token says what the product does; base.css .app's grid still
+         writes the number, with layout out of scope. --touch-min is
+         --tap-min's name in System A. ---- */
+  --sidebar-w: 236px;
   --sidebar-rail-w: 64px;
   --content-max: 1180px;
   --prose-max: 68ch;

@@ -141,8 +141,25 @@ editor does not offer the coach the measure; and a rule on it cannot name the
 coach in `notify_roles` (`thresholds_body_mass_not_to_coach`). Roles are
 unions: a coach who also holds S&C reads them. The athlete's own read is
 unchanged. Not gated: the rule's sentence on `/settings/thresholds` (no
-athlete, no figure) and `flag_actions` (staff notes under a flag the coach
-cannot open). Test: `supabase/tests/830_body_mass_threshold_test.sql`.
+athlete, no figure). **`flag_actions` is gated since migration 0131**
+(Isabella, 15 September 2026, `docs/decisions/body-mass-rule.md` §8): its
+select and insert policies join `flags`, so a note under a flag the caller
+cannot read is a note they cannot read or write — a note is free text with no
+value column, and "down to 82kg since the Ashcombe game" was a body weight
+handed to the coach through the one door the rule did not guard. Tests:
+`supabase/tests/830_body_mass_threshold_test.sql`, `850_body_mass_rules_test.sql`.
+
+**Correcting a weigh-in** (`body-mass-rule.md` §2–§3, migration 0131). One
+weigh-in per athlete per day, refused at the table. The four logging roles
+(`WEIGH_IN_EDIT`) may edit a weigh-in on the day it was taken and not after —
+the table raises `weigh_in_edit_window_closed`. Deleting is a soft delete
+through `delete_weigh_in()`, audited as `body_composition.delete`: a sport
+scientist at any time (`WEIGH_IN_DELETE_ANY_TIME`); the medic, S&C and
+nutritionist only a weigh-in logged today (0084's window, kept). Nobody
+hard-deletes: 0084's DELETE grant is revoked. A deleted weigh-in leaves every
+read (the select policies exclude it) and every baseline. The athlete reads
+their own live weigh-ins, and the Me page shows the club's latest as the
+club's (§7). Tests: `850_body_mass_rules_test.sql`, `420_weigh_in_same_day_delete_test.sql`.
 
 ### 3.4 Analysis
 

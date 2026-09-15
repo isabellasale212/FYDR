@@ -583,6 +583,7 @@ async function fetchEarliestRecordedDate(
       .select('measured_on')
       .eq('org_id', orgId)
       .eq('athlete_id', athleteId)
+      .is('deleted_at', null)
       .order('measured_on', { ascending: true })
       .limit(1),
     db
@@ -686,6 +687,7 @@ export async function fetchPlayerProfile(
         .select('measured_on, body_mass_kg')
         .eq('org_id', orgId)
         .eq('athlete_id', athleteId)
+        .is('deleted_at', null)
         .gte('measured_on', weightFrom)
         .lte('measured_on', today)
         .order('measured_on')

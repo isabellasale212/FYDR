@@ -7,13 +7,20 @@ import { mustAffect } from '@/lib/write';
  * (coach/medical) select/insert/update, athlete self-select only — see
  * that migration's own policies.
  *
- * DELETING, reversed 2026-09-07. This file used to say a weigh-in was permanent
- * once written and that no delete path should be built — no DELETE grant, no
- * deleted_at, and the profile spec says "Edit entries". That is no longer the
- * rule, but the thing it protected still is: migration 0084 allows a delete only
- * on the day the row was LOGGED (created_at, in the org's timezone), so a typo
- * can be taken back within the day and nothing older can be removed at all.
- * There is still no deleted_at — a same-day delete is a real one.
+ * CORRECTING A WEIGH-IN — docs/decisions/body-mass-rule.md §2–§3 (Isabella,
+ * 15 September 2026), migration 0131, replacing 0084's same-day hard delete:
+ *   - one weigh-in per athlete per day, refused at the table (a unique index
+ *     over live rows);
+ *   - EDIT on the day it was taken (measured_on, in the org's zone) and not
+ *     after — the table raises weigh_in_edit_window_closed, so the refusal is
+ *     loud and this file turns it into a sentence;
+ *   - DELETE through delete_weigh_in(): the sport scientist at any time, the
+ *     medic, S&C and nutritionist on the day it was logged (created_at —
+ *     0084's window, kept); a soft delete (deleted_at, deleted_by), audited by
+ *     name, because CLAUDE.md §2 rule 4 says athlete data is never hard-deleted
+ *     and 0084's hard delete was the one exception. Every read here filters
+ *     deleted_at explicitly, even where RLS already does, because the
+ *     service-role client (the subject-access pack, retention) sees every row.
  *
  * This is the write half of what playerProfile.ts already reads: that
  * file's fetchPlayerProfile() keeps its own inline history query (a
@@ -78,6 +85,7 @@ export async function fetchBodyCompositionForAthletes(
       .from('body_composition')
       .select('id, athlete_id, created_at, measured_on, body_mass_kg, body_fat_pct, method')
       .eq('org_id', orgId)
+      .is('deleted_at', null)
       .in('athlete_id', [...athleteIds])
       .gte('measured_on', sinceIso)
       .order('measured_on', { ascending: false })
@@ -146,6 +154,7 @@ export async function fetchLatestBodyMassForAthletes(
       .from('body_composition')
       .select('athlete_id, measured_on, body_mass_kg')
       .eq('org_id', orgId)
+      .is('deleted_at', null)
       .in('athlete_id', [...athleteIds])
       .not('body_mass_kg', 'is', null)
       .gte('measured_on', window.since)
@@ -180,6 +189,7 @@ export async function fetchEarliestBodyCompositionDate(
     .from('body_composition')
     .select('measured_on')
     .eq('org_id', orgId)
+    .is('deleted_at', null)
     .order('measured_on', { ascending: true })
     .limit(1);
   if (error) throw new Error(error.message);
@@ -196,6 +206,7 @@ export async function fetchBodyCompositionEntries(
     .select('id, created_at, measured_on, body_mass_kg, body_fat_pct, method')
     .eq('org_id', orgId)
     .eq('athlete_id', athleteId)
+    .is('deleted_at', null)
     .order('measured_on', { ascending: false });
   if (error) throw new Error(error.message);
   return data ?? [];
@@ -247,11 +258,22 @@ export async function logWeighIn(
     if (error.message.toLowerCase().includes('row-level security') || error.message.toLowerCase().includes('policy')) {
       return { error: 'Not saved: logging a weigh-in belongs to the sport scientist, the medic, the S&C and the nutritionist.' };
     }
+    /* body-mass-rule.md §2: one weigh-in per athlete per day, refused at the
+       table (body_composition_one_per_day). Said as what it is, not as the
+       generic "already saved" a duplicate key usually means. */
+    if (error.code === '23505' || error.message.includes('body_composition_one_per_day')) {
+      return { error: ONE_PER_DAY };
+    }
     /* Raw driver strings never leave this file — audit S5. */
     return { error: humanizeDbError(error.message, 'staff') };
   }
   return { error: null };
 }
+
+export const ONE_PER_DAY =
+  'Not saved: this athlete already has a weigh-in on that day. Edit it if it is wrong — a second one on the same day would count as two observations.';
+export const EDIT_WINDOW_CLOSED =
+  'Not saved: a weigh-in can be edited on the day it was taken and not after. A sport scientist can delete it.';
 
 export type UpdateWeighInInput = {
   id: string;
@@ -295,34 +317,41 @@ export async function updateWeighIn(
          weigh-in", which 0073 makes exactly backwards: those are now the two
          roles that cannot. */
       refusal: 'Not saved: logging a weigh-in belongs to the sport scientist, the medic, the S&C and the nutritionist.',
-      onError: (m) => humanizeDbError(m, 'staff'),
+      /* 0131's window raises, so it reaches here as a message — the one
+         refusal on this table that is loud rather than a filtered row. */
+      onError: (m) =>
+        m.includes('weigh_in_edit_window_closed')
+          ? EDIT_WINDOW_CLOSED
+          : m.includes('body_composition_one_per_day') || m.includes('duplicate key')
+            ? ONE_PER_DAY
+            : humanizeDbError(m, 'staff'),
     },
   );
 }
 
-/** Remove a weigh-in. Only ever succeeds on the day it was logged.
- *
- *  THROUGH mustAffect, because the refusal is silent. 0084 gates the delete in a
- *  USING clause, so a row outside the window is simply not matched: the
- *  statement succeeds, nothing is removed, and supabase-js returns no error. A
- *  caller checking only `error` would tell somebody yesterday's entry was
- *  deleted when it is still there. The .select() is what makes the affected
- *  rows visible; an empty array is the refusal.
- *
- *  The screen also hides the control on rows it cannot remove, so this message
- *  is the second layer rather than the first — the same two-layer shape used for
- *  every other gated write here. */
+/** Remove a weigh-in — delete_weigh_in() (migration 0131), a soft delete
+ *  audited by name. Who may: the sport scientist at any time; the medic, S&C
+ *  and nutritionist on the day the row was logged. The function RAISES on a
+ *  refusal (weigh_in_delete_not_permitted, weigh_in_not_found), so unlike
+ *  0084's USING-clause delete there is no silent no-op to guard against; the
+ *  screen still hides the control on rows the viewer cannot remove, so this
+ *  message is the second layer rather than the first. */
 export async function deleteWeighIn(
   db: Db,
   orgId: string,
   id: string,
 ): Promise<{ error: string | null }> {
-  return mustAffect(
-    db.from('body_composition').delete().eq('org_id', orgId).eq('id', id).select('id'),
-    {
-      refusal:
-        'Not deleted: a weigh-in can only be removed on the day it was logged. Edit it instead.',
-      onError: (message) => humanizeDbError(message, 'staff'),
-    },
-  );
+  void orgId; // the function scopes to the caller's own organisation
+  const { error } = await db.rpc('delete_weigh_in', { p_id: id });
+  if (!error) return { error: null };
+  if (error.message.includes('weigh_in_delete_not_permitted')) {
+    return { error: DELETE_NOT_PERMITTED };
+  }
+  if (error.message.includes('weigh_in_not_found')) {
+    return { error: 'Not deleted: that weigh-in is no longer on record.' };
+  }
+  return { error: humanizeDbError(error.message, 'staff') };
 }
+
+export const DELETE_NOT_PERMITTED =
+  'Not deleted: a weigh-in can be removed on the day it was logged, or by a sport scientist at any time.';

@@ -58,7 +58,7 @@ and is not run on page load.
 | Metric ID | Label on screen | What it means | Time window | When missing |
 |---|---|---|---|---|
 | Various | The measure each rule watches | Any metric in the registry | As the rule sets | A rule on a measure with no data never fires |
-| MET-043 | Body mass, on the "Body mass dropped" rule | The day's weigh-in against the athlete's own rolling mean — a change only, never a fixed number; the table refuses the other shape | The day, against 28 days by default | Fewer than four prior weigh-ins: cannot fire |
+| MET-043 | Body mass, on the "Body mass dropped" rule | The day's club weigh-in (the check-in figure is not a source since 15 September 2026, `decisions/body-mass-rule.md` §1) against the athlete's own rolling mean — a change only, never a fixed number; the table refuses the other shape. The rule's sentence ends "Counts the club's weigh-ins only, and speaks after four of them spanning at least 21 days." | The day, against 28 days by default | Fewer than four prior weigh-ins, or four spanning fewer than 21 days (§4, the floor the table applies to every body-mass rule): cannot fire |
 
 **This screen is the authority on flag cutoffs, not the app's code.** Anywhere
 Fydr shows a band around a number, such as the 0.8 to 1.5 drawn around the acute

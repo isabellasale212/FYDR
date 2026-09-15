@@ -220,8 +220,16 @@ morning check-in (the athlete app's Me page reads it).
 `body_composition.body_mass_kg` is a staff-logged weigh-in — the dashboard's
 own definition of a weigh-in, and what the athlete profile's Body weight card,
 the nutrition workspace and the exports read. *Corrected 14 September 2026 from
-the running code; the two are not reconciled on screen (the profile shows the
-weigh-in, the Me page the check-in figure) — recorded on the decision sheet.*
+the running code.* **Reconciled 15 September 2026** (Isabella,
+`docs/decisions/body-mass-rule.md` §7, migration 0131): a screen shows one
+number under one label. The athlete's Me page shows the club's latest
+weigh-in, named as the club's with its date, and only where the club has
+never weighed them their own check-in figure, named as self-reported; the
+staff profile card is the weigh-in alone. The weigh-in is also the only source
+of MET-043, so the athlete sees the figure the rule sees. Correcting a
+weigh-in: one per athlete per day at the table; edited on the day it was
+taken; deleted (soft, audited) by a sport scientist at any time or by the
+other logging roles on the day it was logged (§2–§3; `delete_weigh_in()`).
 
 **Screens.** Athlete profile, nutrition, body composition, leaderboards,
 analytics.
@@ -1670,26 +1678,39 @@ other rule. **Only ever a change**: a percentage drop or rise against the
 athlete's own rolling mean, or a z-score against it — never an absolute number.
 The table refuses the absolute shape (`thresholds_body_mass_is_a_change`).
 
-The day's figure = the staff weigh-in measured that day
-(`body_composition.body_mass_kg`, the latest logged if one was re-entered),
-else the figure the athlete typed on that day's check-in
-(`wellness_entries.body_mass_kg`, current revision). The baseline is the mean
-of those day figures over the trailing `baseline_days` days ending yesterday.
+The day's figure = the club's weigh-in measured that day
+(`body_composition.body_mass_kg`, live rows only — one per athlete per day
+since migration 0131). **Only the club's weigh-in counts** (Isabella,
+15 September 2026, `docs/decisions/body-mass-rule.md` §1): the figure the
+athlete types on the morning check-in (`wellness_entries.body_mass_kg`) is
+not a source. Two sets of scales rarely agree, and a week of club weigh-ins
+followed by a week of self-reports reads as a change that did not happen,
+which widens the athlete's normal range and slows the rule. Known cost,
+accepted: a club that never weighs has a rule that never fires. The baseline
+is the mean of those day figures over the trailing `baseline_days` days
+ending yesterday.
 
 The default rule: `pct_change_below 2`, 28-day personal baseline, one day,
-four observations before it can fire, seven days' cooldown, medium, notifying
-the nutritionist and the S&C.
+seven days' cooldown, medium, notifying the nutritionist and the S&C — and
+**it speaks only after four weigh-ins spanning at least 21 days** (§4:
+`min_baseline_observations` 4 and `min_baseline_span_days` 21, the floor the
+table applies to every rule on this metric, `thresholds_body_mass_floor`).
+Four figures from Monday to Thursday of one week are one phase of one
+training week, not a normal range: a clustered week does not trigger the
+rule, it waits. A weekly-weighing club is unaffected.
 
-**Inputs.** MET-005's two sources, merged per day as above.
+**Inputs.** `body_composition` alone (MET-005's club source), one live row
+per athlete per day.
 
 **Time window.** The day, against the trailing 28 days by default.
 
 **Rounding and units.** Kilograms, one decimal, on the flag's observed and
 expected values.
 
-**When data is missing.** A day with neither a weigh-in nor a check-in figure
-is a gap: no value, no breach, no reset (0053's gap rule). Fewer than four
-prior observations in the baseline window: the rule cannot fire.
+**When data is missing.** A day with no weigh-in is a gap: no value, no
+breach, no reset (0053's gap rule). Fewer than four prior weigh-ins in the
+baseline window, or four spanning fewer than 21 days: the rule cannot fire.
+A deleted weigh-in (`deleted_at`, 0131 §3) is no figure.
 
 **Screens.** Flags, dashboard, athlete profile (flags panel), thresholds.
 
@@ -1700,15 +1721,16 @@ editor does not offer them the measure, and a rule on it cannot name the coach
 among the roles it notifies. Sport scientist, S&C, nutritionist and medic read
 and act on them. Base.
 
-**Where it is built.** `supabase/migrations/0128_body_mass_flaggable.sql`;
-`src/lib/metrics.ts` (`body.mass_kg`); the default rule in
-`default_threshold_set()`.
+**Where it is built.** `supabase/migrations/0128_body_mass_flaggable.sql`
+and `0131_body_mass_rules.sql`; `src/lib/metrics.ts` (`body.mass_kg`); the
+default rule in `default_threshold_set()`, the floor in
+`thresholds_body_mass_floor`.
 
 **How it differs from its twin.** MET-005 is the quantity, recorded as
 entered, and the leaderboard catalogue's `wellness.body_mass_kg` (never
 rankable). This is the same quantity read for a different purpose — a flag on
-its change — under a different key, in the nutrition domain, from both sources
-rather than one. Two purposes, two identifiers.
+its change — under a different key, in the nutrition domain, from the club's
+weigh-ins alone. Two purposes, two identifiers.
 
 **Related.** MET-005, MET-036 (the target range, a different question: where
 the weight should sit, not whether it has moved).

@@ -33,6 +33,7 @@ import {
   THRESHOLD_EDIT,
   THRESHOLD_VIEW,
   TEST_DEFINE,
+  WEIGH_IN_DELETE_ANY_TIME,
   WEIGH_IN_EDIT,
   hasAnyRole,
 } from '@/lib/access';
@@ -66,6 +67,7 @@ export const CAPABILITIES: readonly Capability[] = [
   { key: 'meals', label: 'The meal library', roles: MEAL_LIBRARY_EDIT },
   { key: 'body_mass', label: 'Body mass: seeing weigh-ins and the latest figure', roles: BODY_MASS_VIEW },
   { key: 'weigh_in', label: 'Recording a weigh-in', roles: WEIGH_IN_EDIT },
+  { key: 'weigh_in_delete', label: 'Deleting a weigh-in of any age (a sport scientist; other logging roles only one logged today)', roles: WEIGH_IN_DELETE_ANY_TIME },
   { key: 'analytics', label: 'Analytics', roles: ANALYTICS },
   { key: 'gps', label: 'GPS imports', roles: GPS_IMPORT },
   { key: 'settings_admin', label: 'Users, the audit log, data retention, subject access release and club details', roles: SETTINGS_ADMIN },

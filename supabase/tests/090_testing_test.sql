@@ -278,15 +278,31 @@ select is(
 -- row in place rather than writing a revision — body_composition is not one
 -- of CLAUDE.md rule 6's immutable-once-submitted domains (wellness, gym,
 -- nutrition), and this table's own RLS grants UPDATE outright, which is
--- the schema's own answer.
+-- the schema's own answer. Since 0131 (body-mass-rule.md §3) the window is
+-- the day the weigh-in was taken: bc_1 describes two weeks ago, so the
+-- medic's correction is refused, loudly; a weigh-in taken today is theirs
+-- to correct. 850 proves the window in full; here the medic's write stands.
 select tests.set_jwt(tests.uid('orga', 'user_medical'));
-select lives_ok(
+select throws_ok(
   format($q$update body_composition set body_mass_kg = 82.9, method = 'bioimpedance' where id = %L$q$,
          tests.uid('orga','bc_1')),
-  'medical corrects the same weigh-in — the medic keeps the write, clinical context during a return to play'
+  'P0001', 'weigh_in_edit_window_closed',
+  'a weigh-in taken two weeks ago cannot be corrected now — the refusal is an exception, not a silent no-op (0131)'
+);
+select lives_ok(
+  format($q$insert into body_composition (id, org_id, athlete_id, measured_on, body_mass_kg, recorded_by)
+            values (%L, %L, %L, (now() at time zone auth_org_timezone())::date, 82.4, %L)$q$,
+         tests.uid('orga','bc_1_today'), tests.uid('orga','org'), tests.uid('orga','athlete_1'),
+         tests.uid('orga','user_medical')),
+  'the medic logs today''s weigh-in'
+);
+select lives_ok(
+  format($q$update body_composition set body_mass_kg = 82.9, method = 'bioimpedance' where id = %L$q$,
+         tests.uid('orga','bc_1_today')),
+  'medical corrects today''s weigh-in — the medic keeps the write, clinical context during a return to play'
 );
 select is(
-  (select body_mass_kg from body_composition where id = tests.uid('orga','bc_1')),
+  (select body_mass_kg from body_composition where id = tests.uid('orga','bc_1_today')),
   82.9,
   'the correction really did land'
 );
@@ -298,8 +314,8 @@ select lives_ok(
 );
 select is(
   (select body_mass_kg from body_composition where id = tests.uid('orga','bc_1')),
-  82.9,
-  'the athlete''s update matched zero rows under RLS — reading their own weigh-in is not the same as writing it'
+  82.4,
+  'the athlete''s update matched zero rows under RLS — reading their own weigh-in is not the same as writing it (bc_1 still reads 82.4: the medic''s correction above was refused by the window, and the athlete''s never matched)'
 );
 
 select * from finish();

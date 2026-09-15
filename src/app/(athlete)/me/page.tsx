@@ -5,6 +5,7 @@ import { ChangePasswordForm } from '@/components/ChangePasswordForm/ChangePasswo
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchAthlete } from '@/lib/queries/squad';
 import { fetchWellnessByAthlete } from '@/lib/queries/wellness';
+import { fetchBodyCompositionEntries } from '@/lib/queries/bodyComposition';
 import { mondayOf } from '@/lib/queries/schedule';
 import { fetchMyOptOuts } from '@/lib/queries/leaderboards';
 import { fetchMyNotificationPreferences } from '@/lib/queries/notificationPreferences';
@@ -66,7 +67,7 @@ export default async function MePage() {
      latest". */
   const today = todayIso(timezone);
   const weekStart = mondayOf(today);
-  const [athlete, userRow, notificationPrefs, optOuts, recentWellness] =
+  const [athlete, userRow, notificationPrefs, optOuts, recentWellness, weighIns] =
     await Promise.all([
       fetchAthlete(db, orgId, athleteId),
       /* full_name is read but never shown: updateMyContactDetails writes
@@ -81,6 +82,9 @@ export default async function MePage() {
       fetchMyNotificationPreferences(db, claims.userId),
       fetchMyOptOuts(db, orgId, athleteId),
       fetchWellnessByAthlete(db, athleteId, { from: addDays(today, -90), to: today }),
+      /* The club's own weigh-ins, the athlete's own rows under RLS
+         (body_composition_self_select). body-mass-rule.md §7. */
+      fetchBodyCompositionEntries(db, orgId, athleteId),
     ]);
 
   /* Days elapsed so far this week, not seven: on a Wednesday the honest
@@ -91,8 +95,26 @@ export default async function MePage() {
   const entriesThisWeek = recentWellness.filter(
     (e) => e.entry_date !== null && e.entry_date >= weekStart,
   ).length;
+  /* ONE NUMBER UNDER ONE LABEL — docs/decisions/body-mass-rule.md §7
+     (Isabella, 15 September 2026). The body-mass rule fires on the club's
+     weigh-ins only (§1), so the athlete must be shown the figure the rule
+     sees, named as the club's; only where the club has never weighed them
+     is their own check-in figure shown, named as theirs. Never both, never
+     one figure under the other's name — a nutritionist asking about a number
+     the athlete cannot find is the failure this closes. The latest weigh-in
+     in the window, dated; "today" when it is today's. */
+  const latestWeighIn =
+    weighIns.filter((w) => w.body_mass_kg !== null && w.measured_on <= today && w.measured_on >= addDays(today, -90))[0] ?? null;
   const latestMass =
-    [...recentWellness].reverse().find((e) => e.body_mass_kg !== null)?.body_mass_kg ?? null;
+    latestWeighIn?.body_mass_kg ??
+    [...recentWellness].reverse().find((e) => e.body_mass_kg !== null)?.body_mass_kg ??
+    null;
+  const massSource =
+    latestWeighIn
+      ? `kg · club weigh-in, ${latestWeighIn.measured_on === today ? 'today' : formatDate(latestWeighIn.measured_on, timezone)}`
+      : latestMass !== null
+        ? 'kg · self-reported'
+        : 'none recorded yet';
 
   /* The reference's row reads "wellness reminder at 07:00". There is no 07:00
      anywhere in the notification system — 08-notifications.md triggers the
@@ -187,9 +209,10 @@ export default async function MePage() {
       </div>
 
       {/* Fydr Athlete App.dc.html 23i: two things an athlete checks about
-          themselves, above the settings they rarely touch. Both are read from
-          their own check-ins, which is why body mass says self-reported —
-          nobody weighed them, they typed it. */}
+          themselves, above the settings they rarely touch. The week count is
+          their own check-ins. Body mass is the club's weigh-in where there is
+          one (named as the club's, with its date), else their own check-in
+          figure (named as self-reported) — see latestWeighIn above. */}
       <div className="me-stats">
         <div className="card me-stat">
           <p className="eyebrow">This week</p>
@@ -201,9 +224,7 @@ export default async function MePage() {
         <div className="card me-stat">
           <p className="eyebrow">Body mass</p>
           <p className="me-stat-value num">{latestMass !== null ? formatNumber(latestMass, 1) : BLANK}</p>
-          <p className="me-stat-sub">
-            {latestMass !== null ? 'kg · self-reported' : 'none recorded yet'}
-          </p>
+          <p className="me-stat-sub">{massSource}</p>
         </div>
       </div>
 

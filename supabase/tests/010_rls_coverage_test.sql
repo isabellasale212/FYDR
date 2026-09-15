@@ -140,18 +140,31 @@ from unnest(array['team_allocations', 'injuries', 'injury_clinical', 'availabili
                   'gym_set_logs', 'gps_records', 'import_batches', 'vendor_profiles',
                   'test_definitions', 'test_results']) t;
 
--- body_composition is DELIBERATELY NOT in that list, as of migration 0084.
--- It gained a delete policy on 2026-09-07 so a weigh-in logged today can be
--- removed by the person who logged it, same day only — the correction path for
--- a number typed wrong, which the immutability rule (CLAUDE.md rule 6) never
--- meant to forbid. Asserted here as its own shape rather than removed silently:
--- exactly one delete policy, not the blanket "none" the tables above hold, and
--- 420_weigh_in_same_day_delete_test.sql is where its terms are proved.
+-- body_composition was the one exception (0084, 2026-09-07: a same-day hard
+-- delete for a number typed wrong). Migration 0131 (body-mass-rule.md §3,
+-- 15 September 2026) ended it: a weigh-in is soft-deleted through
+-- delete_weigh_in() — the sport scientist at any time, the other logging
+-- roles on the day they logged it — and the DELETE grant and its policy are
+-- gone. Asserted as its own shape so the reversal cannot drift back:
+-- no delete policy, no delete grant, and the function that replaces both.
+-- 420_weigh_in_same_day_delete_test.sql proves its terms.
 select is(
   (select count(*) from pg_policies p
     where p.schemaname = 'public' and p.tablename = 'body_composition' and p.cmd = 'DELETE')::int,
-  1,
-  'body_composition: has exactly one delete policy, the same-day correction path from 0084'
+  0,
+  'body_composition: no delete policy any more (0131 — the soft delete is delete_weigh_in())'
+);
+select is(
+  (select count(*) from information_schema.role_table_grants g
+    where g.table_schema = 'public' and g.table_name = 'body_composition'
+      and g.grantee = 'authenticated' and g.privilege_type = 'DELETE')::int,
+  0,
+  'body_composition: and no DELETE grant to authenticated'
+);
+select ok(
+  exists (select 1 from pg_proc p join pg_namespace n on n.oid = p.pronamespace
+           where n.nspname = 'public' and p.proname = 'delete_weigh_in' and p.prosecdef),
+  'body_composition: delete_weigh_in() exists and is security definer'
 );
 
 

@@ -683,9 +683,23 @@ create table body_composition (
   method        text,                        -- 'skinfold', 'DEXA', 'BIA'
   sum_skinfolds_mm numeric(6,1),
   recorded_by   uuid references users(id),
-  created_at    timestamptz not null default now()
+  created_at    timestamptz not null default now(),
+  -- 0131 (body-mass-rule.md §3): a soft delete through delete_weigh_in(),
+  -- never a plain update or a DELETE. A deleted row leaves every read.
+  deleted_at    timestamptz,
+  deleted_by    uuid references users(id)
 );
+
+-- 0131 (§2): one weigh-in per athlete per day, over live rows.
+create unique index body_composition_one_per_day
+  on body_composition (athlete_id, measured_on) where deleted_at is null;
 ```
+
+A weigh-in is edited on the day it was taken and not after (a trigger raises
+`weigh_in_edit_window_closed`); deleted by a sport scientist at any time, or by
+the other logging roles on the day it was logged, through `delete_weigh_in()`,
+which soft-deletes and writes `body_composition.delete` to the audit log.
+`docs/decisions/body-mass-rule.md`, migration `0131`.
 
 `percent_1rm` load prescriptions resolve against the most recent `test_results` row for the
 matching 1RM test. If none exists, the app prompts the coach rather than silently falling
@@ -1592,6 +1606,12 @@ are not the same rule. It is nullable only for rows created before this migratio
 built from two data points, which is the failure mode that makes a new athlete look alarming
 in their first week. `cooldown_days` stops a persistent condition raising an identical flag
 every day, which is the mechanism behind the alert fatigue argument in `03-flows.md` §5.
+
+`min_baseline_span_days` (migration 0131, `docs/decisions/body-mass-rule.md` §4) is the
+count gate's companion: the baseline's observations must span at least this many days,
+first to last. 0 for every rule but body mass, where a trigger (`thresholds_body_mass_floor`)
+holds every rule to four observations spanning 21 days — four figures from one training
+week are one phase of one week, not a normal range.
 
 ---
 

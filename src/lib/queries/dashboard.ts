@@ -515,6 +515,7 @@ export async function fetchWeighInsToday(
     .from('body_composition')
     .select('athlete_id')
     .eq('org_id', orgId)
+    .is('deleted_at', null)
     .eq('measured_on', effectiveToday);
   if (scope) weighQ = weighQ.in('athlete_id', scope);
 

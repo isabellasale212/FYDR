@@ -46,7 +46,11 @@ ever a change against the athlete's own average — the form offers the three
 change rules and the personal baseline, with a line saying so, and the table
 refuses anything else. The measure is not offered to a coach at all: the coach
 does not see body mass (`access-matrix.md` §3.2), and a rule they could write
-would raise flags they could never read.
+would raise flags they could never read. Nor does the form carry the baseline
+floor for it: every body-mass rule speaks after four club weigh-ins spanning at
+least 21 days (`decisions/body-mass-rule.md` §4, migration 0131 —
+`min_baseline_observations` 4, `min_baseline_span_days` 21, applied at the
+table whatever is sent), and the saved rule's sentence says so.
 
 ## 6. Every thing you can act on
 

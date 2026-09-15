@@ -30,6 +30,12 @@ export type Threshold = {
   baseline_type: BaselineType;
   baseline_days: number | null;
   consecutive_days: number;
+  /** The baseline gate: how many observations the window must hold, and —
+   *  since 0131 (body-mass-rule.md §4) — how many days first-to-last they
+   *  must span. 0 span for every metric but body mass, where the table
+   *  applies the floor (4 observations, 21 days) to any rule. */
+  min_baseline_observations: number;
+  min_baseline_span_days: number;
   severity: FlagSeverity;
   notify_roles: AppRole[];
   is_active: boolean;
@@ -41,7 +47,7 @@ export type Threshold = {
 };
 
 const COLUMNS =
-  'id, name, description, domain, metric, comparison, value, baseline_type, baseline_days, consecutive_days, severity, notify_roles, is_active, created_by, updated_at, applies_to_group_id';
+  'id, name, description, domain, metric, comparison, value, baseline_type, baseline_days, consecutive_days, min_baseline_observations, min_baseline_span_days, severity, notify_roles, is_active, created_by, updated_at, applies_to_group_id';
 
 export async function fetchThresholds(
   db: Db,
@@ -225,7 +231,17 @@ export function describeThreshold(t: Pick<Threshold, 'metric' | 'comparison' | '
     return `Fires when ${rule}${baselineFragment ? ` ${baselineFragment}` : ''}, for ${days} running.`;
   }
   if (t.comparison === 'pct_change_below' || t.comparison === 'pct_change_above') {
-    return `Fires when ${rule}${baselineFragment ? ` against ${baselineFragment}` : ''}, for ${days} running.`;
+    /* body-mass-rule.md §4 (0131): the body-mass rule speaks only after four
+       club weigh-ins spanning at least 21 days — the floor the table applies
+       to every rule on the metric — and the sentence says so, since a
+       nutritionist reading "no flags" needs to know whether the rule can
+       speak yet. Only club weigh-ins count (§1): the check-in figure is not
+       a source, and the sentence says that too. */
+    const floor =
+      t.metric === 'body.mass_kg'
+        ? ' Counts the club\'s weigh-ins only, and speaks after four of them spanning at least 21 days.'
+        : '';
+    return `Fires when ${rule}${baselineFragment ? ` against ${baselineFragment}` : ''}, for ${days} running.${floor}`;
   }
   const context =
     baselineFragment === null

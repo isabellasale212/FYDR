@@ -189,6 +189,12 @@ export const WEIGH_IN_EDIT = [
   'medic',
 ] as const;
 
+/** body-mass-rule.md §3 (Isabella, 15 September 2026; migration 0131): a
+ *  sport scientist may delete a weigh-in of any age; the other three logging
+ *  roles only one logged today. delete_weigh_in() is the gate; this hides the
+ *  control where it would be refused. */
+export const WEIGH_IN_DELETE_ANY_TIME = ['sport_scientist'] as const;
+
 /** Who may SEE an athlete's body mass — the weigh-ins, the latest figure, the
  *  trend, the nutrition page's mass card, the export columns.
  *

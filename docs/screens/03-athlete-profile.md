@@ -183,6 +183,19 @@ absent — no heading, no lock, no buttons — as is the Body mass card on the
 athlete nutrition page and the body-mass column of the wellness export. A coach
 who also holds one of those roles sees it; roles are unions.
 
+**Correcting a weigh-in** (Isabella, 15 September 2026,
+`docs/decisions/body-mass-rule.md` §2–§3; migration 0131). One weigh-in per
+athlete per day — a second on the same day is refused at the table and the
+form says so ("Edit it if it is wrong — a second one on the same day would
+count as two observations"). **Edit entries** shows the fields only on a
+weigh-in taken today; an older row is read-only, because the table raises
+past that day. **Delete** is offered where it will land: on a row logged
+today for the medic, S&C and nutritionist, and on any row for a sport
+scientist; it is a soft delete (`delete_weigh_in()`, `deleted_at`), audited
+by name, and the deleted row leaves every read and every baseline. The list
+says the rule once above the rows. The card shows the club's weigh-ins alone,
+so it never puts two numbers under one label (§7).
+
 **Read-only panels name their owner** (STAFF-SS-02-05 C5, 12 September 2026). A
 panel a role reads but cannot change ends with a well — an uppercase line
 "Read-only · set by medical staff" / "Read-only · set by the nutritionist or the
@@ -226,7 +239,9 @@ creates a new record and marks the old one superseded rather than overwriting it
 | Element and label | Where it sits | What happens when used | Where it takes you | What it writes | Permission | Confirmation | Disabled or hidden when |
 |---|---|---|---|---|---|---|---|
 | Record an absence / Mark available again | Availability card (the coach's and sport scientist's absence form) | Records a non-injury absence — reason, Modified or Unavailable, a note — or ends the open one | Stays here | A new availability record; the previous one is closed | Coach, sport scientist (the medic's own form sits on the injury record) | Yes — the who-will-read-what step | Hidden from S&C and nutritionist |
-| Log a weigh in | Body weight card | Records a weight for a date | Stays here | A new body weight record | Sport scientist, S&C, nutritionist, medic (`WEIGH_IN_EDIT`) | Form submission | The card itself is absent for the coach (`BODY_MASS_VIEW`, 12 September 2026) |
+| Log a weigh in | Body weight card | Records a weight for a date — one per athlete per day | Stays here | A new body weight record | Sport scientist, S&C, nutritionist, medic (`WEIGH_IN_EDIT`) | Form submission | The card itself is absent for the coach (`BODY_MASS_VIEW`, 12 September 2026) |
+| Edit a weigh-in | Body weight card, Edit entries | Corrects a weigh-in taken today | Stays here | The row, in place | The same four roles | Form submission | Read-only on any row taken before today (0131 §3) |
+| Delete a weigh-in | Body weight card, Edit entries | Soft-deletes a weigh-in, audited | Stays here | `deleted_at`, `deleted_by`; an audit row `body_composition.delete` | A sport scientist on any row; medic, S&C, nutritionist on a row logged today (`WEIGH_IN_DELETE_ANY_TIME`, `delete_weigh_in()`) | Yes, inline | Absent where it would be refused |
 | Edit biographical details | Bio card | Changes position, squad number and similar | Stays here | Updates the athlete record | **Coach only** | Form submission | Hidden from everyone else, medics included |
 | Correct an entry | Corrections panel | Supersedes a submitted entry with a new one | Stays here | A new entry marked as the live one; the old marked superseded. **Never an overwrite** | Coach, medic, sport scientist | Form submission | Hidden from others |
 | Wellness, Gym, Nutrition chips | Domain chips | Opens that domain for this athlete | `/squad/[athleteId]/wellness` and siblings | Nothing | Coach or medic today | None | Never |

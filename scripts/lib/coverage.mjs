@@ -27,9 +27,9 @@ export class CoverageError extends Error {}
  *  bumped past, it is the run asking what was added or lost. */
 export const COUNTS = {
   /** supabase/migrations/*.sql */
-  migrations: 130,
+  migrations: 131,
   /** supabase/tests/*.sql (pgTAP) */
-  pgtapTests: 91,
+  pgtapTests: 92,
   /** every file under src, of any kind */
   srcFiles: 542,
   /** .ts and .tsx under src */

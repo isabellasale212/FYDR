@@ -44,7 +44,7 @@ import { GuardianCard } from '@/components/GuardianCard/GuardianCard';
 import { fetchLatestGuardianRequest } from '@/lib/guardianConsent';
 import { isUuid } from '@/lib/uuid';
 import { profilePanelOrder, profilePanelSegments, type ProfilePanelKey } from '@/lib/profilePanels';
-import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, NUTRITION_EDIT, PROGRAMME_AUTHOR, SETTINGS_ADMIN, THRESHOLD_VIEW, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, NUTRITION_EDIT, PROGRAMME_AUTHOR, SETTINGS_ADMIN, THRESHOLD_VIEW, WEIGH_IN_DELETE_ANY_TIME, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
 import { ReadOnlyOwner } from '@/components/ReadOnlyOwner/ReadOnlyOwner';
 import { fetchRules, resolveRuleForAthlete } from '@/lib/queries/nutritionRules';
 import { fetchUserNames } from '@/lib/queries/users';
@@ -919,6 +919,7 @@ async function AthletePageContent({
           timezone={timezone}
           entries={weighIns}
           canLog={canLogWeighIn}
+          canDeleteAnyTime={hasAnyRole(claims.roles, WEIGH_IN_DELETE_ANY_TIME)}
           targetRanges={targetRanges}
         />
       </section>

@@ -26,6 +26,10 @@ type Props = {
   timezone: string;
   entries: BodyCompositionEntry[];
   canLog: boolean;
+  /** body-mass-rule.md §3 (0131): a sport scientist may delete a weigh-in of
+   *  any age; the other logging roles only one logged today. The page resolves
+   *  it from the session's roles — UI only, the function is the gate. */
+  canDeleteAnyTime: boolean;
   /** Newest first, closed rows included — fetchTargetRangeHistory. The live one is the
    *  row with effective_to === null, and there is at most one (0060's unique index). */
   targetRanges: BodyMassTargetRangeWithSetter[];
@@ -68,6 +72,7 @@ export function BodyWeightPanel({
   timezone,
   entries,
   canLog,
+  canDeleteAnyTime,
   targetRanges,
 }: Props) {
   const router = useRouter();
@@ -147,6 +152,7 @@ export function BodyWeightPanel({
           orgId={orgId}
           timezone={timezone}
           entries={entries}
+          canDeleteAnyTime={canDeleteAnyTime}
           onDone={() => {
             router.refresh();
           }}
@@ -473,11 +479,13 @@ function EditList({
   orgId,
   timezone,
   entries,
+  canDeleteAnyTime,
   onDone,
 }: {
   orgId: string;
   timezone: string;
   entries: BodyCompositionEntry[];
+  canDeleteAnyTime: boolean;
   onDone: () => void;
 }) {
   const [showAll, setShowAll] = useState(false);
@@ -494,8 +502,14 @@ function EditList({
 
   return (
     <div className="pp-weight-edit-list">
+      {/* body-mass-rule.md §3: a weigh-in is edited on the day it was taken and
+          not after, so the list says it once rather than greying each row. */}
+      <p className="tiny" style={{ color: 'var(--faint)', margin: '0 0 var(--sp-8)' }}>
+        A weigh-in can be edited on the day it was taken.{' '}
+        {canDeleteAnyTime ? 'As a sport scientist you can delete one at any time.' : 'One logged today can be deleted; a sport scientist can delete any.'}
+      </p>
       {shown.map((entry) => (
-        <EditRow key={entry.id} orgId={orgId} timezone={timezone} entry={entry} onDone={onDone} />
+        <EditRow key={entry.id} orgId={orgId} timezone={timezone} entry={entry} canDeleteAnyTime={canDeleteAnyTime} onDone={onDone} />
       ))}
 
       {shown.length === 0 ? (
@@ -524,11 +538,13 @@ function EditRow({
   orgId,
   timezone,
   entry,
+  canDeleteAnyTime,
   onDone,
 }: {
   orgId: string;
   timezone: string;
   entry: BodyCompositionEntry;
+  canDeleteAnyTime: boolean;
   onDone: () => void;
 }) {
   const [measuredOn, setMeasuredOn] = useState(entry.measured_on);
@@ -549,6 +565,13 @@ function EditRow({
      The timezone matters: at 00:30 BST a UTC comparison still says yesterday,
      and the button would vanish half an hour early. */
   const loggedToday = dateInTz(new Date(entry.created_at), timezone) === todayIso(timezone);
+  /* body-mass-rule.md §3 (0131): EDIT on the day it was TAKEN (measured_on),
+     not the day it was logged; the table raises past that day, so the fields
+     are read-only here rather than a Save that would be refused. DELETE: the
+     sport scientist at any time, the other logging roles on the day it was
+     logged (0084's window, kept). */
+  const editable = entry.measured_on === todayIso(timezone);
+  const deletable = canDeleteAnyTime || loggedToday;
 
   const remove = useMutation({
     mutationFn: () => withWriteTimeout(deleteWeighIn(createClient(), orgId, entry.id)),
@@ -584,6 +607,55 @@ function EditRow({
     },
     onError: (err) => setError(toUserMessage(err, 'staff')),
   });
+
+  if (!editable) {
+    return (
+      <div className="pp-weight-edit-row" data-weigh-in-read-only>
+        <span className="num tiny" style={{ minWidth: 78 }}>
+          {formatDate(entry.measured_on, timezone)}
+        </span>
+        <span className="num">{entry.body_mass_kg !== null ? `${entry.body_mass_kg} kg` : '—'}</span>
+        <span className="num tiny">{entry.body_fat_pct !== null ? `${entry.body_fat_pct}% fat` : ''}</span>
+        <span className="tiny">{entry.method ?? ''}</span>
+        {deletable ? (
+          confirming ? (
+            <>
+              <button
+                type="button"
+                className="btn-ghost"
+                style={{ color: 'var(--bad-text)' }}
+                onClick={() => {
+                  setError(null);
+                  remove.mutate();
+                }}
+                disabled={remove.isPending}
+              >
+                {remove.isPending ? 'Deleting…' : 'Yes, delete'}
+              </button>
+              <button type="button" className="btn-ghost" onClick={() => setConfirming(false)}>
+                Keep
+              </button>
+            </>
+          ) : (
+            <button
+              type="button"
+              className="btn-ghost"
+              style={{ color: 'var(--bad-text)' }}
+              onClick={() => setConfirming(true)}
+              aria-label={`Delete the ${formatDate(entry.measured_on, timezone)} entry`}
+            >
+              Delete
+            </button>
+          )
+        ) : null}
+        {error ? (
+          <span className="form-error" role="alert" style={{ gridColumn: '1 / -1' }}>
+            {error}
+          </span>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div className="pp-weight-edit-row">
@@ -650,9 +722,10 @@ function EditRow({
       >
         {save.isPending ? 'Saving…' : saved ? 'Saved' : 'Save'}
       </button>
-      {/* Only on a row logged today. Nothing older renders this at all — not a
-          disabled button, which invites a click and explains nothing. */}
-      {loggedToday ? (
+      {/* Only where the delete will land (logged today, or a sport scientist).
+          Nothing else renders this at all — not a disabled button, which
+          invites a click and explains nothing. */}
+      {deletable ? (
         confirming ? (
           <>
             <button

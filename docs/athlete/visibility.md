@@ -29,6 +29,7 @@ they can leave.**
 | **Diagnosis, mechanism, severity, tissue type, imaging, referral, treatment plan** | **Yes** | `injury_clinical_athlete_view` | `0010_helper_functions_and_triggers.sql` |
 | **The physio's private clinical notes** | **No** | deliberately excluded from the view | same |
 | GPS records | Permitted, but no screen shows them | `gps_records_self_select` | `0023_gps_records.sql:132` |
+| **The club's weigh-ins of them** (`body_composition`) | **Yes** — the Me page shows the latest, named as the club's with its date (Isabella, 15 September 2026, `docs/decisions/body-mass-rule.md` §7): the body-mass flag fires on the club's weigh-ins only, so the athlete is shown the figure the rule sees, never a self-reported figure under the club's name or the reverse; a deleted weigh-in is not shown | `body_composition_self_select`, live rows only since 0131 | `0024_testing.sql`, `0131_body_mass_rules.sql` |
 
 ### The one thing staff record that the athlete cannot see, and why
 

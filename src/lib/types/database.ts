@@ -469,6 +469,8 @@ export type Database = {
         sum_skinfolds_mm: number | null
         recorded_by: string | null
         created_at: string
+        deleted_at: string | null
+        deleted_by: string | null
       }
       Insert: {
         id?: string
@@ -482,6 +484,8 @@ export type Database = {
         sum_skinfolds_mm?: number | null
         recorded_by?: string | null
         created_at?: string
+        deleted_at?: string | null
+        deleted_by?: string | null
       }
       Update: {
         id?: string
@@ -495,6 +499,8 @@ export type Database = {
         sum_skinfolds_mm?: number | null
         recorded_by?: string | null
         created_at?: string
+        deleted_at?: string | null
+        deleted_by?: string | null
       }
       Relationships: [
         {
@@ -502,6 +508,13 @@ export type Database = {
           columns: ["athlete_id"]
           isOneToOne: false
           referencedRelation: "athletes"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "body_composition_deleted_by_fkey"
+          columns: ["deleted_by"]
+          isOneToOne: false
+          referencedRelation: "users"
           referencedColumns: ["id"]
         },
         {
@@ -4329,6 +4342,7 @@ export type Database = {
         created_at: string
         updated_at: string
         deleted_at: string | null
+        min_baseline_span_days: number
       }
       Insert: {
         id?: string
@@ -4353,6 +4367,7 @@ export type Database = {
         created_at?: string
         updated_at?: string
         deleted_at?: string | null
+        min_baseline_span_days?: number
       }
       Update: {
         id?: string
@@ -4377,6 +4392,7 @@ export type Database = {
         created_at?: string
         updated_at?: string
         deleted_at?: string | null
+        min_baseline_span_days?: number
       }
       Relationships: [
         {
@@ -4996,6 +5012,7 @@ export type Database = {
           mean: number
           sd: number
           n: number
+          span_days: number
         }[]
     }
     _threshold_breach_on_day: {
@@ -5174,6 +5191,12 @@ export type Database = {
           notify_roles: Database["public"]["Enums"]["app_role"][]
           is_active: boolean
         }[]
+    }
+    delete_weigh_in: {
+      Args: {
+        p_id: string
+      }
+      Returns: unknown
     }
     evaluate_daily_thresholds_for_org: {
       Args: {

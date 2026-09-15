@@ -31,37 +31,37 @@ export const COUNTS = {
   /** supabase/tests/*.sql (pgTAP) */
   pgtapTests: 91,
   /** every file under src, of any kind */
-  srcFiles: 537,
+  srcFiles: 541,
   /** .ts and .tsx under src */
-  srcTs: 532,
+  srcTs: 536,
   /** .tsx under src */
-  srcTsx: 291,
+  srcTsx: 294,
   /** .css under src (src/styles) */
   srcCss: 2,
   /** page.tsx under src/app/(staff) */
   staffPages: 76,
   /** .tsx under src/app/(staff) */
-  staffTsx: 94,
+  staffTsx: 95,
   /** route.ts / route.tsx under src/app/(staff) */
   staffRoutes: 44,
   /** .tsx under src/app/(athlete) */
-  athleteTsx: 25,
+  athleteTsx: 26,
   /** .tsx under src/components */
   componentTsx: 162,
   /** .ts and .tsx under src/components */
   componentTs: 168,
   /** .tsx under src/app */
-  appTsx: 128,
+  appTsx: 131,
   /** .ts and .tsx under src/app */
-  appTs: 175,
+  appTs: 178,
   /** every file under src/app, of any kind */
-  appFiles: 178,
+  appFiles: 181,
   /** route.ts and .tsx under src/app */
-  appRoutesAndTsx: 169,
+  appRoutesAndTsx: 172,
   /** route.ts under src/app */
   appRoutes: 41,
   /** .ts and .tsx under src/lib */
-  libTs: 188,
+  libTs: 189,
   /** page.tsx under src/app */
   appPages: 106,
   /** layout.tsx under src/app */

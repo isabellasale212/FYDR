@@ -84,7 +84,10 @@ Loading, **not found**, error.
 **The not found state is a security decision, not an oversight.**
 `fetchGymSessionLog` reads `gym_session_logs_current`, which is RLS self only, so
 another athlete's id produces exactly the same "not found" as a missing row
-**rather than a 403**. A 403 would confirm the row exists.
+**rather than a 403**. A 403 would confirm the row exists. The screen that
+shows it is `src/app/(athlete)/not-found.tsx` (15 September 2026,
+`docs/screens/64-not-found.md`): the shell's own head, "There is nothing
+here", removed-or-out-of-date wording that never says which, a link to Today.
 
 ## 11. Accessibility and device
 

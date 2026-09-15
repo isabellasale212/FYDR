@@ -98,6 +98,7 @@ Deep links arriving from push are shell namespaced (`/staff/...`, `/athlete/...`
 |---|---|---|---|---|---|---|
 | 8 | Dashboard | `/dashboard` | `screens/dashboard.md` | staff web, staff phone | coach, medical | none |
 | — | Not available | `/denied` | `access-matrix.md` §6 "What a refusal looks like" | staff web, staff phone | any staff | none — reached only by a role gate's redirect |
+| — | Not found | *(no address of its own: `not-found.tsx` in `(staff)`, in `(athlete)`, and at the root for an unmatched address)* | `screens/64-not-found.md` | staff web, staff phone, athlete app | anyone who reaches it | none — rendered in place where `notFound()` was thrown; the card links to the shell's home |
 | 10 | Flags | `/flags` | `screens/flags.md` | staff web, staff phone | coach, medical | `/dashboard` |
 | 10 | One flag | `/flags/:flagId` | `screens/flags.md` | staff web, staff phone | coach, medical | `/flags` |
 | 12 | Injury dashboard | `/injuries` | `screens/injury-dashboard.md` | staff web, staff phone | coach, medical, admin (aggregate) | `/dashboard` |

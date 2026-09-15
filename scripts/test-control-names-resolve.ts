@@ -57,7 +57,7 @@ while (queue.length) {
     }
   }
 }
-const athleteFiles = expectCount('athlete surface files (routes and every component they import, transitively)', [...seen], 63);
+const athleteFiles = expectCount('athlete surface files (routes and every component they import, transitively)', [...seen], 64);
 const corpus = athleteFiles.map((f) => blank(readFileSync(f, 'utf8'))).join('\n');
 
 const tidy = (t: string): string =>

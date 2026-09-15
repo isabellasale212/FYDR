@@ -55,7 +55,7 @@ const walk = (d: string) => {
   }
 };
 walk('src/app/(athlete)');
-expectCount('athlete route files', files, 28);
+expectCount('athlete route files', files, 29);
 /* Every listed component must exist. This used to swallow a missing directory
    ("component may not exist"), and did: 'TestSparkline' was listed for months
    and is a local function of my-data/page.tsx, never a component — the walk
@@ -65,7 +65,7 @@ for (const c of expectCount('athlete-reachable component directories', ATHLETE_C
   if (!existsSync(dir)) { console.log(`  FAIL - listed athlete component ${c} does not exist at ${dir}`); process.exit(1); }
   walk(dir);
 }
-expectCount('athlete surface files (routes and reachable components)', files, 50);
+expectCount('athlete surface files (routes and reachable components)', files, 51);
 
 console.log(`the athlete surface: ${files.length} files`);
 

@@ -31,7 +31,8 @@ console.log('\nthe panel reads it');
 {
   const src = readFileSync('src/components/ScheduleGrid/SelectedSessionPanel.tsx', 'utf8');
   assert(!/EXPECTS\[session\.type\]/.test(src), 'the panel no longer reads the static map');
-  assert((src.match(/expectsLabel\(session, timezone\)/g) ?? []).length === 2, 'both the facts row and the preview read expectsLabel');
+  // Three since 15 Sept 2026: the read-mode facts row, the rated session's facts row (decision-batch #6), and the preview.
+  assert((src.match(/expectsLabel\(session, timezone\)/g) ?? []).length === 3, 'the facts row, the rated session\'s facts row and the preview all read expectsLabel');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

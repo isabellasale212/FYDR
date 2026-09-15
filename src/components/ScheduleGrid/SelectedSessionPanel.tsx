@@ -5,6 +5,7 @@ import { TYPE_STYLE, clockLabel, expectsLabel, type DbSessionType } from '@/lib/
 import { enumLabel, mdLabel } from '@/lib/format';
 import { expectedAthletesLine } from '@/lib/scheduleExpected';
 import type { GroupOption } from './types';
+import { ratedSessionSentence } from '@/lib/ratedSession';
 
 // Built per call from the org's real timezone, not a hardcoded one — see
 // schedule/page.tsx's own weekdayLongFmt/dayMonthFmt for the same fix and
@@ -73,6 +74,11 @@ export type PanelSession = {
    *  restriction, never a diagnosis; a coach who needs the who goes to
    *  Timetable, which already shows conflicts per athlete. */
   restrictionConflictCount: number;
+  /** Athletes who have rated it (types.ts). Above zero: read-only here, the
+   *  same rule and the same sentence as the session screen (B6; decision-
+   *  batch-2026-09-15.md #6 — "a rule that holds on one screen and not the
+   *  other is worse than no rule"). */
+  ratingCount: number;
 };
 
 type DayOption = { date: string; weekday: string; domLabel: string };
@@ -165,6 +171,14 @@ export function SelectedSessionPanel({
      merely looked at. */
   const [unlocked, setUnlocked] = useState(false);
   const onUnlock = () => setUnlocked(true);
+  /* PATTERN-S4 C4 (B6) on this grid too — decision-batch-2026-09-15.md #6.
+     A rated session is read-only here exactly as on its own screen: no Edit,
+     no day, time, group, location or type fields, the same sentence
+     (lib/ratedSession.ts). A staged draft was never rated; a precommit card
+     cannot be. Remove stays (it cancels a session carrying data when the
+     week is published) and so does Duplicate — "create a new one". A held
+     edit from before this rule can still be dropped with Cancel changes. */
+  const rated = !!session && !isPrecommitId && session.ratingCount > 0;
   useEffect(() => {
     setUnlocked(false);
   }, [session?.id]);
@@ -386,6 +400,35 @@ export function SelectedSessionPanel({
     </div>
   );
 
+  /* The remove confirmation, once, for the editable and the rated branches.
+     §0aj (2026-09-12): the promise is only made where it is true. A
+     committed session leaves a ghost with Restore until the week is
+     published — Discard undoes it. A staged draft was never published and
+     vanishes on removal (the "same act as Discard" SS-10 records); telling
+     the coach they could undo it was empty for exactly that case. */
+  const removeConfirmation = (
+    <>
+      <span className="tiny" style={{ color: 'var(--bad-text)' }}>
+        {isDraft
+          ? 'Remove this draft? It was never published, so there is nothing to undo.'
+          : 'Remove this session? You can undo with Discard, until you publish.'}
+      </span>
+      <button
+        type="button"
+        className="sg-btn-remove"
+        onClick={() => {
+          onRemove();
+          setConfirmingRemove(false);
+        }}
+      >
+        Yes, remove
+      </button>
+      <button type="button" className="btn-ghost" onClick={() => setConfirmingRemove(false)}>
+        Never mind
+      </button>
+    </>
+  );
+
   return (
     <div className="card sg-panel-card">
       <div className="sg-panel-head">
@@ -419,7 +462,7 @@ export function SelectedSessionPanel({
                 for real in "3 × 10" and "1.42×". One affordance, one character. */}
             <span aria-hidden="true">✕</span>
           </button>
-        ) : !isDraft && mode === 'edit' && !unlocked ? (
+        ) : !isDraft && mode === 'edit' && !unlocked && !rated ? (
           /* Name, location and type are read-only until asked for. They are what
              the session IS, and this is a screen people click around on — the
              three below (start, duration, groups) are adjustments and stay
@@ -538,6 +581,56 @@ export function SelectedSessionPanel({
             </p>
           ) : null}
         </>
+      ) : rated ? (
+        <>
+          <div className="sg-panel-facts">
+            <div>
+              <div className="sg-fact-label">Group</div>
+              <div className="sg-fact-value num">{groupLabel}</div>
+            </div>
+            <div>
+              <div className="sg-fact-label">Duration</div>
+              <div className="sg-fact-value num">{session.mins} min</div>
+            </div>
+            <div>
+              <div className="sg-fact-label">MD</div>
+              <div className="sg-fact-value num">{mdLabel(session.mdOffset) ?? '—'}</div>
+            </div>
+            <div>
+              <div className="sg-fact-label">Expects</div>
+              <div className="sg-fact-value num">{expectsLabel(session, timezone)}</div>
+            </div>
+          </div>
+          <p style={{ margin: 'var(--sp-8) 0 0' }} data-rated-read-only>
+            {ratedSessionSentence(session.ratingCount)}
+          </p>
+          <div className="sg-panel-actions">
+            {isDirty && !isDraft ? (
+              <button type="button" className="btn-ghost" onClick={onRevert}>
+                Cancel changes
+              </button>
+            ) : null}
+            {confirmingRemove ? (
+              removeConfirmation
+            ) : (
+              <>
+                {!session.isPast ? (
+                  <button type="button" className="sg-btn-remove" onClick={() => setConfirmingRemove(true)}>
+                    Remove session
+                  </button>
+                ) : null}
+                <button type="button" className="btn-ghost" onClick={onDuplicate}>
+                  Duplicate
+                </button>
+              </>
+            )}
+          </div>
+          {isDirty ? (
+            <p className="tiny" style={{ margin: 'var(--sp-8) 0 0' }}>
+              Held on your screen. Publish to athletes, at the top of this page, puts it on their phones.
+            </p>
+          ) : null}
+        </>
       ) : (
         <>
           {dayField}
@@ -562,32 +655,7 @@ export function SelectedSessionPanel({
                 </button>
               </>
             ) : confirmingRemove ? (
-              <>
-                {/* §0aj (2026-09-12): the promise is only made where it is
-                    true. A committed session leaves a ghost with Restore
-                    until the week is published — Discard undoes it. A staged
-                    draft was never published and vanishes on removal (the
-                    "same act as Discard" SS-10 records); telling the coach
-                    they could undo it was empty for exactly that case. */}
-                <span className="tiny" style={{ color: 'var(--bad-text)' }}>
-                  {isDraft
-                    ? 'Remove this draft? It was never published, so there is nothing to undo.'
-                    : 'Remove this session? You can undo with Discard, until you publish.'}
-                </span>
-                <button
-                  type="button"
-                  className="sg-btn-remove"
-                  onClick={() => {
-                    onRemove();
-                    setConfirmingRemove(false);
-                  }}
-                >
-                  Yes, remove
-                </button>
-                <button type="button" className="btn-ghost" onClick={() => setConfirmingRemove(false)}>
-                  Never mind
-                </button>
-              </>
+              removeConfirmation
             ) : (
               <>
                 {/* A staged draft (isDraft) was never committed to the

@@ -48,6 +48,11 @@ export type BaseSession = {
    *  GridSession's own field for what this counts and why it's a count
    *  rather than a per-athlete list. */
   restrictionConflictCount: number;
+  /** Athletes who have rated it. Above zero the session is read-only on
+   *  this grid, as on its own screen (PATTERN-S4 C4 / B6, and
+   *  decision-batch-2026-09-15.md #6): the panel offers no edit and says
+   *  the same sentence. */
+  ratingCount: number;
 };
 
 /** SCHEDULE-SPEC.md §9's `edits` overlay — only start, duration and group
@@ -108,5 +113,6 @@ export function toBaseSession(s: GridSession, timezone: string, decimalHourInTz:
     fixtureId: s.fixture_id,
     updatedAt: s.updated_at,
     restrictionConflictCount: s.restrictionConflictCount,
+    ratingCount: s.ratingCount,
   };
 }

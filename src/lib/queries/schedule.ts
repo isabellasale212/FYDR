@@ -606,6 +606,11 @@ export type GridSession = Session & {
    *  roster to name names against, so this is a count for a summary banner,
    *  not a per-athlete list; a coach who needs the who goes to Timetable. */
   restrictionConflictCount: number;
+  /** How many athletes have rated this session (distinct athletes with a
+   *  live training_entries row). PATTERN-S4 C4 (B6): a rated session is
+   *  read-only, and the rule holds on the grid as on the session screen
+   *  (decision-batch-2026-09-15.md #6) — same number, same sentence. */
+  ratingCount: number;
 };
 
 export async function fetchWeekSessionsDetailed(
@@ -621,7 +626,7 @@ export async function fetchWeekSessionsDetailed(
   const sessions = await fetchSessionsBetween(db, orgId, bounds.from, bounds.to);
   if (sessions.length === 0) return [];
 
-  const [participants, memberships, scope] = await Promise.all([
+  const [participants, memberships, scope, ratings] = await Promise.all([
     db
       .from('session_participants')
       .select('session_id, athlete_id, group_id')
@@ -633,10 +638,26 @@ export async function fetchWeekSessionsDetailed(
       .eq('org_id', orgId)
       .is('removed_at', null),
     fetchGroupAthleteIds(db, orgId, groupIds),
+    /* Who has rated what, for the read-only rule. One week's sessions at a
+       squad's size is well inside a page; the current view, so a corrected
+       rating counts its athlete once. */
+    db
+      .from('training_entries_current')
+      .select('session_id, athlete_id')
+      .eq('org_id', orgId)
+      .in('session_id', sessions.map((s) => s.id)),
   ]);
 
   if (participants.error) throw new Error(participants.error.message);
   if (memberships.error) throw new Error(memberships.error.message);
+  if (ratings.error) throw new Error(ratings.error.message);
+  const ratersBySession = new Map<string, Set<string>>();
+  for (const r of ratings.data ?? []) {
+    if (!r.session_id || !r.athlete_id) continue;
+    const set = ratersBySession.get(r.session_id) ?? new Set<string>();
+    set.add(r.athlete_id);
+    ratersBySession.set(r.session_id, set);
+  }
 
   const groupMembers = new Map<string, string[]>();
   for (const m of memberships.data ?? []) {
@@ -691,6 +712,7 @@ export async function fetchWeekSessionsDetailed(
       groupNames: groupIdList.map((id) => groupNameById.get(id) ?? 'Unnamed group'),
       athleteIds: counted,
       restrictionConflictCount,
+      ratingCount: ratersBySession.get(session.id)?.size ?? 0,
     };
   });
 }
@@ -1173,9 +1195,12 @@ export async function fetchSessionDetail(
       .eq('org_id', orgId)
       .eq('session_id', sessionId)
       .limit(1),
+    /* Distinct athletes on the current view — a corrected rating is one
+       athlete, not two rows — the same count the week grid carries
+       (fetchWeekSessionsDetailed), so the two screens say one number. */
     db
-      .from('training_entries')
-      .select('id', { count: 'exact', head: true })
+      .from('training_entries_current')
+      .select('athlete_id')
       .eq('org_id', orgId)
       .eq('session_id', sessionId),
   ]);
@@ -1183,7 +1208,7 @@ export async function fetchSessionDetail(
   if (participants.error) throw new Error(participants.error.message);
   if (attendance.error) throw new Error(attendance.error.message);
   if (entries.error) throw new Error(entries.error.message);
-  const ratingCount = entries.count ?? 0;
+  const ratingCount = new Set((entries.data ?? []).map((e) => e.athlete_id).filter((id): id is string => id !== null)).size;
 
   const groupIds = (participants.data ?? [])
     .map((p) => p.group_id)

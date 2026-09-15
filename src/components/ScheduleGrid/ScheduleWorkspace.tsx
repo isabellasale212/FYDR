@@ -253,6 +253,8 @@ export function ScheduleWorkspace({
       // there is nothing for fetchWeekSessionsDetailed to have counted.
       // Real once this session is published and the page refetches.
       restrictionConflictCount: 0,
+      // Never rated: it does not exist yet.
+      ratingCount: 0,
       edited: true,
       isNew: true,
     }));
@@ -526,6 +528,7 @@ export function ScheduleWorkspace({
           isPast: newDraft.dow < today,
           // Precommit form, no session_participants row yet — nothing to count.
           restrictionConflictCount: 0,
+          ratingCount: 0,
         }
       : selectedEffective
         ? {

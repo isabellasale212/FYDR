@@ -46,7 +46,10 @@ by 14 athletes. Ratings are tied to its date and duration, so it cannot be
 changed. Cancel it and create a new one if the details are wrong." The rating
 neither follows an edit nor detaches from one, so the edit is not offered;
 cancelling stays available (PATTERN-S4 C4, ruled 13 September 2026, built
-16 September).
+14 September). The same rule, with the same sentence from `lib/ratedSession.ts`,
+holds on the schedule grid's selected session panel since 15 September
+(`decisions/decision-batch-2026-09-15.md` #6), and both count the same way:
+distinct athletes with a live rating.
 
 **Who is expected**, resolved from the groups attached to the session rather than
 listed by hand, so changing a group's membership changes the expectation.

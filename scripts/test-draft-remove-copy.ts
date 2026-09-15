@@ -12,7 +12,8 @@ const assert = (cond: boolean, label: string): void => {
   else { failed += 1; console.log(`  FAIL - ${label}`); }
 };
 const src = readFileSync('src/components/ScheduleGrid/SelectedSessionPanel.tsx', 'utf8');
-const block = src.slice(src.indexOf('confirmingRemove ? ('), src.indexOf('Yes, remove'));
+// Since 15 Sept 2026 the confirmation is one element (`removeConfirmation`), rendered by the editable and the rated branches alike.
+const block = src.slice(src.indexOf('const removeConfirmation = ('), src.indexOf('Yes, remove'));
 
 console.log('the confirmation names what will happen');
 {

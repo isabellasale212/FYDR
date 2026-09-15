@@ -19,6 +19,7 @@ import { fetchThresholdProvenance } from '@/lib/queries/thresholds';
 import { CLINICAL_ONLY, SETTINGS_ADMIN, THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
 import { fetchSetupCounts } from '@/lib/queries/setupChecklist';
 import { setupDashboardLine, setupSteps, setupSummary } from '@/lib/setupChecklist';
+import { SkFloor } from '@/components/Skeleton/SkFloor';
 
 export const metadata = { title: 'Dashboard · Fydr' };
 
@@ -87,6 +88,25 @@ function dayTitle(date: string, wallClockToday: string): string {
   return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
 }
 
+/* Returned through SkFloor: this route has a loading.tsx skeleton, and once
+ * that skeleton is shown it stays for at least 300ms (docs/decisions/
+ * skeleton-gate.md, the same-day amendment). SkFloor is where the content
+ * waits for the remainder; it is a pass-through on a wait where no skeleton
+ * showed. The guard counts that every skeleton route returns through it.
+ *
+ * The content is awaited, not mounted as an element: an async component
+ * child would stream as a row of its own, after SkFloor had already
+ * rendered with nothing to show, and the floor has to be paid at the moment
+ * the content is ready. Awaiting keeps the page's own timing exactly as it
+ * was — every query ran before its JSX was returned anyway. */
+export default async function DashboardPage({ searchParams }: { searchParams: SearchParams }) {
+  return (
+    <SkFloor>
+      {await DashboardPageContent({ searchParams })}
+    </SkFloor>
+  );
+}
+
 /** DASHBOARD-SPEC.md — the coach's 07:00 screen, twelve sections rebuilt
  *  pixel-for-pixel. lib/queries/dashboard.ts's own header records the
  *  three real, load-bearing decisions this rebuild made: what "today"
@@ -96,7 +116,7 @@ function dayTitle(date: string, wallClockToday: string): string {
  *  athlete uniformly rather than a guess read out of free text. Read that
  *  file's header before extending this page — most of the judgement calls
  *  live there, not here. */
-export default async function DashboardPage({ searchParams }: { searchParams: SearchParams }) {
+async function DashboardPageContent({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, timezone, claims, collectsRpe } = await requireStaff();
 
   // 01-roles-and-permissions.md (superseded) §2: admin gets `no` for "View squad

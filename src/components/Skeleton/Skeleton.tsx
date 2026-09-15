@@ -24,7 +24,18 @@
  * so the flash cannot happen on any route, and the measurement no longer
  * gates which routes carry one. What a screen reader hears is not held:
  * SkPage's live region is a sibling of the held element, announced at
- * once. */
+ * once.
+ *
+ * AND THE 300ms FLOOR — the same decision's same-day amendment. Once shown,
+ * a skeleton stays for at least 300ms, so a render finishing at 210ms shows
+ * 300ms of skeleton rather than 10ms of it. The floor is not CSS, because
+ * the skeleton is a Suspense fallback and it is React that removes it: the
+ * held element (SkHeld) and the inline script below record the instant the
+ * skeleton became visible, and the page's content waits for the remainder
+ * inside SkFloor — every page with a skeleton returns through it. The
+ * clock they share is skeletonClock.ts; each file says its part. */
+
+import { SkHeld } from './SkHeld';
 
 type LineProps = { w?: string; size?: 'h1' | 'body' | 'label' | 'num' };
 
@@ -79,16 +90,43 @@ export function SkChips({ n = 5 }: { n?: number }) {
  *  the visually-hidden "Loading {label}") is a SIBLING of the held .sk-page,
  *  not its parent or child, so the 200ms opacity hold on .sk-page can never
  *  delay or dim what assistive technology is told — the wait is announced
- *  the moment the boundary renders, the picture follows if the wait lasts. */
+ *  the moment the boundary renders, the picture follows if the wait lasts.
+ *
+ *  The script after the held element is the floor's hard-load half. A hard
+ *  load streams this fallback as HTML and React never hydrates a dehydrated
+ *  fallback, so no effect in SkHeld runs; the swap to content is done by
+ *  react-dom's streaming runtime ($RC → $RV, react-dom 19.2) before
+ *  hydration, and only a parser-run script can see the skeleton appear. It
+ *  does two things at the hold's own `animationstart`: writes shownAt to the
+ *  shared clock, and sets the runtime's reveal clock `$RT` to the same
+ *  instant. That runtime already batches reveals to 300ms after the last
+ *  one (`$RT + 300`); telling it the skeleton's appearance was the last
+ *  reveal makes its own batching pay the floor, with no second copy of the
+ *  swap. It is a runtime internal, so scripts/test-skeleton-hold.ts pins the
+ *  installed runtime's shape and fails the build if a React upgrade moves
+ *  it. On a soft navigation the browser inserts this script without
+ *  running it (innerHTML never executes scripts), and SkHeld's effect is
+ *  the recorder instead. */
+const SHOWN_SCRIPT =
+  "<script>(function(){var s=document.currentScript,e=s&&s.parentNode&&s.parentNode.previousElementSibling;" +
+  "if(!e||!e.classList.contains('sk-page'))return;" +
+  "e.addEventListener('animationstart',function(ev){" +
+  "if(ev.target!==e||ev.animationName!=='sk-appear')return;" +
+  "var t=performance.now();(window.__fydrSkeleton=window.__fydrSkeleton||{}).shownAt=t;" +
+  "if(typeof window.$RT!=='number'||window.$RT<t)window.$RT=t;});})();</script>";
+
 export function SkPage({ label, children }: { label: string; children: React.ReactNode }) {
   return (
     <>
       <span className="visually-hidden" role="status" aria-busy="true" aria-live="polite">
         Loading {label}
       </span>
-      <div className="sk-page" aria-hidden="true">
-        {children}
-      </div>
+      <SkHeld>{children}</SkHeld>
+      {/* The script is the innerHTML of a hidden span rather than a <script>
+          element of its own: the parser runs it either way on a hard load,
+          and on a soft navigation React sets innerHTML without warning that
+          a script it created will not run (it would not, and need not). */}
+      <span hidden dangerouslySetInnerHTML={{ __html: SHOWN_SCRIPT }} />
     </>
   );
 }

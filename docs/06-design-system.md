@@ -2612,9 +2612,9 @@ stateDiagram-v2
 | Spinner only | For an action the user just triggered, inside the control that triggered it |
 | No layout shift | The skeleton occupies the final layout's dimensions |
 | Delay | **200 ms** (Isabella, 15 September 2026, `docs/decisions/skeleton-gate.md`; this row said 150 ms). The skeleton is invisible for the first 200 ms of the wait and appears only if the wait outlasts it — a render that finishes in 180 ms shows nothing. Built once on `.sk-page` (opacity held at 0 through a delayed animation, the box laid out from the first frame), so every skeleton inherits it; the wait is announced to assistive technology at once, only the paint waits |
-| Minimum display | 400 ms once shown, so it does not flicker — **not built**. The 15 September ruling's own arithmetic ("one that takes 700 ms shows the skeleton for 500 ms of it") has no floor once shown, and a floor would hold real content back; on the sheet as a divergence to decide, not a miss |
+| Minimum display | **300 ms** once shown (Isabella, 15 September 2026, the same-day amendment in `docs/decisions/skeleton-gate.md`; this row said 400 ms, set against a 150 ms delay — 200 + 300 keeps the worst case at 500 ms). A render finishing at 210 ms therefore shows 300 ms of skeleton rather than 10 ms of it, the flash the hold exists to remove. Built as a property of the skeleton: the held element records the instant it appears (`SkHeld`, and an inline script for a streamed hard load, which also sets React's own reveal clock), and every page with a skeleton returns its awaited content through `SkFloor`, which waits out the remainder inside the same boundary — the same skeleton stays, never a second one. Content that beats the 200 ms hold on a soft navigation keeps the skeleton down (`sk-cancelled`) while React pays its own 300 ms retry throttle, so that wait shows nothing at all. Kept under reduced motion for the hold's reason: the floor is not motion either, it is a placeholder staying put |
 | Stale-while-revalidate | Cached data renders immediately with a subtle refreshing indicator. It is never replaced by a skeleton |
-| Reduced motion | No shimmer |
+| Reduced motion | No shimmer. The hold and the floor stay: neither is motion |
 
 The skeleton fill token is derived in §14.4, because the source has none.
 

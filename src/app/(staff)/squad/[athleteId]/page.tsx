@@ -48,6 +48,7 @@ import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICA
 import { ReadOnlyOwner } from '@/components/ReadOnlyOwner/ReadOnlyOwner';
 import { fetchRules, resolveRuleForAthlete } from '@/lib/queries/nutritionRules';
 import { fetchUserNames } from '@/lib/queries/users';
+import { SkFloor } from '@/components/Skeleton/SkFloor';
 
 export const metadata = { title: 'Athlete · Fydr' };
 
@@ -248,7 +249,29 @@ const MIN_USEFUL_DEFAULT_DAYS = 7;
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-export default async function AthletePage({
+/* Returned through SkFloor: this route has a loading.tsx skeleton, and once
+ * that skeleton is shown it stays for at least 300ms (docs/decisions/
+ * skeleton-gate.md, the same-day amendment). SkFloor is where the content
+ * waits for the remainder; it is a pass-through on a wait where no skeleton
+ * showed. The guard counts that every skeleton route returns through it.
+ *
+ * The content is awaited, not mounted as an element: an async component
+ * child would stream as a row of its own, after SkFloor had already
+ * rendered with nothing to show, and the floor has to be paid at the moment
+ * the content is ready. Awaiting keeps the page's own timing exactly as it
+ * was — every query ran before its JSX was returned anyway. */
+export default async function AthletePage(props: {
+  params: Promise<{ athleteId: string }>;
+  searchParams: SearchParams;
+}) {
+  return (
+    <SkFloor>
+      {await AthletePageContent(props)}
+    </SkFloor>
+  );
+}
+
+async function AthletePageContent({
   params,
   searchParams,
 }: {

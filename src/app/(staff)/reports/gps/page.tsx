@@ -45,6 +45,7 @@ import { isPremium } from '@/lib/tier';
 import type { AppRole } from '@/lib/types/database';
 import { ExportDialog } from '@/components/ExportDialog/ExportDialog';
 import type { ExportDescriptor } from '@/lib/exportDescriptor';
+import { SkFloor } from '@/components/Skeleton/SkFloor';
 
 /** Sessions with real GPS data, for the "jump to date" dropdown — every one
  *  on record, not just the handful the chip row below has room for
@@ -258,7 +259,26 @@ function pctMaxBand(pct: number | null): number | null {
   return pct < 70 ? 0 : pct < 80 ? 1 : pct < 85 ? 2 : pct < 90 ? 3 : 4;
 }
 
+/* Returned through SkFloor: this route has a loading.tsx skeleton, and once
+ * that skeleton is shown it stays for at least 300ms (docs/decisions/
+ * skeleton-gate.md, the same-day amendment). SkFloor is where the content
+ * waits for the remainder; it is a pass-through on a wait where no skeleton
+ * showed. The guard counts that every skeleton route returns through it.
+ *
+ * The content is awaited, not mounted as an element: an async component
+ * child would stream as a row of its own, after SkFloor had already
+ * rendered with nothing to show, and the floor has to be paid at the moment
+ * the content is ready. Awaiting keeps the page's own timing exactly as it
+ * was — every query ran before its JSX was returned anyway. */
 export default async function GpsReportPage({ searchParams }: { searchParams: SearchParams }) {
+  return (
+    <SkFloor>
+      {await GpsReportPageContent({ searchParams })}
+    </SkFloor>
+  );
+}
+
+async function GpsReportPageContent({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, claims, tier, timezone } = await requireReport('gps');
 
   /* D-20 without exception (Isabella, 15 September 2026): a wholly premium

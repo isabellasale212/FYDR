@@ -216,8 +216,11 @@ design.
 production measurement was made (it is in that decision, in full) and step 3
 below is replaced by a rule on the page rather than a threshold applied
 once: all five skeletons stay, and `.sk-page` is invisible for the first
-200ms of any wait, appearing only if the wait outlasts it. Steps 1, 2 and 4
-are recorded here as they were run; step 3 is not to be acted on.
+200ms of any wait, appearing only if the wait outlasts it — and, by the
+same-day amendment, stays for at least 300ms once it has appeared (the
+three warm streams in the 200–400ms band above are exactly the ones that
+would otherwise flicker). Steps 1, 2 and 4 are recorded here as they were
+run; step 3 is not to be acted on.
 
 Everything above was measured from a laptop talking to Ireland at 55–70ms a
 round trip. On Vercel the function sits in Dublin beside the database at one

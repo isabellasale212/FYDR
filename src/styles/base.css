@@ -15005,6 +15005,14 @@ a.hist-row:active { background: var(--surf-sunken); }
    shifts when it paints; the reveal is a snap, not a fade, because the hold
    is an anti-flash measure and not an entrance. The measurement that used
    to decide which routes carry a skeleton no longer gates them.
+
+   AND THE 300ms FLOOR — the same decision's same-day amendment: once shown,
+   the skeleton stays for at least 300ms, so a wait of 210ms shows 300ms of
+   skeleton and not 10ms. The floor is not here, because CSS cannot keep an
+   element React has removed: the content waits instead (components/
+   Skeleton/SkFloor.tsx, with the clock in skeletonClock.ts and the
+   recorder in SkHeld.tsx). What is here is the signal they run on — the
+   `animationstart` of `sk-appear` below is the instant the hold ends.
    --------------------------------------------------------------------------- */
 .sk {
   display: block;
@@ -15062,6 +15070,12 @@ a.hist-row:active { background: var(--surf-sunken); }
   from { opacity: 0; }
   to { opacity: 1; }
 }
+/* Content beat the hold on a soft navigation (SkHeld.tsx adds this): the
+   hold's animation is dropped and the base opacity 0 stays, so a skeleton
+   React will replace in a moment never paints at all. */
+.sk-page.sk-cancelled {
+  animation: none !important;
+}
 @media (prefers-reduced-motion: reduce) {
   /* DELIBERATE. The block at the top of this file zeroes every
      animation-delay under reduced motion (2026-09-09), because staggered
@@ -15071,6 +15085,10 @@ a.hist-row:active { background: var(--surf-sunken); }
      remove. The hold is not motion: it is 200ms of nothing, then a snap, and
      what it withholds is a placeholder, never content. So it is kept under
      reduced motion, by a more specific !important than the universal one.
+     The 300ms floor that follows it (SkFloor.tsx) is kept under reduced
+     motion for the same reason: the floor is not motion either, it is a
+     placeholder staying put, and it keys off this animation's start, which
+     still fires with the duration collapsed.
      The duration stays collapsed (the reveal was a snap anyway), the shimmer
      stays off (its keyframe collapses like every other animation), and the
      announcement is unaffected because it is not inside this element. */

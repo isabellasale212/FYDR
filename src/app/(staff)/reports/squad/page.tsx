@@ -25,6 +25,7 @@ import { requireReport } from '@/lib/session';
 import { rpeOffLine } from '@/lib/rpeSetting';
 import { squadWeek } from '@/lib/squadWeek';
 import type { AppRole } from '@/lib/types/database';
+import { SkFloor } from '@/components/Skeleton/SkFloor';
 
 export const metadata = { title: 'Squad weekly report · Fydr' };
 
@@ -32,6 +33,25 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
 // Band, tone and suppression copy all from lib/acwr.ts — the one shared
 // ACWR definition (audit S1).
+
+/* Returned through SkFloor: this route has a loading.tsx skeleton, and once
+ * that skeleton is shown it stays for at least 300ms (docs/decisions/
+ * skeleton-gate.md, the same-day amendment). SkFloor is where the content
+ * waits for the remainder; it is a pass-through on a wait where no skeleton
+ * showed. The guard counts that every skeleton route returns through it.
+ *
+ * The content is awaited, not mounted as an element: an async component
+ * child would stream as a row of its own, after SkFloor had already
+ * rendered with nothing to show, and the floor has to be paid at the moment
+ * the content is ready. Awaiting keeps the page's own timing exactly as it
+ * was — every query ran before its JSX was returned anyway. */
+export default async function SquadWeeklyReportPage({ searchParams }: { searchParams: SearchParams }) {
+  return (
+    <SkFloor>
+      {await SquadWeeklyReportPageContent({ searchParams })}
+    </SkFloor>
+  );
+}
 
 /** screens/reports.md, report 2 of 5 — see lib/queries/squadWeeklyReport.ts's
  *  header for the full scope reasoning. Trailing 7 days ending a navigable
@@ -41,7 +61,7 @@ type SearchParams = Promise<Record<string, string | string[] | undefined>>;
  *  7 days, the same URL-state pattern the schedule grid's week nav uses.
  *  Added because a permanently-"today" window could never show a week that
  *  actually had data (audit B4). */
-export default async function SquadWeeklyReportPage({ searchParams }: { searchParams: SearchParams }) {
+async function SquadWeeklyReportPageContent({ searchParams }: { searchParams: SearchParams }) {
   const { db, orgId, orgName, claims, timezone, collectsRpe } = await requireReport('squad');
   const params = await searchParams;
   const groupIds = await resolveGroupFilter(params.groups);

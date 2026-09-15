@@ -26,9 +26,6 @@ export default async function DataConsentPage({ searchParams }: { searchParams: 
         <div className="hd">
           <h1 className="d">Data consent</h1>
         </div>
-        <p className="tiny">
-          <Link href="/me">← Me</Link>
-        </p>
         <div className="after-card">
           <h2 className="after-heading">A guardian answers this one</h2>
           <p className="after-note">The decision about your data is your guardian’s while you are under 18 on the club’s record.</p>

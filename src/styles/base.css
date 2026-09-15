@@ -1510,6 +1510,10 @@ body:has(.phone) {
   background-color: var(--phone-bg);
   /* The pinned tab bar's height without its inset — see .athlete-tabbar. */
   --athlete-tabbar-h: 80px;
+  /* No double-tap zoom (mobile queue #1, 15 Sept 2026): manipulation keeps
+     pan and pinch and drops only the double-tap gesture; the pinch is capped
+     at 2× by the athlete layout's viewport, never blocked. */
+  touch-action: manipulation;
 }
 /* Spec §1: horizontal page padding 22px on every athlete screen, body bottom
    padding 8px. The tab bar is a flex sibling with its own home-indicator
@@ -1547,7 +1551,17 @@ body:has(.phone) {
    scroll context the shell actually has. The bottom safe-area inset lives
    on .athlete-tabbar, where the document ends. */
 .phone-body {
-  flex: 1;
+  /* flex-basis AUTO, not the 0% that `flex: 1` expands to (mobile queue #10,
+     15 Sept 2026). Against .phone's indefinite height Chrome resolved 0% to
+     zero, so the body's hypothetical size was nothing, .phone stayed at its
+     100dvh minimum and a page taller than the screen OVERFLOWED the body
+     instead of growing it. A sticky footer then had nowhere to go: the
+     document did not scroll, `bottom: <bar>` pulled the footer up 80px and
+     it sat over the last content (the gym logger's session-RPE field). With
+     a content basis the body grows with its page, the document scrolls and
+     the footer's natural place is reachable. Still grows to push a short
+     page's foot down; still no overflow rule of its own. */
+  flex: 1 1 auto;
   min-height: 0;
   padding: 0 var(--sp-20) var(--sp-8);
   display: flex;
@@ -1655,6 +1669,12 @@ body:has(.phone) {
 .hd .status-pill {
   margin-left: auto;
 }
+/* A control on the title row — My data's Leaderboards (mobile queue #5). */
+.hd .hd-action {
+  margin-left: auto;
+  flex: none;
+  text-decoration: none;
+}
 
 /* -------- tab bar, §4 --------
  * The spec's rgba(255,255,255,0.94) translucent bar is light-theme only.
@@ -1702,6 +1722,43 @@ body:has(.phone) {
    (.subm) sits on top of it — only when the bar is there: the consent
    screens render no tab bar, and there the document still ends at the
    footer. */
+/* THE BACK BUTTON UNDER THE TITLE (Isabella, 15 Sept 2026, mobile queue #3):
+   the layout renders it before the page, so the body's flex order puts it
+   after the page's own title block (.hd, or the gym logger's .gym-head) and
+   before everything else, and it is as wide as its label — not a bar across
+   the top, which is what a stretched flex child made of it. One back
+   control per page: the pages' own "← Me" links and ← arrows are gone. */
+.phone-body > .hd,
+.phone-body > .gym-head {
+  order: 0;
+}
+.phone-body > .back-btn {
+  order: 1;
+  align-self: flex-start;
+  margin-bottom: 0;
+}
+.phone-body > :not(.hd):not(.gym-head):not(.back-btn) {
+  order: 2;
+}
+/* A sticky footer's container fills the body (mobile queue #10, 15 Sept
+   2026). On a page shorter than the viewport the footer's natural place was
+   the end of its own form or .gym-body — above the bottom — and `position:
+   sticky; bottom: <bar>` then pushed it UP over the last content (the gym
+   logger's session-RPE field sat 66px under it). Stretching the container to
+   the body's height puts the natural place at the bottom, so the content
+   scrolls clear of the footer and never under it. A flex column keeps every
+   child's own margins; the footer's margin-top: auto is the same rule the
+   body already applies to a direct-child footer. */
+.phone-body > form:has(> .subm),
+.gym-logger > .gym-body {
+  display: flex;
+  flex-direction: column;
+  flex: 1 0 auto;
+}
+.phone-body > form:has(> .subm) > .subm,
+.gym-logger > .gym-body > .subm {
+  margin-top: auto;
+}
 .phone:has(> .athlete-tabbar) > .phone-body {
   padding-bottom: calc(var(--sp-8) + var(--athlete-tabbar-h) + env(safe-area-inset-bottom, 0px));
 }
@@ -2783,6 +2840,17 @@ a.hist-row:focus-visible {
 }
 .avail-banner[data-tone='bad'] {
   color: var(--bad-pill-text);
+}
+/* Modified-for-injury and Out share the bad family (mobile queue #4, 15 Sept
+   2026), so shape and weight tell them apart, never colour alone: the status
+   word carries its glyph (◐ / ⊘) and Out's edge is the heavier one. */
+.avail-banner[data-status='unavailable'] {
+  border-width: 2px;
+}
+.avail-glyph {
+  display: inline-block;
+  margin-right: var(--sp-6);
+  font-weight: var(--w-regular);
 }
 .avail-banner[data-tone] .s {
   color: inherit;

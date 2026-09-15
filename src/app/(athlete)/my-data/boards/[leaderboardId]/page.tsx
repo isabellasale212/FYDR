@@ -43,12 +43,8 @@ export default async function MyBoardDetailPage({
   if (!board || board.visibility !== 'published') {
     return (
       <>
-        <div className="sheet-head">
-          <Link href="/my-data/boards" className="sheet-x" aria-label="Back to leaderboards">
-            <span aria-hidden="true">←</span>
-          </Link>
-          <h1 className="t">Leaderboard</h1>
-          <span style={{ width: 'var(--tap-min)' }} />
+        <div className="hd">
+          <h1 className="d">Leaderboard</h1>
         </div>
         <div className="empty">
           <h2>This leaderboard is not available</h2>
@@ -83,12 +79,8 @@ export default async function MyBoardDetailPage({
   if (gpsMetricBlocked(board.metric_key, tier)) {
     return (
       <>
-        <div className="sheet-head">
-          <Link href="/my-data/boards" className="sheet-x" aria-label="Back to leaderboards">
-            <span aria-hidden="true">←</span>
-          </Link>
-          <h1 className="t">Leaderboard</h1>
-          <span style={{ width: 'var(--tap-min)' }} />
+        <div className="hd">
+          <h1 className="d">Leaderboard</h1>
         </div>
         <div className="empty">
           <h2>Not on your club&rsquo;s plan</h2>
@@ -112,12 +104,8 @@ export default async function MyBoardDetailPage({
   if (!own) {
     return (
       <>
-        <div className="sheet-head">
-          <Link href="/my-data/boards" className="sheet-x" aria-label="Back to leaderboards">
-            <span aria-hidden="true">←</span>
-          </Link>
-          <h1 className="t">Leaderboard</h1>
-          <span style={{ width: 'var(--tap-min)' }} />
+        <div className="hd">
+          <h1 className="d">Leaderboard</h1>
         </div>
         <div className="empty">
           <h2>This leaderboard is not available</h2>
@@ -140,12 +128,8 @@ export default async function MyBoardDetailPage({
 
   return (
     <>
-      <div className="sheet-head">
-        <Link href="/my-data/boards" className="sheet-x" aria-label="Back to leaderboards">
-          <span aria-hidden="true">←</span>
-        </Link>
-        <h1 className="t">{board.name}</h1>
-        <span style={{ width: 'var(--tap-min)' }} />
+      <div className="hd">
+        <h1 className="d">{board.name}</h1>
       </div>
 
       <p className="tiny" style={{ marginBottom: 'var(--sp-10)' }}>

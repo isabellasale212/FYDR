@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { InjuryClinical } from '@/components/InjuryClinical/InjuryClinical';
 import { fetchAthleteAvailability } from '@/lib/queries/availability';
 import { fetchAthleteInjuryClinical } from '@/lib/queries/athleteInjuryClinical';
@@ -50,9 +49,6 @@ export default async function MyStatusPage() {
       <div className="hd">
         <h1 className="d">My status</h1>
       </div>
-      <p className="tiny">
-        <Link href="/me">← Me</Link>
-      </p>
 
       <div className="stack">
         <section className="card" aria-labelledby="q1" data-status-card="train">

@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { fetchMySarRequests } from '@/lib/queries/sarPack';
 import { SAR_HOW_TO_ASK, sarAthleteLine, sarPackContents, type SarStatus } from '@/lib/subjectAccess/words';
 import { formatDate } from '@/lib/format';
@@ -25,9 +24,6 @@ export default async function PrivacyPage() {
       <div className="hd">
         <h1 className="d">Privacy and my data</h1>
       </div>
-      <p className="tiny">
-        <Link href="/me">← Me</Link>
-      </p>
 
       <section className="card" aria-labelledby="pv-request-title">
         <h2 className="card-title" id="pv-request-title">

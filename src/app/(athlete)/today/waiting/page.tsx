@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { WaitingQueue } from '@/components/WaitingQueue/WaitingQueue';
 import { requireAthlete } from '@/lib/session';
 
@@ -17,9 +16,6 @@ export default async function WaitingToSendPage() {
       <div className="hd">
         <h1 className="d">Waiting to send</h1>
       </div>
-      <p className="tiny">
-        <Link href="/today">← Today</Link>
-      </p>
       <WaitingQueue orgId={orgId} athleteId={athleteId} userId={claims.userId} timezone={timezone} />
     </>
   );

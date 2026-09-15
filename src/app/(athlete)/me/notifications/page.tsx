@@ -32,9 +32,6 @@ export default async function AthleteNotificationsPage() {
       <div className="hd">
         <h1 className="d">Notifications</h1>
       </div>
-      <p className="tiny">
-        <Link href="/me">← Me</Link>
-      </p>
 
       {/* PATTERN-S9 artboard 6: the permanent, canonical route to install
           teaching — Settings › Reminders › Add to Home Screen. A reminder

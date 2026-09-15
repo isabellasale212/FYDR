@@ -14,10 +14,11 @@ Every athlete, any time. Base package.
 
 ## 3. What you see
 
-A page title, a **five-segment pill track — Wellness, Gym, Sessions, Nutrition,
+A page title with a **Leaderboards** button at its right (the only route in to
+`/my-data/boards` — moved up from a footer card on 15 September 2026, Isabella's
+mobile queue #5), a **five-segment pill track — Wellness, Gym, Sessions, Nutrition,
 Tests** (since 12 September 2026, ATH-ADULT-12 D1 reversed) — and that tab's
-content. Below it a footer card with one row, Leaderboards: the only route in to
-`/my-data/boards`.
+content.
 
 **TABS AND SEGMENTS ARE ONE LIST AGAIN** — in a different order. Five `?tab=`
 routes (`wellness`, `training`, `nutrition`, `testing`, `gym`); the bar draws all
@@ -28,10 +29,12 @@ accent-filled pill (D2 kept). `SEGMENT_DOMAINS` is derived from `SEGMENTS`, so
 training and nutrition flags now land in their tabs; `gps` and `compliance` still
 fall through to "Also noted for you".
 
-Each tab is a headline card over a list card, and every list shows a preview —
-four readiness days, three of everything else — under a **"See all N ->"** link
-that expands it in place via `?all=1`. There is no all-days, all-sessions or
-all-tests page; the link is that route, not a new one.
+Each tab is a headline card over a list card, and the day and session lists show
+a preview — four readiness days, three of everything else — under a **"See all N
+->"** link that expands it in place via `?all=1`. There is no all-days or
+all-sessions page; the link is that route, not a new one. **Tests are the
+exception since 15 September 2026 (mobile queue #6): every test is on the one
+page, no preview and no "See all 7 tests" link.**
 
 **An absent value in a list row is words, never a dash and never a zero**
 (ATH-ADULT-12, 12 September 2026). A wellness day with no entry reads "No
@@ -86,8 +89,8 @@ there is also no GPS for an athlete on any package.
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
 | A segment | Top | Switches tab | `/my-data?tab=` | nothing | no | never |
-| See all N | List footer | Expands the list in place | `/my-data?tab=…&all=1` | nothing | no | the list is already whole |
-| Leaderboards | Footer card | The board list | `/my-data/boards` | nothing | no | never |
+| See all N | List footer (days and sessions; not tests) | Expands the list in place | `/my-data?tab=…&all=1` | nothing | no | the list is already whole |
+| Leaderboards | The title row, right | The board list | `/my-data/boards` | nothing | no | never |
 | A logged gym session | Gym region | Opens the session | `/my-data/gym/[id]` | nothing | no | none logged |
 | Correct › on a set row of a session's detail | `/my-data/gym/[id]`'s set table | Opens the logger on that session's log with that set's correction already open — the one correction component (ATH-ADULT-13 C2, 13 September 2026; the detail's own inline form is gone) | `/gym/[sessionId]?log=[logId]&correct=[setId]` | nothing until Save correction | no | the log has no programme session to open the logger on |
 | A past day | Wellness region | Opens that day's entry, read only | `/check-in?date=...` | nothing | no | no entry |

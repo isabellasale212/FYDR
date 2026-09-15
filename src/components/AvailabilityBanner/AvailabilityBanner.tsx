@@ -77,7 +77,13 @@ export function AvailabilityBanner({
      keys the text colour on — the *-pill-text tokens, the ones built for
      type on a tint, measured at 4.5:1 or better in both themes by
      test-ath-adult-02.ts. Available stays the plain card. */
-  const tone = status === 'available' || status === null ? null : state.tone === 'bad' ? 'bad' : 'warn';
+  /* Modified for an INJURY is the bad family, not amber (Isabella, 15 Sept
+     2026, mobile queue #4); modified for anything else (load management, a
+     personal reason) stays amber. Out is the bad family too, so the two are
+     told apart by shape and weight, never colour alone (Class 3): the status
+     word carries its glyph (◐ modified, ⊘ out) and the Out card's edge is
+     the heavier one (base.css, data-status). */
+  const tone = status === 'available' || status === null ? null : state.tone === 'bad' || reasonCategory === 'injury' ? 'bad' : 'warn';
 
   return (
     <div
@@ -85,7 +91,8 @@ export function AvailabilityBanner({
       id="availability"
       className="avail-banner"
       data-tone={tone ?? undefined}
-      style={{ '--state-rgb': TONE_RGB[state.tone] } as CSSProperties}
+      data-status={status ?? undefined}
+      style={{ '--state-rgb': TONE_RGB[tone === 'bad' ? 'bad' : state.tone] } as CSSProperties}
     >
       <div style={{ flex: 1, minWidth: 0 }}>
         {/* Just the status word. Fydr Athlete App.dc.html 23a reads "Modified",
@@ -95,7 +102,14 @@ export function AvailabilityBanner({
             and the word was always the message. Beside it, the reason as a
             chip — a white chip on the tint, so it still reads as a chip. */}
         <div className="avail-head">
-          <div className="k">{state.label}</div>
+          <div className="k">
+            {tone ? (
+              <span className="avail-glyph" aria-hidden="true">
+                {state.glyph}
+              </span>
+            ) : null}
+            {state.label}
+          </div>
           {status !== 'available' && reasonCategory ? (
             <span className="avail-chip">{enumLabel(reasonCategory)}</span>
           ) : null}

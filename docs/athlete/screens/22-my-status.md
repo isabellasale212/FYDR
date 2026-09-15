@@ -93,7 +93,7 @@ Nothing. There is no form and no control other than the layout's Back, the
 
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
-| ← | Sheet head | Back to Me | `/me` | nothing | no | never |
+| Back | Under the title (the layout's one back control, 15 September 2026, mobile queue #3 — the page's own "← Me" is gone) | The previous page | history | nothing | no | when there is no previous page |
 
 Arriving marks the row seen (§2). That is the screen's only write.
 

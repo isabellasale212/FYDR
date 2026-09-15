@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { InstallCard } from '@/components/InstallCard/InstallCard';
 import { requireAthlete } from '@/lib/session';
 
@@ -11,12 +10,10 @@ export default async function InstallPage() {
   await requireAthlete();
   return (
     <>
-      <div className="sheet-head">
-        <Link href="/me/notifications" className="sheet-x" aria-label="Back to Reminders">
-          <span aria-hidden="true">←</span>
-        </Link>
-        <h1 className="t">Add to Home Screen</h1>
-        <span style={{ width: 'var(--tap-min)' }} />
+      {/* The page title only: the layout's Back button is the one back control
+          on every athlete page (Isabella, 15 Sept 2026, mobile queue #3). */}
+      <div className="hd">
+        <h1 className="d">Add to Home Screen</h1>
       </div>
       <InstallCard canonical />
     </>

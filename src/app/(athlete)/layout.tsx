@@ -1,7 +1,22 @@
+import type { Viewport } from 'next';
 import { BackButton } from '@/components/BackButton/BackButton';
 import { AthleteTabBar } from '@/components/AthleteTabBar/AthleteTabBar';
 import { requireAthlete } from '@/lib/session';
 import { DeviceBeacon } from '@/components/DeviceBeacon/DeviceBeacon';
+
+/** The athlete app stops behaving like a web page (Isabella, 15 Sept 2026,
+ *  mobile queue #1): pinch zoom is capped at 2× rather than blocked —
+ *  maximum-scale=1 or user-scalable=no is a WCAG 1.4.4 failure, and this
+ *  product has just spent a week on accessibility defects — and the
+ *  accidental double-tap zoom is prevented by `touch-action: manipulation`
+ *  on the shell (base.css .phone), which removes the double-tap gesture and
+ *  nothing else. viewport-fit=cover carried from the root layout (P5). */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 2,
+  viewportFit: 'cover',
+};
 
 /** The athlete shell, ATHLETE-APP-SPEC.md §2/§4: a fixed header (rendered
  *  per page, since the title and status pill are per-tab), a scrolling

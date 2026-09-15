@@ -2,7 +2,9 @@
 
 ## 1. Where it sits
 
-Tab 3 of 4, **labelled Gym in the tab bar**. Route `/programme`. File 210 lines.
+Tab 3 of 4, **labelled Programme in the tab bar** (Gym until 15 September 2026 —
+Isabella's mobile queue #7: the tab carries nutrition as well as gym). Route
+`/programme`. File 210 lines.
 
 ## 2. Who reaches it and when
 
@@ -80,4 +82,5 @@ primary actions sit low.
 
 ## 12. Open issues
 
-- **DECISION 2:** nutrition guidance lives behind a tab called Gym.
+- **DECISION 2:** nutrition guidance lives behind a tab called Gym. **Closed 15
+  September 2026: the tab is called Programme.**

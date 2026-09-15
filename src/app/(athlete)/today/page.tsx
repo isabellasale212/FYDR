@@ -189,7 +189,11 @@ export default async function TodayPage({
      nothing here: an all-clear does not need to interrupt. */
   const setByName = availability.current && availability.current.athlete_seen_at === null ? await fetchStaffName(orgId, availability.current.set_by) : null;
   const availState = availabilityStatus(availability.current?.status ?? null);
-  const availTone = availability.current?.status === 'unavailable' ? 'bad' : 'warn';
+  /* Red for Out and for a Modified whose reason is an injury (mobile queue
+     #4, 15 Sept 2026 — the same rule as the card it links to); amber for a
+     modified of any other kind. The dot's shape tells the two red states
+     apart on the card; here the words do. */
+  const availTone = availability.current?.status === 'unavailable' || (availability.current?.status === 'modified' && availability.current?.reason_category === 'injury') ? 'bad' : 'warn';
   const availSummary =
     availability.current && availability.current.status !== 'available'
       ? availabilityLine(

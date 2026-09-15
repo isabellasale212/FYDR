@@ -478,6 +478,12 @@ export default async function MyDataPage({
             count lives on Today, beside the list it counts; repeating it on a
             history screen is a number with nothing to do here. */}
         <h1 className="d">My data</h1>
+        {/* Leaderboards at the top right (Isabella, 15 Sept 2026, mobile queue
+            #5), not a row at the foot of the page — the one route in to
+            /my-data/boards, as before. */}
+        <Link href="/my-data/boards" className="btn-ghost-pill hd-action">
+          Leaderboards
+        </Link>
       </div>
 
       {/* A SEGMENTED PILL TRACK, three segments, per screens 03-08. It was six
@@ -604,8 +610,6 @@ export default async function MyDataPage({
           athleteId={athleteId}
           flags={flagsByDomain.get('testing') ?? []}
           timezone={timezone}
-          periodKey={periodKey}
-          showAll={showAll}
         />
       ) : (
         <GymTab
@@ -644,20 +648,8 @@ export default async function MyDataPage({
        *  on Me, so it reads as a way out rather than a fourth tab. Delete the
        *  card and the three destinations go with it — that is the decision, not
        *  a side effect. */}
-      <div className="card flush md-more">
-        {/* Leaderboards alone since 2026-09-12: Sessions and Weekly check-ins
-            are tabs again (D1). This row stays the only route in to
-            /my-data/boards. */}
-        <Link href="/my-data/boards" className="me-row">
-          <span className="k">
-            Leaderboards
-            <span className="s">the boards you appear on</span>
-          </span>
-          <span className="chev" aria-hidden="true">
-            &rsaquo;
-          </span>
-        </Link>
-      </div>
+      {/* The Leaderboards row that closed this page moved to the title row
+          (mobile queue #5, 15 Sept 2026). */}
     </>
   );
 }
@@ -1542,22 +1534,20 @@ async function TestingTab({
   athleteId,
   flags,
   timezone,
-  showAll,
-  periodKey,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
   orgId: string;
   athleteId: string;
   flags: VisibleFlag[];
   timezone: string;
-  showAll: boolean;
-  periodKey: RangeKey;
 }) {
   const summary = await fetchMyTestSummary(db, athleteId, { includeUnlogged: true });
-  /* Three rows, per the reference, unless ?all=1. The list is all-time and
-     unwindowed, so this is the only thing standing between an athlete with
+  /* Once three rows, per the reference, unless ?all=1. The list is all-time and
+     unwindowed, so that cap was the only thing standing between an athlete with
      twenty test definitions and a twenty-row card. */
-  const shownTests = showAll ? summary : summary.slice(0, LIST_PREVIEW_ROWS);
+  /* Every test on the one page (Isabella, 15 Sept 2026, mobile queue #6):
+     the three-of-seven preview and its "See all 7 tests" link are gone. */
+  const shownTests = summary;
 
   /* The headline test is the one most recently done, ties broken by name so
      the card does not reshuffle between two same-day tests on every render. */
@@ -1717,12 +1707,6 @@ async function TestingTab({
             All-time, not the window on the other tabs: a personal best measured inside a window
             is not a personal best. Your own results only &mdash; never a squad comparison.
           </p>
-          {/* The "See all 7 tests →" link the reference draws is built now. It
-              was refused before because the list already showed every test and
-              there is no all-tests page to open; the list shows three now, and
-              the link expands it here rather than opening a page that still
-              does not exist. */}
-          <SeeAllLink tab="testing" periodKey={periodKey} shown={shownTests.length} total={summary.length} noun="tests" />
         </div>
       </section>
     </div>

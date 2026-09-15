@@ -81,10 +81,12 @@ console.log('\n...but the two dropped tabs are still ROUTES, so their URLs keep 
     "NutritionCheckinForm's success return stays on the check-in page");
 }
 
-console.log('\nand a footer card is the route in to leaderboards');
+console.log('\nand the title row\'s Leaderboards button is the route in to leaderboards');
 {
-  assert(/md-more/.test(page), 'the footer card exists');
-  assert(/href="\/my-data\/boards"/.test(page), 'reaches leaderboards — the only route in to /my-data/boards');
+  /* Moved from a footer card to the title row on 15 Sept 2026 (Isabella's
+     mobile queue #5): a pill beside the h1, the same one route in. */
+  assert(!/md-more/.test(page), 'the footer card is gone');
+  assert(/className="btn-ghost-pill hd-action"/.test(page) && /href="\/my-data\/boards"/.test(page), 'reaches leaderboards from the title row — the only route in to /my-data/boards');
   assert(!/className="me-row"[^>]*href="\/my-data\?tab=training"/.test(page) && !/href="\/my-data\?tab=training" className="me-row"/.test(page), 'Sessions left the footer card for its tab');
   assert(!/href="\/my-data\?tab=nutrition" className="me-row"/.test(page), 'and so did Weekly check-ins');
 }

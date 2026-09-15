@@ -35,7 +35,9 @@ const ROOTS = new Set(['/dashboard', '/today', '/my-data', '/programme', '/me'])
 /* /my-data/gym/ since ATH-ADULT-13 (2026-09-12): the session detail carries
    one full-width "Back to gym history" in its footer, and the board draws one
    way back, not two. */
-const SELF_DISMISSING = ['/check-in', '/nutrition-check-in', '/rpe/', '/gym/', '/my-data/gym/'];
+/* /report-problem since 15 Sept 2026 (mobile queue #3, one back control per
+   page): its sheet carries a × to Today, so the layout's Back stands down. */
+const SELF_DISMISSING = ['/check-in', '/nutrition-check-in', '/rpe/', '/gym/', '/my-data/gym/', '/report-problem'];
 
 /** Screens that render their OWN copy inside their topbar, because their
  *  design places it there rather than above the page header. The layout's

@@ -23,7 +23,9 @@ import { usePathname } from 'next/navigation';
 const TABS = [
   { href: '/today', label: 'Today', icon: 'clock' },
   { href: '/my-data', label: 'My data', icon: 'bars' },
-  { href: '/programme', label: 'Gym', icon: 'dumbbell' },
+  /* "Programme", not "Gym", since 15 Sept 2026 (Isabella's mobile queue #7):
+     the tab carries nutrition as well as gym. The route stays /programme. */
+  { href: '/programme', label: 'Programme', icon: 'dumbbell' },
   { href: '/me', label: 'Me', icon: 'person' },
 ] as const;
 

@@ -1,4 +1,3 @@
-import Link from 'next/link';
 import { GlobalOptOutToggle } from '@/components/GlobalOptOutToggle/GlobalOptOutToggle';
 import { HideLeaderboardsToggle } from '@/components/HideLeaderboardsToggle/HideLeaderboardsToggle';
 import { fetchMyOptOuts } from '@/lib/queries/leaderboards';
@@ -29,12 +28,10 @@ export default async function MyLeaderboardsSettingsPage() {
 
   return (
     <>
-      <div className="sheet-head">
-        <Link href="/me" className="sheet-x" aria-label="Back to Me">
-          <span aria-hidden="true">←</span>
-        </Link>
-        <h1 className="t">Leaderboards</h1>
-        <span style={{ width: 'var(--tap-min)' }} />
+      {/* The page title only: the layout's Back button is the one back control
+          on every athlete page (Isabella, 15 Sept 2026, mobile queue #3). */}
+      <div className="hd">
+        <h1 className="d">Leaderboards</h1>
       </div>
 
       {isMinor ? (

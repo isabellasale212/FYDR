@@ -105,9 +105,14 @@ reached by an old link, says so in the athlete's own words (03-session-rating.md
 **The availability card, item 7, in detail**, because it is the part of this
 screen an athlete reads when something is wrong:
 
-- The tone-family card: fill, border and every word from one family — amber
-  for Modified, red for Unavailable, the plain card for Available. The status
-  word alone — **Available**, **Modified** or **Unavailable** — with the reason
+- The tone-family card: fill, border and every word from one family — red for
+  Unavailable, **red for a Modified whose reason is an injury** (15 September
+  2026, Isabella's mobile queue #4; amber for a Modified of any other kind), the
+  plain card for Available. Because Out and injury-Modified share the red family,
+  shape and weight tell them apart, never colour alone: the status word carries
+  its glyph (◐ Modified, ⊘ Unavailable) and the Unavailable card's edge is the
+  heavier one. The one-line banner above To do follows the same colour rule. The
+  status word — **Available**, **Modified** or **Unavailable** — with the reason
   category as a chip beside it when not available.
 - Then what they may do. `Available` reads "Everything is on." and nothing
   further. Otherwise the restrictions, joined with a middle dot; or the reason

@@ -643,10 +643,22 @@ export function GymSessionLogger({
   };
 
   return (
+    /* IN FLOW, not `position: absolute; inset: 0` (mobile queue #10, 15 Sept
+       2026). Pinned to the frame, the logger was a viewport-sized pane the
+       page could not grow past: a set list plus the session-RPE field ran to
+       the frame's edge, the document never scrolled, and the sticky footer —
+       held 80px above the bottom for the tab bar — sat over the RPE field.
+       In flow, the body grows with the list, the document scrolls, and the
+       footer's natural place is reachable, so the content scrolls clear of
+       it. The white surface still bleeds to the frame's edges through the
+       negative side margins; the header is still sticky at the top. */
     <div
+      className="gym-logger"
       style={{
-        position: 'absolute',
-        inset: 0,
+        position: 'relative',
+        margin: '0 calc(-1 * var(--sp-20))',
+        padding: '0 var(--sp-20)',
+        flex: '1 0 auto',
         background: 'var(--surf)',
         display: 'flex',
         flexDirection: 'column',

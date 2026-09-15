@@ -62,6 +62,14 @@ macronutrients beside it.
 | Edit a rule | A plan card | Changes a rate per kilogram | Stays here | Writes a new version of the rule | Nutritionist and sport scientist | Form submission | **Not built** |
 | **Assign a plan** | A plan card | Applies the rule to the athletes in scope | Stays here | **Recomputes and writes every affected athlete's absolute target**, expiring the previous one | Nutritionist and sport scientist | Form submission | **Not built** |
 | An athlete's name | The weight list | Opens that athlete | `/squad/[athleteId]` | Nothing | Any staff today | None | Never |
+| **Find an athlete** dropdown | Where the targets table stands, **phone width only** | Selects one athlete; the selected-athlete card below shows their plan | Stays here | Nothing | Same as the page | None | At 768px and wider |
+
+**Phone width (15 September 2026, mobile queue #19).** Below 768px the table
+of every athlete and their targets is hidden — it is a desktop view, 1054px
+wide — and a "Find an athlete" dropdown, grouped by unit as the table is,
+makes the same selection the table's rows make. The selected athlete's card
+is unchanged. Hidden at phone width, not withheld: the rows are in the page at
+every width (`docs/access-matrix.md` §8).
 
 **Assigning a plan is the only thing in Fydr that recomputes a target.** A weigh-in
 does not. Decision D-28.

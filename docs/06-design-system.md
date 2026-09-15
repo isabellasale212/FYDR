@@ -2385,6 +2385,19 @@ board's eight named tokens do not exist here and were each mapped. The same medi
 raises every staff control to the 44px floor on a phone (decided 2026-09-11, §0af); nothing
 changes at 768px and above.
 
+**Phone-width presentation (15 September 2026, Isabella's mobile queue #12–#20).** The
+same block carries two width gates — `[data-desktop-only]` hidden below 768px,
+`[data-phone-only]` hidden at 768px and above — and the rules built on them: the title bar
+carries the page's own `h1` (hidden from sight in `.page-head`, kept for assistive
+technology) and the group filter as a `.rsel-wrap` dropdown in the chip's place
+(`.ph-group-select`, at the 44px floor); the dashboard's week strip shows the selected day;
+the profile's Edit, "Change plan" and corrections panel, the nutrition targets table and
+"+ New programme" are hidden; Reports and `/programmes/new` show the desktop-only notice
+(`.desk-note`, the empty-period grammar's emphasised card); Print goes to `/print`. The
+shell is `display: contents` below 768px so its fixed bars are not an empty grid row.
+Presentation, not permission — `docs/access-matrix.md` §8 — and a tablet held upright or a
+narrow desktop window gets the same reduced view.
+
 Standard compositions at `xl`:
 
 | Surface | Composition |

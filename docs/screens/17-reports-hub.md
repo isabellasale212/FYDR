@@ -140,6 +140,16 @@ Premium card.
 
 ---
 
+**Phone width (15 September 2026, mobile queue #18).** Reports are desktop-only.
+Below 768px every `/reports/*` screen shows "Reports are desktop-only" with a
+way back to the dashboard (`src/app/(staff)/reports/layout.tsx`), and the
+staff phone shell's More sheet has no Reports row. The pages, their PDFs and
+their CSV exports answer as §3.5 of the access matrix says at every width —
+this is presentation, not permission (`docs/access-matrix.md` §8). A tablet
+held upright and a narrow desktop window see the notice too. The testing
+log (`/testing`), reached from the testing report, loses its phone entry point
+with them.
+
 ## 8. States
 
 **Loading.** Renders immediately.

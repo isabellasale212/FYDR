@@ -66,6 +66,16 @@ Decision D-12.
 | **Add a note** | A flag card | Records a note **without** acknowledging | Stays here | Writes a note against the flag | Coach or medic | None | Never |
 | **Dismiss** | A flag card | Closes the flag | Stays here | Sets the flag dismissed | Coach or medic | Yes | Hidden once closed |
 | An athlete's name | A flag card | Opens that athlete | `/squad/[athleteId]` | Nothing | Same | None | Never |
+| **Athlete** dropdown | Under the group filter, **phone width only** | Shows one athlete's flags | Stays here, `?athlete=<id>` in the address; "Every athlete" clears it | Nothing | Same | None | At 768px and wider (it is drawn below 768 only — `data-phone-only`); when nobody in scope has an open flag |
+
+**One athlete's flags (15 September 2026, mobile queue #17).** `?athlete=<id>`
+narrows the list to that athlete, on any width; the dropdown that writes it is
+drawn at phone width only, its options the athletes with an open flag in the
+current scope (choosing one with none would show nothing). A "Showing <name>'s
+flags only — show every athlete" line names the state, so it is never carried by
+the dropdown's value alone. A value that is not a uuid is ignored, as a bad
+`?date=` is. At phone width the group chips stand down for the title bar's
+dropdown (`docs/access-matrix.md` §8).
 
 **Why noting and acknowledging are separate.** A coach may want to record what
 they think about a flag they are not ready to close. Before the standalone note

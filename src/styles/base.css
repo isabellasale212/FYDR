@@ -14491,9 +14491,64 @@ a.hist-row:active { background: var(--surf-sunken); }
 .ph-shell {
   display: none;
 }
+/* PHONE-WIDTH PRESENTATION, NOT PERMISSION (Isabella, 15 Sept 2026, mobile
+   queue #12–#20). Below 768px some staff controls and panels are hidden and
+   some phone-only substitutes shown. The server still allows every hidden
+   action: a control carrying data-desktop-only is "hidden at phone width",
+   never "not permitted", and docs/access-matrix.md records it in those
+   words ("Phone-width presentation"). The gate fires off the width
+   breakpoint alone, so a tablet held upright or a narrow desktop window
+   gets the reduced view too — a known consequence, recorded there.
+   !important, because a gate must win over whatever display a component's
+   own rule sets; this file otherwise uses it only for reduced motion. */
 @media (max-width: 767px) {
+  [data-desktop-only] {
+    display: none !important;
+  }
+}
+@media (min-width: 768px) {
+  [data-phone-only] {
+    display: none !important;
+  }
+}
+/* #15 (15 Sept 2026, mobile queue): the print screen (/print) — the
+   document previewed in the page, with Download and Open in viewer above
+   it. Reached from a Print control at phone width only (PrintLink); the
+   page itself is not width-gated, so these rules are not either. The
+   preview is a fixed share of the viewport; some phones draw only its
+   first page, and the caption says so. */
+.print-actions {
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-10);
+  margin-top: var(--sp-12);
+}
+.print-actions > a {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex: 1 1 140px;
+}
+.print-preview {
+  display: block;
+  width: 100%;
+  height: 60dvh;
+  margin-top: var(--sp-14);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--surf2);
+}
+@media (max-width: 767px) {
+  /* `contents`, not `block` (15 Sept 2026, mobile queue #18/#20): the shell
+     is a child of .app's grid, and as a block it was a grid ROW of its own
+     — everything inside it is fixed, so the row was empty, and on a screen
+     shorter than the viewport the grid's stretch handed it half the spare
+     height, pushing the content column down by ~200px (measured on the
+     desktop-only notice at 390: Back at y=290 under an 82px pad). With
+     `contents` the bars, scrim and sheet position from the viewport as
+     they did, and the column starts where its padding says. */
   .ph-shell {
-    display: block;
+    display: contents;
   }
   .ph-titlebar {
     position: fixed;
@@ -14524,12 +14579,95 @@ a.hist-row:active { background: var(--surf-sunken); }
     text-overflow: ellipsis;
     white-space: nowrap;
   }
+  /* #14 (15 Sept 2026, mobile queue): the group filter as a dropdown where
+     the "Whole squad" pill stood — the .rsel-wrap select ReportSelectNav
+     draws, at the 44px floor, the pill's own type size. Half the bar at
+     most; a long group name ellipsises inside the control. */
   .ph-group {
     flex: none;
+    min-width: 0;
     max-width: 50%;
+  }
+  .ph-titlebar .ph-group.rsel-wrap {
+    min-width: 0;
+  }
+  .ph-group.rsel-wrap select.ph-group-select {
+    min-height: var(--tap-min);
+    font-size: var(--fs-12);
+    font-weight: var(--w-semi);
+  }
+  /* #13: the screen's name is said once, in the bar. Every staff page's h1
+     sits in .page-head (the reports' in .rhead-title); below 768 it is
+     hidden from sight and kept for the accessibility tree — it is still the
+     page's heading, and the bar's h2 is what is seen. The shell reads its
+     text for the bar. */
+  .main .page-head h1,
+  .main .rhead-title {
+    position: absolute;
+    width: 1px;
+    height: 1px;
+    margin: -1px;
+    padding: 0;
     overflow: hidden;
-    text-overflow: ellipsis;
+    clip-path: inset(50%);
     white-space: nowrap;
+    border: 0;
+  }
+  /* #14: the chip row stands down for the bar's dropdown; the "Filtered to
+     … Clear filter" line beneath it stays, because it is the one place that
+     says the filter follows you to every screen. */
+  .main .chiprow[aria-label='Filter by squad group'] {
+    display: none;
+  }
+  /* #12: the dashboard's week strip shows the selected day only — today
+     unless ?day= says otherwise — and the head drops the week's count. The
+     day's own head (its label, MD, duration) is the column's. */
+  .main .dash-week-col:not([data-selected='true']) {
+    display: none;
+  }
+  .main .dash-week-col[data-selected='true'] {
+    border-top: none;
+  }
+  .main .dash-week-head-meta {
+    display: none;
+  }
+  /* #18 and #20: a desktop-only screen says so and shows nothing else —
+     a page whose content column carries a .desk-note (the reports' layout,
+     /programmes/new) hides every other child of the column but the back
+     button. The notice: the emphasised card of the empty-period grammar
+     (PATTERN-S6, the wash pair), title, one sentence, one way on. */
+  .main:has(> .desk-note) > :not(.desk-note):not(.back-btn) {
+    display: none;
+  }
+  .desk-note {
+    background: var(--wash-accent);
+    border-color: var(--border-accent-soft);
+    padding: var(--sp-16) var(--sp-18);
+  }
+  .desk-note-title {
+    margin: 0;
+    font-size: var(--fs-16);
+    font-weight: var(--w-bold);
+    line-height: 1.3;
+  }
+  /* --text, not --muted, and the action in --accent-on-wash: --muted on the
+     accent wash over the staff ground measured 4.17:1 in light (the sweep,
+     15 Sept 2026) — under AA. --accent-on-wash is the ink token made for
+     this wash (11 Sept 2026). */
+  .desk-note-body {
+    margin: var(--sp-8) 0 0;
+    font-size: var(--fs-13);
+    color: var(--text);
+    line-height: var(--lh-base);
+  }
+  .desk-note-action {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 100%;
+    margin-top: var(--sp-12);
+    color: var(--accent-on-wash);
+    border-color: var(--border-accent-soft);
   }
   /* The athlete tab bar, one column wider, fixed to the bottom so the page
      scrolls beneath it. Same fill, same border, same padding (9px 6px, and

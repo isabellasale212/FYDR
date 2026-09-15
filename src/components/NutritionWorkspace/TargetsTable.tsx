@@ -50,16 +50,22 @@ const GRID = 'minmax(168px, 1.2fr) 66px 128px 104px 80px 76px 76px 70px 74px 66p
  * The "Logged" column is real weigh-in days this week, for the original reason: no
  * daily nutrition log exists to count instead. */
 export function TargetsTable({ unitGroups, selectedAthleteId, onSelectAthlete }: Props) {
+  /* #19 (Isabella, 15 Sept 2026, mobile queue): the table of every athlete
+     and their targets is a DESKTOP-ONLY VIEW — data-desktop-only is
+     base.css's width gate, hidden below 768px, where the workspace draws a
+     "Find an athlete" dropdown in its place and the selected athlete's
+     card carries their plan. Presentation, not permission: the same rows
+     are in the page at every width. */
   if (unitGroups.length === 0) {
     return (
-      <div className="card" style={{ padding: 'var(--sp-16)' }}>
+      <div className="card" style={{ padding: 'var(--sp-16)' }} data-desktop-only="">
         <p className="tiny">No athletes in the current group filter.</p>
       </div>
     );
   }
 
   return (
-    <div className="card" style={{ padding: 'var(--sp-16)', overflowX: 'auto' }}>
+    <div className="card" style={{ padding: 'var(--sp-16)', overflowX: 'auto' }} data-desktop-only="">
       {/* Widened from 940 by the new "Staff target" column's 104px plus its gap. The
         * card already scrolls horizontally, so this sets the point at which it starts
         * rather than allowing the columns to crush. */}

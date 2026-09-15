@@ -47,6 +47,11 @@ athlete until blocks are added and athletes assigned.
 
 Built on the server; the form runs in the browser and submits to it.
 
+**Phone width (15 September 2026, mobile queue #20).** Below 768px this screen
+shows only "Creating a programme is desktop-only" with a way back to the
+programme list; the form is in the page, hidden by the width gate, and the
+`PROGRAMME_AUTHOR` redirect above is unchanged (`docs/access-matrix.md` §8).
+
 ## 8. States
 
 **Saving.** Disabled and says so. **Error.** The form stays, filled in.

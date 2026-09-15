@@ -61,12 +61,17 @@ console.log('1. the bar and the sheet, by role');
   const all = [...bar, ...sheet].map((r) => r.route);
   const visibleSidebar = SIDEBAR.filter((r) => r.roles.includes('sport_scientist')).map((r) => r.route);
   assert(new Set(all).size === all.length, 'no destination appears twice');
-  assert(visibleSidebar.every((r) => all.includes(r)) && all.includes('/flags'), 'every sidebar destination plus Flags is reachable');
-  assert(all.length === visibleSidebar.length + 1, 'and nothing else');
+  /* #18 (15 Sept 2026, mobile queue): Reports are desktop-only — the one
+     sidebar destination the phone shell deliberately does not carry. The
+     route still answers (with its notice); the sidebar row is untouched. */
+  const phoneSidebar = visibleSidebar.filter((r) => r !== '/reports');
+  assert(phoneSidebar.every((r) => all.includes(r)) && all.includes('/flags'), 'every sidebar destination but Reports, plus Flags, is reachable');
+  assert(!all.includes('/reports'), 'Reports has no row on a phone (#18, desktop-only; presentation, not permission)');
+  assert(all.length === phoneSidebar.length + 1, 'and nothing else');
   const sncSheet = sheetRows(['strength_conditioning'], true).map((r) => r.route);
   assert(sncSheet.includes('/flags') && !sncSheet.includes('/programmes'), 'for S&C, Gym leaves the sheet and Flags joins it');
   assert(!sheetRows(['coach'], false).map((r) => r.route).includes('/analytics'), 'Analytics is not in the sheet on Basic, as it is not in the sidebar');
-  assert(sheet.map((r) => r.route).join(',') === visibleSidebar.filter((r) => !bar.map((b) => b.route).includes(r)).join(','), 'the sheet keeps the sidebar\'s order');
+  assert(sheet.map((r) => r.route).join(',') === phoneSidebar.filter((r) => !bar.map((b) => b.route).includes(r)).join(','), 'the sheet keeps the sidebar\'s order');
 }
 
 console.log('\n2. the title bar names the screen');

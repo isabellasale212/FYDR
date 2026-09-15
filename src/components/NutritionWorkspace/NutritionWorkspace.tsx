@@ -579,6 +579,37 @@ export function NutritionWorkspace({
           onSelectAthlete={setSelectedAthleteId}
         />
 
+        {/* #19 (Isabella, 15 Sept 2026, mobile queue): at phone width the
+            table above is hidden and this finds one athlete instead — the
+            same selection the table's rows make, so the card below shows
+            their plan. The phone's own picker, grouped by unit as the table
+            is; the painted arrow is ReportSelectNav's. Phone only
+            (data-phone-only); the desktop page is unchanged. */}
+        <label className="rsel nutr-find" data-phone-only="">
+          <span className="rsel-label">Find an athlete</span>
+          <span className="rsel-wrap">
+            <select
+              value={selectedAthleteId ?? ''}
+              onChange={(e) => setSelectedAthleteId(e.target.value || null)}
+              aria-label="Find an athlete to show their plan"
+            >
+              <option value="">Choose an athlete</option>
+              {unitGroupsWithTargets.map((g) => (
+                <optgroup key={g.unit} label={g.unit}>
+                  {g.athletes.map((a) => (
+                    <option key={a.id} value={a.id}>
+                      {a.displayName}
+                    </option>
+                  ))}
+                </optgroup>
+              ))}
+            </select>
+            <span className="rsel-chev" aria-hidden="true">
+              &#9660;
+            </span>
+          </span>
+        </label>
+
         <SelectedAthleteCard
           athlete={selectedAthlete}
           planLabel={selectedPlanLabel}

@@ -26,10 +26,12 @@ export default async function StaffLayout({
   const today = todayIso(timezone);
   const msToMidnight = Date.parse(zonedTimeToUtcIso(addDays(today, 1), '00:00', timezone)) - Date.now();
 
-  /* The phone title bar's group chip (STAFF-SS-01): the active filter as the
-     cookie holds it (§0ak — one cookie, every chip row writes it), named the
-     way the pages name it. Read here, once, for the shell; the pages still
-     resolve their own scope from the URL and the cookie as before. */
+  /* The phone title bar's group dropdown (STAFF-SS-01; a dropdown since
+     15 Sept 2026, #14): the active filter as the cookie holds it (§0ak — one
+     cookie, every chip row writes it), named the way the pages name it for
+     the stale-filter notice. Read here, once, for the shell's first paint;
+     the pages still resolve their own scope from the URL and the cookie as
+     before, and the shell follows them on the client. */
   const [groups, filter] = await Promise.all([fetchGroups(db, orgId), resolveGroupFilterDetailed(undefined)]);
   const groupIds = filter.groupIds;
   const groupLabel = groupScopeLabel(groups, groupIds);
@@ -63,8 +65,12 @@ export default async function StaffLayout({
         orgName={orgName}
         premium={isPremium(tier)}
         previewingTier={previewingTier}
-        groupLabel={groupLabel}
         flagsBadge={flagsBadge}
+        /* #14 (15 Sept 2026): the bar's dropdown — names only, and the ids
+           the cookie holds (the label above names the same set), for the
+           first paint; the shell re-reads the URL and the cookie itself. */
+        groups={groups.map((g) => ({ id: g.id, name: g.name }))}
+        groupIds={groupIds}
       />
       <main className="main" id="main">
         <BackButton />

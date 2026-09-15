@@ -132,11 +132,16 @@ export default async function ProgrammesPage({
         </div>
       </div>
 
+      {/* #20 (Isabella, 15 Sept 2026, mobile queue): creating a programme is
+          DESKTOP-ONLY — both "+ New programme" links are hidden at phone
+          width (data-desktop-only, base.css's width gate) and /programmes/new
+          draws its notice there. Presentation, not permission: PROGRAMME_AUTHOR
+          still decides who may create, at every width. */}
       {programmes.length === 0 ? (
         <div className="card">
           <p className="tiny">No programmes yet.</p>
           {hasAnyRole(claims.roles, PROGRAMME_AUTHOR) ? (
-            <Link href="/programmes/new" className="btn-primary" style={{ marginTop: 'var(--sp-12)', display: 'inline-flex' }}>
+            <Link href="/programmes/new" className="btn-primary" style={{ marginTop: 'var(--sp-12)', display: 'inline-flex' }} data-desktop-only="">
               + New programme
             </Link>
           ) : null}
@@ -178,6 +183,7 @@ export default async function ProgrammesPage({
                 href="/programmes/new"
                 className="btn-primary"
                 style={{ marginTop: 'var(--sp-12)', width: '100%', display: 'inline-flex', justifyContent: 'center' }}
+                data-desktop-only=""
               >
                 + New programme
               </Link>

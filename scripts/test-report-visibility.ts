@@ -65,7 +65,10 @@ function walk(dir: string): string[] {
     return statSync(p).isDirectory() ? walk(p) : [p];
   });
 }
-const files = expectCount('source files under the reports tree (the index page aside)', walk(BASE).filter((f) => /\.(tsx?|ts)$/.test(f) && f !== join(BASE, 'page.tsx')), 34);
+/* 35 since 15 Sept 2026: reports/layout.tsx, the phone-width desktop-only
+   notice (mobile queue #18) — a layout, not a route, so it gates on nothing
+   and is not in routeFiles below. */
+const files = expectCount('source files under the reports tree (the index page aside)', walk(BASE).filter((f) => /\.(tsx?|ts)$/.test(f) && f !== join(BASE, 'page.tsx')), 35);
 const routeFiles = expectCount('report pages and export/pdf routes', files.filter((f) => /\/(page\.tsx|route\.tsx?|route\.ts)$/.test(f)), 26);
 /* The route directory is the key, with two exceptions since the training
    report split (13 September 2026): /reports/training-load is the

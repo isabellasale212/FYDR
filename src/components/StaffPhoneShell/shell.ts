@@ -48,11 +48,19 @@ export function barRows(roles: readonly AppRole[], premium: boolean): PhoneRow[]
   return [...fixed, phoneSlot(roles)];
 }
 
+/** #18 (Isabella, 15 Sept 2026, mobile queue): Reports are desktop-only, so
+ *  the sheet has no row for them. The route still answers — with the
+ *  desktop-only notice its layout draws — and the sidebar row is untouched;
+ *  this is the phone's presentation, not a permission. A tablet held upright
+ *  or a narrow desktop window sees the same sheet (the breakpoint's known
+ *  consequence). */
+const PHONE_HIDDEN = new Set(['/reports']);
+
 /** Everything the bar does not carry, in the sidebar's order, plus Flags when
- *  the slot went to another role. */
+ *  the slot went to another role — less the desktop-only sections. */
 export function sheetRows(roles: readonly AppRole[], premium: boolean): PhoneRow[] {
   const inBar = new Set(barRows(roles, premium).map((r) => r.route));
-  const rows = visibleSidebar(roles, premium).filter((r) => !inBar.has(r.route));
+  const rows = visibleSidebar(roles, premium).filter((r) => !inBar.has(r.route) && !PHONE_HIDDEN.has(r.route));
   return inBar.has(FLAGS.route) ? rows : [...rows, FLAGS];
 }
 

@@ -1,11 +1,13 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { useEffect, useRef, useState } from 'react';
+import { usePathname, useRouter, useSearchParams } from 'next/navigation';
+import { useEffect, useRef, useState, useTransition } from 'react';
 import type { AppRole } from '@/lib/types/database';
 import { staffRoleLabel } from '@/lib/access';
 import { SIDEBAR } from '@/components/Sidebar/Sidebar';
+import { groupScopeLabel, parseGroupParam } from '@/lib/groupFilter';
+import { GROUP_FILTER_COOKIE, writeGroupFilterCookie } from '@/lib/groupFilterCookie';
 import { barRows, pageTitle, sheetRows } from './shell';
 
 /* STAFF-SS-01 — the staff shell on a phone (below 768px only; the CSS hides
@@ -32,6 +34,31 @@ import { barRows, pageTitle, sheetRows } from './shell';
  * corners, --shadow, rgb(--ink-rgb / 0.35) for the scrim (the check-in
  * spec's own backdrop figure), and the raw 44px floor. No blur: the athlete
  * bar's was removed 2026-09-08 because nothing ever passed behind it.
+ *
+ * TWO CHANGES AT PHONE WIDTH ONLY (Isabella, 15 Sept 2026, mobile queue):
+ *
+ *   #13 THE TITLE IS SAID ONCE. The bar's title is the page's own h1 — read
+ *   from the document after each navigation — and the CSS hides that h1
+ *   from sight below 768px (never from the accessibility tree: it stays
+ *   the page's heading). The section name from the route table is the
+ *   server render and the fallback for a page with no h1.
+ *
+ *   #14 THE GROUP FILTER IS A DROPDOWN IN THE BAR, where the "Whole squad"
+ *   pill stood: a native select of Whole squad plus every live group. It
+ *   writes the same cookie the chip rows write (§0ak) and pushes the same
+ *   ?groups= the chips push, so the page re-runs its query the same way;
+ *   the chip row itself is hidden below 768px by the CSS. A multi-group
+ *   selection made on a desktop still shows here, as its own option, so
+ *   the bar never says "Whole squad" over a filtered page. Presentation
+ *   only: nothing about who may filter what has moved.
+ *
+ *   ITS VALUE IS READ ON THE CLIENT, the way the page resolves its own
+ *   scope (§0ak): ?groups= for this page load, else the cookie. The layout
+ *   that renders this shell reads the cookie only — a layout has no search
+ *   params — and is not re-rendered on a same-segment navigation, so the
+ *   server's groupIds is right on a fresh load with a bare URL and stale
+ *   after a chip or dropdown press or on a shared link. The server value is
+ *   the first paint; the effect below replaces it once mounted.
  */
 
 type Props = {
@@ -40,13 +67,15 @@ type Props = {
   orgName: string;
   premium: boolean;
   previewingTier?: boolean;
-  /** The active group filter, as the page's own chip row names it — "Whole
-   *  squad" or the group names. Read by the layout from the same cookie the
-   *  chips write (§0ak), so the bar and the chips cannot disagree. */
-  groupLabel: string;
   /** STAFF-SS-01 C3: athletes with an open flag in the active scope — the
    *  Flags slot's badge, the dashboard panel's headline number. */
   flagsBadge?: number;
+  /** #14: the live groups, for the bar's dropdown, and the ids the cookie
+   *  holds as the layout resolved them — the first paint's value (the
+   *  header comment says why the client re-reads it). Before #14 this was
+   *  a groupLabel string for a pill, read the same way. */
+  groups: readonly { id: string; name: string }[];
+  groupIds: readonly string[];
 };
 
 /* The bar's glyphs: the sidebar's own for the rows it carries; a flag for
@@ -69,11 +98,66 @@ function glyphFor(route: string): React.ReactNode {
   return SIDEBAR.find((r) => r.route === route)?.icon ?? FLAG_ICON;
 }
 
-export function StaffPhoneShell({ roles, fullName, orgName, premium, previewingTier = false, groupLabel, flagsBadge = 0 }: Props) {
+/** The page's own h1, wherever a staff page draws one: every page's sits in
+ *  .page-head; the reports' ReportHeader draws .rhead-title. */
+const PAGE_H1 = 'main.main .page-head h1, main.main .rhead-title';
+
+export function StaffPhoneShell({ roles, fullName, orgName, premium, previewingTier = false, flagsBadge = 0, groups, groupIds }: Props) {
   const pathname = usePathname();
+  const router = useRouter();
   const [open, setOpen] = useState(false);
   const moreRef = useRef<HTMLButtonElement>(null);
   const firstRowRef = useRef<HTMLAnchorElement>(null);
+
+  /* #13: the bar's title follows the page's h1. Read after each navigation
+     and whenever the page's content changes under the same path (the
+     leaderboard and thresholds pages draw a different h1 per state), so the
+     bar cannot say one thing while the hidden h1 says another. */
+  const [docTitle, setDocTitle] = useState<string | null>(null);
+  useEffect(() => {
+    const main = document.querySelector('main.main');
+    const read = () => setDocTitle(document.querySelector<HTMLElement>(PAGE_H1)?.textContent?.trim() || null);
+    read();
+    if (!main) return;
+    const observer = new MutationObserver(read);
+    observer.observe(main, { childList: true, subtree: true, characterData: true });
+    return () => observer.disconnect();
+  }, [pathname]);
+
+  /* #14: the dropdown's value — the URL's ?groups= for this page load, else
+     the cookie, read after each navigation; the server's groupIds until
+     then. While a push is in flight it shows what was just chosen, as the
+     chips do. */
+  const searchParams = useSearchParams();
+  const urlGroups = searchParams.get('groups');
+  const [clientValue, setClientValue] = useState<string | null>(null);
+  useEffect(() => {
+    if (urlGroups !== null) {
+      setClientValue(parseGroupParam(urlGroups).join(','));
+      return;
+    }
+    const raw = document.cookie.split('; ').find((c) => c.startsWith(`${GROUP_FILTER_COOKIE}=`));
+    setClientValue(raw ? parseGroupParam(decodeURIComponent(raw.slice(GROUP_FILTER_COOKIE.length + 1))).join(',') : '');
+  }, [pathname, urlGroups]);
+  const [isPending, startTransition] = useTransition();
+  const [optimistic, setOptimistic] = useState<string | null>(null);
+  const currentValue = clientValue ?? (groupIds.length === 0 ? '' : groupIds.join(','));
+  const selectValue = isPending && optimistic !== null ? optimistic : currentValue;
+  /* A selection of more than one group (made with the chips on a desktop)
+     is one option of its own, labelled as the pages label it. */
+  const multi = selectValue.includes(',') ? selectValue : null;
+  function chooseGroup(value: string) {
+    const next = value ? value.split(',') : [];
+    writeGroupFilterCookie(next);
+    const search = new URLSearchParams(window.location.search);
+    if (next.length === 0) search.delete('groups');
+    else search.set('groups', next.join(','));
+    const query = search.toString();
+    setOptimistic(value);
+    startTransition(() => {
+      router.push(query ? `${pathname}?${query}` : pathname);
+    });
+  }
 
   const bar = barRows(roles, premium);
   const sheet = sheetRows(roles, premium);
@@ -107,9 +191,28 @@ export function StaffPhoneShell({ roles, fullName, orgName, premium, previewingT
   return (
     <div className="ph-shell">
       <header className="ph-titlebar">
-        <h2 className="ph-title">{pageTitle(pathname)}</h2>
-        <span className="pill pill-neutral ph-group" title="The active group filter">
-          {groupLabel}
+        <h2 className="ph-title">{docTitle ?? pageTitle(pathname)}</h2>
+        {/* The native select keeps the phone's own picker; the painted arrow
+            is the app's, as ReportSelectNav draws it. */}
+        <span className="rsel-wrap ph-group" aria-busy={isPending} style={isPending ? { opacity: 0.6 } : undefined}>
+          <select
+            className="ph-group-select"
+            aria-label="Filter by squad group"
+            title="The active group filter"
+            value={selectValue}
+            onChange={(e) => chooseGroup(e.target.value)}
+          >
+            <option value="">Whole squad</option>
+            {groups.map((g) => (
+              <option key={g.id} value={g.id}>
+                {g.name}
+              </option>
+            ))}
+            {multi ? <option value={multi}>{groupScopeLabel(groups, multi.split(','))}</option> : null}
+          </select>
+          <span className="rsel-chev" aria-hidden="true">
+            &#9660;
+          </span>
         </span>
       </header>
 

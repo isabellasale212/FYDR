@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { redirect } from 'next/navigation';
+import { DesktopOnlyNotice } from '@/components/DesktopOnlyNotice/DesktopOnlyNotice';
 import { ProgrammeForm } from '@/components/ProgrammeForm/ProgrammeForm';
 import { requireStaff } from '@/lib/session';
 import { PROGRAMME_AUTHOR, PROGRAMME_EDIT, REHAB_PROGRAMME, hasAnyRole } from '@/lib/access';
@@ -18,6 +19,16 @@ export default async function NewProgrammePage() {
 
   return (
     <>
+      {/* #20 (Isabella, 15 Sept 2026, mobile queue): creation is desktop-only.
+          Below 768px the notice is all this page shows (base.css's
+          `.main:has(> .desk-note)` rule hides the rest); the gate above is
+          the permission, unchanged, and the form is in the page at every
+          width. */}
+      <DesktopOnlyNotice
+        title="Creating a programme is desktop-only"
+        body="Open Fydr on a desktop or laptop to build a programme. Every programme can be read here on your phone."
+        action={{ href: '/programmes', label: 'Back to Gym programme' }}
+      />
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">

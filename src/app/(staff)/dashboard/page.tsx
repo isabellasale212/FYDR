@@ -380,7 +380,12 @@ async function DashboardPageContent({ searchParams }: { searchParams: SearchPara
           </p>
         ) : null}
         <div className="dash-week-head">
-          <span className="dash-week-head-title">This week</span>
+          {/* #12 (15 Sept 2026, mobile queue): below 768px the strip shows the
+              selected day only — the CSS hides the other columns and the
+              week's count — so the head names the day, not the week. Two
+              spans, one per width; the desktop one is what it always was. */}
+          <span className="dash-week-head-title" data-desktop-only>This week</span>
+          <span className="dash-week-head-title" data-phone-only>{dayTitle(selectedDay, wallClockToday)}</span>
           <span className="dash-week-head-meta">
             {weekSessionCount} session{weekSessionCount === 1 ? '' : 's'} · {weekRangeLabel}
           </span>

@@ -46,6 +46,9 @@ type Props = {
   planLine: string;
   planHref: string | null;
   planLabel: string;
+  /** #16: true when the link is the author's "Change plan" — hidden at phone
+   *  width; a reader's "View plan" is not. */
+  planPhoneHidden?: boolean;
   /** Never editable here — computed from date_of_birth, not a stored field. */
   ageDisplay: string;
   /** Never editable here — BodyWeightPanel, right below on this same page,
@@ -98,6 +101,7 @@ export function PlayerProfileBio({
   planLine,
   planHref,
   planLabel,
+  planPhoneHidden = false,
   ageDisplay,
   weightDisplay,
   initialPosition,
@@ -165,12 +169,18 @@ export function PlayerProfileBio({
         {avatar}
         {nameBlock}
         {domainChips}
+        {/* #16 (Isabella, 15 Sept 2026, mobile queue): Edit is HIDDEN AT PHONE
+            WIDTH — data-desktop-only, base.css's width gate — not withheld:
+            the server still accepts the edit from anyone canEdit names, and
+            the desktop control is unchanged. Both branches, so the blocked
+            "Edit" a medic sees goes with it. */}
         {canEdit ? (
           <button
             type="button"
             className="btn-ghost-pill"
             aria-expanded={editing}
             onClick={() => (editing ? cancel() : setEditing(true))}
+            data-desktop-only=""
           >
             {editing ? 'Cancel' : 'Edit'}
           </button>
@@ -179,6 +189,7 @@ export function PlayerProfileBio({
             className="btn-ghost-pill"
             blocked
             reason="Medical reads the roster and does not edit it — only a coach can change these details."
+            data-desktop-only=""
           >
             Edit
           </BlockedButton>
@@ -313,8 +324,11 @@ export function PlayerProfileBio({
 
       <div className="pp-hero-plan-row">
         <span className="num pp-hero-plan">{planLine}</span>
+        {/* #16: "Change plan" is hidden at phone width (presentation, not
+            permission — the builder still accepts the author); a reader's
+            "View plan" stays, it changes nothing. */}
         {planHref ? (
-          <Link href={planHref} className="btn-ghost-pill accent">
+          <Link href={planHref} className="btn-ghost-pill accent" data-desktop-only={planPhoneHidden ? '' : undefined}>
             {planLabel}
           </Link>
         ) : null}

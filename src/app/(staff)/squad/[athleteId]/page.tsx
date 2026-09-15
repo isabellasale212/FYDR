@@ -781,7 +781,11 @@ async function AthletePageContent({
         * period control deliberately does not reach it — and a coach who has
         * set the page to a year must be told that, or a correction they
         * cannot find here reads as an entry that does not exist. */}
-      <p className="cap" style={{ margin: '0 0 -6px' }}>
+      {/* #16 (Isabella, 15 Sept 2026, mobile queue): the entries and their
+        * corrections are DESKTOP-ONLY VIEWS — hidden at phone width by
+        * base.css's width gate, the caption with the panel. Presentation,
+        * not permission: the correction write is unchanged for canCorrect. */}
+      <p className="cap" style={{ margin: '0 0 -6px' }} data-desktop-only="">
         Entry corrections cover a fixed {CORRECTION_WINDOW_DAYS} days ({formatDate(correctionRange.from, timezone)}{' '}
         to {formatDate(correctionRange.to, timezone)}) and do not follow the period control &mdash; it is a
         bound on how much of the entry base table this card reads, not a view window. An older entry is
@@ -1269,6 +1273,7 @@ async function AthletePageContent({
             )}
             planHref={programme ? `/programmes/${programme.programmeId}` : null}
             planLabel={canAuthorProgramme ? 'Change plan' : 'View plan'}
+            planPhoneHidden={canAuthorProgramme}
             ageDisplay={emDash(profile.age)}
             weightDisplay={
               !canSeeBodyMass ? null : bodyWeight.latestKg !== null ? `${formatNumber(bodyWeight.latestKg, 1)} kg` : EM_DASH

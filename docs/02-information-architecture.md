@@ -343,6 +343,16 @@ installable web app `docs/platform-decision.md` decides on (13 September 2026); 
 no native phone app and none is planned, so the paragraphs below that commit to one are
 the record of a superseded proposal, and their five-tab grouping is not to be built.
 
+**Phone-width presentation, 15 September 2026 (Isabella, "Mobile-only edits, ahead of
+Friday").** Below 768px the title bar carries the page's own title (the in-page `h1` is
+hidden from sight, not from assistive technology) and the group filter as a dropdown in
+the place the "Whole squad" chip held; the chip rows on the pages stand down. Reports are
+desktop-only — the More sheet has no Reports row and `/reports/*` shows a notice — and
+so is creating a gym programme. Every Print control goes to `/print`, a screen with Back,
+Download and the document. None of it is a permission: `docs/access-matrix.md` §8 lists
+each item as "hidden at phone width", and records that a tablet held upright or a narrow
+desktop window gets the same reduced view, because the gate is the width breakpoint.
+
 **Status: COMMITTED, 5 August 2026.** The client confirmed staff need a phone app as well as
 the web dashboard. O-6, O-24 and O-725 are resolved: **both**. A fifteen-item flat sidebar
 will not fit a tab bar, and this is the grouping that solves it.

@@ -88,7 +88,14 @@ absent for the S&C and the nutritionist regardless (§4, role versions). Each
 session in a day's column is its coloured dot, its title and **its type as a
 word** — "Lower A · Gym" — since 15 September 2026 (the accessibility sweep's
 Class 3.1): the dot's hue alone carried the type, and a title does not say gym or
-testing. The dot stays; the word is the second channel.
+testing. The dot stays; the word is the second channel. **At phone width the
+strip is the day, not the week** (15 September 2026, mobile queue #12): below
+768px the head reads "Today" (or the selected day's name) and only the selected
+day's column is drawn — its label, MD, duration and sessions — the other five
+and the week's session count hidden by the width gate; the six links are still
+in the page, and a tablet held upright sees the day too
+(`docs/access-matrix.md` §8). The group filter chips stand down for the title
+bar's dropdown at the same width (#14).
 
 **Five headline tiles** — for the sport scientist, the coach and
 the medic. **The S&C and the nutritionist read their own versions** (STAFF-SS-01

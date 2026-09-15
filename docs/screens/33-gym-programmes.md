@@ -49,6 +49,12 @@ for an individual, the override is named rather than silently applied.
 | Exercise library | Header | Opens the library | `/programmes/exercises` | Nothing | Any staff today | None | Never |
 | A programme's name | The list | Opens it | `/programmes/[programmeId]` | Nothing | Any staff | None | Never |
 
+**Phone width (15 September 2026, mobile queue #20).** Creating a programme is
+desktop-only: both "+ New programme" links are hidden below 768px and
+`/programmes/new` shows a desktop-only notice there. Presentation, not
+permission — `PROGRAMME_AUTHOR` gates creation at every width, and every
+programme is still readable on a phone (`docs/access-matrix.md` §8).
+
 ## 7. How this page is built, in plain English
 
 Built on the server. Programmes, their blocks and their assignments are read

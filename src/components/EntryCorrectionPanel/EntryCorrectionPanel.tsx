@@ -94,8 +94,12 @@ export function EntryCorrectionPanel({
   const correctedWellness = wellness.filter((w) => w.priorRevisions.length > 0 || w.current.revision_of !== null).length;
   const correctedTraining = training.filter((t) => t.priorRevisions.length > 0 || t.current.revision_of !== null).length;
 
+  /* #16 (Isabella, 15 Sept 2026, mobile queue): a desktop-only view —
+     data-desktop-only is base.css's width gate, hidden below 768px. Hidden
+     at phone width, not withheld: the entries and the correction write are
+     what they were for canCorrect on any width the server is asked from. */
   return (
-    <section className="card pp-card" aria-labelledby="pp-corrections-title">
+    <section className="card pp-card" aria-labelledby="pp-corrections-title" data-desktop-only="">
       <h2 className="card-title" id="pp-corrections-title">
         Entries and corrections
       </h2>

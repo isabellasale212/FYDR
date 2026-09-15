@@ -2,6 +2,8 @@ import Link from 'next/link';
 import { FlagCard } from '@/components/FlagCard/FlagCard';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
+import { ReportSelectNav } from '@/components/ReportSelectNav/ReportSelectNav';
+import { isUuid } from '@/lib/uuid';
 import { fetchFlagsList } from '@/lib/queries/flags';
 import { fetchGroups } from '@/lib/queries/groups';
 import { groupScopeLabel } from '@/lib/groupFilter';
@@ -55,7 +57,20 @@ export default async function FlagsPage({
     fetchFlagsList(db, orgId, groupIds),
   ]);
 
-  const flags = dateParam ? allFlags.filter((f) => f.flag_date === dateParam) : allFlags;
+  /* #17 (Isabella, 15 Sept 2026, mobile queue): one athlete's flags, by
+   * ?athlete=<id>. The dropdown that writes it is drawn at phone width only
+   * (data-phone-only, base.css's width gate); a desktop reader reaches it by
+   * URL alone. Same shape as ?date=: a value that is not a uuid is ignored,
+   * never thrown. The options are the athletes with an open flag in scope,
+   * from the list itself — choosing one with none would show nothing. */
+  const athleteParam = typeof params.athlete === 'string' && isUuid(params.athlete) ? params.athlete : null;
+  const athleteOptions = [...new Map(allFlags.map((f) => [f.athlete_id, f.name])).entries()]
+    .map(([value, label]) => ({ value, label }))
+    .sort((a, b) => a.label.localeCompare(b.label));
+  const athleteName = athleteParam ? (athleteOptions.find((o) => o.value === athleteParam)?.label ?? null) : null;
+
+  const flags = allFlags.filter((f) => (!dateParam || f.flag_date === dateParam) && (!athleteParam || f.athlete_id === athleteParam));
+  const everyFlagHref = `/flags${groupIds.length > 0 ? `?groups=${groupIds.join(',')}` : ''}`;
 
   return (
     <>
@@ -72,11 +87,35 @@ export default async function FlagsPage({
         <GroupFilter groups={groups} selected={groupIds} />
       </div>
 
+      {/* #17: the athlete dropdown, phone width only. ReportSelectNav keeps
+          every other param (the group filter, the day) as it writes this one;
+          "Every athlete" clears it. */}
+      {athleteOptions.length > 0 ? (
+        <div data-phone-only="" style={{ marginBottom: 'var(--sp-14)' }}>
+          <ReportSelectNav
+            label="Athlete"
+            paramKey="athlete"
+            value={athleteParam && athleteName ? athleteParam : ''}
+            clearValue=""
+            options={[{ value: '', label: 'Every athlete' }, ...athleteOptions]}
+            ariaLabel="Show one athlete's flags"
+          />
+        </div>
+      ) : null}
+
       {dateParam ? (
         <p className="sub" style={{ margin: '0 0 var(--s-5)' }}>
           Filtered to flags raised on <b>{formatDate(dateParam, timezone)}</b> —{' '}
-          <Link href={`/flags${groupIds.length > 0 ? `?groups=${groupIds.join(',')}` : ''}`} className="linklike">
+          <Link href={everyFlagHref} className="linklike">
             show every open flag
+          </Link>
+        </p>
+      ) : null}
+      {athleteParam ? (
+        <p className="sub" style={{ margin: '0 0 var(--s-5)' }}>
+          Showing <b>{athleteName ?? 'one athlete'}</b>&rsquo;s flags only —{' '}
+          <Link href={everyFlagHref} className="linklike">
+            show every athlete
           </Link>
         </p>
       ) : null}
@@ -86,7 +125,9 @@ export default async function FlagsPage({
           {flags.length === 0
             ? dateParam
               ? `No flags raised on ${formatDate(dateParam, timezone)}.`
-              : 'No open flags.'
+              : athleteParam
+                ? 'No open flags for this athlete.'
+                : 'No open flags.'
             : `${flags.length} open flag${flags.length === 1 ? '' : 's'}, most severe first · ${
                 flags.filter((f) => f.status === 'raised' || f.status === 'notified').length
               } awaiting acknowledgement.`}
@@ -94,11 +135,13 @@ export default async function FlagsPage({
 
         {flags.length === 0 ? (
           <EmptyState
-            title={dateParam ? 'No flags that day' : 'No open flags'}
+            title={dateParam ? 'No flags that day' : athleteParam ? 'No open flags for this athlete' : 'No open flags'}
             body={
               dateParam
                 ? `Nothing was raised on ${formatDate(dateParam, timezone)} in the current scope — the count on the dashboard may be for a different day if you've since navigated. Show every open flag above to check.`
-                : groupIds.length > 0
+                : athleteParam
+                  ? `${athleteName ?? 'This athlete'} has no open flag in the current scope. Show every athlete above to see the rest.`
+                  : groupIds.length > 0
                   ? `No open flags in the current scope (${groupScopeLabel(groups, groupIds)}) — clear the filter to check the whole squad.`
                   : 'The squad is within thresholds. That is the result, not a failure to load.'
             }

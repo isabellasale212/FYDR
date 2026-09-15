@@ -541,3 +541,39 @@ that role alone.
 Nothing in the app can prevent that, and nothing here proposes that it should:
 whoever grants roles has to know it. It belongs in the user management screen as
 a warning at the point of granting, and that is raised here as **decision D-25**.
+
+---
+
+## 8. Phone-width presentation (not permission)
+
+Set by Isabella on 15 September 2026 ("Mobile-only edits, ahead of Friday", the
+staff app at phone width). Below 768px the staff app hides some controls and
+panels and shows some phone-only substitutes. **None of this is a permission.**
+Every hidden action is still allowed by the server exactly as sections 3 to 6
+say, for exactly the roles they name; a person who reaches the same URL on a
+desktop, or narrows a desktop window and widens it again, has the control back.
+The words to use, in this document and in code comments, are **"hidden at phone
+width"** — never "not permitted".
+
+The gate is one CSS width breakpoint (`data-desktop-only` and `data-phone-only`
+in `src/styles/base.css`, and the `@media (max-width: 767px)` block). Two known
+consequences follow from that, recorded rather than fixed: **a tablet held
+upright and a narrow desktop window get the reduced view too**, because the
+breakpoint cannot tell a phone from a narrow window; and a desktop at full width
+is untouched, verified by pixel comparison at 1440 on the day.
+
+| # | Where | Hidden at phone width | Shown at phone width instead | Permission |
+|---|---|---|---|---|
+| 12 | Dashboard, the week strip | the other five days and the week's session count | the selected day (today unless `?day=`) | unchanged |
+| 13 | Every staff page | the in-page `h1` (from sight only — it stays the page's heading for assistive technology) | the title bar carries the page's own title | unchanged |
+| 14 | Every page with the group filter | the chip row | a dropdown in the title bar, writing the same cookie and `?groups=` as the chips; the "Filtered to … Clear filter" line stays | unchanged |
+| 15 | Every Print control | the new-tab PDF | `/print?doc=` — Back, Download (attachment), Open in viewer, an inline preview | unchanged: the PDF routes keep their own `requireStaff` and scope; `/print` frames the app's own `…/pdf` routes only |
+| 16 | Player profile | the name card's Edit (both the live control and the medic's blocked one), the author's "Change plan", and the entries-and-corrections panel with its caption | nothing; a reader's "View plan" stays | unchanged: the roster edit, the plan and the correction write are what section 3 says |
+| 17 | Flags | — | an athlete dropdown (`?athlete=<id>`), the athletes with an open flag in scope | unchanged: all staff |
+| 18 | Reports (`/reports/*`) | the whole report | a desktop-only notice; the More sheet has no Reports row | unchanged: the report pages and their PDF and CSV routes answer as section 3.5 says. The testing log (`/testing`), reached only from the testing report, loses its phone entry point with them — see the queue note |
+| 19 | Nutrition | the table of every athlete and their targets | a "Find an athlete" dropdown; the selected athlete's card carries their plan | unchanged |
+| 20 | Gym programme | "+ New programme" (both places); `/programmes/new` shows the desktop-only notice | — | unchanged: `PROGRAMME_AUTHOR` still gates creation at every width; the form is in the page |
+
+Class 3 holds throughout: no state on these screens is carried by colour alone
+(the dropdowns say their value, the notice says what it is, the flags line
+names the athlete).

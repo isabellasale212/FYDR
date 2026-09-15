@@ -26,48 +26,51 @@ export class CoverageError extends Error {}
  *  of the commit that last changed it; a mismatch is not a nuisance to be
  *  bumped past, it is the run asking what was added or lost. */
 /* 15 Sept 2026, the mobile queue: +1 athlete page (me/profile) and +1
-   component (NutritionTargetsCard) — twelve counts moved by one or two. */
+   component (NutritionTargetsCard) — twelve counts moved by one or two.
+   Later that day, the staff phone items: +1 staff page (/print), +1 layout
+   (reports/layout.tsx), +1 component (DesktopOnlyNotice), +1 lib
+   (printableDoc.ts) — fourteen counts moved. */
 export const COUNTS = {
   /** supabase/migrations/*.sql */
   migrations: 133,
   /** supabase/tests/*.sql (pgTAP) */
   pgtapTests: 94,
   /** every file under src, of any kind */
-  srcFiles: 547,
+  srcFiles: 551,
   /** .ts and .tsx under src */
-  srcTs: 542,
+  srcTs: 546,
   /** .tsx under src */
-  srcTsx: 298,
+  srcTsx: 301,
   /** .css under src (src/styles) */
   srcCss: 2,
   /** page.tsx under src/app/(staff) */
-  staffPages: 76,
+  staffPages: 77,
   /** .tsx under src/app/(staff) */
-  staffTsx: 95,
+  staffTsx: 97,
   /** route.ts / route.tsx under src/app/(staff) */
   staffRoutes: 44,
   /** .tsx under src/app/(athlete) */
   athleteTsx: 27,
   /** .tsx under src/components */
-  componentTsx: 165,
+  componentTsx: 166,
   /** .ts and .tsx under src/components */
-  componentTs: 171,
+  componentTs: 172,
   /** .tsx under src/app */
-  appTsx: 132,
+  appTsx: 134,
   /** .ts and .tsx under src/app */
-  appTs: 179,
+  appTs: 181,
   /** every file under src/app, of any kind */
-  appFiles: 182,
+  appFiles: 184,
   /** route.ts and .tsx under src/app */
-  appRoutesAndTsx: 173,
+  appRoutesAndTsx: 175,
   /** route.ts under src/app */
   appRoutes: 41,
   /** .ts and .tsx under src/lib */
-  libTs: 191,
+  libTs: 192,
   /** page.tsx under src/app */
-  appPages: 107,
+  appPages: 108,
   /** layout.tsx under src/app */
-  appLayouts: 3,
+  appLayouts: 4,
   /** page.tsx under src/app/(athlete) */
   athletePages: 25,
 };

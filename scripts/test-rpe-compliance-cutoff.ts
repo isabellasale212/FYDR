@@ -156,7 +156,9 @@ console.log('\n6. the outbox sends when the athlete rated, and the database deci
   assert(/revise_training_entry/.test(t), 'and a staff correction\'s own time');
   const training = strip(read('src/lib/queries/training.ts'));
   assert(/options: \{ submittedAt\?: string \} = \{\}/.test(training) && /submitted_at: options\.submittedAt/.test(training), 'submitTrainingEntry writes submitted_at only when told when');
-  const flusher = strip(read('src/components/OutboxFlusher/OutboxFlusher.tsx'));
+  /* The flush lives in lib/outboxFlush.ts since 2026-09-14 (Today and the
+     queue screen's Send now run the one function). */
+  const flusher = strip(read('src/lib/outboxFlush.ts'));
   assert(/submitTrainingEntry\([\s\S]{0,200}\{ submittedAt: item\.queuedAt \}/.test(flusher), 'the outbox flush passes the time it queued the rating');
   const rpeForm = strip(read('src/components/RpeForm/RpeForm.tsx'));
   assert(/submitTrainingEntry\(createClient\(\), input, \{ orgId, athleteId, userId \}\)/.test(rpeForm) && !/submittedAt/.test(rpeForm), 'the online screen sends nothing and gets the arrival time');

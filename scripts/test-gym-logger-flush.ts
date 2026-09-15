@@ -28,8 +28,10 @@ console.log('the one retry');
   assert(/sessionLogId/.test(m) && /item\.input\.gym_session_log_id === /.test(m), 'the logger can limit the retry to its own session');
   assert(/export async function resolveGymSetConflict\(/.test(m) && /classifyGymSetConflict\(/.test(m) && /markGymSetConflict\(item\.input\.id, live \? \{ \.\.\.live, \.\.\.naming \} : null\)/.test(m), "§0aa's resolver moved with it, unchanged");
   assert(/return \{ sent, queued/.test(m), 'it reports what it sent and what is still waiting');
-  const f = strip(read('src/components/OutboxFlusher/OutboxFlusher.tsx'));
-  assert(/await flushGymSets\(db, orgId, athleteId\)/.test(f) && !/for \(const item of gymSetItems\)/.test(f), "Today's flusher calls it rather than carrying its own gym loop");
+  /* Since 2026-09-14 the whole flush is lib/outboxFlush.ts, which Today and
+     the queue screen's Send now both run; it calls flushGymSets for the gym. */
+  const f = strip(read('src/lib/outboxFlush.ts'));
+  assert(/await flushGymSets\(db, orgId, athleteId\)/.test(f) && !/for \(const item of gymSetItems\)/.test(f), "the shared flush calls it rather than carrying its own gym loop");
 }
 
 console.log('\nthe logger');

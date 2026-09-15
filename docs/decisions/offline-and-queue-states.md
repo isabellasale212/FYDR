@@ -11,7 +11,11 @@ built. They were written down nowhere in one place.
 An athlete standing in a gym with no bars must never be shown a network error
 for something they have already done. An entry is **saved on the phone
 first** and sent when there is signal. The send is not the athlete's job:
-there is no "Send now", no per-item retry, and nothing to press.
+there is no per-item retry. **Ruled 14 September 2026 (decision batch, #2),
+after this record was written: one "Send now" IS added, on the queue screen
+only, never per item — "a person with one bar of signal is better served by
+a button than by a screen telling them to relax." The S6 wording stays
+everywhere else. Built the same night.**
 
 ## The mechanism (`src/lib/outbox.ts`, `src/components/OutboxFlusher/OutboxFlusher.tsx`)
 
@@ -49,8 +53,9 @@ there is no "Send now", no per-item retry, and nothing to press.
   can hold several sets), then one row per entry, oldest first, each named as
   the athlete did it — "Morning check-in · Sun 13 Sept", "Session rating ·
   Sat 12 Sept", "Gym · Upper B · Sun 13 Sept" — with its own denominator and
-  the time it was saved. No Send now; the sentence says the phone sends it
-  the moment it has signal.
+  the time it was saved. Since 14 September, one Send now under the rows for
+  the whole queue (the ruling above); the sentence still says the phone sends
+  by itself.
 - **Sent.** A flush that sent something changes the count in place, once —
   "3 entries sent at 12:04. Nothing is waiting." — in the same status region,
   gone on the next load. Keyed to what landed, not to the `online` event, so

@@ -30,9 +30,16 @@ Then one row per entry, oldest first, on the app's own list row (`.hist-row`):
 - **The local time it was saved** — "07:42" for today, "Sat 12 Sept 20:05"
   for any other day — in the value slot, tabular figures.
 
-Under the rows: "Oldest first. Each sends by itself when you have signal — there
-is nothing to press." No progress bars, no spinners, no per-item retry, no Send
-now: the send is not the athlete's job (`OutboxFlusher` on Today does it).
+Under the rows: "Oldest first. Each sends by itself when you have signal. If
+you have a bar now, you can try them all at once." — then **Send now**, one
+primary for the whole queue (decision batch 14 September 2026, #2: on this
+screen only, never per item; the S6 wording stays everywhere else — Today and
+the gym logger still say the phone sends by itself). It runs exactly what
+Today runs on load and on `online` (`lib/outboxFlush.ts`, the one flush both
+screens share) and the outcome is said in the status line under it: "Sent 3
+entries. Nothing is waiting.", "Sent one entry · 2 still waiting.", or "Still
+no signal. Everything is still saved here." No progress bars, no spinners, no
+per-item retry. A flagged conflict is not waiting and is not retried here.
 
 A flagged conflict is not "waiting". It stays on Today's notice with its
 Discard, and is left out of this list and its count, so the count here is the
@@ -60,6 +67,7 @@ the last send's time and count. All from the phone's own storage
 | Control | Where | Does | Then |
 |---|---|---|---|
 | ← Today | Under the heading | Back to Today | — |
+| **Send now** | Under the rows, when anything is waiting | Tries every waiting entry once, oldest first, the way Today does | The list re-reads itself; the line under the button says what went and what is still waiting |
 
 ## 7. Offline and sync
 

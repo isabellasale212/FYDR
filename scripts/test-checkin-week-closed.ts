@@ -28,7 +28,10 @@ assert(!isPolicyRefusal(new Error('Failed to fetch')), 'nor is no signal');
 
 console.log('\nthe flusher');
 const flusher = strip(readFileSync('src/components/OutboxFlusher/OutboxFlusher.tsx', 'utf8'));
-const loop = flusher.slice(flusher.indexOf('for (const item of nutritionItems)'), flusher.indexOf('flushGymSets(db, orgId, athleteId)'));
+/* The loops live in lib/outboxFlush.ts (2026-09-14, shared with Send now);
+   the notice stays on Today's flusher component. */
+const flush = strip(readFileSync('src/lib/outboxFlush.ts', 'utf8'));
+const loop = flush.slice(flush.indexOf('for (const item of nutritionItems)'), flush.indexOf('flushGymSets(db, orgId, athleteId)'));
 assert(/isPolicyRefusal\(err\)/.test(loop) && loop.indexOf('isPolicyRefusal(err)') < loop.indexOf('isDuplicateKeyError(err)'), 'a policy refusal on a check-in is caught before the slot-conflict check');
 assert(/markNutritionCheckinClosed\(item\.input\.id\);\s*continue;/.test(loop), 'flagged and never retried');
 assert(/the week has closed, so the database refused/.test(flusher) && /Discard this one/.test(flusher), 'Today says the week has closed, once, with Discard');

@@ -46,7 +46,11 @@ console.log('1. the decision');
 
 console.log('\n2. the flusher (the gym loop is lib/gymOutboxFlush.ts since ATH-ADULT-09 C4, shared with the logger)');
 {
-  const f = strip(read('src/components/OutboxFlusher/OutboxFlusher.tsx'));
+  /* The flush loops live in lib/outboxFlush.ts since 2026-09-14 (Today and
+     the queue screen's Send now run the one function); the snapshot, the
+     banners and the discard stay on Today's flusher component. */
+  const f = strip(read('src/lib/outboxFlush.ts'));
+  const ui = strip(read('src/components/OutboxFlusher/OutboxFlusher.tsx'));
   const g = strip(read('src/lib/gymOutboxFlush.ts'));
   assert(/export async function resolveGymSetConflict\(/.test(g), 'resolveGymSetConflict exists');
   assert(/fetchGymSetForSlot\(/.test(g), 'and looks the slot up in gym_set_logs_current');
@@ -57,12 +61,12 @@ console.log('\n2. the flusher (the gym loop is lib/gymOutboxFlush.ts since ATH-A
   assert(!/isDuplicateKeyError\(err\)\)\s*\{\s*dequeueGymSetLog/.test(gymLoop), 'and no longer dequeues blind');
   assert(/pendingGymSetLogs\(\)\.filter\(\s*\(item\) => !item\.conflictAt/.test(g) && /pendingGymSetLogs\(\)\.filter\(\(item\) => !item\.conflictAt\)/.test(f), 'a flagged gym item is skipped by the next flush');
   assert(/await flushGymSets\(db, orgId, athleteId\)/.test(f), "and Today's flusher runs that loop");
-  assert(/domain: 'gym' as const/.test(f), 'gym conflicts are in the snapshot');
+  assert(/domain: 'gym' as const/.test(ui), 'gym conflicts are in the snapshot');
   // Repointed 2026-09-13 (PATTERN-S6 C1): pending counts a gym session's queued sets as one entry.
-  assert(/new Set\(gym\.filter\(\(item\) => !item\.conflictAt\)\.map\(\(item\) => item\.input\.gym_session_log_id\)\)\.size/.test(f), 'and not counted as pending');
-  assert(/if \(domain === 'gym'\) dequeueGymSetLog\(id\)/.test(f), 'discard works for gym');
-  assert(/Use my numbers/.test(f) && /reviseGymSetLog\(/.test(f), '"Use my numbers" corrects the live set with the queued values');
-  assert(/from another tab or device/.test(f), 'the sentence the other three use');
+  assert(/new Set\(gym\.filter\(\(item\) => !item\.conflictAt\)\.map\(\(item\) => item\.input\.gym_session_log_id\)\)\.size/.test(ui), 'and not counted as pending');
+  assert(/if \(domain === 'gym'\) dequeueGymSetLog\(id\)/.test(ui), 'discard works for gym');
+  assert(/Use my numbers/.test(ui) && /reviseGymSetLog\(/.test(ui), '"Use my numbers" corrects the live set with the queued values');
+  assert(/from another tab or device/.test(ui), 'the sentence the other three use');
   assert(!/GymSessionLogger is a different UI, not covered here/.test(read('src/components/OutboxFlusher/OutboxFlusher.tsx')), 'the out-of-scope note is gone');
 }
 

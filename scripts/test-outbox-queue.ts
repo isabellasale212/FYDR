@@ -52,15 +52,22 @@ console.log('\n2. the header and the empty');
 console.log('\n3. the route, the link, the persisted send');
 {
   const page = strip(read('src/app/(athlete)/today/waiting/page.tsx'));
-  assert(/requireAthlete\(/.test(page) && /<WaitingQueue timezone=\{timezone\} \/>/.test(page), 'the route is the athlete\'s and hands the client the timezone');
+  assert(/requireAthlete\(/.test(page) && /<WaitingQueue orgId=\{orgId\} athleteId=\{athleteId\} userId=\{claims\.userId\} timezone=\{timezone\} \/>/.test(page), 'the route is the athlete\'s and hands the client the timezone and the identity Send now flushes as');
   const comp = strip(read('src/components/WaitingQueue/WaitingQueue.tsx'));
   assert(/^'use client';/.test(comp.trimStart()) && /queueRows\(/.test(comp) && /queueHeader\(/.test(comp) && /waitingEmptyLine\(/.test(comp), 'the client component reads the queues through the pure module');
   assert(/window\.addEventListener\('online', refresh\)/.test(comp) && /window\.addEventListener\('storage', refresh\)/.test(comp), 'it re-reads when the phone comes back online or the queue changes');
-  assert(!/Send now|Retry|Try again/.test(comp), 'no Send now, no retry — the send is not the athlete\'s job');
+  /* Decision batch 14 September 2026, #2: "Send now" is added, on this
+     screen only, never per item. One button for the whole queue, running the
+     same flush Today runs (lib/outboxFlush.ts); still no per-item retry. */
+  assert(/data-send-now/.test(comp) && /flushOutbox\(createClient\(\), \{ orgId, athleteId, userId \}\)/.test(comp), 'one Send now for the whole queue, running the flush Today runs');
+  assert((comp.match(/<button/g) ?? []).length === 1 && !/Retry|Try again/.test(comp), 'and no per-item retry — the one button is the whole queue\'s');
+  assert(/Still no signal/.test(comp) && /still waiting/.test(comp), 'the outcome is said: what went, what is still waiting, or still no signal');
+  assert(!/Send now/.test(strip(read('src/components/OutboxFlusher/OutboxFlusher.tsx'))) && !/Send now/.test(strip(read('src/components/GymSessionLogger/GymSessionLogger.tsx'))), 'the S6 wording stays everywhere else: no Send now on Today or in the logger');
   assert(!/transition|animation/.test(comp), 'nothing animates');
   const flusher = strip(read('src/components/OutboxFlusher/OutboxFlusher.tsx'));
   assert(/href="\/today\/waiting"[^>]*>\s*See what is waiting/.test(flusher), '"See what is waiting" under Today\'s count, the only route to the queue');
-  assert(/recordLastSent\(\{ count: sent, at: new Date\(\)\.toISOString\(\) \}\)/.test(flusher), 'a flush that sent records when and how many, for the empty screen');
+  const flushLib = strip(read('src/lib/outboxFlush.ts'));
+  assert(/recordLastSent\(\{ count: sent, at: new Date\(\)\.toISOString\(\) \}\)/.test(flushLib) && /flushOutbox\(createClient\(\), \{ orgId, athleteId, userId \}\)/.test(flusher), 'a flush that sent records when and how many, for the empty screen — in the one flush both screens run');
   assert(/new Set\(gym\.filter\(\(item\) => !item\.conflictAt\)\.map\(\(item\) => item\.input\.gym_session_log_id\)\)\.size/.test(flusher), 'Today counts entries the way the queue does — a gym session is one entry');
   const outbox = strip(read('src/lib/outbox.ts'));
   assert(/export function recordLastSent\(/.test(outbox) && /export function lastSent\(/.test(outbox) && /fydr-outbox-last-sent/.test(outbox), 'the last send lives beside the queues');

@@ -20,7 +20,7 @@
  * pins to the viewport carries its own (ATH-ADULT-03, commit 2).
  */
 import { readFileSync } from 'node:fs';
-import { standaloneViewportContent } from '@/lib/viewportMeta';
+import { browserViewportContent, carriesZoomCap } from '@/lib/viewportMeta';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -89,20 +89,25 @@ console.log('\nthe tab bar is pinned (P5, 15 Sept 2026), and the body and a pinn
 /* THE INSTALLED APP DOES NOT ZOOM — Isabella, 15 Sept 2026, tested in the
    standalone app, her call over the builder's 2× cap (recorded either way,
    06-design-system.md §11.7). Two gestures, two mechanisms: the pinch by the
-   viewport meta rewritten in standalone only (a Safari tab ignores it by
-   design), the double-tap by touch-action: manipulation regardless. */
-console.log('\nthe installed app does not zoom (15 Sept 2026), and the record says whose call it was');
+   viewport meta, the double-tap by touch-action: manipulation regardless.
+   THE CAP IS SERVER-RENDERED since 16 Sept 2026: the 15 Sept build rewrote
+   the meta on the client once standalone was detected, and the installed
+   app still zoomed — iOS settles the viewport at parse. Now the HTML
+   carries the cap and a browser tab is the one that gets rewritten. */
+console.log('\nthe installed app does not zoom (15–16 Sept 2026), and the record says whose call it was');
 {
   const layout = readFileSync('src/app/(athlete)/layout.tsx', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
   const vp = /export const viewport: Viewport = \{([\s\S]*?)\};/.exec(layout)?.[1] ?? '';
   assert(vp !== '' && /viewportFit:\s*'cover'/.test(vp), 'the athlete viewport keeps viewport-fit=cover');
-  assert(!/maximumScale|userScalable/.test(vp), 'and carries no cap of its own — the 2× cap is gone; the block is standalone-only');
-  assert(/<StandaloneViewport \/>/.test(layout), 'the layout mounts StandaloneViewport');
-  const sv = readFileSync('src/components/StandaloneViewport/StandaloneViewport.tsx', 'utf8');
-  assert(/displayModeFrom\(/.test(sv) && /display-mode: standalone/.test(sv) && /standalone\?: boolean/.test(sv), 'which decides by display mode — the manifest\'s or navigator.standalone — never by platform');
-  assert(/meta\[name="viewport"\]/.test(sv) && /standaloneViewportContent\(meta\.content\)/.test(sv), 'and rewrites the viewport meta in place');
-  assert(standaloneViewportContent('width=device-width, initial-scale=1, viewport-fit=cover') === 'width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no', 'the rewritten meta carries maximum-scale=1 and user-scalable=no and loses nothing — viewport-fit=cover stays');
-  assert(standaloneViewportContent('width=device-width, maximum-scale=2, viewport-fit=cover') === 'width=device-width, viewport-fit=cover, maximum-scale=1, user-scalable=no', 'an earlier cap is replaced, not doubled');
+  assert(/maximumScale:\s*1/.test(vp) && /userScalable:\s*false/.test(vp), 'and carries the cap ITSELF — maximum-scale=1, user-scalable=no in the server-rendered HTML, read at parse; never a client rewrite the installed app depends on');
+  assert(!/maximumScale:\s*2/.test(vp), 'the 2× cap is gone');
+  assert(/<ViewportZoom \/>/.test(layout), 'the layout mounts ViewportZoom');
+  const vz = readFileSync('src/components/ViewportZoom/ViewportZoom.tsx', 'utf8');
+  assert(/displayModeFrom\(/.test(vz) && /display-mode: standalone/.test(vz) && /standalone\?: boolean/.test(vz), 'which decides by display mode — the manifest\'s or navigator.standalone — never by platform');
+  assert(/if \(mode === 'standalone'\) return;/.test(vz) && /browserViewportContent\(meta\.content\)/.test(vz), 'and RELAXES the meta in a browser tab only — standalone is never touched');
+  assert(/\[pathname\]/.test(vz), 're-applied on every navigation');
+  assert(carriesZoomCap('width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover'), 'the guard\'s reading of a capped meta');
+  assert(browserViewportContent('width=device-width, initial-scale=1, maximum-scale=1, user-scalable=no, viewport-fit=cover') === 'width=device-width, initial-scale=1, viewport-fit=cover', 'the relaxed meta loses the two directives and nothing else — viewport-fit=cover stays');
   assert(/touch-action:\s*manipulation/.test(rule('.phone')), 'double-tap zoom is dead by touch-action: manipulation on the shell, independent of the viewport');
   assert(/touch-action:\s*manipulation/.test(rule(':root:has(.phone)')), 'and on the document when the shell is on it (the ground beside the 480px frame)');
   const ds = readFileSync('docs/06-design-system.md', 'utf8');
@@ -110,6 +115,7 @@ console.log('\nthe installed app does not zoom (15 Sept 2026), and the record sa
   assert(/Isabella, 15 September 2026/.test(record) && /like an app,\s+not a web page/.test(record), '06-design-system.md §11.7 records it with Isabella\'s name, the date and the reason');
   assert(/Safari tabs ignore this entirely, by design/.test(record) && /not a bug/.test(record), 'and that Safari tabs ignore it by design — the installed app and the browser differ, and that is not a bug');
   assert(/2× cap/.test(record) && /Her call over that recommendation/.test(record), 'and that it is her call over the builder\'s 2× recommendation');
+  assert(/server-rendered/.test(record) && /16 September 2026/.test(record), 'and, since 16 September, that the cap is server-rendered and why');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

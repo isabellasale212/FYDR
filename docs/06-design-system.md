@@ -2681,13 +2681,21 @@ installed (standalone) app: "wants pinch zoom gone entirely. It should behave li
 not a web page." Two gestures, two mechanisms, and both are needed — blocking one and not the
 other is why this kind of change so often appears not to have worked:
 
-- **Pinch zoom.** The athlete layout's viewport meta carries no cap
-  (`src/app/(athlete)/layout.tsx`: `width=device-width, initial-scale=1, viewport-fit=cover`).
-  When the app is standalone — the manifest's display mode honoured, or Safari's
-  `navigator.standalone` — `StandaloneViewport` rewrites it on the client to carry
-  `maximum-scale=1` and `user-scalable=no` as well (`lib/viewportMeta.ts`, a pure builder the
-  guard holds), keeping everything already there: `viewport-fit=cover` above all, or every
-  safe-area inset reports zero (§10.3).
+- **Pinch zoom.** The athlete layout's viewport meta is **server-rendered with the cap**
+  (`src/app/(athlete)/layout.tsx`: `width=device-width, initial-scale=1, maximum-scale=1,
+  user-scalable=no, viewport-fit=cover`), so an installed app reads it at parse and nothing
+  ever removes it. `ViewportZoom` lifts the two directives on the client **in a browser tab
+  only** — the display mode is a client fact (the manifest's mode, or Safari's
+  `navigator.standalone`) — re-applied on every navigation; `lib/viewportMeta.ts` is the pure
+  builder the guard holds. `viewport-fit=cover` stays throughout, or every safe-area inset
+  reports zero (§10.3). **Why this way round (16 September 2026):** the 15 September build
+  shipped the meta without a cap and rewrote it on the client once standalone was detected,
+  and Isabella's installed app still zoomed. iOS settles the viewport when it parses the
+  document; a rewrite after hydration is a change it may or may not act on, and nothing about
+  that can be verified without the device. The cap in the HTML is verifiable here (the served
+  document carries it; a stubbed standalone keeps it through hydration and navigation; a
+  browser tab loses it after hydration and keeps losing it across navigations), and it fails
+  safe: if the client never runs, the app is an app.
 - **Double-tap zoom.** `touch-action: manipulation` on the shell (`.phone`) and on the document
   when the shell is on it (`:root:has(.phone)`) — independent of the viewport meta, so the
   double-tap is dead in a browser tab too. It keeps pan and pinch and drops only the gesture.

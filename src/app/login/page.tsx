@@ -1,6 +1,7 @@
 import { Suspense } from 'react';
 import { LoginForm } from '@/components/LoginForm/LoginForm';
 import { FydrLockup } from '@/components/FydrLockup/FydrLockup';
+import { DraftsClearedOnSignOut } from '@/components/DraftsClearedOnSignOut/DraftsClearedOnSignOut';
 
 export const metadata = { title: 'Sign in · Fydr' };
 
@@ -56,9 +57,16 @@ export const metadata = { title: 'Sign in · Fydr' };
  *  the brand moment. Once ever would make it a thing most people never see. */
 const LAUNCH_ONCE_SCRIPT = `(function(){try{var s=document.currentScript;var m=s&&s.parentElement;if(!m)return;if(sessionStorage.getItem('fydr-launch-seen'))return;sessionStorage.setItem('fydr-launch-seen','1');m.setAttribute('data-animate','');}catch(e){}})();`;
 
-export default function LoginPage() {
+export default async function LoginPage({ searchParams }: { searchParams: Promise<Record<string, string | string[] | undefined>> }) {
+  /* The one thing read from the address here: whether the sign-out route
+     sent us. Then every draft on the device is cleared (decision-batch-
+     2026-09-15-pm.md #2). ?next= (a session that expired mid-form) is left
+     to the form, which is why an expired session never clears. */
+  const sp = await searchParams;
+  const signedOut = sp.signed_out === '1';
   return (
     <main className="launch" id="main" suppressHydrationWarning>
+      {signedOut ? <DraftsClearedOnSignOut /> : null}
       {/* Runs during parse, before this element paints, and sets data-animate
           only on a first visit. Has to be a plain inline script for that; there
           is no JSX way to run before paint. suppressHydrationWarning above

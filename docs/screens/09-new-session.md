@@ -140,6 +140,14 @@ standing rule this screen follows.
 
 ---
 
+**A part-filled form survives** (Isabella, 15 September 2026,
+`decisions/decision-batch-2026-09-15-pm.md` #2; `lib/formDraft.ts`): the
+answers are held in browser storage on this device as they are given, per
+form instance (the form opened for one day), and restored when it is opened
+again. Held for the club's day only — a staff draft is swept at the end of the
+working day whether or not anybody signs out — and every draft on the device
+is cleared on sign-out. Cleared when the session is created.
+
 ## 9. Open issues
 
 - **Every staff role can create a session.** Decision D-06.

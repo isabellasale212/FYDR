@@ -31,11 +31,11 @@ export const COUNTS = {
   /** supabase/tests/*.sql (pgTAP) */
   pgtapTests: 92,
   /** every file under src, of any kind */
-  srcFiles: 542,
+  srcFiles: 544,
   /** .ts and .tsx under src */
-  srcTs: 537,
+  srcTs: 539,
   /** .tsx under src */
-  srcTsx: 294,
+  srcTsx: 296,
   /** .css under src (src/styles) */
   srcCss: 2,
   /** page.tsx under src/app/(staff) */
@@ -47,9 +47,9 @@ export const COUNTS = {
   /** .tsx under src/app/(athlete) */
   athleteTsx: 26,
   /** .tsx under src/components */
-  componentTsx: 162,
+  componentTsx: 164,
   /** .ts and .tsx under src/components */
-  componentTs: 168,
+  componentTs: 170,
   /** .tsx under src/app */
   appTsx: 131,
   /** .ts and .tsx under src/app */

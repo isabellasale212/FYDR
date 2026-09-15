@@ -1,13 +1,14 @@
 'use client';
 
-import { useRef, useState } from 'react';
+import { useCallback, useMemo, useRef, useState } from 'react';
 import type { TitleSuggestion } from '@/lib/queries/sessionTitles';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { createSession } from '@/lib/queries/schedule';
-import { enumLabel, zonedTimeToUtcIso } from '@/lib/format';
+import { enumLabel, todayIso, zonedTimeToUtcIso } from '@/lib/format';
+import { clearDraft, useFormDraft } from '@/lib/formDraft';
 import type { Group } from '@/lib/queries/groups';
 
 const SESSION_TYPES = [
@@ -41,6 +42,31 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
   const [mdOffset, setMdOffset] = useState('');
   const [selectedGroups, setSelectedGroups] = useState<Set<string>>(new Set());
   const [error, setError] = useState<string | null>(null);
+
+  /* The draft — decision-batch-2026-09-15-pm.md #2: every form holds one,
+     staff included; dated with the club's day and swept after it
+     (lib/formDraft.ts). Per instance: the form opened for one day. */
+  const draftKey = `new-session-${defaultDate}`;
+  const draft = useMemo(
+    () => ({ title, sessionType, date, time, duration, location, mdOffset, selectedGroups: [...selectedGroups] }),
+    [title, sessionType, date, time, duration, location, mdOffset, selectedGroups],
+  );
+  useFormDraft(
+    draftKey,
+    draft,
+    useCallback((d: typeof draft) => {
+      setTitle(d.title ?? '');
+      setSessionType(d.sessionType ?? 'training');
+      setDate(d.date ?? defaultDate);
+      setTime(d.time ?? '09:00');
+      setDuration(d.duration ?? '60');
+      setLocation(d.location ?? '');
+      setMdOffset(d.mdOffset ?? '');
+      setSelectedGroups(new Set(d.selectedGroups ?? []));
+    }, [defaultDate]),
+    useCallback((d: typeof draft) => d.title.trim() !== '' || d.location.trim() !== '' || d.mdOffset !== '' || d.selectedGroups.length > 0, []),
+    { day: todayIso(timezone) },
+  );
 
   /* A refused submit has to be findable. The message alone was not enough: it
      renders inside a long form, and somebody who has just pressed the button at
@@ -76,6 +102,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
       if (result.error) throw new HumanError(result.error);
     },
     onSuccess: () => {
+      clearDraft(draftKey);
       router.push(`/schedule?date=${date}`);
       router.refresh();
     },

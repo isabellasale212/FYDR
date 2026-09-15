@@ -78,6 +78,17 @@ Built on the server; the form runs in the browser.
 **Saving.** Disabled and says so. **Error.** The form stays. **Offline.** The
 connection sentence.
 
+**A part-filled form survives** (Isabella, 15 September 2026,
+`decisions/decision-batch-2026-09-15-pm.md` #2; `lib/formDraft.ts`): the
+answers are held in browser storage on this device as they are given, per
+form instance, and restored when the form is opened again — after a session
+expiry, a closed tab, a crash. Held for the club's day only: a staff draft is
+swept at the end of the working day whether or not anybody signs out
+(`DraftHousekeeping` in the staff layout — the rule is one rule for every staff form), and every draft on
+the device is cleared on sign-out. Cleared when the form is sent. A draft is
+not a record: nothing reaches the database until the button is pressed.
+
+
 ## 9. Open issues
 
 - **The sport scientist cannot create a threshold.** Part of decision D-07.

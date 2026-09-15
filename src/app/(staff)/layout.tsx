@@ -9,6 +9,8 @@ import { fetchOpenFlagAthleteCount } from '@/lib/queries/flags';
 import { attentionDomains, dashboardVersion } from '@/lib/dashboardVersion';
 import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
+import { DraftHousekeeping } from '@/components/DraftHousekeeping/DraftHousekeeping';
+import { addDays, todayIso, zonedTimeToUtcIso } from '@/lib/format';
 
 /** The staff web shell. Staff only, so there is no /staff prefix on any route:
  *  20-route-map.md §2.1 rule 1. */
@@ -17,7 +19,12 @@ export default async function StaffLayout({
 }: {
   children: React.ReactNode;
 }) {
-  const { db, orgId, claims, fullName, orgName, previewingTier, tier } = await requireStaff();
+  const { db, orgId, claims, fullName, orgName, previewingTier, tier, timezone } = await requireStaff();
+  /* Draft housekeeping (decision-batch-2026-09-15-pm.md #2): the club's day,
+     and how long until its next midnight, computed here in the club's zone
+     so the browser's clock is never asked which day it is. */
+  const today = todayIso(timezone);
+  const msToMidnight = Date.parse(zonedTimeToUtcIso(addDays(today, 1), '00:00', timezone)) - Date.now();
 
   /* The phone title bar's group chip (STAFF-SS-01): the active filter as the
      cookie holds it (§0ak — one cookie, every chip row writes it), named the
@@ -42,6 +49,7 @@ export default async function StaffLayout({
 
   return (
     <div className="app">
+      <DraftHousekeeping today={today} msToMidnight={msToMidnight} />
       <Sidebar
         roles={claims.roles}
         fullName={fullName}

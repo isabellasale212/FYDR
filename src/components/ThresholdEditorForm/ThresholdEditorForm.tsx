@@ -1,6 +1,6 @@
 'use client';
 
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -9,6 +9,7 @@ import { createThreshold, type BaselineType, type ThresholdComparison } from '@/
 import { ThresholdPreview } from '@/components/ThresholdPreview/ThresholdPreview';
 import { BODY_MASS_COMPARISONS, BODY_MASS_METRIC, METRIC_REGISTRY, getMetricInfo } from '@/lib/metrics';
 import type { AppRole } from '@/lib/types/database';
+import { clearDraft, useFormDraft } from '@/lib/formDraft';
 
 const COMPARISONS: { value: ThresholdComparison; label: string }[] = [
   { value: 'below', label: 'Below a value' },
@@ -47,6 +48,8 @@ const DEFAULT_METRIC = 'wellness.readiness_score';
 type Props = {
   orgId: string;
   userId: string;
+  /** The club's day, for the draft's date stamp (lib/formDraft.ts). */
+  today: string;
   /** Whether this viewer may see body mass (BODY_MASS_VIEW, lib/access.ts).
    *  The coach may not, so the body-mass measure is not offered to them:
    *  a rule they could write would raise flags they could never read.
@@ -61,7 +64,7 @@ function isBodyMass(metric: string): boolean {
   return metric === BODY_MASS_METRIC;
 }
 
-export function ThresholdEditorForm({ orgId, userId, canSeeBodyMass }: Props) {
+export function ThresholdEditorForm({ orgId, userId, today, canSeeBodyMass }: Props) {
   const router = useRouter();
   const [name, setName] = useState('');
   const [metric, setMetric] = useState<string>(DEFAULT_METRIC);
@@ -74,6 +77,33 @@ export function ThresholdEditorForm({ orgId, userId, canSeeBodyMass }: Props) {
   const [severity, setSeverity] = useState<(typeof SEVERITIES)[number]>('medium');
   const [notifyRoles, setNotifyRoles] = useState<Set<AppRole>>(new Set(['coach']));
   const [error, setError] = useState<string | null>(null);
+
+  /* The draft — decision-batch-2026-09-15-pm.md #2: every form holds one,
+     staff included; dated with the club's day and swept after it
+     (lib/formDraft.ts). One instance: there is one new-threshold form. */
+  const draftKey = 'new-threshold';
+  const draft = useMemo(
+    () => ({ name, metric, comparison, direction, value, baselineType, baselineDays, consecutiveDays, severity, notifyRoles: [...notifyRoles] }),
+    [name, metric, comparison, direction, value, baselineType, baselineDays, consecutiveDays, severity, notifyRoles],
+  );
+  useFormDraft(
+    draftKey,
+    draft,
+    useCallback((d: typeof draft) => {
+      setName(d.name ?? '');
+      setMetric(d.metric ?? DEFAULT_METRIC);
+      setComparison(d.comparison ?? 'below');
+      setDirection(d.direction ?? 'below');
+      setValue(d.value ?? '');
+      setBaselineType(d.baselineType ?? 'personal_rolling');
+      setBaselineDays(d.baselineDays ?? '28');
+      setConsecutiveDays(d.consecutiveDays ?? '1');
+      setSeverity(d.severity ?? 'medium');
+      setNotifyRoles(new Set(d.notifyRoles ?? ['coach']));
+    }, []),
+    useCallback((d: typeof draft) => d.name.trim() !== '' || d.value.trim() !== '', []),
+    { day: today },
+  );
 
   const mutation = useMutation({
     mutationFn: async () => {
@@ -98,6 +128,7 @@ export function ThresholdEditorForm({ orgId, userId, canSeeBodyMass }: Props) {
       if (result.error) throw new Error(result.error);
     },
     onSuccess: () => {
+      clearDraft(draftKey);
       router.push('/settings/thresholds');
       router.refresh();
     },

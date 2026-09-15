@@ -1,7 +1,7 @@
 'use client';
 
 import Link from 'next/link';
-import { useState } from 'react';
+import { useCallback, useMemo, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
@@ -9,6 +9,7 @@ import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { createInjury, setAvailability, upsertClinical } from '@/lib/queries/injuries';
 import { AvailabilityAudience } from '@/components/AvailabilityAudience/AvailabilityAudience';
 import { todayIso } from '@/lib/format';
+import { clearDraft, useFormDraft } from '@/lib/formDraft';
 import type { BodySide, InjurySeverity, OccurrenceContext } from '@/lib/types/database';
 
 /* PATTERN-S3 C9 (ruled unblocked, built 2026-09-14): the injury form is split
@@ -95,6 +96,43 @@ export function NewInjuryForm({ orgId, userId, timezone, athletes, initialAthlet
   const [partial, setPartial] = useState<{ id: string; what: string } | null>(null);
   const [confirming, setConfirming] = useState(false);
 
+  /* The draft — decision-batch-2026-09-15-pm.md #2 (every form, staff
+     included): per instance (the form opened for one athlete, or for any),
+     dated with the club's day so a shared physio-room laptop does not carry
+     body area, mechanism and description into tomorrow (lib/formDraft.ts).
+     Restrictions travel as an array; a Set does not survive JSON. */
+  const today = todayIso(timezone);
+  const draftKey = `new-injury-${initialAthleteId ?? 'any'}`;
+  const draft = useMemo(
+    () => ({ athleteId, bodyArea, side, onsetDate, occurredIn, expectedReturn, status, restrictions: [...restrictions], diagnosis, mechanism, severity }),
+    [athleteId, bodyArea, side, onsetDate, occurredIn, expectedReturn, status, restrictions, diagnosis, mechanism, severity],
+  );
+  useFormDraft(
+    draftKey,
+    draft,
+    useCallback((d: typeof draft) => {
+      setAthleteId(d.athleteId ?? '');
+      setBodyArea(d.bodyArea ?? 'hamstring');
+      setSide(d.side ?? '');
+      setOnsetDate(d.onsetDate ?? todayIso(timezone));
+      setOccurredIn(d.occurredIn ?? '');
+      setExpectedReturn(d.expectedReturn ?? '');
+      setStatus(d.status ?? null);
+      setRestrictions(new Set(d.restrictions ?? []));
+      setDiagnosis(d.diagnosis ?? '');
+      setMechanism(d.mechanism ?? '');
+      setSeverity(d.severity ?? '');
+    }, [timezone]),
+    useCallback(
+      (d: typeof draft) =>
+        (d.athleteId !== '' && d.athleteId !== (initialAthleteId ?? '')) ||
+        d.bodyArea !== 'hamstring' || d.side !== '' || d.occurredIn !== '' || d.expectedReturn !== '' ||
+        d.status !== null || d.restrictions.length > 0 || d.diagnosis.trim() !== '' || d.mechanism.trim() !== '' || d.severity !== '',
+      [initialAthleteId],
+    ),
+    { day: today },
+  );
+
   const athlete = athletes.find((a) => a.id === athleteId) ?? null;
   const athleteName = athlete ? `${athlete.first_name} ${athlete.last_name}` : 'this athlete';
   const setsAvailability = clinical && status !== null;
@@ -168,8 +206,10 @@ export function NewInjuryForm({ orgId, userId, timezone, athletes, initialAthlet
            read. */
         setPartial({ id: result.id, what: result.partial });
         setConfirming(false);
+        clearDraft(draftKey);
         return;
       }
+      clearDraft(draftKey);
       router.push(`/injuries/${result.id}`);
     },
     onError: (err: Error) => {

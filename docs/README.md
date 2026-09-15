@@ -38,6 +38,7 @@ strategy and a current-state page, and points here for everything else.
 | What is in production, and how did it get there? | `runbook-deploy-2026-09-15.md` |
 | What is deferred until after 18 September? | `after-friday.md` |
 | What has to be true for the Friday demo? | `friday-demo-checklist.md` |
+| What do I say to Scottish Rugby on Friday? | `briefs/scottish-rugby-2026-09-18.md` |
 | What is agreed but not yet sent to the builder? | `queue-pending.md` |
 | What changed in the design handover? | `design-programme-corrections-2026-09-13.md` |
 

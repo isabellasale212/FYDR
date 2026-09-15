@@ -14602,11 +14602,68 @@ a.hist-row:active { background: var(--surf-sunken); }
   .main .pp-link,
   .main table.tbl .nm,
   .main .eyebrow a,
-  .main .tiny a {
+  .main .tiny a,
+  /* The accessibility sweep's step 2 (15 Sept 2026, Class 2, Isabella's
+     ruling): the fourteen text links the list above did not reach, measured
+     15–20px at 390 — the testing sheet's names (a.nm), the link inside a
+     table's name cell and the users list's names (.nm a), the squad
+     report's attention names, the flag cards' "View … profile", the
+     nutrition and leaderboard "Profile ›", "Manage tests →", the sign-in
+     pages' "Back to sign in". Same mechanism, so nothing on the line moves. */
+  .main a.nm,
+  .main .nm a,
+  .main .attn-name,
+  .main .flag-who a,
+  .main .nutr-profile-link,
+  .main .lbw-profile-link,
+  .main .tst-manage,
+  .signin-return a {
     display: inline-block;
     padding-block: var(--sp-12);
     margin-block: calc(-1 * var(--sp-12));
     line-height: 20px;
+  }
+  /* One of them is also narrower than 44 — the nutrition workspace's
+     "Profile ›" (41px): the same balance sideways, so the text stays put
+     and the hit box widens into space that holds no other target. */
+  .main .nutr-profile-link {
+    padding-inline: var(--sp-2);
+    margin-inline: calc(-1 * var(--sp-2));
+  }
+  /* The GPS report's heat switch (T19) is a text link with a track beside
+     it and keeps its inline-flex; the same padding and negative margin
+     take its 22px track to a 46px hit box without moving the line. */
+  .main .tr-heat-toggle {
+    padding-block: var(--sp-12);
+    margin-block: calc(-1 * var(--sp-12));
+  }
+  /* The eleven short controls (T15, T21–T22, T25, T35–T36, T38–T39, T43–T44,
+     T49): the floor on the control itself, never into a neighbour. A link
+     is inline, so it becomes inline-flex first or min-height does nothing
+     (T35, T43, T44, T21). The week arrows are squares, so wide as well as
+     tall. The checkbox is measured through its wrapping label (T15). */
+  .main a.btn-ghost,
+  .main .tr-mode-switch a,
+  .main .tr-scope-chip,
+  .main .week-nav a,
+  .main .week-nav span[data-disabled='true'] {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .main .week-nav a,
+  .main .week-nav span[data-disabled='true'] {
+    min-width: var(--tap-min);
+  }
+  .main .tr-mode-switch a,
+  .main .tr-scope-chip,
+  .main .chip-static,
+  .main .set-row-btn,
+  .main a.load-row,
+  .main .week-nav a,
+  .main .week-nav span[data-disabled='true'],
+  .main label.tiny:has(> input[type='checkbox']) {
+    min-height: var(--tap-min);
   }
 }
 

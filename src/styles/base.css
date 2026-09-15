@@ -8098,6 +8098,38 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   color: var(--accent-text);
 }
 
+/* PATTERN-S3 C9 (2026-09-14): the injury form split by permission. Two
+   columns at minmax(0, 1fr) each on a desktop (the board's own grid); one
+   column at phone width, where the left column is the pitch-side form. The
+   status row is three full-width buttons at the 44px floor. */
+.inj-cols {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--sp-18);
+  align-items: start;
+}
+@media (max-width: 767px) {
+  .inj-cols {
+    grid-template-columns: minmax(0, 1fr);
+  }
+}
+.inj-clinical {
+  padding: var(--sp-14);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--surf2);
+}
+.inj-status {
+  display: flex;
+  gap: var(--sp-8);
+  margin-top: var(--sp-6);
+}
+.inj-status > .squad-chip {
+  flex: 1;
+  justify-content: center;
+  min-height: var(--tap-min);
+}
+
 /* Print. There is no print stylesheet any more — PATTERN-S7 C4 (ruled
    2026-09-13, batch B10, built 2026-09-14): the PDF is the one renderer for
    print, and a screen's Print control opens its PDF (components/PrintLink,

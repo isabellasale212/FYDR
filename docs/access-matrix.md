@@ -151,7 +151,7 @@ cannot open). Test: `supabase/tests/830_body_mass_threshold_test.sql`.
 | Analytics **[Pr]** — premium at the database since 0125 (14 Sept 2026): `analytics_daily_rows` returns no rows to a Basic club or to any role but the sport scientist; every metric, GPS included | V | **X** | **X** | **X** | **X** |
 | Build an analytics view **[Pr]** | VEC | **X** | **X** | **X** | **X** |
 | Leaderboard | VECD | VECD | V | VECD | V |
-| Testing | VEC | VEC | V | VEC | X |
+| Testing | VEC | VEC | **VEC** | VEC | X |
 | Test assignment (who a test is for; migration 0130) | VEC | VEC | VEC | VEC | X |
 | Test history | V | V | V | V | X |
 
@@ -162,6 +162,20 @@ somebody chose, unlike the medic's create, which was the "coach or medic
 actually meant not-admin" artefact the five-role migration found throughout. The
 row was split rather than applied as written, and this document is the half that
 changed. G-33 in `docs/spec-gaps.md` records the reasoning.
+
+**The medic column on Testing was corrected on 15 September 2026 to match the
+database, not the reverse** (Isabella, `decisions/decision-batch-2026-09-15.md`
+#4). It read **V** while the medic has been able to define a test and record a
+result since migration `0024` (carried through `0066` and `0073`:
+`test_definitions_staff_insert` / `_update`, `test_results_staff_insert` /
+`_update` admit the medic by name), and 0130's assignment row above already
+said VEC for the medic because it mirrors the definition policy. The database
+is right: return-to-play testing is a medic's work, a test definition is a
+name and a unit and not clinical data, and making the physio ask the sport
+scientist for a hop test is friction with no safety benefit. Recorded here so
+the divergence reads as a decision, not a drift. `TEST_DEFINE` in `access.ts`
+is the code's own statement of the four; its comment no longer needs to
+apologise for the matrix.
 
 ### 3.5 Reports
 

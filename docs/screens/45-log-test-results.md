@@ -12,7 +12,7 @@ Records what the squad did on one test.
 |---|---|---|---|---|---|---|
 | Sport scientist | Yes | The squad and their results | Log and correct results | None | Base | Route guard, `src/lib/session.ts:69` |
 | Coach | Yes | Same | Log and correct | None | Base | Same |
-| Medic | Yes | Same | **View only** in the agreed model | None | Base | **NOT BUILT** |
+| Medic | Yes | Same | Record and edit results — **corrected 15 September 2026** with the Testing row (`decisions/decision-batch-2026-09-15.md` #4): `test_results_staff_insert` / `_update` have admitted the medic since `0024` | None | Base | Row-level security (0073) |
 | S&C | Yes | Same | Log and correct | None | Base | **NOT BUILT** |
 | Nutritionist | **No** in the agreed model | Nothing | Nothing | The whole page | Base | **NOT BUILT.** Decision D-01 |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard, then database |

@@ -109,13 +109,13 @@ export const THRESHOLD_EDIT = ['sport_scientist', 'coach'] as const;
  *  on record and merely not theirs to read). */
 export const THRESHOLD_VIEW = ['sport_scientist', 'coach', 'medic', 'strength_conditioning'] as const;
 
-/** Who defines a test, and so who assigns one (migration 0130): the four
- *  roles test_definitions_staff_insert and test_assignments' policies
- *  admit. The matrix's Testing row reads VEC VEC V VEC X — the medic is a V
- *  there — but the database has admitted the medic to defining a test since
- *  0024 ("return-to-play testing is a medical workflow and the same battery
- *  is used", 0024's header), and the assignment policy mirrors the
- *  definition policy rather than narrowing it here. Hiding UI only. */
+/** §3.4 Testing: VEC VEC VEC VEC X. Who defines a test, and so who assigns
+ *  one (migration 0130): the four roles test_definitions_staff_insert and
+ *  test_assignments' policies admit. The matrix's medic column read V until
+ *  15 September 2026, when it was corrected to the database rather than the
+ *  reverse (decision-batch-2026-09-15.md #4): the medic has defined tests
+ *  since 0024 — return-to-play testing is a medic's work, and a test
+ *  definition is a name and a unit, not clinical data. Hiding UI only. */
 export const TEST_DEFINE = ['sport_scientist', 'coach', 'medic', 'strength_conditioning'] as const;
 
 /** §3.6 Import GPS: VC X X X X. Today the gate is coach or medic, and the

@@ -12,7 +12,7 @@ The tests the club runs, and the way in to logging results.
 |---|---|---|---|---|---|---|
 | Sport scientist | Yes | Every test | View, create, edit | None | Base | Route guard, `src/lib/session.ts:69` |
 | Coach | Yes | Every test | View, create, edit | None | Base | Same |
-| Medic | Yes | Every test | **View only** in the agreed model | None | Base | **NOT BUILT** |
+| Medic | Yes | Every test | View, create, edit — **corrected 15 September 2026** (Isabella, `decisions/decision-batch-2026-09-15.md` #4): the row said view only while the database has admitted the medic to defining a test since `0024`; return-to-play testing is a medic's work and a definition is not clinical data. The matrix (§3.4) is corrected to match | None | Base | Row-level security, `test_definitions_staff_insert` / `_update` (0073); `TEST_DEFINE` hides UI |
 | S&C | Yes | Every test | View, create, edit | None | Base | **NOT BUILT** |
 | Nutritionist | **No** in the agreed model | Nothing | Nothing | The whole page | Base | **NOT BUILT.** Decision D-01 |
 | Athlete | **No** | Nothing | Nothing | The whole page | n/a | Middleware, then guard, then database |

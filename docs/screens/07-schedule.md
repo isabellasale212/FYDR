@@ -127,7 +127,7 @@ it.
 | Read and Edit switch | Above the grid | Changes whether blocks can be moved | Stays here | Nothing by itself | Coach and sport scientist | None | Hidden for every other role, which sees `Read only. The schedule is authored by the sport scientist and the coach.` in its place. Opens on **edit** for the two roles that have it |
 | Previous and next week | Above the grid | Moves a week | Stays here, week in the address | Nothing | Any staff | None | Never |
 | A session block | The grid | Opens that session | `/schedule/[sessionId]` | Nothing | Any staff | None | Never |
-| Dragging a block, in edit mode | The grid | Moves a session to a new day or time | Stays here | Updates the session's start time | Coach and sport scientist | Changes are held until applied, not written on every drag | Hidden in read mode. **Fact, 15 September 2026: no drag is built** — the grid has no pointer handler; a move is made in the selected session panel's day, start and duration fields (PATTERN-S4 C3's drag fell with D1). The caption still says "drag a block to move it"; on the sheet |
+| Selecting a block, in edit mode | The grid, then the selected session panel | Moves a session to a new day or time through the panel's day, start and duration fields — **there is no drag**: PATTERN-S4 C3's drag fell with D1 on 12 September and none was built; the edit-mode caption reads "select a block to change its day or time" (corrected 15 September 2026, the pre-deploy fixes #5 — it said "drag a block to move it", a gesture that did not exist) | Stays here | Updates the session's start time and duration | Coach and sport scientist | Changes are held until published, not written on every edit | Hidden in read mode |
 | Selecting a rated session, in edit mode | The grid, then the panel | Shows the session read-only: the facts, and the sentence "This session has been rated by N athletes. Ratings are tied to its date and duration, so it cannot be changed. Cancel it and create a new one if the details are wrong." — no Edit, no day, time, group, location or type fields | Stays here | Nothing | Coach and sport scientist | None | **PATTERN-S4 C4 (B6) on this grid too, 15 September 2026** (`decisions/decision-batch-2026-09-15.md` #6): the same rule and the same sentence as the session screen (`lib/ratedSession.ts`, read by both). Remove stays (a session carrying data is cancelled, not deleted, when the week is published) and so does Duplicate; a held edit from before the rule can still be dropped with Cancel changes. The count is distinct athletes with a live rating, on every grid row. Held at the database too (0133): a publish from a stale tab that moves a rated session is refused per session, with the same sentence |
 | Add to Day | Edit mode | Places a drafted session on a day | Stays here | Creates a session | Coach and sport scientist | The draft must be completed first | Hidden in read mode |
 | + Session | Two of them: the header chip row, and the edit-mode toolbar | The header chip opens the full new-session screen; the toolbar button starts a draft in the grid itself | `/schedule/new` from the chip; stays here from the toolbar | Nothing until the draft is added to a day | Coach and sport scientist | None | Both hidden for every other role (`canEdit`). The toolbar one is additionally hidden in read mode |
@@ -205,7 +205,7 @@ touches nothing else.
 ## 7. How this page is built, in plain English
 
 Built on the server, then handed to the browser, because the grid has to respond
-to dragging.
+to selection and editing without a round trip.
 
 Five questions are asked at the same time: the week's sessions, who is in which
 group, the saved templates, what a normal week looks like for this club, and the
@@ -219,7 +219,7 @@ converts properly rather than slicing the stored timestamp.
 **Matchday labels are worked out from the week's real fixtures**, not typed in,
 so moving a match moves every label with it.
 
-Edits are gathered and applied rather than written on every drag, so a coach
+Edits are gathered and applied rather than written on every change, so a coach
 rearranging a week does not produce twenty separate changes.
 
 ---

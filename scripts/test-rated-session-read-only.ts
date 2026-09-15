@@ -71,5 +71,13 @@ console.log('\nand the database holds it (0133) — the last line under both scr
   assert(/export const RATED_SESSION_REFUSAL =[\s\S]*?Ratings are tied to its date and duration, so it cannot be changed\. Cancel it and create a new one if the details are wrong\./.test(copy), 'and those words are the sentence both screens show');
 }
 
+console.log('\nthe caption describes a gesture that exists');
+{
+  const grid = strip(read('src/components/ScheduleGrid/TimeGrid.tsx'));
+  assert(!/drag a block/.test(grid) && /select a block to change its day or time/.test(grid), 'the edit-mode caption says "select a block to change its day or time" — there is no drag (15 Sept #5)');
+  assert(!/onPointerDown|onDragStart|draggable=/.test(grid) && !/onPointerDown|onDragStart|draggable=/.test(workspace), 'and still none is built');
+  assert(!/Dragging a block/.test(read('docs/screens/07-schedule.md')), '07-schedule.md no longer lists a drag');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);

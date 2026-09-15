@@ -394,7 +394,11 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
           <span className="sg-caption">
             {days.reduce((sum, d) => sum + d.contactMins, 0)} session minutes · staff sessions excluded ·{' '}
             {clockLabel(h0)} to {clockLabel(h1)} · red line is now
-            {mode === 'edit' ? ' · drag a block to move it' : ''}
+            {/* No drag exists (PATTERN-S4 C3's fell with D1); a session is
+                moved in the selected session panel's day, start and duration
+                fields. The caption says what the screen can do (15 Sept 2026,
+                the pre-deploy fixes, #5). */}
+            {mode === 'edit' ? ' · select a block to change its day or time' : ''}
           </span>
         </div>
       </div>

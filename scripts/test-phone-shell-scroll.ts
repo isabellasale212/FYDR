@@ -40,15 +40,34 @@ console.log('the shell is one document, not a pane inside a page');
   assert(/flex:\s*1/.test(body), 'it still grows to push the tab bar to the bottom of a short screen');
   assert(/padding:\s*0 var\(--sp-20\) var\(--sp-8\)/.test(body), 'and its inset is unchanged (0 / 20 / 8)');
   const phone = rule('.phone');
-  assert(/min-height:\s*100dvh/.test(phone) && /flex-direction:\s*column/.test(phone), '.phone keeps min-height 100dvh as a flex column — the tab bar stays in flow at the end');
-  assert(!/(^|[;\s])height:\s*100dvh/.test(phone), 'and is NOT height-constrained: that would revive the pane and float the tab bar, which the 2026-09-08 decision refused');
+  assert(/min-height:\s*100dvh/.test(phone) && /flex-direction:\s*column/.test(phone), '.phone keeps min-height 100dvh as a flex column');
+  assert(!/(^|[;\s])height:\s*100dvh/.test(phone), 'and is NOT height-constrained: that would revive the pane');
 }
 
-console.log('\nthe safe-area inset is where the document ends, once');
+/* PINNED, 15 Sept 2026 — Isabella's P5 of the overnight queue reverses the
+   2026-09-08 "in flow" decision for the installed app: the athlete bar stays
+   visible the way the staff phone shell's does. Fixed to the viewport's
+   bottom, held to the 480px frame on a wide viewport, its background running
+   to the display's edges with the bottom and side insets as padding on the
+   bar ITSELF (no wrapper, no corner radius). The body pads its foot by the
+   bar's height plus the inset so the last card clears it, and a pinned
+   footer (.subm) sits on top of the bar — both only when the bar is there,
+   because the consent screens render none. */
+console.log('\nthe tab bar is pinned (P5, 15 Sept 2026), and the body and a pinned footer clear it');
 {
   const tab = rule('.athlete-tabbar');
-  assert(/env\(safe-area-inset-bottom/.test(tab), '.athlete-tabbar adds env(safe-area-inset-bottom) to its bottom padding');
-  assert(!/safe-area/.test(rule('.phone-body')), '.phone-body does not add a second one above it');
+  assert(/position:\s*fixed/.test(tab) && /bottom:\s*0/.test(tab) && /left:\s*0/.test(tab) && /right:\s*0/.test(tab), '.athlete-tabbar is fixed to the bottom edge, left 0 right 0');
+  assert(/max-width:\s*480px/.test(tab) && /margin-inline:\s*auto/.test(tab), 'held to the 480px frame on a wide viewport');
+  assert(/padding:\s*9px calc\(var\(--s-3\) \+ env\(safe-area-inset-right, 0px\)\) calc\(var\(--s-5\) \+ env\(safe-area-inset-bottom, 0px\)\) calc\(var\(--s-3\) \+ env\(safe-area-inset-left, 0px\)\)/.test(tab), 'its content is padded by the bottom and side insets, on the bar itself');
+  assert(!/border-radius/.test(tab), 'no corner radius — the device mask rounds it');
+  assert(/--athlete-tabbar-h:\s*80px/.test(rule('.phone')), '.phone names the bar\'s height without the inset');
+  const body = rule('.phone:has(> .athlete-tabbar) > .phone-body');
+  assert(/padding-bottom:\s*calc\(var\(--sp-8\) \+ var\(--athlete-tabbar-h\) \+ env\(safe-area-inset-bottom, 0px\)\)/.test(body), 'with the bar present the body pads its foot by the bar and the inset');
+  assert(!/safe-area/.test(rule('.phone-body')), 'and without it (the consent screens) the body still ends at the document, no inset of its own');
+  const subm = rule('.phone:has(> .athlete-tabbar) .subm');
+  assert(/bottom:\s*calc\(var\(--athlete-tabbar-h\) \+ env\(safe-area-inset-bottom, 0px\)\)/.test(subm), 'a pinned footer sits on top of the bar');
+  assert(/padding-bottom:\s*var\(--sp-8\)/.test(subm), 'and drops its own inset there — the bar carries it');
+  assert(/viewportFit:\s*'cover'/.test(readFileSync('src/app/layout.tsx', 'utf8')), 'the viewport meta carries viewport-fit=cover, or every inset reports zero');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

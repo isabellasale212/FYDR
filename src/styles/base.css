@@ -583,7 +583,7 @@ a {
        (its 9 + 23 + 6 + 12 + 10px plus the home-indicator inset lands near
        64px too). STAFF-SS-01: the content column starts at the top of the
        screen. */
-    padding: calc(64px + var(--sp-18)) var(--main-pad) calc(var(--sp-48) + 64px + env(safe-area-inset-bottom, 0px));
+    padding: calc(64px + var(--sp-18) + env(safe-area-inset-top, 0px)) var(--main-pad) calc(var(--sp-48) + 64px + env(safe-area-inset-bottom, 0px));
   }
 }
 
@@ -1508,6 +1508,8 @@ body:has(.phone) {
      ground keeps the data the only colour on screen, and the phone is a short
      stack of cards that reads as grey and flat on the same token. */
   background-color: var(--phone-bg);
+  /* The pinned tab bar's height without its inset — see .athlete-tabbar. */
+  --athlete-tabbar-h: 80px;
 }
 /* Spec §1: horizontal page padding 22px on every athlete screen, body bottom
    padding 8px. The tab bar is a flex sibling with its own home-indicator
@@ -1660,26 +1662,54 @@ body:has(.phone) {
  * both themes from one rule, with no new token needed for a value nothing
  * else in the app reuses. */
 .athlete-tabbar {
-  flex: none;
+  /* PINNED — Isabella, 15 Sept 2026 (P5 of the overnight queue): the bar
+     stays visible the way the staff phone shell's does. It was in flow at
+     the end of the document since 2026-09-08 ("a design change the reference
+     does not draw"); the installed app on an iPhone is the reason it moves.
+     Fixed to the viewport's bottom edge, and on a wide viewport held to the
+     .phone frame's 480px column, so on a desktop it sits under the frame and
+     on a phone it is the width of the display. */
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  z-index: 30;
+  max-width: 480px;
+  margin-inline: auto;
   display: grid;
   grid-template-columns: repeat(4, 1fr);
   background: color-mix(in srgb, var(--elev) 94%, transparent);
   border-top: 1px solid var(--border);
   /* Spec §6: 9px 6px 30px. That 30px is home-indicator clearance, which on a
      real device is env(safe-area-inset-bottom) — ADDED to a base, never
-     substituted for it, so a browser with no inset still gets real padding. */
-  padding: 9px var(--s-3) calc(var(--s-5) + env(safe-area-inset-bottom, 0px));
-  /* NO backdrop-filter, removed 2026-09-08 (audit item 3). It carried
-     `blur(var(--blur))` over a 94%-opaque fill while sitting `position: static`
-     in normal flow — so nothing ever passed behind it and the blur had nothing
-     to sample. A translucent-chrome effect that cannot be seen, costing a
-     compositor layer on every athlete screen.
-     
-     THE FIX IS THE REMOVAL, NOT A FLOATING BAR. Making it `fixed` so content
-     scrolls under would be the other way to make the blur real, and it is a
-     design change the reference does not draw: screens 01-12 all show a solid
-     bar with a top border, in flow. `.sg-filterbar` keeps its blur, because
-     that one IS `position: sticky` and content genuinely moves beneath it. */
+     substituted for it, so a browser with no inset still gets real padding.
+     The side insets the same way, for landscape (the notch's side). All of
+     it is padding on the bar ITSELF, never on a wrapper: the background has
+     to reach the physical bottom and side edges of the display, where the
+     device's own mask rounds it — no corner radius here, which would leave
+     a sliver of page showing in the curve. The insets are zero unless the
+     viewport meta carries viewport-fit=cover (src/app/layout.tsx). */
+  padding: 9px calc(var(--s-3) + env(safe-area-inset-right, 0px)) calc(var(--s-5) + env(safe-area-inset-bottom, 0px)) calc(var(--s-3) + env(safe-area-inset-left, 0px));
+  /* NO backdrop-filter — removed 2026-09-08 (audit item 3) when the bar was
+     static and nothing passed behind it; kept off now that content does,
+     because the staff bar has none either and the pinning is "the same
+     treatment as the staff shell". `.sg-filterbar` keeps its blur. */
+}
+/* The bar's own height at the type scale, without the inset: 9 + 58.4 (a
+   tab: 6 + 23 glyph + 6 gap + 14 label + 6) + 10 + the 1px border, measured
+   at 78.4 on 15 Sept 2026 and rounded up. The body pads its foot by this
+   plus the inset so the last card clears the bar, and a pinned footer
+   (.subm) sits on top of it — only when the bar is there: the consent
+   screens render no tab bar, and there the document still ends at the
+   footer. */
+.phone:has(> .athlete-tabbar) > .phone-body {
+  padding-bottom: calc(var(--sp-8) + var(--athlete-tabbar-h) + env(safe-area-inset-bottom, 0px));
+}
+.phone:has(> .athlete-tabbar) .subm {
+  bottom: calc(var(--athlete-tabbar-h) + env(safe-area-inset-bottom, 0px));
+  /* Above the bar the footer no longer meets the home indicator; the bar
+     carries that inset now. */
+  padding-bottom: var(--sp-8);
 }
 .athlete-tab {
   display: flex;
@@ -14357,12 +14387,15 @@ a.hist-row:active { background: var(--surf-sunken); }
     left: 0;
     right: 0;
     z-index: 30;
-    height: 64px;
+    /* 64px of bar below the status bar: with viewport-fit=cover (15 Sept
+       2026, P5) the page runs under the notch, so the bar grows by the top
+       inset and pads its content below it; the side insets for landscape. */
+    height: calc(64px + env(safe-area-inset-top, 0px));
     display: flex;
     align-items: center;
     justify-content: space-between;
     gap: var(--sp-12);
-    padding: 0 var(--sp-16);
+    padding: env(safe-area-inset-top, 0px) calc(var(--sp-16) + env(safe-area-inset-right, 0px)) 0 calc(var(--sp-16) + env(safe-area-inset-left, 0px));
     background: var(--surf);
     border-bottom: 1px solid var(--border);
   }
@@ -14397,7 +14430,11 @@ a.hist-row:active { background: var(--surf-sunken); }
     grid-template-columns: repeat(5, 1fr);
     background: color-mix(in srgb, var(--elev) 94%, transparent);
     border-top: 1px solid var(--border);
-    padding: 9px var(--s-3) calc(var(--s-5) + env(safe-area-inset-bottom, 0px));
+    /* The insets on the bar itself (P5, 15 Sept 2026): the background runs
+       to the display's bottom and side edges, the content sits clear of the
+       home indicator and, in landscape, the notch's side. No corner radius —
+       the device's mask rounds it. */
+    padding: 9px calc(var(--s-3) + env(safe-area-inset-right, 0px)) calc(var(--s-5) + env(safe-area-inset-bottom, 0px)) calc(var(--s-3) + env(safe-area-inset-left, 0px));
   }
   .ph-tab {
     display: flex;
@@ -14480,7 +14517,7 @@ a.hist-row:active { background: var(--surf-sunken); }
     background: var(--surf);
     border-radius: var(--r-sheet);
     box-shadow: var(--shadow);
-    padding: var(--sp-12) var(--sp-16) calc(var(--sp-16) + env(safe-area-inset-bottom, 0px));
+    padding: var(--sp-12) calc(var(--sp-16) + env(safe-area-inset-right, 0px)) calc(var(--sp-16) + env(safe-area-inset-bottom, 0px)) calc(var(--sp-16) + env(safe-area-inset-left, 0px));
   }
   .ph-sheet-title {
     margin: 0 0 var(--sp-6);

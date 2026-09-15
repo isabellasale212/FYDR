@@ -64,6 +64,14 @@ export const metadata: Metadata = {
 export const viewport: Viewport = {
   width: 'device-width',
   initialScale: 1,
+  /* viewport-fit=cover, 15 Sept 2026 (Isabella, P5 of the overnight queue):
+     without it an installed app on an iPhone is laid out inside the safe
+     area and every env(safe-area-inset-*) in base.css reports zero, so the
+     bars' backgrounds stop short of the home indicator and the display's
+     curve, leaving a sliver of page in the corner. With it the page runs to
+     the physical edges and the bars carry their content clear of the notch,
+     the curve and the indicator with the insets they already add. */
+  viewportFit: 'cover',
 };
 
 /** 06-design-system.md §2.4: dark arrives three ways. #2 (prefers-color-scheme

@@ -2414,6 +2414,25 @@ solid `--bg`, which the source does not do. See §14.7.
 
 Raised as O-607.
 
+**Built for the installed app — 15 September 2026, Isabella's decision (P5 of the overnight
+queue).** The viewport meta carries `viewport-fit=cover` (`src/app/layout.tsx`); without it an
+installed app on an iPhone is laid out inside the safe area and every `env(safe-area-inset-*)`
+reports zero. The athlete tab bar (`.athlete-tabbar`) is **pinned** — fixed to the bottom of
+the viewport, the same treatment as the staff phone shell's `.ph-tabbar` — reversing the
+8 September "in flow" placement; on a wide viewport it is held to the 480px frame. Both
+shells' bottom bars extend their **background** to the physical bottom and side edges of the
+display, with no corner radius in CSS (the device's mask rounds them; a CSS radius leaves a
+sliver of page in the curve), and pad their **content** clear of the home indicator and, in
+landscape, the notch's side: `env(safe-area-inset-bottom)` added to the bar's own bottom
+padding and the side insets added to its horizontal padding — on the bar itself, never on a
+wrapper. The staff title bar grows by the top inset and pads its content under the notch the
+same way, and `.main` starts below it. The athlete body pads its foot by the bar's height
+(`--athlete-tabbar-h`, 80px) plus the inset so the last card clears the bar, and a pinned form
+footer (`.subm`) sits on top of the bar — both only when the bar is present (the consent
+screens render none). Verified on dev at 390 by probe and screenshot; a real iPhone with the
+app on the home screen is the only place the home indicator itself can be seen — to be
+checked from Thursday's deploy.
+
 ### 10.4 Keyboard avoidance
 
 - Every screen with a text input wraps content in `KeyboardAvoidingView` with `behavior`

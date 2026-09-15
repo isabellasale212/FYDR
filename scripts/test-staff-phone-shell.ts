@@ -99,7 +99,10 @@ console.log('\n4. the CSS, below 768 only');
   assert(/\.sidebar\s*\{[^}]*display:\s*none/.test(pb), 'below 768 the sidebar is gone');
   assert(!/\.sidebar\s*\{[^}]*position:\s*static/.test(pb), 'and no longer stacks above the content');
   const title = rule('.ph-titlebar', pb);
-  assert(/position:\s*fixed/.test(title) && /height:\s*64px/.test(title), 'a fixed 64px title bar');
+  /* 64px of bar below the status bar since 15 Sept 2026 (Isabella's P5,
+     viewport-fit=cover): the height carries the top inset and the content
+     pads below it. */
+  assert(/position:\s*fixed/.test(title) && /height:\s*calc\(64px \+ env\(safe-area-inset-top, 0px\)\)/.test(title) && /padding:\s*env\(safe-area-inset-top, 0px\)/.test(title), 'a fixed title bar, 64px below the top inset, its content padded under the notch');
   const bar = rule('.ph-tabbar', pb);
   assert(/position:\s*fixed/.test(bar) && /grid-template-columns:\s*repeat\(5, 1fr\)/.test(bar), 'a fixed five-column bar');
   assert(/color-mix\(in srgb, var\(--elev\) 94%, transparent\)/.test(bar), 'on the athlete bar\'s own fill (no --tabbar-bg)');
@@ -108,7 +111,12 @@ console.log('\n4. the CSS, below 768 only');
   assert(/rgb\(var\(--ink-rgb\) \/ 0\.35\)/.test(rule('.ph-sheet-scrim', pb)), 'the scrim is --ink-rgb at 0.35 (no --scrim)');
   assert(/border-radius:\s*var\(--r-sheet\)/.test(rule('.ph-sheet', pb)), 'the sheet\'s top radius is --r-sheet (System A, 15 Sept 2026)');
   assert(/box-shadow:\s*var\(--shadow\)/.test(rule('.ph-sheet', pb)), 'and --shadow (no --shadow-raised)');
-  assert(/\.main\s*\{[^}]*padding:\s*calc\(64px \+ var\(--sp-18\)\)/.test(pb), 'the content starts below the 64px bar');
+  assert(/\.main\s*\{[^}]*padding:\s*calc\(64px \+ var\(--sp-18\) \+ env\(safe-area-inset-top, 0px\)\)/.test(pb), 'the content starts below the 64px bar and the top inset');
+  /* P5, 15 Sept 2026: the bars' backgrounds run to the display's edges and
+     their CONTENT sits clear of the home indicator and the notch's side —
+     the insets are padding on the bar itself, never on a wrapper. */
+  assert(/padding:\s*9px calc\(var\(--s-3\) \+ env\(safe-area-inset-right, 0px\)\) calc\(var\(--s-5\) \+ env\(safe-area-inset-bottom, 0px\)\) calc\(var\(--s-3\) \+ env\(safe-area-inset-left, 0px\)\)/.test(bar), 'the tab bar pads its content with the bottom and side insets, on the bar itself');
+  assert(!/border-radius/.test(bar) && !/border-radius/.test(title), 'and neither bar rounds its own corners — the device mask does that');
   const outside = strip(css.replace(/@media \(max-width: 767px\)\s*\{[\s\S]*?\n\}\n/g, ''));
   assert(!/\.ph-titlebar|\.ph-tabbar|\.ph-sheet/.test(outside.replace(/\.ph-shell\s*\{[^}]*\}/g, '')), 'no phone-shell rule outside the 767 block except the ≥768 hide');
   assert(/\.ph-shell\s*\{[^}]*display:\s*none/.test(strip(css)), 'and at ≥768 the shell is hidden — desktop unchanged');

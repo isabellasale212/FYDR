@@ -44,7 +44,7 @@ import { GuardianCard } from '@/components/GuardianCard/GuardianCard';
 import { fetchLatestGuardianRequest } from '@/lib/guardianConsent';
 import { isUuid } from '@/lib/uuid';
 import { profilePanelOrder, profilePanelSegments, type ProfilePanelKey } from '@/lib/profilePanels';
-import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, NUTRITION_EDIT, PROGRAMME_AUTHOR, SETTINGS_ADMIN, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
+import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, NUTRITION_EDIT, PROGRAMME_AUTHOR, SETTINGS_ADMIN, THRESHOLD_VIEW, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
 import { ReadOnlyOwner } from '@/components/ReadOnlyOwner/ReadOnlyOwner';
 import { fetchRules, resolveRuleForAthlete } from '@/lib/queries/nutritionRules';
 import { fetchUserNames } from '@/lib/queries/users';
@@ -362,10 +362,19 @@ async function AthletePageContent({
    * would be noise about a decision they never made. */
   const coercedFromChoice = expressed ? period.coercedFrom : null;
 
-  const profile = await fetchPlayerProfile(db, orgId, athleteId, timezone, {
-    key: period.key,
-    seasonStart: season?.starts_on ?? null,
-  });
+  const profile = await fetchPlayerProfile(
+    db,
+    orgId,
+    athleteId,
+    timezone,
+    {
+      key: period.key,
+      seasonStart: season?.starts_on ?? null,
+    },
+    // Wording only (ProfileFlag explains): a nutritionist reads every flag's
+    // rule as "not shown to your role", never as "no longer on record".
+    hasAnyRole(claims.roles, THRESHOLD_VIEW),
+  );
   if (!profile) notFound();
 
   // body_composition's own RLS (migration 0024) grants insert/update to

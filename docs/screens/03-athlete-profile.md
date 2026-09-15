@@ -155,7 +155,18 @@ window is a fixed 28 days, and gym set logs and the weekly nutrition check-in ar
 not correctable here.
 
 **Flags.** Alerts currently raised against this athlete, each with what triggered
-it.
+it: the rule's own sentence (the same builder the Thresholds screen uses) and
+the evidence line (the rule's window and baseline, and when it fired). **Two
+states that must never read as one** (Isabella, 15 September 2026,
+`decisions/decision-batch-2026-09-15.md` #2): when the rule cannot be shown,
+the panel says which. A role that reads thresholds (sport scientist, coach,
+medic, S&C — `THRESHOLD_VIEW`, the database's own select) and finds none is
+told "The threshold this flag was raised under is no longer on record." — and
+that is said only when it is gone. A role that cannot read thresholds at all
+(the nutritionist, X on the Thresholds row) is told "The rule this flag was
+raised under is not shown to your role." and the evidence line carries only
+the date. Wording, not a permission: the read is gated by row-level security
+either way.
 
 **Domain chips.** Links through to this athlete's own wellness, gym and nutrition
 detail screens.

@@ -27,7 +27,7 @@ console.log('\n2. what a change grants and removes');
 {
   const p = roleChangePreview(['nutritionist'], ['nutritionist', 'coach'])!;
   assert(p.heading === 'Adding Coach', 'heading names the role');
-  assert(p.gains.some((g) => /Injury records/.test(g)) && p.gains.some((g) => /sessions and week templates/.test(g)) && p.gains.some((g) => /Thresholds/.test(g)), 'a coach gains injury records, sessions, thresholds');
+  assert(p.gains.some((g) => /Injury records/.test(g)) && p.gains.some((g) => /sessions and week templates/.test(g)) && p.gains.some((g) => /Editing thresholds/.test(g)) && p.gains.some((g) => /Reading the thresholds/.test(g)), 'a coach gains injury records, sessions, reading and editing thresholds (the nutritionist had neither)');
   assert(p.loses.length === 0 && /removes nothing/.test(p.sentence), 'adding a role removes nothing — roles add up');
   assert(p.warnings.some((w) => /nutritionist reads injury information/.test(w)), 'D-25: the nutritionist-plus-another warning, in the preview');
   assert(/gains \d+ things and removes nothing; \d+ things unchanged\./.test(p.sentence), `the sentence carries counts (${p.sentence})`);

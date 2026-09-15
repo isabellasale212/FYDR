@@ -100,6 +100,15 @@ export const NUTRITION_EDIT = ['sport_scientist', 'nutritionist'] as const;
 /** §3.6 Thresholds: VECD VECD V V X. Writing, which today is the coach alone. */
 export const THRESHOLD_EDIT = ['sport_scientist', 'coach'] as const;
 
+/** §3.6 Thresholds, reading: the four the database admits
+ *  (thresholds_staff_select, migration 0068). The nutritionist is the X, on
+ *  purpose. Used for WORDING, not for authorisation: a screen that shows a
+ *  flag to a role that cannot read its rule must say so, not say the rule
+ *  is gone (decision-batch-2026-09-15.md #2 — every flag on an athlete's
+ *  profile told the nutritionist "no longer on record" when the rule was
+ *  on record and merely not theirs to read). */
+export const THRESHOLD_VIEW = ['sport_scientist', 'coach', 'medic', 'strength_conditioning'] as const;
+
 /** Who defines a test, and so who assigns one (migration 0130): the four
  *  roles test_definitions_staff_insert and test_assignments' policies
  *  admit. The matrix's Testing row reads VEC VEC V VEC X — the medic is a V

@@ -267,7 +267,19 @@ export type HeaderWellness = { pct: number | null };
  * reconstructed day-by-day trail, which would mean bespoke per-domain
  * queries (wellness, gps, compliance, nutrition, testing, training, gym
  * each store their history differently) to rebuild a narrative this table
- * was never asked to keep. */
+ * was never asked to keep.
+ *
+ * TWO STATES THAT USED TO READ AS ONE (decision-batch-2026-09-15.md #2). A
+ * flag whose threshold the read did not return is either a flag whose rule
+ * is gone (soft-deleted; fetchThresholds excludes deleted_at) or a flag
+ * shown to a role that cannot read thresholds at all — the nutritionist,
+ * X in the matrix, whose select returns nothing under RLS. The sentence
+ * used to say "no longer on record" for both, which told the nutritionist
+ * that every rule on the profile was gone when every one was on record.
+ * `viewerReadsThresholds` (THRESHOLD_VIEW, access.ts) tells them apart: a
+ * role that reads thresholds and finds none is told it is gone; a role
+ * that cannot read them is told it is not shown to them. Neither is a
+ * permission — the read is gated by RLS either way — only the wording. */
 export type ProfileFlag = FlagListRow & { ruleSentence: string; evidence: string };
 
 export type ProgrammeBanner = {
@@ -527,9 +539,11 @@ function evidenceLine(
   } | null,
   flagDate: string,
   timezone: string,
+  viewerReadsThresholds: boolean,
 ): string {
   const flagged = `flagged ${formatDate(flagDate, timezone)}`;
-  if (!threshold) return `No threshold on record · ${flagged}.`;
+  // Gone, or not this role's to read — never the first when it is the second.
+  if (!threshold) return viewerReadsThresholds ? `No threshold on record · ${flagged}.` : `${flagged[0]!.toUpperCase()}${flagged.slice(1)}`;
   const days = threshold.consecutive_days === 1 ? '1 day' : `${threshold.consecutive_days} consecutive days`;
   const baseline =
     threshold.baseline_type === 'personal_rolling'
@@ -600,6 +614,9 @@ export async function fetchPlayerProfile(
    *  documented soft-delete gap — and is null when the club has no current
    *  season, in which case `season` was never offered as an option. */
   period: { key: RangeKey; seasonStart: string | null },
+  /** Whether the viewer's roles can read thresholds at all (THRESHOLD_VIEW).
+   *  Wording only — see ProfileFlag. */
+  viewerReadsThresholds: boolean,
 ): Promise<PlayerProfile | null> {
   const today = todayIso(timezone);
   // Fixed by definition, never by the control. See the header.
@@ -686,8 +703,12 @@ export async function fetchPlayerProfile(
       const threshold = f.threshold_id ? (thresholdById.get(f.threshold_id) ?? null) : null;
       return {
         ...f,
-        ruleSentence: threshold ? describeThreshold(threshold) : 'The threshold this flag was raised under is no longer on record.',
-        evidence: evidenceLine(threshold, f.flag_date, timezone),
+        ruleSentence: threshold
+          ? describeThreshold(threshold)
+          : viewerReadsThresholds
+            ? 'The threshold this flag was raised under is no longer on record.'
+            : 'The rule this flag was raised under is not shown to your role.',
+        evidence: evidenceLine(threshold, f.flag_date, timezone, viewerReadsThresholds),
       };
     });
 

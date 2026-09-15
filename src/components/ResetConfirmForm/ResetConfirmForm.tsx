@@ -72,7 +72,7 @@ async function establishRecoverySession(): Promise<LinkPhase> {
 }
 
 /** `invite` is PATTERN-S9 artboard 1 (2026-09-13): the identity block above
- *  the field, the three rules stated before typing, the count with its
+ *  the field, the two rules stated before typing, the count with its
  *  denominator, the action blocked rather than dimmed while a rule is unmet,
  *  and nothing sent while one is — so no attempt is recorded against the
  *  athlete. The reset arrival keeps its frozen two-field shape. */
@@ -81,11 +81,10 @@ export function ResetConfirmForm({ invite = null, timezone = 'Europe/London' }: 
   const [phase, setPhase] = useState<LinkPhase>('checking');
   const [next, setNext] = useState('');
   const [confirm, setConfirm] = useState('');
-  const [uniqueConfirmed, setUniqueConfirmed] = useState(false);
   const [error, setError] = useState<string | null>(null);
   const [busy, setBusy] = useState(false);
   const establishRef = useRef<Promise<LinkPhase> | null>(null);
-  const rules = invite ? passwordRules({ password: next, confirmedUnique: uniqueConfirmed, firstName: invite.firstName, lastName: invite.lastName, clubName: invite.clubName }) : null;
+  const rules = invite ? passwordRules({ password: next, firstName: invite.firstName, lastName: invite.lastName, clubName: invite.clubName }) : null;
   const met = rules ? rulesMet(rules) : 0;
   const blocked = rules ? met < rules.length : false;
 
@@ -210,24 +209,17 @@ export function ResetConfirmForm({ invite = null, timezone = 'Europe/London' }: 
         </section>
 
         <section className="card" aria-labelledby="rules-title">
-          <h2 className="card-title" id="rules-title">Three rules, stated before you type</h2>
+          <h2 className="card-title" id="rules-title">Two rules, stated before you type</h2>
+          {/* Two, not three: the "not a password you use elsewhere" rule was
+              removed entirely on 14 September 2026 (decision batch #7) — a
+              rule software cannot check is theatre, and nothing is said
+              about reuse. */}
           <ul className="pw-rules" aria-live="polite">
             {rules.map((r) => (
               <li key={r.id} className="pw-rule" data-state={r.state}>
-                {r.id === 'unique' ? (
-                  <input
-                    type="checkbox"
-                    className="pw-rule-mark"
-                    style={{ width: 18, height: 18, margin: 0, flex: '0 0 18px' }}
-                    checked={uniqueConfirmed}
-                    onChange={(e) => setUniqueConfirmed(e.target.checked)}
-                    aria-label="I do not use this password anywhere else"
-                  />
-                ) : (
-                  <span className="pw-rule-mark" aria-hidden="true">
-                    {r.state === 'met' ? '✓' : r.state === 'unmet' ? '!' : '–'}
-                  </span>
-                )}
+                <span className="pw-rule-mark" aria-hidden="true">
+                  {r.state === 'met' ? '✓' : r.state === 'unmet' ? '!' : '–'}
+                </span>
                 <span>
                   {r.label}
                   {r.detail ? <span className="num">{r.detail}</span> : null}

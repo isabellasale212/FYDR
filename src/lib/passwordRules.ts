@@ -1,25 +1,28 @@
-/* PATTERN-S9 artboard 1: three rules, stated before typing, checked as the
+/* PATTERN-S9 artboard 1: the rules, stated before typing, checked as the
  * athlete types. Pure, so the guard can hold them.
  *
  *   1. At least 12 characters — the app's one password standard
  *      (docs/09-security-and-compliance.md §8; ChangePasswordForm and
  *      ResetConfirmForm both read 12).
- *   2. Not a password you already use somewhere else — the one rule no code
- *      can check. The board draws it with a tick; the app draws it as the
- *      athlete's own confirmation (a checkbox in the rule's row), because a
- *      tick the system cannot earn is a claim it cannot make. Drift, reported.
- *   3. No part of your name or the club's name — any word of three or more
+ *   2. No part of your name or the club's name — any word of three or more
  *      letters from the first name, last name or club name, case-insensitive.
  *
+ * Two rules, not three. The board drew a third — "Not a password you already
+ * use somewhere else" — that no code can check; it was built as the athlete's
+ * own checkbox, then REMOVED ENTIRELY by Isabella's ruling of 14 September
+ * 2026 (decision batch #7): "A rule software cannot check is theatre." Not a
+ * checkbox, not a system tick, and no advice line either — nothing at all
+ * about reuse. The count reads "n of 2 rules met".
+ *
  * Before typing every rule reads '–' (not checked yet). Once typing, met rules
- * tick and the unmet ones say what they need; the count reads "n of 3 rules
- * met" — the denominator rule applied to something that is not data. */
+ * tick and the unmet ones say what they need — the denominator rule applied
+ * to something that is not data. */
 
 export const PASSWORD_MIN = 12;
 
 export type RuleState = 'unchecked' | 'met' | 'unmet';
 
-export type PasswordRule = { id: 'length' | 'unique' | 'names'; label: string; state: RuleState; detail: string | null };
+export type PasswordRule = { id: 'length' | 'names'; label: string; state: RuleState; detail: string | null };
 
 function nameWords(...parts: (string | null | undefined)[]): string[] {
   return parts
@@ -27,7 +30,7 @@ function nameWords(...parts: (string | null | undefined)[]): string[] {
     .filter((w) => w.length >= 3);
 }
 
-export function passwordRules(o: { password: string; confirmedUnique: boolean; firstName: string; lastName: string; clubName: string }): PasswordRule[] {
+export function passwordRules(o: { password: string; firstName: string; lastName: string; clubName: string }): PasswordRule[] {
   const typed = o.password.length > 0;
   const words = nameWords(o.firstName, o.lastName, o.clubName);
   const lower = o.password.toLowerCase();
@@ -39,12 +42,6 @@ export function passwordRules(o: { password: string; confirmedUnique: boolean; f
       label: `At least ${PASSWORD_MIN} characters`,
       state: !typed ? 'unchecked' : short ? 'unmet' : 'met',
       detail: typed && short ? ` — this has ${o.password.length}` : null,
-    },
-    {
-      id: 'unique',
-      label: 'Not a password you already use somewhere else',
-      state: o.confirmedUnique ? 'met' : typed ? 'unmet' : 'unchecked',
-      detail: typed && !o.confirmedUnique ? ' — only you can check this one; tick it when it is true' : null,
     },
     {
       id: 'names',
@@ -67,6 +64,5 @@ export function unmetLine(rules: PasswordRule[], password: string): string | nul
     const missing = PASSWORD_MIN - password.length;
     return `Add ${missing === 1 ? 'one more character' : `${missing} more characters`}. This one is ${password.length} of the ${PASSWORD_MIN} needed.`;
   }
-  if (first.id === 'names') return 'Take your name and the club’s name out of it.';
-  return 'Tick the second rule once you have chosen something you use nowhere else.';
+  return 'Take your name and the club’s name out of it.';
 }

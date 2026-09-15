@@ -79,13 +79,20 @@ console.log('\n3. the state, pure');
 
 console.log('\n4. artboard 1 — invite received, setting a password');
 {
-  const rules = passwordRules({ password: '', confirmedUnique: false, firstName: 'Niall', lastName: 'Rafferty', clubName: 'Ashcombe Rugby Club' });
-  assert(rules.length === 3 && rules.every((r) => r.state === 'unchecked'), 'three rules, all unchecked before typing — a dash means not checked yet, not failed');
-  const nine = passwordRules({ password: 'raffert1x', confirmedUnique: false, firstName: 'Niall', lastName: 'Rafferty', clubName: 'Ashcombe Rugby Club' });
+  /* Two rules since 14 September 2026 (decision batch #7): the third — "not
+     a password you already use somewhere else" — was removed entirely, not
+     made a checkbox and not a system tick; a rule software cannot check is
+     theatre. Nothing about reuse anywhere on the screen. */
+  const rules = passwordRules({ password: '', firstName: 'Niall', lastName: 'Rafferty', clubName: 'Ashcombe Rugby Club' });
+  assert(rules.length === 2 && rules.every((r) => r.state === 'unchecked'), 'two rules, all unchecked before typing — a dash means not checked yet, not failed');
+  assert(!rules.some((r) => (r.id as string) === 'unique'), 'and the reuse rule is gone');
+  const nine = passwordRules({ password: 'raffert1x', firstName: 'Niall', lastName: 'Rafferty', clubName: 'Ashcombe Rugby Club' });
   assert(nine[0]!.state === 'unmet' && nine[0]!.detail === ' — this has 9' && unmetLine(nine, 'raffert1x') === 'Add 3 more characters. This one is 9 of the 12 needed.', '9 characters: the one rule not met says what it needs');
-  assert(rulesMet(passwordRules({ password: 'orchard-sparrow-99', confirmedUnique: true, firstName: 'Niall', lastName: 'Rafferty', clubName: 'Ashcombe Rugby Club' })) === 3, 'a long password with no name in it, confirmed unique: 3 of 3');
-  assert(passwordRules({ password: 'ashcombe-orchard-99', confirmedUnique: true, firstName: 'Niall', lastName: 'Rafferty', clubName: 'Ashcombe Rugby Club' })[2]!.state === 'unmet', 'the club’s name in it: rule three unmet');
+  assert(rulesMet(passwordRules({ password: 'orchard-sparrow-99', firstName: 'Niall', lastName: 'Rafferty', clubName: 'Ashcombe Rugby Club' })) === 2, 'a long password with no name in it: 2 of 2');
+  assert(passwordRules({ password: 'ashcombe-orchard-99', firstName: 'Niall', lastName: 'Rafferty', clubName: 'Ashcombe Rugby Club' })[1]!.state === 'unmet', 'the club’s name in it: rule two unmet');
   const form = strip(read('src/components/ResetConfirmForm/ResetConfirmForm.tsx'));
+  assert(/Two rules, stated before you type/.test(form) && !/reuse|somewhere else|use nowhere else|type="checkbox"/.test(form), 'the form says two rules and nothing about reuse — no checkbox, no advice line');
+  assert(!/reuse|somewhere else|nowhere else/.test(strip(read('src/lib/passwordRules.ts'))), 'nor does the module');
   assert(/Fydr never asks for a password by email or by message/.test(form), 'the one sentence that does the work');
   assert(/<LegalPlaceholder id="LEGAL-1A" \/>/.test(form), 'LEGAL-1A drawn, undrafted');
   assert(/\{met\} of \{rules\.length\} rules met/.test(form), 'the count with its denominator');

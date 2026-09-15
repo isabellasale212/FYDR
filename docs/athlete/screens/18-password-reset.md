@@ -49,14 +49,17 @@ the work: "Fydr never asks for a password by email or by message. If you did
 not expect this, do not set one — ask Jane at the club." and the `LEGAL-1A`
 placeholder (where to forward a suspicious invite; undrafted).
 
-**Three rules, stated before you type**, each with a mark: an en dash at
+**Two rules, stated before you type**, each with a mark: an en dash at
 `--faint` before typing ("A dash means not checked yet, not failed."); once
 typing, a met rule's tick at `--accent2` and the one unmet rule's bad glyph
-with what it needs ("At least 12 characters — this has 9"). The second rule —
-"Not a password you already use somewhere else" — is the one no code can
-check: it is the athlete's own tick (a checkbox in its row), not a tick the
-system awards. The count reads "n of 3 rules met". Under the field, the unmet
-rule's sentence ("Add 3 more characters. This one is 9 of the 12 needed.").
+with what it needs ("At least 12 characters — this has 9"). At least 12
+characters; no part of your name or the club's name. **The board's third rule
+— "Not a password you already use somewhere else" — was removed entirely on
+14 September 2026 (decision batch #7)**: not made a checkbox and not a system
+tick; a rule software cannot check is theatre. The counter reads "n of 2 rules
+met" and nothing on the screen says anything about reuse — no advice line
+either. Under the field, the unmet rule's sentence ("Add 3 more characters.
+This one is 9 of the 12 needed.").
 The action, "Set password", is **blocked rather than dimmed** while a rule is
 unmet (`aria-disabled`, the ghost treatment) and nothing is sent — "Nothing is
 sent while a rule is unmet, so no attempt is recorded against you." Met, it is

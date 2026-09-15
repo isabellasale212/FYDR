@@ -17,7 +17,16 @@
  *  as on a phone, and a phone — one column — reads the list straight through.
  *  The two wide panels (Entries and corrections, the subject access request)
  *  stand full-width where the sequence puts them, and the grid breaks around
- *  them. */
+ *  them.
+ *
+ *  RULED 15 September 2026 (Isabella, decision-batch-2026-09-15-pm.md #1):
+ *  column-first stands, the ACWR card stays its own card, and **Entries and
+ *  corrections returns to the foot of the page** — built fourth and
+ *  full-width it broke the two-column grid through the middle of the page,
+ *  and the order was ruled to fix what a person reads first, not to force a
+ *  full-width band mid-page; the original reason for putting it last — the
+ *  last thing a coach sees is their own tool — still holds. It sits before
+ *  the subject access request, the other full-width panel, which stays last. */
 
 import type { AppRole } from '@/lib/types/database';
 import { hasAnyRole } from '@/lib/access';
@@ -35,18 +44,20 @@ export type ProfilePanelKey =
   | 'scLog'
   | 'sar';
 
-/** The sport scientist's order, the board's frame 12. */
+/** The sport scientist's order, the board's frame 12 — with Entries and
+ *  corrections at the foot (15 September 2026), before the subject access
+ *  request. */
 export const SPORT_SCIENTIST_PANEL_ORDER: readonly ProfilePanelKey[] = [
   'flags',
   'athleticism',
   'acwr',
   'availability',
-  'entries',
   'bodyWeight',
   'nutrition',
   'injury',
   'goals',
   'scLog',
+  'entries',
   'sar',
 ];
 

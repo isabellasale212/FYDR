@@ -67,17 +67,24 @@ its "View plan" / "Change plan" link. The separate plan bar is gone.
 built 14 September; `lib/profilePanels.ts`). Every role reads the sport
 scientist's order — the board's own "All panels" sheet — with the panels that
 role cannot see simply absent, never locked: **Flags, Athleticism, ACWR and
-wellness rating, Availability, Entries and corrections, Body weight, Nutrition
-plan, Injury, Goals, S&C history log, Subject access request.** One exception:
-for the S&C and the nutritionist on their own, **Body weight moves above Flags**
-(roles add up, so an S&C who is also a coach reads the base order). Layout
-follows the sequence: on a desktop the column panels fill the two-column grid
-column-first — the first half down the left, the rest down the right — so
-"above" is above; on a phone the one column reads the list straight through.
-The two wide panels (Entries and corrections, the subject access request)
-stand full-width where the sequence puts them, and the grid breaks around
-them. The ACWR and wellness card is not on the board (its dial is in the
-header there) and sits directly after Athleticism.
+wellness rating, Availability, Body weight, Nutrition plan, Injury, Goals,
+S&C history log, Entries and corrections, Subject access request.** One
+exception: for the S&C and the nutritionist on their own, **Body weight moves
+above Flags** (roles add up, so an S&C who is also a coach reads the base
+order). Layout follows the sequence: on a desktop the column panels fill the
+two-column grid column-first — the first half down the left, the rest down
+the right — so "above" is above; on a phone the one column reads the list
+straight through. The two wide panels (Entries and corrections, the subject
+access request) stand full-width at the foot, and the grid runs unbroken
+above them. The ACWR and wellness card is not on the board (its dial is in
+the header there) and sits directly after Athleticism, as its own card.
+
+**Ruled 15 September 2026** (Isabella, `decisions/decision-batch-2026-09-15-pm.md`
+#1): column-first stands, the ACWR card stays, and **Entries and corrections
+returns to the foot of the page** — built fourth and full-width it broke the
+two-column grid through the middle; the order was ruled to fix what a person
+reads first, and the reason for putting it last, that the last thing a coach
+sees is their own tool, still holds.
 
 **Biographical details.** The facts about the person: position, squad number, and
 so on. Editable by a coach.

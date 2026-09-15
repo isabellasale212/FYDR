@@ -30,6 +30,8 @@ strategy and a current-state page, and points here for everything else.
 | Nutrition, leaderboards and report shapes | `designs/PATTERN-S10-final/` |
 | What did Isabella decide on 13 September? | `decisions/decision-batch-2026-09-13.md` |
 | What did Isabella decide on 14 September? | `decisions/decision-batch-2026-09-14.md` |
+| What did Isabella decide on 15 September? | `decisions/decision-batch-2026-09-15.md` |
+| Do the loading skeletons earn their place, and how fast is production? | `decisions/skeleton-gate.md` |
 | What is agreed but not yet sent to the builder? | `queue-pending.md` |
 | What changed in the design handover? | `design-programme-corrections-2026-09-13.md` |
 

@@ -40,3 +40,6 @@ docs/walkthrough-screenshots/*/
 # ** rather than *: a bare docs/designs/*.zip matches only that directory, not its subfolders.
 # The two zips already tracked under 01-final and 02-final (3.4 MB each) stay tracked.
 docs/designs/**/*.zip
+
+# Local measurement scripts, one machine, never committed.
+scratchpad/

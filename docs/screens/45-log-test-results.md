@@ -26,6 +26,20 @@ Records what the squad did on one test.
 
 ## 4. What you see
 
+**Who this test is for** (migration 0130, 14 September 2026, decision batch
+#3) — the first card under the group filter. The sentence says who the test is
+assigned to today, resolved by the database: "Assigned to the whole squad — 29
+athletes in data today.", or "Assigned to 14 athletes today: Backs, Dan
+Okonkwo. A group is read as its members now, so an athlete who joins or leaves
+it is assigned or not with it.", or "Assigned to nobody. {test} appears on no
+sheet and no report until it is assigned." Then the chips — Whole squad, each
+group, each athlete — each with its own remove for the roles that define a
+test; then "+ Whole squad" when it is not, a group picker with Add, an athlete
+picker with Add. Every definition starts assigned to the whole squad. Removing
+is a `removed_at`, never a delete, and nothing already logged changes. The
+sheet below lists the assigned athletes within the group filter; with nobody
+assigned it says so and points up.
+
 The test's name, unit and direction. The squad, with a field per athlete for the
 day's result, and their previous best beside it for context.
 

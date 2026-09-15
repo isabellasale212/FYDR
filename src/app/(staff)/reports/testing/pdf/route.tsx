@@ -68,7 +68,7 @@ export async function GET(request: Request) {
             align: 'right' as const,
             render: (r: (typeof byAthlete.rows)[number]) => {
               const cell = r.cells.get(d.id);
-              return cell?.value === null || cell?.value === undefined ? '—' : formatNumber(cell.value, d.decimal_places);
+              return cell?.value === null || cell?.value === undefined ? (cell && !cell.assigned ? 'not assigned' : '—') : formatNumber(cell.value, d.decimal_places);
             },
           })),
         ]}

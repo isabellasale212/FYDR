@@ -51,7 +51,7 @@ denominator, and a body that scrolls sideways on a phone rather than the page. T
 ## 5. Testing report — `/reports/testing`
 
 - **Definition sentence (CONFIRMED, 13 Sept 2026):** "The most recent result for each test inside the period. A test with no result in the window is not shown as zero, and an athlete who has never been assigned a test does not appear for it."
-- **Open (answered from the code, 13 Sept):** tests are **not** assigned. `test_definitions` is what the club measures, org-wide; `test_results` is one athlete's result for one test on one date; there is no assignment entity and no group or athlete scoping on a definition. "Never assigned" therefore cannot be told apart from "no result": the only fact is whether an athlete has a result for a test at all. On the built page the by-athlete grid shows every athlete in scope for every test (a missing result in words), and the by-test ranking lists only athletes with a result and says how many have none — which is the sense in which an athlete "does not appear for it". The clause is raised on the sheet.
+- **Assignment (built 14 Sept 2026, decision batch #3; migration 0130):** tests ARE assigned — to groups, to individual athletes, or to the whole squad (the explicit row every definition starts with). `test_assignments` links a definition to each; the database resolves who a test is for now (a group is read as its current members). The by-athlete grid says "Not assigned" where a test is not the athlete's (a result logged before an assignment was taken away still shows), the by-test ranking counts the assigned, the log sheet lists the assigned, and the athlete's My data lists their tests. The clause now has the fact behind it as originally written.
 
 ---
 

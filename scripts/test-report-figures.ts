@@ -95,7 +95,9 @@ console.log('\n6. the testing report — the fifth');
   const page = strip(read('src/app/(staff)/reports/testing/page.tsx'));
   // Repointed 2026-09-13 (PATTERN-S7 C1): the sentence is the emphasised figure card's exclusions (testCoverageFigure), above the three stats.
   assert(/testCoverageFigure\(\{\s*withResult: byTest\.rows\.length,\s*inScope: byAthlete\.rows\.length,/.test(page), 'the page says it under the three stats');
-  assert(/NO_RESULT : formatNumber\(cell\.value/.test(page), 'a by-athlete cell with no result reads "No result"');
+  /* 0130: the empty cell has two words now — "No result" for a test that
+     is the athlete's and unmeasured, "Not assigned" for one that is not. */
+  assert(/cell && !cell\.assigned \? <span className="tiny">Not assigned<\/span> : NO_RESULT\) : formatNumber\(cell\.value/.test(page), 'a by-athlete cell with no result reads "No result", or "Not assigned" when the test is not the athlete\'s');
   assert(/byTest\.rows\.length === 0 \? 'No results' : NOT_SHOWN/.test(page), 'the median, Q1 and Q3 read "No results" or "Not shown"');
   assert(!/\bBLANK\b/.test(page), 'no BLANK on the testing page');
   assert(/median: belowSquadFloor\(values\.length\) \? null : quartile/.test(strip(read('src/lib/queries/testingReport.ts'))), 'the longitudinal medians are under the floor too (C8)');

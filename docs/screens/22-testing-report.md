@@ -38,10 +38,14 @@ middle looks like.
 window is not shown as zero, and an athlete who has never been assigned a test does not
 appear for it." — a `--surf` card under the scope line; it is the first line of the CSV
 and the line under the PDF's title (which is also what Print opens: PATTERN-S7 C4,
-14 September 2026, one renderer). Nothing in the app
-assigns a test (the sheet): the by-athlete grid shows every athlete in scope for every
-test, and the by-test ranking lists only athletes with a result and says how many have
-none.
+14 September 2026, one renderer). **Tests are assigned** (migration 0130, 14
+September 2026, decision batch #3): the by-athlete grid keeps a row per athlete in
+scope and a column per test, and a cell for a test not assigned to that athlete reads
+"Not assigned" (in the CSV and the PDF too) — never "No result", which is a test that
+is theirs and unmeasured; a result logged before an assignment was taken away still
+shows. The by-test ranking's population is the athletes the test is assigned to,
+within the group scope, so "N of M athletes" counts the assigned. The assign control
+is on the test's own page (`45-log-test-results.md`).
 
 **The header is one template shared by all five reports** (and specified in
 `CHANGELOG-headers-spec.md`). Five rows, always in this order:

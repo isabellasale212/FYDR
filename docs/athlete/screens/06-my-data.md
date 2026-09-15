@@ -147,13 +147,15 @@ under its explanation, in the athlete's own words: "Your club does not collect
 session ratings, so there is nothing to rate. Your sessions still count." A
 blank RPE on those rows is the club's choice, not a missed entry.
 
-**Tests lists the club's tests** (ATH-ADULT-12 C7, 12 September 2026): every
-live test definition, in the club's own order, whether or not this athlete has
-a result — one without reads "Not logged" in the value column, with no date
-line. "Assigned" is the club's set: the schema has no per-athlete assignment
-of tests (`test_definitions` is org-wide). The empty state is for a club with
-no tests set up, not an athlete with no results. The staff athlete report keeps
-listing tests with a result only.
+**Tests lists the athlete's tests** (ATH-ADULT-12 C7, 12 September 2026;
+scoped by assignment 14 September, migration 0130): every live test definition
+assigned to this athlete — directly, through a group they are in now, or to
+the whole squad — in the club's own order, whether or not they have a result;
+one without reads "Not logged" in the value column, with no date line. A test
+not assigned to them is not their row; a result logged before an assignment
+was taken away still shows as a result. The empty state is for an athlete with
+no tests assigned (or a club with none set up), not an athlete with no results.
+The staff athlete report keeps listing tests with a result only.
 
 ## 11. Accessibility and device
 

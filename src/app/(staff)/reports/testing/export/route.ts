@@ -41,7 +41,9 @@ export async function GET(request: Request) {
     const record: Record<string, string> = { name: row.name };
     for (const d of byAthlete.definitions) {
       const cell = row.cells.get(d.id);
-      record[d.id] = cell?.value === null || cell?.value === undefined ? '' : formatNumber(cell.value, d.decimal_places);
+      /* 0130: "not assigned" in the file where the screen says it; an empty
+         cell stays empty (a result not logged). */
+      record[d.id] = cell?.value === null || cell?.value === undefined ? (cell && !cell.assigned ? 'not assigned' : '') : formatNumber(cell.value, d.decimal_places);
     }
     return record;
   });

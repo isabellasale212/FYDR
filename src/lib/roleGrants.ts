@@ -31,6 +31,7 @@ import {
   SESSION_EDIT,
   SETTINGS_ADMIN,
   THRESHOLD_EDIT,
+  TEST_DEFINE,
   WEIGH_IN_EDIT,
   hasAnyRole,
 } from '@/lib/access';
@@ -50,6 +51,7 @@ export const CAPABILITIES: readonly Capability[] = [
   { key: 'flags', label: 'Acting on flags in every domain', roles: FLAG_EDIT_ANY_DOMAIN },
   { key: 'sessions', label: 'Creating and editing sessions and week templates', roles: SESSION_EDIT },
   { key: 'thresholds', label: 'Thresholds', roles: THRESHOLD_EDIT },
+  { key: 'tests', label: 'Defining a test and choosing who it is for', roles: TEST_DEFINE },
   { key: 'groups', label: 'Creating, renaming and archiving groups', roles: GROUP_EDIT },
   { key: 'availability', label: "Setting an athlete's availability", roles: AVAILABILITY_EDIT },
   { key: 'bio', label: "Editing an athlete's profile", roles: ATHLETE_BIO_EDIT },

@@ -4020,6 +4020,75 @@ export type Database = {
         }
       ]
     }
+    test_assignments: {
+      Row: {
+        id: string
+        org_id: string
+        test_definition_id: string
+        group_id: string | null
+        athlete_id: string | null
+        created_by: string | null
+        created_at: string
+        removed_at: string | null
+      }
+      Insert: {
+        id?: string
+        org_id: string
+        test_definition_id: string
+        group_id?: string | null
+        athlete_id?: string | null
+        created_by?: string | null
+        created_at?: string
+        removed_at?: string | null
+      }
+      Update: {
+        id?: string
+        org_id?: string
+        test_definition_id?: string
+        group_id?: string | null
+        athlete_id?: string | null
+        created_by?: string | null
+        created_at?: string
+        removed_at?: string | null
+      }
+      Relationships: [
+        {
+          foreignKeyName: "test_assignments_athlete_id_fkey"
+          columns: ["athlete_id"]
+          isOneToOne: false
+          referencedRelation: "athletes"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "test_assignments_created_by_fkey"
+          columns: ["created_by"]
+          isOneToOne: false
+          referencedRelation: "users"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "test_assignments_group_id_fkey"
+          columns: ["group_id"]
+          isOneToOne: false
+          referencedRelation: "groups"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "test_assignments_org_id_fkey"
+          columns: ["org_id"]
+          isOneToOne: false
+          referencedRelation: "organisations"
+          referencedColumns: ["id"]
+        },
+        {
+          foreignKeyName: "test_assignments_test_definition_id_fkey"
+          columns: ["test_definition_id"]
+          isOneToOne: false
+          referencedRelation: "test_definitions"
+          referencedColumns: ["id"]
+        }
+      ]
+    }
     test_definitions: {
       Row: {
         id: string
@@ -5052,6 +5121,10 @@ export type Database = {
       Args: Record<string, never>
       Returns: string
     }
+    backfill_whole_squad_test_assignments: {
+      Args: Record<string, never>
+      Returns: number
+    }
     compute_leaderboard: {
       Args: {
         p_leaderboard_id: string
@@ -5300,6 +5373,14 @@ export type Database = {
           assigned: number
         }[]
     }
+    resolve_my_assigned_tests: {
+      Args: {
+        p_athlete_id: string
+      }
+      Returns: {
+          test_definition_id: string
+        }[]
+    }
     resolve_my_programme_sessions: {
       Args: {
         p_athlete_id: string
@@ -5432,6 +5513,12 @@ export type Database = {
         p_rehab_programme_id: string
       }
       Returns: unknown
+    }
+    test_assigned_athlete_ids: {
+      Args: {
+        p_test_definition_id: string
+      }
+      Returns: string
     }
     unmute_notifications: {
       Args: {

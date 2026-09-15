@@ -282,9 +282,16 @@ export default async function TestingReportPage({ searchParams }: { searchParams
                               </td>
                               {byAthlete.definitions.map((d) => {
                                 const cell = row.cells.get(d.id);
+                                /* 0130: a test not assigned to this athlete
+                                   is said, never a missing result — "an
+                                   athlete who has never been assigned a test
+                                   does not appear for it". A result logged
+                                   before an assignment was taken away still
+                                   shows: it was logged. */
+                                const empty = cell?.value === null || cell?.value === undefined;
                                 return (
-                                  <td key={d.id} className="r num">
-                                    {cell?.value === null || cell?.value === undefined ? NO_RESULT : formatNumber(cell.value, d.decimal_places)}
+                                  <td key={d.id} className={`r num${empty && cell && !cell.assigned ? ' tst-unassigned' : ''}`}>
+                                    {empty ? (cell && !cell.assigned ? <span className="tiny">Not assigned</span> : NO_RESULT) : formatNumber(cell.value, d.decimal_places)}
                                   </td>
                                 );
                               })}

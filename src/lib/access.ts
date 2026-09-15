@@ -100,6 +100,15 @@ export const NUTRITION_EDIT = ['sport_scientist', 'nutritionist'] as const;
 /** §3.6 Thresholds: VECD VECD V V X. Writing, which today is the coach alone. */
 export const THRESHOLD_EDIT = ['sport_scientist', 'coach'] as const;
 
+/** Who defines a test, and so who assigns one (migration 0130): the four
+ *  roles test_definitions_staff_insert and test_assignments' policies
+ *  admit. The matrix's Testing row reads VEC VEC V VEC X — the medic is a V
+ *  there — but the database has admitted the medic to defining a test since
+ *  0024 ("return-to-play testing is a medical workflow and the same battery
+ *  is used", 0024's header), and the assignment policy mirrors the
+ *  definition policy rather than narrowing it here. Hiding UI only. */
+export const TEST_DEFINE = ['sport_scientist', 'coach', 'medic', 'strength_conditioning'] as const;
+
 /** §3.6 Import GPS: VC X X X X. Today the gate is coach or medic, and the
  *  matrix would remove both. See the WIDEN ONLY note at the top of this file:
  *  they keep it and the sport scientist joins them. */

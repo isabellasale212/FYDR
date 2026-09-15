@@ -152,6 +152,7 @@ cannot open). Test: `supabase/tests/830_body_mass_threshold_test.sql`.
 | Build an analytics view **[Pr]** | VEC | **X** | **X** | **X** | **X** |
 | Leaderboard | VECD | VECD | V | VECD | V |
 | Testing | VEC | VEC | V | VEC | X |
+| Test assignment (who a test is for; migration 0130) | VEC | VEC | VEC | VEC | X |
 | Test history | V | V | V | V | X |
 
 **The coach column on Leaderboard was corrected on 2026-09-05, not worked

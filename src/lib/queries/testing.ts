@@ -94,6 +94,92 @@ export async function createTestDefinition(
   return { error: error?.message ?? null };
 }
 
+// ---------------------------------------------------------------------------
+// Assignment — migration 0130 (decision batch 14 September 2026, #3): a test
+// is assigned to groups and individual athletes, or to the whole squad (the
+// explicit "not narrowed" row every definition starts with). Every testing
+// surface reads it: the log grid lists the assigned, the report's by-athlete
+// grid says "Not assigned" where a test is not the athlete's, the by-test
+// ranking counts the assigned, and the athlete's My data lists their tests.
+// "An athlete who has never been assigned a test does not appear for it."
+// ---------------------------------------------------------------------------
+
+export type TestAssignment = {
+  id: string;
+  group_id: string | null;
+  athlete_id: string | null;
+};
+
+/** The definition's live rows — whole squad (both null), groups, athletes. */
+export async function fetchTestAssignments(db: Db, orgId: string, testDefinitionId: string): Promise<TestAssignment[]> {
+  const { data, error } = await db
+    .from('test_assignments')
+    .select('id, group_id, athlete_id')
+    .eq('org_id', orgId)
+    .eq('test_definition_id', testDefinitionId)
+    .is('removed_at', null)
+    .order('created_at');
+  if (error) throw new Error(error.message);
+  return data ?? [];
+}
+
+/** The athletes a test is assigned to now — the database's own union
+ *  (test_assigned_athlete_ids: whole squad in data, each group's current
+ *  members, each athlete named). A Set for the surfaces that filter. */
+export async function fetchAssignedAthleteIds(db: Db, testDefinitionId: string): Promise<Set<string>> {
+  const { data, error } = await db.rpc('test_assigned_athlete_ids', { p_test_definition_id: testDefinitionId });
+  if (error) throw new Error(error.message);
+  /* A `setof uuid` arrives as a JSON array of strings; the generated type
+     says `string` because the introspection sees the element type. */
+  const ids = Array.isArray(data) ? (data as unknown as string[]) : data ? [data as unknown as string] : [];
+  return new Set(ids);
+}
+
+/** Every live definition's assigned set, for the report grid: one RPC per
+ *  definition — a dozen tests is a dozen small calls, in parallel. */
+export async function fetchAssignedByDefinition(db: Db, definitionIds: readonly string[]): Promise<Map<string, Set<string>>> {
+  const sets = await Promise.all(definitionIds.map((id) => fetchAssignedAthleteIds(db, id)));
+  return new Map(definitionIds.map((id, i) => [id, sets[i]!]));
+}
+
+/** The athlete's own tests (resolve_my_assigned_tests: staff for any athlete
+ *  of their org, an athlete for themselves). */
+export async function fetchMyAssignedTestIds(db: Db, athleteId: string): Promise<Set<string>> {
+  const { data, error } = await db.rpc('resolve_my_assigned_tests', { p_athlete_id: athleteId });
+  if (error) throw new Error(error.message);
+  return new Set((data ?? []).map((r) => r.test_definition_id));
+}
+
+export type AssignTarget = { kind: 'squad' } | { kind: 'group'; groupId: string } | { kind: 'athlete'; athleteId: string };
+
+/** Add one assignment. Idempotent against the partial unique indexes: a
+ *  target already assigned is reported as such rather than as a crash. */
+export async function assignTest(
+  db: Db,
+  orgId: string,
+  userId: string,
+  testDefinitionId: string,
+  target: AssignTarget,
+): Promise<{ error: string | null }> {
+  const { error } = await db.from('test_assignments').insert({
+    org_id: orgId,
+    test_definition_id: testDefinitionId,
+    group_id: target.kind === 'group' ? target.groupId : null,
+    athlete_id: target.kind === 'athlete' ? target.athleteId : null,
+    created_by: userId,
+  });
+  if (error && /duplicate key/i.test(error.message)) return { error: 'Already assigned.' };
+  return { error: error?.message ?? null };
+}
+
+/** Retire one assignment: removed_at, never a delete. */
+export async function unassignTest(db: Db, orgId: string, assignmentId: string): Promise<{ error: string | null }> {
+  return mustAffect(
+    db.from('test_assignments').update({ removed_at: new Date().toISOString() }).eq('id', assignmentId).eq('org_id', orgId).is('removed_at', null).select('id'),
+    { refusal: 'Not saved: assigning a test belongs to the roles that define one.' },
+  );
+}
+
 export type AthleteForLogging = {
   athlete_id: string;
   first_name: string;
@@ -156,8 +242,11 @@ export async function fetchResultsForLogging(
   if (todayRes.error) throw new Error(todayRes.error.message);
   if (defRes.error) throw new Error(defRes.error.message);
 
+  /* 0130: only the athletes this test is assigned to, then the group filter
+     over those. An athlete not assigned does not appear on the sheet. */
+  const assigned = await fetchAssignedAthleteIds(db, testDefinitionId);
   const inScope = scope ? new Set(scope) : null;
-  const scopedAthletes = (athletesRes.data ?? []).filter((a) => !inScope || inScope.has(a.id));
+  const scopedAthletes = (athletesRes.data ?? []).filter((a) => assigned.has(a.id) && (!inScope || inScope.has(a.id)));
 
   const higherIsBetter = defRes.data.higher_is_better;
   const pbByAthlete = new Map<string, number>();
@@ -626,18 +715,19 @@ export async function fetchMyTestSummary(
   opts: { includeUnlogged?: boolean } = {},
 ): Promise<MyTestSummary[]> {
   /* ATH-ADULT-12 C7 (2026-09-12), for the athlete's own My data
-     (`includeUnlogged`): the list is the club's tests, not the athlete's
-     results. Every live definition is a row, in the club's own order
-     (sort_order, then name); one the athlete has no result for reads "Not
-     logged" rather than being absent — a test the club measures and has
-     not measured on this athlete is a fact about the athlete. There is no
-     per-athlete assignment of tests in this schema (test_definitions is
-     org-wide; results carry the session), so "assigned" is the club's set;
-     if a narrower assignment is ever wanted it is a migration, recorded on
-     the decision sheet. Read through test_definitions_org_select. The
-     staff athlete report keeps the old shape — tests with a result only —
-     by leaving the option off. */
-  const { data: defs, error: defsError } = opts.includeUnlogged
+     (`includeUnlogged`): the list is the athlete's tests, not the athlete's
+     results. Every live definition ASSIGNED TO THEM is a row (migration 0130
+     — the assignment this paragraph used to say the schema had none of; the
+     group, athlete and whole-squad rows, resolved by resolve_my_assigned_
+     tests), in the club's own order (sort_order, then name); one the athlete
+     has no result for reads "Not logged" rather than being absent — a test
+     the club measures on this athlete and has not measured is a fact about
+     the athlete. A test not assigned to them is not their row; a result
+     logged before an assignment was taken away still shows as a result. The
+     staff athlete report keeps the old shape — tests with a result only — by
+     leaving the option off. */
+  const assigned = opts.includeUnlogged ? await fetchMyAssignedTestIds(db, athleteId) : null;
+  const { data: allDefs, error: defsError } = opts.includeUnlogged
     ? await db
         .from('test_definitions')
         .select('id, name, unit, decimal_places, higher_is_better')
@@ -646,6 +736,7 @@ export async function fetchMyTestSummary(
         .order('name', { ascending: true })
     : { data: [], error: null };
   if (defsError) throw new Error(defsError.message);
+  const defs = (allDefs ?? []).filter((d) => assigned?.has(d.id));
 
   /* PAGED, and this one has no window to widen — it is ALL TIME by design and
    * always has been (there is no gte on test_date, deliberately: a personal

@@ -2,7 +2,7 @@ import type { Db } from './groups';
 import { belowSquadFloor } from '@/lib/smallSample';
 import { fetchGroupAthleteIds } from './groups';
 import { fetchAllPaged } from './paged';
-import { beatsBest, fetchTestDefinitions, type TestDefinition } from './testing';
+import { beatsBest, fetchAssignedAthleteIds, fetchAssignedByDefinition, fetchTestDefinitions, type TestDefinition } from './testing';
 
 /* screens/reports.md, report 5 of 5 ("Testing report"), the last of the
  * five to get built — see reports.ts's own header for why it was the one
@@ -80,6 +80,12 @@ export type TestingByAthleteCell = {
   test_definition_id: string;
   value: number | null;
   date: string | null;
+  /** 0130: the test is not this athlete's. Rendered "Not assigned", never as
+   *  a missing result — the catalogue's sentence: "an athlete who has never
+   *  been assigned a test does not appear for it". A result that exists
+   *  from before an assignment was taken away still shows: a number logged
+   *  is a number logged. */
+  assigned: boolean;
   /** "This is the best reading in the REPORTING WINDOW", which is only an
    *  all-time personal best at `?period=all`. Named `isPb` from when this file
    *  had no window at all; kept rather than renamed because nothing renders it
@@ -154,6 +160,8 @@ export async function fetchTestingByAthlete(
   );
 
   const higherIsBetterByDef = new Map(definitions.map((d) => [d.id, d.higher_is_better]));
+  /* 0130: who each test is assigned to, for the "Not assigned" cell. */
+  const assignedByDef = await fetchAssignedByDefinition(db, definitions.map((d) => d.id));
 
   const cellByAthleteTest = new Map<string, TestingByAthleteCell>();
   for (const r of results) {
@@ -178,14 +186,14 @@ export async function fetchTestingByAthlete(
     // no-existing-cell and null-valued-cell cases this used to check itself.
     const higherIsBetter = higherIsBetterByDef.get(r.test_definition_id) ?? true;
     if (beatsBest(r.value, existing?.value ?? null, higherIsBetter)) {
-      cellByAthleteTest.set(key, { test_definition_id: r.test_definition_id, value: r.value, date: r.test_date, isPb: true });
+      cellByAthleteTest.set(key, { test_definition_id: r.test_definition_id, value: r.value, date: r.test_date, isPb: true, assigned: assignedByDef.get(r.test_definition_id)?.has(r.athlete_id) ?? false });
     }
   }
 
   const rows: TestingByAthleteRow[] = athletes.map((a) => {
     const cells = new Map<string, TestingByAthleteCell>();
     for (const d of definitions) {
-      cells.set(d.id, cellByAthleteTest.get(`${a.id}:${d.id}`) ?? { test_definition_id: d.id, value: null, date: null, isPb: false });
+      cells.set(d.id, cellByAthleteTest.get(`${a.id}:${d.id}`) ?? { test_definition_id: d.id, value: null, date: null, isPb: false, assigned: assignedByDef.get(d.id)?.has(a.id) ?? false });
     }
     return { athlete_id: a.id, name: `${a.first_name} ${a.last_name}`, cells };
   });
@@ -237,10 +245,13 @@ export async function fetchTestByTest(
   let athleteQuery = db.from('athletes').select('id, first_name, last_name').eq('org_id', orgId).is('deleted_at', null).neq('status', 'left_club')
     .eq('in_data', true) /* 0120: out of every data denominator — declined, withdrawn, undecided, guardian outstanding */;
   if (scope) athleteQuery = athleteQuery.in('id', scope);
-  const athletesRes = await athleteQuery;
+  const [athletesRes, assigned] = await Promise.all([athleteQuery, fetchAssignedAthleteIds(db, testDefinitionId)]);
   if (athletesRes.error) throw new Error(athletesRes.error.message);
-  const nameById = new Map((athletesRes.data ?? []).map((a) => [a.id, `${a.first_name} ${a.last_name}`]));
-  const athleteIds = (athletesRes.data ?? []).map((a) => a.id);
+  /* 0130: the ranking's population is the athletes this test is assigned to,
+     within the group scope — the denominator the catalogue sentence names. */
+  const population = (athletesRes.data ?? []).filter((a) => assigned.has(a.id));
+  const nameById = new Map(population.map((a) => [a.id, `${a.first_name} ${a.last_name}`]));
+  const athleteIds = population.map((a) => a.id);
   if (athleteIds.length === 0) return { definition, rows: [], median: null, q1: null, q3: null };
 
   // The group scope is applied IN the query rather than by filtering the

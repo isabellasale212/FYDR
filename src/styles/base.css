@@ -8098,6 +8098,27 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   color: var(--accent-text);
 }
 
+/* 0130 (2026-09-14): a test's assignment chips. A chip that names a group or
+   an athlete carries its own remove, a 44px target inside the chip so the
+   chip stays one thing to read and one thing to press. */
+.squad-chip .chip-x {
+  margin-left: var(--sp-6);
+  margin-right: calc(-1 * var(--sp-8));
+  min-width: var(--tap-min);
+  min-height: var(--tap-min);
+  border: 0;
+  background: transparent;
+  color: inherit;
+  font: inherit;
+  font-size: var(--fs-15);
+  line-height: 1;
+  cursor: pointer;
+  border-radius: var(--r);
+}
+.squad-chip .chip-x:hover {
+  color: var(--bad-text);
+}
+
 /* PATTERN-S3 C9 (2026-09-14): the injury form split by permission. Two
    columns at minmax(0, 1fr) each on a desktop (the board's own grid); one
    column at phone width, where the left column is the pitch-side form. The

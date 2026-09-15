@@ -14,11 +14,30 @@ select * from no_plan();
 
 select tests.fixtures();
 
+-- THE FIXTURE IS DATED IN UTC; THE PREVIEW COUNTS THE ORGANISATION'S DAYS.
+-- tests.fixtures() writes the two wellness rows on current_date - 1 — the
+-- session's date, UTC — while preview_threshold_rule walks the trailing
+-- days ending on the organisation's LOCAL yesterday (Europe/London, 0113).
+-- For the hour when those dates differ (23:00 to midnight UTC under British
+-- Summer Time) the entry sits two local days back: the two-day window ending
+-- local-yesterday holds a gap and the entry, so section 3 counted two
+-- windows instead of one and went red for reasons unrelated to the code.
+-- Flaked exactly then, 15 Sept 2026; fixed by ruling
+-- (decision-batch-2026-09-15.md #5). Re-dated here, as postgres, to the
+-- organisation's own yesterday — what a real entry carries, since the app
+-- writes entry_date in the organisation's zone. Reproduced and proved with
+-- `set local timezone = 'Etc/GMT+12'` at the top of a copy of this file.
+update public.wellness_entries
+   set entry_date = (now() at time zone (select timezone from public.organisations where id = tests.uid('orga', 'org')))::date - 1
+ where org_id = tests.uid('orga', 'org')
+   and entry_date = current_date - 1;
+
 set local role authenticated;
 select ok(tests.rls_is_engaged(), 'canary: RLS is on');
 
--- The fixture holds one wellness row per athlete yesterday: a1 slept 7.5h,
--- a2 slept 6.2h. Every rule below is absolute so the baseline gate is off.
+-- The fixture holds one wellness row per athlete on the organisation's
+-- yesterday (re-dated above): a1 slept 7.5h, a2 slept 6.2h. Every rule
+-- below is absolute so the baseline gate is off.
 
 -- 1. the coach previews an unsaved rule: sleep below 7h flags a2 alone
 select tests.set_jwt(tests.uid('orga', 'user_coach'));

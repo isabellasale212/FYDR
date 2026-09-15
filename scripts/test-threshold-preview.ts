@@ -52,6 +52,8 @@ console.log('\n3. the migration, the test, the screens');
   assert(/^grant execute on function public\.preview_threshold_rule/m.test(mig) && /^grant execute on function public\.preview_threshold\(uuid, int\) to authenticated/m.test(mig), 'callable by the signed-in app');
   const t = read('supabase/tests/690_preview_threshold_rule_test.sql');
   assert(/no flag row was written|no row written by any preview/.test(t) && /the medic gets an empty preview/.test(t) && /anonymous gets nothing/.test(t), 'the pgTAP test covers writes-nothing, the medic, anonymous');
+  // 15 Sept 2026 (decision-batch #5): the fixture is dated in UTC and the preview counts the org's days; the test re-dates the rows to the org's own yesterday before the role switch, or it flakes for an hour a night under BST.
+  assert(/update public\.wellness_entries\s+set entry_date = \(now\(\) at time zone \(select timezone from public\.organisations where id = tests\.uid\('orga', 'org'\)\)\)::date - 1/.test(t) && t.indexOf('update public.wellness_entries') < t.indexOf('set local role authenticated'), 'and re-dates the fixture to the organisation\'s own yesterday, as postgres, before the role switch (the 23:00–00:00 UTC flake)');
 
   const q = strip(read('src/lib/queries/thresholds.ts'));
   assert(/created_by, updated_at, applies_to_group_id'/.test(q) && /export async function fetchThresholdOwnerNames/.test(q), 'the rule carries its creator and date');

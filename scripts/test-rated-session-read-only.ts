@@ -59,5 +59,17 @@ console.log('\nthe panel offers no edit on a rated session');
   assert(/Cancel changes/.test(branch), 'a held edit from before the rule can still be dropped');
 }
 
+console.log('\nand the database holds it (0133) — the last line under both screens');
+{
+  const mig = read('supabase/migrations/0133_rated_session_read_only.sql').replace(/^\s*--.*$/gm, '');
+  assert(/create or replace function public\.sessions_rated_read_only\(\)/.test(mig) && /before update on public\.sessions/.test(mig), 'a before-update trigger on sessions');
+  assert(/new\.starts_at is distinct from old\.starts_at or new\.duration_min is distinct from old\.duration_min/.test(mig), 'refuses a change to starts_at or duration_min — what the sentence ties the rating to — and nothing else');
+  assert(/from public\.training_entries te[\s\S]*?te\.superseded_by is null/.test(mig), 'when the session has a LIVE rating, the population the screens count');
+  assert(/raise exception 'session_rated_read_only'/.test(mig), 'loudly');
+  const q = strip(read('src/lib/queries/schedule.ts'));
+  assert(/error\.message\.includes\('session_rated_read_only'\)\) return \{ error: RATED_SESSION_REFUSAL \}/.test(q), 'updateSession turns the refusal into the rule\'s own words');
+  assert(/export const RATED_SESSION_REFUSAL =[\s\S]*?Ratings are tied to its date and duration, so it cannot be changed\. Cancel it and create a new one if the details are wrong\./.test(copy), 'and those words are the sentence both screens show');
+}
+
 console.log(`\n${passed} passed, ${failed} failed`);
 if (failed > 0) process.exit(1);

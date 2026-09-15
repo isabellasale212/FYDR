@@ -13,6 +13,7 @@ import { fetchAllPaged } from './paged';
 import { computeConflicts } from './restrictionConflicts';
 import { mustAffect } from '@/lib/write';
 import { restrictionLine } from '@/lib/restrictions';
+import { RATED_SESSION_REFUSAL } from '@/lib/ratedSession';
 
 export type Session = Pick<
   SessionRow,
@@ -1299,6 +1300,10 @@ export async function updateSession(
     .select('id')
     .maybeSingle();
 
+  /* 0133: a rated session's date and duration are refused at the table,
+     loudly — the last line under both screens' read-only rule, for the
+     stale tab that still holds the old form. */
+  if (error && error.message.includes('session_rated_read_only')) return { error: RATED_SESSION_REFUSAL };
   if (error) return { error: humanizeDbError(error.message, 'staff') };
 
   if (!updated) {

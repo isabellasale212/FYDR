@@ -304,7 +304,14 @@ it retroactively rewrites history and corrupts every MD-n analysis.
 
 ### Week templates
 
-```sql
+```
+
+A session with a live rating (a `training_entries` row not superseded) refuses
+a change to `starts_at` or `duration_min` at the table — `sessions_rated_read_only`,
+migration 0133, the database's last line under the read-only rule both screens
+show (PATTERN-S4 C4). Title, location, type, matchday offset and status still
+change; cancelling stays.
+sql
 create table week_templates (
   id         uuid primary key default gen_random_uuid(),
   org_id     uuid not null references organisations(id),

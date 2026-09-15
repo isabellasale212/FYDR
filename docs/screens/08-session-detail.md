@@ -49,7 +49,11 @@ cancelling stays available (PATTERN-S4 C4, ruled 13 September 2026, built
 14 September). The same rule, with the same sentence from `lib/ratedSession.ts`,
 holds on the schedule grid's selected session panel since 15 September
 (`decisions/decision-batch-2026-09-15.md` #6), and both count the same way:
-distinct athletes with a live rating.
+distinct athletes with a live rating. **And at the database** (migration
+0133, the pre-deploy fixes, 15 September): `sessions_rated_read_only` refuses
+a change to a rated session's date or duration whoever sends it — a stale
+tab's save is refused with the same sentence rather than landing. The title,
+location, type, matchday offset and status still change; cancelling stays.
 
 **Who is expected**, resolved from the groups attached to the session rather than
 listed by hand, so changing a group's membership changes the expectation.

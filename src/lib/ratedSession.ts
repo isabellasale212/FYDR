@@ -9,7 +9,17 @@
  * available (the session screen's Cancel; the grid's Remove, which cancels
  * a session carrying data when the week is published), and a new session
  * is the way to change the details. Both screens read this so they cannot
- * drift apart by a word. */
+ * drift apart by a word.
+ *
+ * HELD AT THE DATABASE since migration 0133 (Isabella, the pre-deploy fixes,
+ * 15 Sept 2026): sessions_rated_read_only refuses a change to starts_at or
+ * duration_min on a session with a live rating, so a stale tab's publish is
+ * refused rather than landing. The refusal names the row's problem without
+ * a count (the query layer has none); the screens keep the counted form. */
+/** The database's refusal (session_rated_read_only), in the same words. */
+export const RATED_SESSION_REFUSAL =
+  'Not saved: this session has been rated. Ratings are tied to its date and duration, so it cannot be changed. Cancel it and create a new one if the details are wrong.';
+
 export function ratedSessionSentence(ratingCount: number): string {
   return `This session has been rated by ${ratingCount} ${ratingCount === 1 ? 'athlete' : 'athletes'}. Ratings are tied to its date and duration, so it cannot be changed. Cancel it and create a new one if the details are wrong.`;
 }

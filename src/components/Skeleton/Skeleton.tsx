@@ -1,9 +1,8 @@
-/* Loading skeletons, for the routes the 16 Sept 2026 measurement left slow
- * after the fixes (docs/perf-measurements-2026-09-16.md): shown by a
- * loading.tsx while the route segment streams, so the shell — the sidebar,
- * the tab bar — is usable while the slow part arrives. Each page's skeleton
- * is shaped like that page's real content (its header, its cards, its
- * table) at the same widths, so nothing jumps when the data lands.
+/* Loading skeletons: shown by a loading.tsx while the route segment streams,
+ * so the shell — the sidebar, the tab bar — is usable while the slow part
+ * arrives. Each page's skeleton is shaped like that page's real content
+ * (its header, its cards, its table) at the same widths, so nothing jumps
+ * when the data lands.
  *
  * Built from the system's own tokens and nothing else: blocks are --surf2
  * on --r with the spacing scale between them, text lines take the height of
@@ -14,9 +13,18 @@
  * reads as broken, a moving one reads as loading. prefers-reduced-motion
  * stops it — base.css collapses every animation under it.
  *
- * Not for a fast route. A skeleton that shows for 40 milliseconds is a
- * flash, so a route gets one only where the measurement says a wait
- * survives the optimisation. */
+ * THE RULE IS THE HOLD, NOT THE MEASUREMENT — docs/decisions/skeleton-gate.md
+ * (Isabella, 15 Sept 2026). This header used to say a route gets a skeleton
+ * only where the measurement says a wait survives the optimisation; the
+ * production measurement in that decision put three of the five on both
+ * sides of the threshold from run to run, and the threshold became a
+ * property of the page instead: .sk-page is invisible for the first 200ms
+ * of the wait and appears only if the wait outlasts it (base.css, the
+ * `sk-appear` hold). A render that finishes in 180ms shows nothing at all,
+ * so the flash cannot happen on any route, and the measurement no longer
+ * gates which routes carry one. What a screen reader hears is not held:
+ * SkPage's live region is a sibling of the held element, announced at
+ * once. */
 
 type LineProps = { w?: string; size?: 'h1' | 'body' | 'label' | 'num' };
 
@@ -66,12 +74,21 @@ export function SkChips({ n = 5 }: { n?: number }) {
   );
 }
 
-/** The wrapper: announces the wait once and hides the blocks from the tree. */
+/** The wrapper: announces the wait once and hides the blocks from the tree.
+ *  Two elements, deliberately: the live region (role="status", aria-busy,
+ *  the visually-hidden "Loading {label}") is a SIBLING of the held .sk-page,
+ *  not its parent or child, so the 200ms opacity hold on .sk-page can never
+ *  delay or dim what assistive technology is told — the wait is announced
+ *  the moment the boundary renders, the picture follows if the wait lasts. */
 export function SkPage({ label, children }: { label: string; children: React.ReactNode }) {
   return (
-    <div className="sk-page" role="status" aria-busy="true" aria-live="polite">
-      <span className="visually-hidden">Loading {label}</span>
-      {children}
-    </div>
+    <>
+      <span className="visually-hidden" role="status" aria-busy="true" aria-live="polite">
+        Loading {label}
+      </span>
+      <div className="sk-page" aria-hidden="true">
+        {children}
+      </div>
+    </>
   );
 }

@@ -14990,13 +14990,21 @@ a.hist-row:active { background: var(--surf-sunken); }
 }
 
 /* ---------------------------------------------------------------------------
-   Loading skeletons (components/Skeleton, 16 Sept 2026). Only the routes the
-   performance measurement left slow carry one — see the component's header
-   and docs/perf-measurements-2026-09-16.md. Every block is a token: --surf2
-   on --r, the spacing scale between, line heights from the type scale, the
-   shimmer over --dur-ring. The shimmer is the one deliberate reversal of
-   "almost nothing moves" (docs/decisions/design-system-adoption.md), and
-   prefers-reduced-motion above stops it like every other animation.
+   Loading skeletons (components/Skeleton, 16 Sept 2026). Every block is a
+   token: --surf2 on --r, the spacing scale between, line heights from the
+   type scale, the shimmer over --dur-ring. The shimmer is the one deliberate
+   reversal of "almost nothing moves" (docs/decisions/design-system-adoption.md),
+   and prefers-reduced-motion above stops it like every other animation.
+
+   THE 200ms HOLD — docs/decisions/skeleton-gate.md (Isabella, 15 Sept 2026).
+   A skeleton is invisible for the first 200ms of the wait and appears only
+   if the wait outlasts it: a render that finishes in 180ms shows nothing, one
+   that takes 700ms shows the skeleton for 500ms of it. It lives on .sk-page
+   so every skeleton, present and future, inherits it; no route sets its own.
+   Opacity only — the skeleton keeps its box for the whole 200ms, so nothing
+   shifts when it paints; the reveal is a snap, not a fade, because the hold
+   is an anti-flash measure and not an entrance. The measurement that used
+   to decide which routes carry a skeleton no longer gates them.
    --------------------------------------------------------------------------- */
 .sk {
   display: block;
@@ -15042,6 +15050,36 @@ a.hist-row:active { background: var(--surf-sunken); }
   display: flex;
   flex-direction: column;
   gap: var(--gap-stack);
+  /* The hold: `from` (opacity 0) is filled backwards through the 200ms delay,
+     then the 1ms animation snaps to `to` and holds it. The box is laid out
+     from the first frame; only the paint waits. The live region that announces
+     the wait is the component's sibling span, outside this element, so the
+     hold cannot delay what assistive technology is told. */
+  opacity: 0;
+  animation: sk-appear 1ms linear 200ms both;
+}
+@keyframes sk-appear {
+  from { opacity: 0; }
+  to { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  /* DELIBERATE. The block at the top of this file zeroes every
+     animation-delay under reduced motion (2026-09-09), because staggered
+     entrances with fill-mode: both had hidden real content for the length of
+     their delay. That rule would collapse this hold too and make the
+     skeleton appear instantly — the flash the 15 Sept ruling exists to
+     remove. The hold is not motion: it is 200ms of nothing, then a snap, and
+     what it withholds is a placeholder, never content. So it is kept under
+     reduced motion, by a more specific !important than the universal one.
+     The duration stays collapsed (the reveal was a snap anyway), the shimmer
+     stays off (its keyframe collapses like every other animation), and the
+     announcement is unaffected because it is not inside this element. */
+  .sk-page {
+    /* The same 200ms as above, written twice on purpose: it is the ruling's
+       own number, not a scale step, and a token for one use would be a new
+       token (docs/decisions/skeleton-gate.md). */
+    animation-delay: 200ms !important;
+  }
 }
 .sk-row {
   display: flex;

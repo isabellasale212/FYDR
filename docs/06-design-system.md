@@ -2611,8 +2611,8 @@ stateDiagram-v2
 | Skeletons, not spinners | Any surface whose shape is predictable renders skeleton blocks in that shape |
 | Spinner only | For an action the user just triggered, inside the control that triggered it |
 | No layout shift | The skeleton occupies the final layout's dimensions |
-| Delay | Skeletons appear after 150 ms. Below that, nothing renders, to avoid a flash on a warm cache |
-| Minimum display | 400 ms once shown, so it does not flicker |
+| Delay | **200 ms** (Isabella, 15 September 2026, `docs/decisions/skeleton-gate.md`; this row said 150 ms). The skeleton is invisible for the first 200 ms of the wait and appears only if the wait outlasts it — a render that finishes in 180 ms shows nothing. Built once on `.sk-page` (opacity held at 0 through a delayed animation, the box laid out from the first frame), so every skeleton inherits it; the wait is announced to assistive technology at once, only the paint waits |
+| Minimum display | 400 ms once shown, so it does not flicker — **not built**. The 15 September ruling's own arithmetic ("one that takes 700 ms shows the skeleton for 500 ms of it") has no floor once shown, and a floor would hold real content back; on the sheet as a divergence to decide, not a miss |
 | Stale-while-revalidate | Cached data renders immediately with a subtle refreshing indicator. It is never replaced by a skeleton |
 | Reduced motion | No shimmer |
 

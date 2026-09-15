@@ -212,6 +212,13 @@ design.
 
 ## The gate on the skeletons: re-measure on production (Isabella, 16 September)
 
+**Superseded, 15 September 2026 — `docs/decisions/skeleton-gate.md`.** The
+production measurement was made (it is in that decision, in full) and step 3
+below is replaced by a rule on the page rather than a threshold applied
+once: all five skeletons stay, and `.sk-page` is invisible for the first
+200ms of any wait, appearing only if the wait outlasts it. Steps 1, 2 and 4
+are recorded here as they were run; step 3 is not to be acted on.
+
 Everything above was measured from a laptop talking to Ireland at 55–70ms a
 round trip. On Vercel the function sits in Dublin beside the database at one
 or two, so the pages may already be fast enough there that every skeleton

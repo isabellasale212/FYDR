@@ -22,6 +22,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { clientAddress, clientUserAgent, forwardedIdentityHeaders, isIpLiteral } from '@/lib/clientAddress';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 const walkRoutes = (dir: string): string[] =>
   readdirSync(dir).flatMap((e) => {
@@ -107,11 +108,10 @@ console.log('\nEVERY route that creates a session forwards them, not just the fi
 
      Swept rather than listed, so a third session-creating route cannot be
      added without either forwarding or failing this. */
-  const routes = walkRoutes('src/app');
-  const sessionCreators = routes.filter((p) =>
+  const routes = expectCount('route.ts files under src/app', walkRoutes('src/app'), COUNTS.appRoutes);
+  const sessionCreators = expectCount('routes that create a session', routes.filter((p) =>
     /verifyOtp|signInWithPassword|exchangeCodeForSession/.test(readFileSync(p, 'utf8')),
-  );
-  assert(sessionCreators.length >= 2, `found ${sessionCreators.length} route(s) that create a session`);
+  ), 2);
   for (const p of sessionCreators) {
     assert(
       /forwardedIdentityHeaders\(request\.headers\)/.test(readFileSync(p, 'utf8')),

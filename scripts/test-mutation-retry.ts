@@ -36,6 +36,7 @@
  * button again is a better retry than a silent one.
  */
 import { readFileSync } from 'node:fs';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -91,8 +92,8 @@ console.log('\nno component quietly re-enables it');
     return out;
   };
   const offenders: string[] = [];
-  for (const dir of files) {
-    for (const f of walk(dir)) {
+  for (const f of expectCount('.tsx files under src/components and src/app', files.flatMap((dir) => walk(dir)), COUNTS.componentTsx + COUNTS.appTsx)) {
+    {
       const src = readFileSync(f, 'utf8');
       if (!/useMutation\(/.test(src)) continue;
       for (const m of src.matchAll(/retry:\s*([1-9]\d*|true)/g)) {

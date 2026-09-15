@@ -28,6 +28,7 @@
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 function assert(cond: boolean, label: string): void {
@@ -48,7 +49,7 @@ const EXEMPT = /inclusive-copy-exempt:\s*\S/;
 console.log('no gendered pronoun in any athlete-facing string, or in the prose behind it');
 {
   const offenders: string[] = [];
-  for (const file of walk('src')) {
+  for (const file of expectCount('source files under src', walk('src'), COUNTS.srcTs)) {
     const src = readFileSync(file, 'utf8');
     if (EXEMPT.test(src)) continue;
     src.split('\n').forEach((line, i) => {

@@ -15,6 +15,7 @@
  * correct anyway. */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -76,7 +77,7 @@ console.log('\nno server component writes and then reads in one render');
 {
   const walk = (d: string, out: string[] = []): string[] => { for (const e of readdirSync(d, { withFileTypes: true })) { const p = join(d, e.name); if (e.isDirectory()) walk(p, out); else if (/(page|layout)\.tsx$/.test(e.name)) out.push(p); } return out; };
   const offenders: string[] = [];
-  for (const f of walk('src/app')) {
+  for (const f of expectCount('page.tsx and layout.tsx files under src/app', walk('src/app'), COUNTS.appPages + COUNTS.appLayouts)) {
     const s = readFileSync(f, 'utf8').replace(/\/\*[\s\S]*?\*\//g, '').replace(/\{\/\*[\s\S]*?\*\/\}/g, '');
     /* A write in a render is a .insert/.update/.upsert/.delete on a Supabase
        builder, or an rpc whose name is not a read. The reads are named. */

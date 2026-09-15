@@ -8,6 +8,7 @@
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 function assert(cond: boolean, label: string): void {
@@ -25,7 +26,7 @@ function walk(dir: string, out: string[] = []): string[] {
   }
   return out;
 }
-const files = walk('src');
+const files = expectCount('source and stylesheet files under src', walk('src'), COUNTS.srcTs + COUNTS.srcCss);
 const read = (p: string) => strip(readFileSync(p, 'utf8'));
 
 console.log('nothing prints the live screen');

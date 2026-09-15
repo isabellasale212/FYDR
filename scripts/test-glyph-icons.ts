@@ -35,6 +35,7 @@
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -61,7 +62,7 @@ const strip = (s: string): string => s
   .replace(/\/\*[\s\S]*?\*\//g, ' ')
   .replace(/\/\/.*$/gm, ' ');
 
-const files = walk('src');
+const files = expectCount('.tsx files under src', walk('src'), COUNTS.srcTsx);
 
 console.log('a control whose only content is a glyph has a real name');
 {

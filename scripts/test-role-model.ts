@@ -45,6 +45,7 @@
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0;
 let failed = 0;
@@ -74,7 +75,7 @@ function walk(dir: string, out: string[] = []): string[] {
 // ---------------------------------------------------------------------------
 console.log('\n-- the enum is exactly the agreed six --');
 
-const migrations = readdirSync('supabase/migrations').filter((f) => f.endsWith('.sql')).sort();
+const migrations = expectCount('migration files', readdirSync('supabase/migrations').filter((f) => f.endsWith('.sql')).sort(), COUNTS.migrations);
 
 /** Replays every create/rename/add against the enum, in migration order, so
  *  this reads the END state rather than whichever statement happens to match
@@ -105,7 +106,7 @@ assert(enumValues.length === ALL_ROLES.length, `enum has exactly ${ALL_ROLES.len
 // ---------------------------------------------------------------------------
 console.log('\n-- no retired role name survives anywhere --');
 
-const sources = walk('src');
+const sources = expectCount('source files walked (.ts, .tsx, .sql under src)', walk('src'), COUNTS.srcTs);
 for (const retired of RETIRED) {
   const hits = sources.filter((f) => {
     const src = readFileSync(f, 'utf8');
@@ -350,8 +351,7 @@ for (const [file, name, want] of [
 /* rows.ts since STAFF-SS-01 (2026-09-12): the row table moved out of the
    component so the phone shell reads the same one. */
 const sidebar = readFileSync('src/components/Sidebar/rows.ts', 'utf8');
-const rows = [...sidebar.matchAll(/label: '([^']+)',\s*route: '([^']+)',\s*roles: (\[[^\]]*\]|\w+)\s*\}/g)];
-assert(rows.length > 0, 'the sidebar declares rows this test can read');
+const rows = expectCount('sidebar rows read from rows.ts', [...sidebar.matchAll(/label: '([^']+)',\s*route: '([^']+)',\s*roles: (\[[^\]]*\]|\w+)\s*\}/g)], 9);
 /* One row narrows, and only one. §3.4 and D-02 both make Analytics the sport
    scientist's alone, confirmed 2026-09-05. It is named here rather than skipped
    by a general rule, so a SECOND row quietly narrowing still fails. */

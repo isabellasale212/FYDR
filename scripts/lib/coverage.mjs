@@ -20,11 +20,61 @@
 
 export class CoverageError extends Error {}
 
+/** The counts that guards walking a whole tree share — one place to raise
+ *  when a file is added. A guard that walks a narrower list keeps its own
+ *  number beside the walk. Every number is a claim about the repository as
+ *  of the commit that last changed it; a mismatch is not a nuisance to be
+ *  bumped past, it is the run asking what was added or lost. */
+export const COUNTS = {
+  /** supabase/migrations/*.sql */
+  migrations: 130,
+  /** supabase/tests/*.sql (pgTAP) */
+  pgtapTests: 91,
+  /** every file under src, of any kind */
+  srcFiles: 537,
+  /** .ts and .tsx under src */
+  srcTs: 532,
+  /** .tsx under src */
+  srcTsx: 291,
+  /** .css under src (src/styles) */
+  srcCss: 2,
+  /** page.tsx under src/app/(staff) */
+  staffPages: 76,
+  /** .tsx under src/app/(staff) */
+  staffTsx: 94,
+  /** route.ts / route.tsx under src/app/(staff) */
+  staffRoutes: 44,
+  /** .tsx under src/app/(athlete) */
+  athleteTsx: 25,
+  /** .tsx under src/components */
+  componentTsx: 162,
+  /** .ts and .tsx under src/components */
+  componentTs: 168,
+  /** .tsx under src/app */
+  appTsx: 128,
+  /** .ts and .tsx under src/app */
+  appTs: 175,
+  /** every file under src/app, of any kind */
+  appFiles: 178,
+  /** route.ts and .tsx under src/app */
+  appRoutesAndTsx: 169,
+  /** route.ts under src/app */
+  appRoutes: 41,
+  /** .ts and .tsx under src/lib */
+  libTs: 188,
+  /** page.tsx under src/app */
+  appPages: 106,
+  /** layout.tsx under src/app */
+  appLayouts: 3,
+  /** page.tsx under src/app/(athlete) */
+  athletePages: 24,
+};
+
 const bootstrap = process.env.COVERAGE_BOOTSTRAP === '1';
 
 /** Fail loudly unless `actual` is exactly `expected`. Returns `actual` so a
  *  call can sit inline: `for (const f of expectCount(…, files, 12))`. */
-export function expectCount<T extends number | readonly unknown[]>(label: string, actual: T, expected: number): T {
+export function expectCount(label, actual, expected) {
   const n = typeof actual === 'number' ? actual : actual.length;
   if (bootstrap) {
     console.log(`  coverage - ${label}: found ${n} (guard expects ${expected})`);

@@ -20,6 +20,7 @@
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { expectCount } from './lib/coverage.mjs';
 
 const DIR = process.argv[2];
 if (!DIR) { console.error('usage: a11y-sweep-report.mjs <dir>'); process.exit(1); }
@@ -134,7 +135,14 @@ const findTsx = (cls) => { const out = []; for (const [file, lines] of tsxIndex)
 
 /* ---- load ---------------------------------------------------------------- */
 const runs = [];
-for (const f of readdirSync(DIR)) if (/^a11y-[a-z0-9_-]+\.json$/.test(f)) runs.push(...JSON.parse(readFileSync(join(DIR, f), 'utf8')));
+/* Eleven runs means eleven (decision-batch-2026-09-15-pm.md item 5): ten
+   single-role accounts plus the anonymous pages. This is the reporter that
+   once skipped three roles whose filenames carried underscores and printed a
+   clean report anyway. EXPECT_RUNS overrides for a partial re-run, on purpose. */
+const EXPECT_RUNS = Number(process.env.EXPECT_RUNS ?? 11);
+const runFiles = expectCount('sweep run files in the directory (one per role, plus anonymous)', readdirSync(DIR).filter((f) => /^a11y-[a-z0-9_-]+\.json$/.test(f)), EXPECT_RUNS);
+for (const f of runFiles) runs.push(...JSON.parse(readFileSync(join(DIR, f), 'utf8')));
+expectCount('distinct roles across the runs', [...new Set(runs.map((r) => r.role))], EXPECT_RUNS);
 const short = (u) => u.replace(/^https?:\/\/[^/]+/, '');
 const reached = new Map(); // role -> Map(route -> landed)
 for (const r of runs) { if (!reached.has(r.role)) reached.set(r.role, new Map()); reached.get(r.role).set(r.route, short(r.url || '')); }

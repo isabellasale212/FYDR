@@ -20,6 +20,7 @@
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 function assert(cond: boolean, label: string): void {
@@ -71,7 +72,7 @@ export function tablesRevokedFrom(sql: string, role: 'anon' | 'authenticated'): 
   return out;
 }
 
-const files = readdirSync(DIR).filter((f) => f.endsWith('.sql')).sort();
+const files = expectCount('migration files', readdirSync(DIR).filter((f) => f.endsWith('.sql')).sort(), COUNTS.migrations);
 
 console.log('the guard reads SQL, not the prose around it');
 {

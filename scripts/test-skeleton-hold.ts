@@ -28,7 +28,7 @@
  * 900ms → replaced on arrival. Identical under reduced motion. */
 import { readdirSync, readFileSync, statSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
-import { expectCount } from './lib/coverage.ts';
+import { expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -87,7 +87,7 @@ console.log('SkPage: the live region is outside the held element; the hard-load 
   assert(/aria-busy="true" aria-live="polite"/.test(body), 'the live region is role=status, aria-busy, polite');
   assert(/<span hidden dangerouslySetInnerHTML/.test(body), 'the script is the innerHTML of a hidden span (the parser runs it on a hard load; React never warns about a script it did not create)');
   const m = skeleton.match(/const SHOWN_SCRIPT =\n([\s\S]*?);\n/);
-  const shown = m ? (0, eval)(m[1]) as string : '';
+  const shown = m?.[1] ? ((0, eval)(m[1]) as string) : '';
   assert(shown.startsWith('<script>') && shown.endsWith('</script>'), 'SHOWN_SCRIPT is a whole <script>');
   assert(/s\.parentNode\.previousElementSibling/.test(shown) && /classList\.contains\('sk-page'\)/.test(shown), 'it finds the held element as the span\'s previous sibling and checks it is .sk-page');
   assert(/ev\.animationName!=='sk-appear'/.test(shown) && /ev\.target!==e/.test(shown), 'it listens for sk-appear on that element only (the shimmer bubbles up)');

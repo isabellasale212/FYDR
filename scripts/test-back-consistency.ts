@@ -25,6 +25,7 @@
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 function assert(cond: boolean, label: string): void {
@@ -48,14 +49,14 @@ console.log('one history control, and it is the shared one');
   assert(/router\.back\(\)/.test(b), 'BackButton goes back in history');
   assert(/window\.history\.length > 1/.test(b), 'and hides itself when there is nothing behind this page');
 
-  const all = [...walk('src/components'), ...walk('src/app')];
+  const all = expectCount('.tsx files under src/components and src/app', [...walk('src/components'), ...walk('src/app')], COUNTS.componentTsx + COUNTS.appTsx);
   const others = all.filter((p) => !p.includes('BackButton') && /router\.back\(\)/.test(strip(read(p))));
   assert(others.length === 0, `nothing else calls router.back() (${others.join(', ') || 'none'})`);
 }
 
 console.log('\nno staff page ships a second control called just "Back"');
 {
-  const offenders = walk('src/app/(staff)').filter((p) => BARE_BACK.test(strip(read(p))));
+  const offenders = expectCount('.tsx files under src/app/(staff)', walk('src/app/(staff)'), COUNTS.staffTsx).filter((p) => BARE_BACK.test(strip(read(p))));
   assert(
     offenders.length === 0,
     `no staff route renders its own bare Back (${offenders.join(', ') || 'none'})`,

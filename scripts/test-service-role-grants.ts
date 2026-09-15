@@ -26,6 +26,7 @@
  */
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 function assert(cond: boolean, label: string): void {
@@ -39,8 +40,7 @@ const walk = (dir: string, ext: string[]): string[] =>
     return statSync(p).isDirectory() ? walk(p, ext) : ext.some((x) => p.endsWith(x)) ? [p] : [];
   });
 
-const migrations = readdirSync('supabase/migrations')
-  .filter((f) => f.endsWith('.sql'))
+const migrations = expectCount('migration files', readdirSync('supabase/migrations').filter((f) => f.endsWith('.sql')), COUNTS.migrations)
   .map((f) => readFileSync(join('supabase/migrations', f), 'utf8'))
   .join('\n');
 
@@ -49,7 +49,7 @@ console.log('every RPC called through the service-role client is granted to it')
   /* The admin client is the service-role one — createAdminClient(). Its call
      sites are found rather than listed, so a third one cannot be added without
      either a grant or a failure here. */
-  const sources = walk('src', ['.ts', '.tsx']);
+  const sources = expectCount('source files walked', walk('src', ['.ts', '.tsx']), COUNTS.srcTs);
   const called = new Set<string>();
   for (const p of sources) {
     const src = readFileSync(p, 'utf8');
@@ -57,7 +57,7 @@ console.log('every RPC called through the service-role client is granted to it')
     for (const m of src.matchAll(/\badmin\s*\.\s*rpc\(\s*'([a-z_]+)'/g)) called.add(m[1]!);
   }
 
-  assert(called.size >= 2, `found ${called.size} service-role RPC call site(s) — the sweep is looking`);
+  expectCount('service-role RPC functions called', called.size, 2);
   assert(called.has('login_attempt_gate'), 'login_attempt_gate is among them');
 
   for (const fn of [...called].sort()) {
@@ -97,12 +97,13 @@ console.log('\nthe fix is a migration, not something applied by hand');
   /* The whole finding was that production had the grant and no migration did.
      A grant that exists only in somebody's psql history is not a grant this
      project has. */
-  const files = readdirSync('supabase/migrations').filter((f) => f.endsWith('.sql'));
+  const files = expectCount('migration files (the grant sweep)', readdirSync('supabase/migrations').filter((f) => f.endsWith('.sql')), COUNTS.migrations);
   const withGrant = files.filter((f) =>
     /grant\s+execute\s+on\s+function\s+(?:public\.)?login_attempt_gate/i.test(
       readFileSync(join('supabase/migrations', f), 'utf8'),
     ),
   );
+  expectCount('migrations carrying the login_attempt_gate grant', withGrant, 1);
   assert(withGrant.length > 0, `a migration carries the grant (${withGrant.join(', ') || 'none'})`);
 }
 

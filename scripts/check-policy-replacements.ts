@@ -69,6 +69,7 @@
  */
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 export const BASELINE = 82;
 
@@ -299,8 +300,8 @@ function readDir(dir: string): Migration[] {
 
 /* CLI. Skipped when imported by the guard's own test. */
 if (import.meta.url === `file://${process.argv[1]}`) {
-  const migrations = readDir('supabase/migrations');
-  const tests = readDir('supabase/tests');
+  const migrations = expectCount('migration files', readDir('supabase/migrations'), COUNTS.migrations);
+  const tests = expectCount('pgTAP test files', readDir('supabase/tests'), COUNTS.pgtapTests);
   const { findings, replacements } = analyse({ migrations, tests });
 
   console.log(`policy replacements above migration ${String(BASELINE).padStart(4, '0')}: ${replacements}`);

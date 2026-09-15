@@ -29,6 +29,7 @@ import { mkdtempSync, readFileSync, rmSync, writeFileSync, readdirSync, statSync
 import { tmpdir } from 'node:os';
 import { join, resolve } from 'node:path';
 import { findViolations } from './check-control-radius';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 function assert(cond: boolean, label: string): void {
@@ -189,7 +190,7 @@ console.log('\nthe typeface is Roboto, and the variable is not named after it');
       const p = join(d, e);
       return statSync(p).isDirectory() ? walk(p) : /\.(tsx?|css)$/.test(p) ? [p] : [];
     });
-  const stragglers = walk('src').filter((p) => /var\(--font-sora\)/.test(read(p)));
+  const stragglers = expectCount('source and stylesheet files under src', walk('src'), COUNTS.srcTs + COUNTS.srcCss).filter((p) => /var\(--font-sora\)/.test(read(p)));
   assert(stragglers.length === 0, `nothing still reads --font-sora (${stragglers.join(', ') || 'none'})`);
   assert(/font-family: var\(--font-sans\)/.test(css), 'and base.css sets the family from the new name');
 }

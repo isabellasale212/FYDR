@@ -35,6 +35,7 @@
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 const ROOTS = ['src/app', 'src/components'];
 const GATE_NAME = /^(can|is|has|allow)[A-Z]/;
@@ -51,9 +52,9 @@ const violations: Violation[] = [];
 let exempted = 0;
 let checked = 0;
 
-for (const root of ROOTS) {
-  for (const file of walk(root)) {
-    if (!/\.(tsx?|ts)$/.test(file)) continue;
+const sourceFiles = expectCount('source files under src/app and src/components', ROOTS.flatMap((root) => walk(root)).filter((file) => /\.(tsx?|ts)$/.test(file)), COUNTS.appTs + COUNTS.componentTs);
+for (const file of sourceFiles) {
+  {
     const lines = readFileSync(file, 'utf8').split('\n');
     lines.forEach((line, i) => {
       /* Comments describing the rule are not the rule. Without this the file's
@@ -97,9 +98,8 @@ for (const root of ROOTS) {
 const SUPERSEDED_DOC = '01-roles-and-permissions.md';
 const SUPERSEDED_MARK = `${SUPERSEDED_DOC} (superseded)`;
 const unmarked: Violation[] = [];
-for (const root of ROOTS.concat(['src/lib'])) {
-  for (const file of walk(root)) {
-    if (!/\.(tsx?|ts)$/.test(file)) continue;
+for (const file of expectCount('source files under src/app, src/components and src/lib', ROOTS.concat(['src/lib']).flatMap((root) => walk(root)).filter((file) => /\.(tsx?|ts)$/.test(file)), COUNTS.appTs + COUNTS.componentTs + COUNTS.libTs)) {
+  {
     readFileSync(file, 'utf8').split('\n').forEach((line, i) => {
       if (!line.includes(SUPERSEDED_DOC)) return;
       if (line.includes(SUPERSEDED_MARK)) return;

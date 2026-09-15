@@ -35,6 +35,7 @@ import {
   SIGN_IN_COPY,
   isSignInErrorCode,
 } from '@/lib/signInSubmission';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -192,7 +193,7 @@ console.log('\n7. the generic shape — every form that carries a password posts
     /type="password"/.test(src) || /<PasswordField\b/.test(src) || /'password'\s*\}/.test(src);
   const offenders: string[] = [];
   let checked = 0;
-  for (const f of [...walk('src/components'), ...walk('src/app')]) {
+  for (const f of expectCount('.tsx files under src/components and src/app', [...walk('src/components'), ...walk('src/app')], COUNTS.componentTsx + COUNTS.appTsx)) {
     const src = strip(read(f));
     if (!/<form\b/.test(src) || !carriesPassword(src)) continue;
     if (f.endsWith('PasswordField.tsx')) continue; // the input, not a form
@@ -200,7 +201,7 @@ console.log('\n7. the generic shape — every form that carries a password posts
     const tags = [...src.matchAll(/<form\b[^>]*>/g)].map((m) => m[0]);
     if (!tags.every((t) => /\bmethod="post"/i.test(t))) offenders.push(f);
   }
-  assert(checked >= 3, `found the forms that carry a password (${checked}: sign-in, reset confirm, change password)`);
+  expectCount('forms that carry a password (sign-in, reset confirm, change password)', checked, 3);
   assert(offenders.length === 0, offenders.length === 0
     ? 'and every one of them says method="post"'
     : `${offenders.length} carry a password and no method="post": ${offenders.join(', ')}`);

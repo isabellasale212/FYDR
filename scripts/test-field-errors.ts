@@ -25,6 +25,7 @@
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -52,7 +53,7 @@ export const FIELD_ATTRIBUTABLE = [
     why: 'ATH-ADULT-03 C-e (2026-09-11): an out-of-range resting heart rate or body mass is checked as typed against the schema, and the field says so' },
 ] as const;
 
-const files = walk('src');
+const files = expectCount('.tsx files under src', walk('src'), COUNTS.srcTsx);
 
 console.log('the forms that know which field is wrong say which field is wrong');
 {

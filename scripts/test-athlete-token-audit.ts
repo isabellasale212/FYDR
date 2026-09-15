@@ -21,9 +21,10 @@
  * theme-seg-btn and md-seg read --r-full (999px) by name. They may read that
  * token and nothing else; a raw 999px on the same selector still fails.
  */
-import { readFileSync, readdirSync, statSync } from 'node:fs';
+import { existsSync, readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { ATHLETE_PILL_EXEMPT, SHAPED_ON_PURPOSE, findViolations } from './check-control-radius';
+import { expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 function assert(cond: boolean, label: string): void {
@@ -41,7 +42,7 @@ const tokens = readFileSync('src/styles/tokens.css', 'utf8');
 const ATHLETE_COMPONENTS = [
   'AvailabilityBanner', 'InjuryClinical', 'CheckInForm', 'GymSessionLogger', 'ThemeToggle',
   'AvatarUploadForm', 'AthleteProfileEditForm', 'ChangePasswordForm', 'WellnessChart',
-  'AthleteTabBar', 'EmptyState', 'FlagNotice', 'PeriodSelector', 'TestSparkline',
+  'AthleteTabBar', 'EmptyState', 'FlagNotice', 'PeriodSelector',
   'NotificationPreferencesForm', 'HideLeaderboardsToggle',
   'GlobalOptOutToggle', 'NutritionCheckinForm', 'OutboxFlusher', 'Toast', 'FydrLockup',
 ];
@@ -54,9 +55,17 @@ const walk = (d: string) => {
   }
 };
 walk('src/app/(athlete)');
-for (const c of ATHLETE_COMPONENTS) {
-  try { walk(join('src/components', c)); } catch { /* component may not exist */ }
+expectCount('athlete route files', files, 28);
+/* Every listed component must exist. This used to swallow a missing directory
+   ("component may not exist"), and did: 'TestSparkline' was listed for months
+   and is a local function of my-data/page.tsx, never a component — the walk
+   silently audited nothing for it. Coverage pass, 15 Sept 2026. */
+for (const c of expectCount('athlete-reachable component directories', ATHLETE_COMPONENTS, 20)) {
+  const dir = join('src/components', c);
+  if (!existsSync(dir)) { console.log(`  FAIL - listed athlete component ${c} does not exist at ${dir}`); process.exit(1); }
+  walk(dir);
 }
+expectCount('athlete surface files (routes and reachable components)', files, 50);
 
 console.log(`the athlete surface: ${files.length} files`);
 

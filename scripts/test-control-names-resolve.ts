@@ -22,6 +22,7 @@
  * the fix is to make the two agree, not to loosen the comparison.
  */
 import { readFileSync, readdirSync } from 'node:fs';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 function assert(cond: boolean, label: string): void {
@@ -38,25 +39,26 @@ const files: string[] = [];
 for (const f of readdirSync('src/app/(athlete)', { recursive: true, encoding: 'utf8' })) {
   if (f.endsWith('.tsx')) files.push(`src/app/(athlete)/${f}`);
 }
+expectCount('athlete route .tsx files', files, COUNTS.athleteTsx);
 const seen = new Set<string>();
 const queue = [...files];
+/* No silent skips here (coverage pass, 15 Sept 2026): every file in the queue
+   came from a directory listing and every imported component directory must
+   exist — the import compiled, so a missing one is this walk being wrong. */
 while (queue.length) {
   const f = queue.pop()!;
   if (seen.has(f)) continue;
   seen.add(f);
-  let src: string;
-  try { src = readFileSync(f, 'utf8'); } catch { continue }
+  const src = readFileSync(f, 'utf8');
   for (const m of src.matchAll(/from '@\/components\/([A-Za-z0-9_]+)\//g)) {
     const dir = `src/components/${m[1]}`;
-    try {
-      for (const g of readdirSync(dir, { recursive: true, encoding: 'utf8' })) {
-        if (g.endsWith('.tsx')) queue.push(`${dir}/${g}`);
-      }
-    } catch { /* not a directory */ }
+    for (const g of readdirSync(dir, { recursive: true, encoding: 'utf8' })) {
+      if (g.endsWith('.tsx')) queue.push(`${dir}/${g}`);
+    }
   }
 }
-const athleteFiles = [...seen];
-const corpus = athleteFiles.map((f) => { try { return blank(readFileSync(f, 'utf8')) } catch { return '' } }).join('\n');
+const athleteFiles = expectCount('athlete surface files (routes and every component they import, transitively)', [...seen], 63);
+const corpus = athleteFiles.map((f) => blank(readFileSync(f, 'utf8'))).join('\n');
 
 const tidy = (t: string): string =>
   t.replace(/&mdash;/g, '—').replace(/&rsquo;/g, "'").replace(/&ldquo;|&rdquo;/g, '')

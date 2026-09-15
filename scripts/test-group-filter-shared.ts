@@ -24,6 +24,7 @@
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
 import { GROUP_FILTER_COOKIE, GROUP_FILTER_COOKIE_MAX_AGE, groupFilterCookie } from '@/lib/groupFilterCookie';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -52,7 +53,7 @@ console.log('one cookie, one writer');
   assert(/const fromCookie = value === undefined;\s*const requested = fromCookie \? parseGroupParam\(\(await cookies\(\)\)\.get\(GROUP_FILTER_COOKIE\)\?\.value\) : parseGroupParam\(value\);/.test(server), 'the URL wins whenever the key is present at all, including present-and-empty');
   const walkAll = (d: string): string[] =>
     readdirSync(d, { withFileTypes: true }).flatMap((e) => e.isDirectory() ? walkAll(join(d, e.name)) : /\.tsx?$/.test(e.name) ? [join(d, e.name)] : []);
-  const others = ['src/components', 'src/app', 'src/lib'].flatMap(walkAll)
+  const others = expectCount('source files under src/components, src/app and src/lib', ['src/components', 'src/app', 'src/lib'].flatMap(walkAll), COUNTS.componentTs + COUNTS.appTs + COUNTS.libTs)
     .filter((f) => !f.endsWith('groupFilterCookie.ts') && /fydr-group-filter/.test(strip(read(f))));
   assert(others.length === 0, `no other file spells the cookie name as a literal (${others.join(', ') || 'none'})`);
 }
@@ -67,11 +68,12 @@ console.log('\nthe sweep: every screen with a chip row resolves through the cook
       else if (e.name === 'page.tsx') pages.push(p);
     }
   })('src/app/(staff)');
+  expectCount('staff page.tsx files', pages, COUNTS.staffPages);
   /* A ReportPager only carries chips when the page hands it a header; the
      athlete report (one athlete, the filter deliberately off — route map §6.2)
      uses the pager without one. */
   const withChips = pages.filter((p) => { const src = strip(read(p)); return /<GroupFilter\b|<ReportHeader\b/.test(src) || (/<ReportPager\b/.test(src) && /header=\{/.test(src)); });
-  assert(withChips.length >= 17, `${withChips.length} staff screens render a group chip row (GroupFilter, ReportHeader or a ReportPager header)`);
+  expectCount('staff screens rendering a group chip row (GroupFilter, ReportHeader or a ReportPager header)', withChips, 21);
   const notResolving = withChips.filter((p) => !/resolveGroupFilter\(/.test(strip(read(p))));
   assert(notResolving.length === 0, notResolving.length === 0
     ? 'every one of them resolves its scope through resolveGroupFilter() — URL first, then the cookie'

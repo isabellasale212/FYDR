@@ -16,6 +16,7 @@
 import { readFileSync, readdirSync, statSync } from 'node:fs';
 import { join } from 'node:path';
 import { REPORT_VISIBILITY, type ReportKey } from '@/lib/access';
+import { expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 function assert(cond: boolean, label: string): void {
@@ -64,8 +65,8 @@ function walk(dir: string): string[] {
     return statSync(p).isDirectory() ? walk(p) : [p];
   });
 }
-const files = walk(BASE).filter((f) => /\.(tsx?|ts)$/.test(f) && f !== join(BASE, 'page.tsx'));
-const routeFiles = files.filter((f) => /\/(page\.tsx|route\.tsx?|route\.ts)$/.test(f));
+const files = expectCount('source files under the reports tree (the index page aside)', walk(BASE).filter((f) => /\.(tsx?|ts)$/.test(f) && f !== join(BASE, 'page.tsx')), 34);
+const routeFiles = expectCount('report pages and export/pdf routes', files.filter((f) => /\/(page\.tsx|route\.tsx?|route\.ts)$/.test(f)), 26);
 /* The route directory is the key, with two exceptions since the training
    report split (13 September 2026): /reports/training-load is the
    `trainingLoad` key, and /reports/training is nothing but a redirect to
@@ -111,8 +112,7 @@ assert(/aggregate compliance and usage|coach.*medic/is.test(hub), 'and the heade
    export. The page and the query layer stay clean. */
 console.log('\nthe injury report still cannot reach a diagnosis (the medic\'s CSV excepted)');
 const MEDIC_CSV = 'src/app/(staff)/reports/injuries/export/route.ts';
-for (const f of walk('src/app/(staff)/reports/injuries').concat(['src/lib/queries/reports.ts', 'src/lib/queries/availability.ts'])) {
-  if (!/\.(tsx?|ts)$/.test(f)) continue;
+for (const f of expectCount('injury report sources and the two query files', walk('src/app/(staff)/reports/injuries').concat(['src/lib/queries/reports.ts', 'src/lib/queries/availability.ts']).filter((f) => /\.(tsx?|ts)$/.test(f)), 6)) {
   const src = readFileSync(f, 'utf8');
   const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
   if (f === MEDIC_CSV) {

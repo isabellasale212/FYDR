@@ -27,6 +27,7 @@
  */
 import { readFileSync, readdirSync, existsSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -49,7 +50,7 @@ console.log('a failure that reaches the DOM reaches the screen reader too');
 {
   const ANNOUNCES = /role="alert"|aria-live=/;
   const silent: string[] = [];
-  for (const f of walk('src/components')) {
+  for (const f of expectCount('component files (.tsx)', walk('src/components'), COUNTS.componentTsx)) {
     const src = read(f);
     if (!/setError\(/.test(src)) continue;
     /* Only files that RENDER the error themselves. One that hands it to a child
@@ -91,7 +92,7 @@ console.log('\nevery screen has a heading to navigate by');
     }
   }
 
-  const pages = walk('src/app').filter((f) => f.endsWith('page.tsx'));
+  const pages = expectCount('page.tsx files under src/app', walk('src/app').filter((f) => f.endsWith('page.tsx')), COUNTS.appPages);
   const headless: string[] = [];
   for (const page of pages) {
     const src = read(page);

@@ -19,6 +19,7 @@ import { spawnSync } from 'node:child_process';
 import { readdirSync, readFileSync } from 'node:fs';
 import { join } from 'node:path';
 import { resolveDbUrl } from './lib/db-url.mjs';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 /* Falls back to the IPv4 pooler when the direct host cannot be reached, and
    SAYS which route it took — see scripts/lib/db-url.mjs for why that failure
@@ -47,14 +48,9 @@ const CONTINUE_ON_FAIL = process.env.TENANCY_CONTINUE === '1';
 
 const testDir = join(process.cwd(), 'supabase', 'tests');
 
-const files = readdirSync(testDir)
+const files = expectCount('pgTAP test files', readdirSync(testDir)
   .filter((f) => f.endsWith('.sql'))
-  .sort();
-
-if (files.length === 0) {
-  console.error(`No .sql files in ${testDir}`);
-  process.exit(1);
-}
+  .sort(), COUNTS.pgtapTests);
 
 /* G-38. Every file that switches to `authenticated` must also assert the canary,
  * because the canary is what proves the switch happened at all. Checked before a

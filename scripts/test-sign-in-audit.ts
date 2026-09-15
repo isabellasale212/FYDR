@@ -31,6 +31,7 @@ import { signInAuditRow, recordSignIn, recordSignInFailure, signInFailureRow, SI
 import { captureConsoleError } from './lib/capture-console';
 import { claimsFromSession, sessionIdFromAccessToken } from '@/lib/supabase/claims';
 import type { FydrClaims } from '@/lib/supabase/claims';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 function assert(cond: boolean, label: string): void {
@@ -467,10 +468,8 @@ console.log('\nEVERY site that creates a session records one, or says in writing
     });
 
   const CREATES_SESSION = /verifyOtp\(|signInWithPassword\(|exchangeCodeForSession\(/;
-  const files = [...walk('src/app', ['route.ts', '.tsx']), ...walk('src/components', ['.tsx', '.ts'])];
-  const creators = files.filter((p) => CREATES_SESSION.test(readFileSync(p, 'utf8')));
-
-  assert(creators.length >= 4, `the sweep found ${creators.length} session-creating sites (expected at least 4, or it is not sweeping)`);
+  const files = expectCount('route.ts and .tsx under src/app, plus .ts/.tsx under src/components', [...walk('src/app', ['route.ts', '.tsx']), ...walk('src/components', ['.tsx', '.ts'])], COUNTS.appRoutesAndTsx + COUNTS.componentTs);
+  const creators = expectCount('session-creating sites', files.filter((p) => CREATES_SESSION.test(readFileSync(p, 'utf8'))), 4);
 
   const EXEMPT = /\/\/\s*sign-in-audit-exempt:\s*\S.{10,}/;
   for (const p of creators) {

@@ -25,6 +25,7 @@
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0;
 let failed = 0;
@@ -82,11 +83,9 @@ function gatesOnTier(source: string): boolean {
     /\bisPremium\s*\(/.test(source.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/[^\n]*/g, ''));
 }
 
-const all = routeFiles(ROOT);
-console.log(`\n── ${all.length} staff route handlers scanned ──`);
+const all = expectCount('staff route handlers scanned', routeFiles(ROOT), COUNTS.staffRoutes);
 
-const premiumServing = all.filter((f) => PREMIUM_SIGNALS.test(readFileSync(f, 'utf8')));
-console.log(`\n── ${premiumServing.length} of them touch GPS, the training report or Apple Health ──`);
+const premiumServing = expectCount('route handlers touching GPS, the training report or Apple Health', all.filter((f) => PREMIUM_SIGNALS.test(readFileSync(f, 'utf8'))), 10);
 
 for (const file of premiumServing) {
   const source = readFileSync(file, 'utf8');

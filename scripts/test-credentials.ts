@@ -20,6 +20,7 @@
  */
 import { readdirSync, readFileSync, statSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0;
 let failed = 0;
@@ -45,7 +46,7 @@ function walk(dir: string, out: string[] = []): string[] {
 const CREATE = 'src/app/(staff)/settings/users/create/route.ts';
 const BULK = 'src/app/(staff)/settings/users/bulk-invite/send/route.ts';
 const CONFIRM = 'src/app/auth/confirm/route.ts';
-const sources = walk('src');
+const sources = expectCount('source files under src', walk('src'), COUNTS.srcTs);
 
 /** Comments are stripped before every absence check. This file's own subject is
  *  "temporary password", and so is the explanatory comment that will sit where

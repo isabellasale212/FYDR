@@ -33,6 +33,7 @@
  */
 import { readFileSync, readdirSync, writeFileSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 type Family = 'radius' | 'spacing' | 'dimension' | 'size' | 'weight' | 'colour' | 'border' | 'shadow';
 
@@ -303,6 +304,7 @@ function scanTsx(tokens: ReturnType<typeof readTokens>): Finding[] {
   const files: string[] = [];
   const walk = (d: string) => { for (const e of readdirSync(d, { withFileTypes: true })) { const p = join(d, e.name); if (e.isDirectory()) walk(p); else if (p.endsWith('.tsx')) files.push(p); } };
   walk('src');
+  expectCount('.tsx files under src', files, COUNTS.srcTsx);
   const triplets = new Map<string, string>([...tokens.scale, ...tokens.light].filter(([k]) => k.endsWith('-rgb')));
   const out: Finding[] = [];
   for (const file of files) {
@@ -399,6 +401,7 @@ function main() {
     const tsxFiles: string[] = [];
     const walk = (d: string) => { for (const e of readdirSync(d, { withFileTypes: true })) { const p = join(d, e.name); if (e.isDirectory()) walk(p); else if (p.endsWith('.tsx')) tsxFiles.push(p); } };
     walk('src');
+    expectCount('.tsx files under src (the usage index)', tsxFiles, COUNTS.srcTsx);
     lines.push('## By page or class family', '', 'A `base.css` family is the classes sharing a prefix; "used on" lists the files whose markup names one of them, so the family reads as pages.', '', '| Page / family | Literals | Exact | Imperceptible | Visible | No token | Used on |', '|---|---|---|---|---|---|---|');
     for (const [g, fs] of sortedGroups) {
       const used = g.startsWith('base.css · .') ? usedOn(g.slice('base.css · .'.length), tsxFiles) : [];

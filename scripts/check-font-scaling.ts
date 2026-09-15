@@ -45,6 +45,7 @@
  * overflow, using a detector proven against a forced clip first.
  */
 import { readFileSync, readdirSync } from 'node:fs';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let failed = 0;
 const css = readFileSync('src/styles/base.css', 'utf8');
@@ -124,9 +125,9 @@ the eleven that needed it.
 /* THE STYLE ATTRIBUTE, athlete routes. `fontSize: 17` and `fontSize: '17px'`
    both render as px and both ignore the user's text setting; only a rem string
    follows it. */
-const athleteFiles = readdirSync('src/app/(athlete)', { recursive: true, encoding: 'utf8' })
+const athleteFiles = expectCount('athlete route .tsx files', readdirSync('src/app/(athlete)', { recursive: true, encoding: 'utf8' })
   .filter((f) => f.endsWith('.tsx'))
-  .map((f) => `src/app/(athlete)/${f}`);
+  .map((f) => `src/app/(athlete)/${f}`), COUNTS.athleteTsx);
 
 const inline: { file: string; line: number; value: string }[] = [];
 for (const file of athleteFiles) {

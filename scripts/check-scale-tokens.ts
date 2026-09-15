@@ -35,6 +35,7 @@
  */
 import { readFileSync, readdirSync } from 'node:fs';
 import { join } from 'node:path';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -74,7 +75,7 @@ export function styleSpans(src: string): Array<[number, number]> {
 }
 
 const SPACING_PROP = /^(margin|padding)(Top|Bottom|Left|Right)?$|^(gap|rowGap|columnGap)$/;
-const files = walk('src');
+const files = expectCount('.tsx files under src', walk('src'), COUNTS.srcTsx);
 const tokensCss = readFileSync('src/styles/tokens.css', 'utf8');
 
 console.log('nothing inside a style object is a raw number any more');

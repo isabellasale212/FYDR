@@ -116,6 +116,7 @@ const sleep = (ms) => new Promise((r) => setTimeout(r, ms));
 /* Read from the filesystem rather than a hardcoded list, so a page added
    tomorrow appears in tomorrow's PDF without anyone remembering to add it. */
 import { readdirSync, statSync } from 'node:fs';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 function findRoutes(dir, prefix = '') {
   const out = [];
   for (const name of readdirSync(dir)) {
@@ -290,10 +291,10 @@ try {
   console.log('  Signed in. Capturing…\n');
   }
 
-  let routes = findRoutes(resolve('src/app'));
+  let routes = expectCount('page routes under src/app', findRoutes(resolve('src/app')), COUNTS.appPages);
   if (ONLY.length) {
     routes = routes.filter((r) => ONLY.some((o) => r.includes(o)));
-    console.log(`  --routes ${ONLY.join(',')} → ${routes.length} of 83 routes\n`);
+    console.log(`  --routes ${ONLY.join(',')} → ${routes.length} of ${COUNTS.appPages} routes\n`);
   }
   const params = await resolveParams().catch(() => null);
   const targets = buildUrls(routes, params);

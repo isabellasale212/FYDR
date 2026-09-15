@@ -19,6 +19,7 @@ import {
   stripSql,
   type Policy,
 } from './check-policy-replacements';
+import { COUNTS, expectCount } from './lib/coverage.mjs';
 
 let passed = 0, failed = 0;
 function assert(cond: boolean, label: string): void {
@@ -163,7 +164,7 @@ console.log('\ncoverage is found by actor block, not by proximity');
 console.log('\nthe whole repository is clean right now');
 {
   const files = (d: string) => readdirSync(d).filter((f) => f.endsWith('.sql')).map((f) => read(d, f));
-  const { findings } = analyse({ migrations: files(MIG), tests: files(TESTS) });
+  const { findings } = analyse({ migrations: expectCount('migration files', files(MIG), COUNTS.migrations), tests: expectCount('pgTAP test files', files(TESTS), COUNTS.pgtapTests) });
   assert(findings.length === 0, 'no migration above the baseline replaces a policy unaccounted for');
 }
 

@@ -18,8 +18,14 @@ export function rpeOffLine(what: string): string {
 export const RPE_OFF_ATHLETE = 'Your club does not collect session ratings, so there is nothing to rate. Your sessions still count.';
 
 /** The switch's own two consequences, said before it is pressed. */
-export const RPE_SWITCH_ON = 'On: athletes are asked to rate each session they were expected at, on the CR-10 scale (0 rest to 10 maximal); session load, the compliance figure, the training load report, the effort leaderboards and the analytics load presets all rest on it.';
-export const RPE_SWITCH_OFF = 'Off: nobody is asked to rate anything, no rating is expected of anybody, and the training load report, the compliance figure, the dashboard’s RPE track, the effort leaderboards and the analytics load presets each say so instead of showing an empty column or a zero. Ratings already recorded stay.';
+export const RPE_SWITCH_ON = 'On: athletes are asked for a session RPE after training — one rating of each session they were expected at, on the CR-10 scale (0 rest to 10 maximal); session load, the compliance figure, the training load report, the effort leaderboards and the analytics load presets all rest on it.';
+export const RPE_SWITCH_OFF = 'Off: nobody is asked for a session RPE, no rating is expected of anybody, and the training load report, the compliance figure, the dashboard’s RPE track, the effort leaderboards and the analytics load presets each say so instead of showing an empty column or a zero. Ratings already recorded stay.';
+/** Decision batch 14 September 2026, #4: the setting's own wording must say
+ *  what it does not cover, or a club that switches it off and is still asked
+ *  in the gym reports it as a bug. The per-set RPE in the gym logger and a
+ *  programme's planned RPE are a lifting cue between an athlete and their
+ *  S&C; they feed none of the surfaces above and stay outside this switch. */
+export const RPE_SWITCH_SCOPE = 'This is the session RPE after training. The per-set RPE in the gym logger and a programme’s planned RPE are a lifting cue between an athlete and their S&C, feed none of the above, and are not switched off here.';
 
 /** The compliance report's rule (the addendum): say which entry types were
  *  counted, because one club's denominator is not another's. */

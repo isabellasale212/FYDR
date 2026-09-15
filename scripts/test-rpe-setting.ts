@@ -5,7 +5,7 @@
  * empty column or a zero. This guard pins the setting, the words and the
  * surfaces that carry them. */
 import { readFileSync } from 'node:fs';
-import { RPE_OFF_REPORT, RPE_OFF_ATHLETE, RPE_SWITCH_ON, RPE_SWITCH_OFF, rpeOffLine, complianceCountedLine, isRpeMetric, isRpeAnalyticsMetric } from '@/lib/rpeSetting';
+import { RPE_OFF_REPORT, RPE_OFF_ATHLETE, RPE_SWITCH_ON, RPE_SWITCH_OFF, RPE_SWITCH_SCOPE, rpeOffLine, complianceCountedLine, isRpeMetric, isRpeAnalyticsMetric } from '@/lib/rpeSetting';
 import { TRAINING_LOAD_OFF_STATE } from '@/lib/reportCatalogue';
 
 let failed = 0;
@@ -55,6 +55,11 @@ console.log('\n3. the switch, on Settings › Club');
   const sw = strip(read('src/components/RpeSettingSwitch/RpeSettingSwitch.tsx'));
   assert(/role="switch"/.test(sw) && /aria-checked/.test(sw) && /setCollectsRpe\(/.test(sw), 'a real switch, writing through setCollectsRpe');
   assert(/RPE_SWITCH_ON/.test(sw) && /RPE_SWITCH_OFF/.test(sw), 'both consequence paragraphs are on the card');
+  /* Decision batch 14 September 2026, #4: the setting says what it does not
+     cover — the gym's per-set RPE and planned RPE stay outside it. */
+  assert(/session RPE after training/.test(RPE_SWITCH_ON) && /per-set RPE in the gym logger/.test(RPE_SWITCH_SCOPE) && /not switched off here/.test(RPE_SWITCH_SCOPE), 'the switch names itself "session RPE after training" and says the per-set gym RPE is not it');
+  assert(/RPE_SWITCH_SCOPE/.test(sw) && /Session RPE after training/.test(sw), 'the scope sentence and the title are on the card');
+  assert(/Session RPE after training/.test(strip(read('src/app/(staff)/settings/club/page.tsx'))) && /per-set RPE in the gym is not this setting/.test(strip(read('src/app/(staff)/settings/club/page.tsx'))), 'the club page says the same in its own caption');
 }
 
 console.log('\n4. every dependent surface says so');

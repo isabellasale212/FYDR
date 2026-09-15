@@ -72,19 +72,25 @@ only" beside it.
   **Integrations card**: Catapult reads **"Import files"** (A7) — a CSV file
   drop, never a live connection; **there is no Apple Health row**
   (`docs/platform-decision.md`, 13 September 2026: removed from the product, not
-  deferred). The **Session RPE card** (`#rpe`, since 13 September 2026,
-  migration 0118, `organisations.collects_rpe`): a switch, on by default, that
-  decides whether this club collects a session rating at all. Both
-  consequences are printed on the card before the switch is pressed — on:
-  athletes are asked to rate each session they were expected at on the CR-10
-  scale, and session load, the compliance figure, the training load report,
-  the effort leaderboards and the analytics load presets rest on it; off:
-  nobody is asked, nothing is expected, ratings already recorded stay, and
-  each of those surfaces says "This club does not collect session RPE …" and
-  who can switch it on, rather than showing an empty column or a zero
-  (`docs/decisions/absence-rule.md`). The switch is the sport scientist's;
-  every other role reads the state as a sentence. Each flip writes an audit
-  row (`org.collects_rpe.changed`). The **Coaches and the injury site card**
+  deferred). The **Session RPE after training card** (`#rpe`, since 13
+  September 2026, migration 0118, `organisations.collects_rpe`; retitled 14
+  September, decision batch #4): a switch, on by default, that decides whether
+  this club collects a session rating at all. Both consequences are printed
+  on the card before the switch is pressed — on: athletes are asked for a
+  session RPE after training, one rating of each session they were expected
+  at on the CR-10 scale, and session load, the compliance figure, the
+  training load report, the effort leaderboards and the analytics load
+  presets rest on it; off: nobody is asked, nothing is expected, ratings
+  already recorded stay, and each of those surfaces says "This club does not
+  collect session RPE …" and who can switch it on, rather than showing an
+  empty column or a zero (`docs/decisions/absence-rule.md`). **The card says
+  what it does not cover**: "This is the session RPE after training. The
+  per-set RPE in the gym logger and a programme's planned RPE are a lifting
+  cue between an athlete and their S&C, feed none of the above, and are not
+  switched off here." — so a club that switches it off and is still asked in
+  the gym does not report a bug. The switch is the sport scientist's; every
+  other role reads the state as a sentence. Each flip writes an audit row
+  (`org.collects_rpe.changed`). The **Coaches and the injury site card**
   (`#injury-site`, since 13 September 2026, migration 0122,
   `organisations.coach_sees_injury_site`, PATTERN-S3 C8): a switch, **off by
   default**, that decides whether a coach reads where an athlete's injury is.
@@ -157,7 +163,7 @@ None. Settings displays configuration, not measurements.
 | Change password | `/settings/profile#password` | Sets a new password | Stays there | Changes your sign in | Any staff, for themselves | Form submission | Never |
 | Two factor login | `/settings/profile#password` | Enrols or manages a second factor | Stays there | Registers a factor | Any staff, for themselves. **Required for some roles** | Yes | Never |
 | Club details | `/settings/club` | Changes the club's name, sport, timezone, country and logo | Stays there | Updates the organisation | **Sport scientist only** in the agreed model | Form submission | Absent for everyone else |
-| Session RPE switch | `/settings/club#rpe` | Turns the session rating on or off for the whole club; the database stops generating RPE expectations while it is off | Stays there | `organisations.collects_rpe` and an audit row | **Sport scientist only**; other roles read the state | None — reversible, and both consequences are on the card | Never absent: the sentence stands in for the switch |
+| Session RPE after training switch | `/settings/club#rpe` | Turns the session rating on or off for the whole club; the database stops generating RPE expectations while it is off | Stays there | `organisations.collects_rpe` and an audit row | **Sport scientist only**; other roles read the state | None — reversible, and both consequences are on the card | Never absent: the sentence stands in for the switch |
 | Plan | `/settings/plan` | Reads what the club is on, what Premium contains, the price placeholder, and what GPS history is kept | Stays there | Nothing | **Sport scientist only** | None | Closed row with its reason for every other role |
 | Coaches and the injury site switch | `/settings/club#injury-site` | Decides whether a coach reads the body site and side of an open injury; the database masks both while it is off | Stays there | `organisations.coach_sees_injury_site` and an audit row | **Sport scientist only**; other roles read the state | None — reversible, and both positions are on the card | Never absent: the sentence stands in for the switch |
 | Users, Audit, Retention, Subject access | People and Data groups | Open those screens | Their own addresses | Nothing | As each screen | None | Never absent: closed rows state their reason instead of linking |

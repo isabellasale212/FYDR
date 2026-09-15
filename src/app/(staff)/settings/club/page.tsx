@@ -195,10 +195,11 @@ export default async function SettingsClubPage() {
             scientist's switch; other staff read where it stands. */}
         <section className="card set-card" aria-labelledby="rpe-title" id="rpe">
           <h2 className="card-title" id="rpe-title" style={{ margin: 0 }}>
-            Session RPE
+            Session RPE after training
           </h2>
           <p style={{ fontSize: 'var(--fs-13)', color: 'var(--muted)', margin: 'var(--s-1) 0 var(--sp-10)' }}>
-            Whether athletes are asked to rate each session. The base tier&apos;s only load measure rests on it.
+            Whether athletes are asked to rate each session after it. The base tier&apos;s only load measure rests on it.
+            The per-set RPE in the gym is not this setting.
           </p>
           {isAdmin ? (
             <RpeSettingSwitch orgId={orgId} userId={claims.userId} initial={collectsRpe} />

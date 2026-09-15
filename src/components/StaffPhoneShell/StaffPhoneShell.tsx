@@ -95,7 +95,9 @@ const MORE_ICON = (
 
 function glyphFor(route: string): React.ReactNode {
   if (route === '/flags') return FLAG_ICON;
-  return SIDEBAR.find((r) => r.route === route)?.icon ?? FLAG_ICON;
+  /* Testing (2.7, 16 Sept 2026) wears the Reports glyph it was folded under. */
+  const key = route === '/testing' ? '/reports' : route;
+  return SIDEBAR.find((r) => r.route === key)?.icon ?? FLAG_ICON;
 }
 
 /** The page's own h1, wherever a staff page draws one: every page's sits in

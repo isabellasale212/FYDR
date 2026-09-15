@@ -331,7 +331,9 @@ export function NutritionWorkspace({
           ) : null}
         </div>
 
-        <div className="card nutr-rail-card">
+        {/* 2.3 (Isabella, 16 Sept 2026): the day-type editor is desktop-only —
+            hidden at phone width, the preview keeps its default day. */}
+        <div className="card nutr-rail-card" data-desktop-only="">
           <h2 className="card-title">Day type</h2>
           <p className="tiny" style={{ marginTop: -4, marginBottom: 'var(--sp-8)' }}>
             Carbohydrate is periodised. Protein and fat hold.
@@ -492,7 +494,11 @@ export function NutritionWorkspace({
           </p>
         </div>
 
-        <div className="card nutr-day-food-card">
+        {/* 2.3 (16 Sept 2026): "The day, as food" — the day priced as meals,
+            with the Food library picker and + Meal — is desktop-only. NOT the
+            day-type editor: that is the rail card above. Hidden at phone
+            width, not withheld. */}
+        <div className="card nutr-day-food-card" data-desktop-only="">
           <div className="nutr-card-head">
             <div>
               <div className="nutr-plan-rules-title">The day, as food</div>

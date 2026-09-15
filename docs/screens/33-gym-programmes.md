@@ -53,7 +53,12 @@ for an individual, the override is named rather than silently applied.
 desktop-only: both "+ New programme" links are hidden below 768px and
 `/programmes/new` shows a desktop-only notice there. Presentation, not
 permission — `PROGRAMME_AUTHOR` gates creation at every width, and every
-programme is still readable on a phone (`docs/access-matrix.md` §8).
+programme is still readable on a phone (`docs/access-matrix.md` §8). **Since
+16 September 2026 (2.4):** on a phone this screen is the S&C's — every other
+role sees a notice with a way to Squad overview and the More sheet carries no
+Gym programme row for them; hidden by role, enforcement after Friday
+(`docs/after-friday.md`). The S&C views, edits and assigns from a phone;
+creation stays desktop-only.
 
 ## 7. How this page is built, in plain English
 

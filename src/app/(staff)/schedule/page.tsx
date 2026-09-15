@@ -135,6 +135,9 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
         eyebrow={eyebrow}
         prevHref={dateQuery(prevWeek)}
         nextHref={dateQuery(nextWeek)}
+        focusDate={typeof params.date === 'string' ? params.date : null}
+        dayHrefPrefix="/schedule?date="
+        dayHrefSuffix={groupQuery}
         timetableHref={timetableHref}
         initialSessions={sessions}
         groups={groups.map((g) => ({ id: g.id, name: g.name, group_type: g.group_type, memberCount: g.member_count }))}

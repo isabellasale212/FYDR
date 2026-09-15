@@ -73,6 +73,14 @@ Built on the server. Standings are computed by the database, which is also where
 the opt out and consent rules are applied, so no screen can accidentally show
 somebody who should not appear.
 
+**Phone width (16 September 2026, the overnight queue, 2.5).** Below 768px the
+wall is not drawn. In its place: a **Leaderboard** dropdown of every board that
+exists and a **Ranked in** dropdown (positional unit, age band, whole squad),
+then the one board's ranking as a list — position, athlete (opening the
+profile), value — grouped by the scope with a count per group; the under-18
+sentence beneath. Presentation: the same data, at phone width
+(`docs/access-matrix.md` §8).
+
 ## 8. States
 
 **No boards.** An empty state. **Below the minimum.** The board says it cannot be

@@ -18,6 +18,29 @@ export type HubRow = {
 
 export type HubCard = { key: 'club' | 'people' | 'data' | 'you'; title: string; rows: HubRow[] };
 
+/* PHONE WIDTH (Isabella, 16 Sept 2026, overnight queue 2.6): "remove plan,
+ * club details, groups, thresholds, people and data — all desktop only."
+ * The hub hides these rows and cards below 768px (data-desktop-only) and
+ * their routes draw the desktop-only notice there (SettingsPhoneNotice).
+ * Presentation, not permission: the gates above are unchanged and the
+ * pages answer as they always did. Setup checklist and Notifications stay
+ * in Club; You is untouched. */
+export const PHONE_HIDDEN_ROWS: ReadonlySet<string> = new Set(['plan', 'club-details', 'groups', 'thresholds']);
+export const PHONE_HIDDEN_CARDS: ReadonlySet<HubCard['key']> = new Set(['people', 'data']);
+/** The routes those rows and cards open — desktop-only at phone width. */
+export const PHONE_HIDDEN_ROUTES: readonly string[] = [
+  '/settings/plan',
+  '/settings/club',
+  '/settings/groups',
+  '/settings/thresholds',
+  '/settings/users',
+  '/settings/subject-access',
+  '/settings/retention',
+  '/settings/imports',
+  '/settings/exports',
+  '/settings/audit',
+];
+
 export function settingsGroups(o: {
   roles: readonly AppRole[];
   isAdmin: boolean;

@@ -64,14 +64,22 @@ console.log('1. the bar and the sheet, by role');
   /* #18 (15 Sept 2026, mobile queue): Reports are desktop-only — the one
      sidebar destination the phone shell deliberately does not carry. The
      route still answers (with its notice); the sidebar row is untouched. */
-  const phoneSidebar = visibleSidebar.filter((r) => r !== '/reports');
-  assert(phoneSidebar.every((r) => all.includes(r)) && all.includes('/flags'), 'every sidebar destination but Reports, plus Flags, is reachable');
+  /* 16 Sept 2026 (the overnight queue, 2.3, 2.4, 2.7): Nutrition is the
+     nutritionist's on a phone and Gym programme the S&C's — hidden by role
+     for the sport scientist here, never "not permitted" (enforcement after
+     Friday); and Testing has a row of its own. */
+  const phoneSidebar = visibleSidebar.filter((r) => r !== '/reports' && r !== '/nutrition' && r !== '/programmes');
+  assert(phoneSidebar.every((r) => all.includes(r)) && all.includes('/flags') && all.includes('/testing'), 'every sidebar destination but Reports, Nutrition and Gym programme, plus Flags and Testing, is reachable');
   assert(!all.includes('/reports'), 'Reports has no row on a phone (#18, desktop-only; presentation, not permission)');
-  assert(all.length === phoneSidebar.length + 1, 'and nothing else');
+  assert(!all.includes('/nutrition') && !all.includes('/programmes'), 'nor Nutrition or Gym programme for the sport scientist (2.3, 2.4: hidden by role at phone width; enforcement after Friday)');
+  assert(sheetRows(['nutritionist'], true).some((r) => r.route === '/nutrition') || barRows(['nutritionist'], true).some((r) => r.route === '/nutrition'), 'the nutritionist reaches Nutrition (the bar\'s fourth slot)');
+  assert(barRows(['strength_conditioning'], true).some((r) => r.route === '/programmes'), 'and the S&C reaches Gym programme (the bar\'s fourth slot)');
+  assert(!sheetRows(['coach'], true).some((r) => r.route === '/nutrition' || r.route === '/programmes'), 'a coach reaches neither on a phone');
+  assert(all.length === phoneSidebar.length + 2, 'and nothing else');
   const sncSheet = sheetRows(['strength_conditioning'], true).map((r) => r.route);
   assert(sncSheet.includes('/flags') && !sncSheet.includes('/programmes'), 'for S&C, Gym leaves the sheet and Flags joins it');
   assert(!sheetRows(['coach'], false).map((r) => r.route).includes('/analytics'), 'Analytics is not in the sheet on Basic, as it is not in the sidebar');
-  assert(sheet.map((r) => r.route).join(',') === phoneSidebar.filter((r) => !bar.map((b) => b.route).includes(r)).join(','), 'the sheet keeps the sidebar\'s order');
+  assert(sheet.map((r) => r.route).join(',') === [...phoneSidebar.filter((r) => !bar.map((b) => b.route).includes(r)), '/testing'].join(','), 'the sheet keeps the sidebar\'s order, Testing last');
 }
 
 console.log('\n2. the title bar names the screen');
@@ -79,7 +87,7 @@ console.log('\n2. the title bar names the screen');
   assert(pageTitle('/squad/abc') === 'Squad overview', '/squad/[id] → Squad overview');
   assert(pageTitle('/flags') === 'Flags', '/flags → Flags');
   assert(pageTitle('/timetable') === 'Schedule', '/timetable → Schedule (merged into it)');
-  assert(pageTitle('/testing/x/y') === 'Reports', '/testing → Reports (its entry point)');
+  assert(pageTitle('/testing/x/y') === 'Testing', '/testing → Testing (its own sheet row since 16 Sept 2026)');
   assert(pageTitle('/settings/users/bulk-invite') === 'Settings', 'a deep settings route → Settings');
   assert(pageTitle('/injuries/abc') === 'Injuries', '/injuries/[id] → Injuries (its own screen family, not the dashboard row it hangs off)');
   assert(pageTitle('/platform/sign-in-probes') === 'Fydr', 'an unknown route → the brand');

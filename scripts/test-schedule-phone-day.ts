@@ -10,7 +10,7 @@
  * The day's sentences are pure (lib/schedulePhoneDay.ts); the component,
  * the workspace and the CSS are read from source. */
 import { readFileSync } from 'node:fs';
-import { dayHeadMeta, nextSessionLine, phoneDayDefault, rowMeta } from '@/lib/schedulePhoneDay';
+import { dayHeadMeta, dayStep, nextSessionLine, phoneDayDefault, rowMeta } from '@/lib/schedulePhoneDay';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -54,8 +54,17 @@ console.log('\n3. the next session after the selected day');
 console.log('\n4. the component and the workspace');
 {
   const c = strip(read('src/components/ScheduleGrid/SchedulePhoneDay.tsx'));
-  assert(/className="sg-phone-strip"/.test(c) && /role="tablist"/.test(c) && /aria-selected=\{d\.date === day\}/.test(c), 'the strip is a tab list with the selected day');
-  assert(/mdLabel\(d\.mdOffset\) \?\? '—'/.test(c) && /\{d\.contactMins\}m/.test(c), 'each tile: day, date, MD offset, minutes');
+  /* THE DAY ONLY since 16 Sept 2026 (Isabella's overnight queue, 2.1): the
+     seven-tile strip is gone — no week view at phone width — and the day
+     heading is a stepper, inside the loaded week as state and across its
+     edge as a navigation with the day in the address. */
+  assert(!/className="sg-phone-strip"/.test(c) && !/role="tablist"/.test(c), 'no week strip on the phone (16 Sept 2026)');
+  assert(/dayStep\(dates, day, -1\)/.test(c) && /dayStep\(dates, day, 1\)/.test(c) && /aria-label=\{label\}/.test(c), 'the day heading steps a day at a time');
+  assert(/step\.inWeek \? \(/.test(c) && /href=\{`\$\{dayHrefPrefix\}\$\{step\.date\}\$\{dayHrefSuffix\}`\}/.test(c), 'inside the week a step is state; across its edge it is a link to that week with ?date=');
+  assert(dayStep(days, '2026-09-08', -1).inWeek && dayStep(days, '2026-09-08', -1).date === '2026-09-07', 'Tuesday back is Monday, in the week');
+  assert(!dayStep(days, '2026-09-07', -1).inWeek && dayStep(days, '2026-09-07', -1).date === '2026-09-06', 'Monday back is the Sunday before, another week');
+  assert(!dayStep(days, '2026-09-13', 1).inWeek && dayStep(days, '2026-09-13', 1).date === '2026-09-14', 'Sunday forward is the Monday after');
+  assert(phoneDayDefault(days, '2026-09-10', '2026-09-12') === '2026-09-12', 'a day asked for in the address opens on that day');
   assert(/className="sg-phone-row"/.test(c) && /href=\{`\/schedule\/\$\{s\.id\}`\}/.test(c), 'a saved session row is a link to its page');
   assert(/s\.isNew \|\| s\.edited/.test(c) && /Held on this screen/.test(c), 'a held (unpublished) row says so instead of linking — the phone has no editor');
   assert(/href=\{`\/schedule\/new\?date=\$\{day\}`\}/.test(c) && /aria-label=\{`Add a session on/.test(c), 'the + on the day heading opens the new-session PAGE for that day (forms stay pages)');
@@ -72,9 +81,10 @@ console.log('\n5. the CSS: no grid at 375, 74px tiles, 44px rows');
   const phone = css.slice(css.indexOf('.sg-phone {'), css.indexOf('.sg-phone {') + 4000);
   assert(/@media \(max-width: 767px\)\s*\{\s*\.sg-desktop,\s*\.sg-segmented\s*\{[^}]*display:\s*none/.test(css), 'below 768px the grid, its panels and the Read/Edit control are not drawn');
   assert(/@media \(min-width: 768px\)[\s\S]{0,300}\.sg-phone\s*\{[^}]*display:\s*none/.test(css), 'and the day view is phone-only');
-  assert(/\.sg-phone-strip\s*\{[^}]*overflow-x:\s*auto/.test(phone), 'the strip scrolls sideways — five fit, seven scroll');
-  assert(/\.sg-phone-tile\s*\{[^}]*flex:\s*0 0 74px/.test(phone), 'a tile is 74px');
-  assert(/\.sg-phone-tile\[aria-selected='true'\]\s*\{[^}]*var\(--accent\)/.test(phone), 'the selected tile carries the accent');
+  assert(!/\.sg-phone-strip\s*\{/.test(css) && !/\.sg-phone-tile\s*\{/.test(css), 'the strip and its tiles are gone from the stylesheet (16 Sept 2026)');
+  assert(/\.sg-phone-daynav-btn\s*\{[^}]*width:\s*(?:44px|var\(--tap-min\))[^}]*min-height:\s*(?:44px|var\(--tap-min\))/.test(css), 'the day arrows are 44px');
+  const pb = css.slice(css.indexOf(".main .rhead-chips[aria-label='Filter by squad group']"));
+  assert(/\.main \.sg-weeknav,[\s\S]{0,200}\.main \.sg-viewtabs,\s*\.main \.sg-toolbar\s*\{\s*display:\s*none/.test(pb.slice(0, 600)), 'below 768 the chip row, the week arrows, the view tabs and the toolbar are not drawn (2.1)');
   assert(/\.sg-phone-row\s*\{[^}]*min-height:\s*(?:44px|var\(--tap-min\))/.test(phone), 'a row is at least 44px');
   assert(/\.sg-phone-add\s*\{[^}]*min-height:\s*(?:44px|var\(--tap-min\))[^}]*min-width:\s*(?:44px|var\(--tap-min\))/.test(phone) || /\.sg-phone-add\s*\{[^}]*min-width:\s*(?:44px|var\(--tap-min\))[^}]*min-height:\s*(?:44px|var\(--tap-min\))/.test(phone), 'the + is 44px');
 }
@@ -82,7 +92,7 @@ console.log('\n5. the CSS: no grid at 375, 74px tiles, 44px rows');
 console.log('\n6. the spec');
 {
   const spec = read('docs/screens/07-schedule.md');
-  assert(/day-first/.test(spec) && /74px/.test(spec) && /no grid/i.test(spec), '07-schedule.md describes the phone day view');
+  assert(/day-first/.test(spec) && /no grid/i.test(spec) && /day only/i.test(spec), '07-schedule.md describes the phone day view, the day only since 16 Sept 2026');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

@@ -1214,7 +1214,9 @@ async function AthletePageContent({
             athleteId={athlete.id}
             canEdit={canEditBio}
             backLink={
-              <Link href="/squad" className="btn-ghost-pill">
+              /* 2.7 (16 Sept 2026): below 768px the layout's Back is the one
+                 back control; this link stands down there (data-desktop-only). */
+              <Link href="/squad" className="btn-ghost-pill" data-desktop-only="">
                 <span aria-hidden="true" style={{ fontSize: 'var(--fs-14)', lineHeight: 1 }}>
                   ‹
                 </span>

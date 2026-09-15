@@ -50,3 +50,23 @@ None of this is code and none of it moves without Isabella.
 - ICO registration.
 - The DPIA.
 - The Children's Code assessment.
+
+## Database enforcement to follow — hidden by role on 16 September, not yet refused
+
+Isabella's ruling, 16 September (the overnight queue): where a control or a
+screen is hidden by role for Friday, that is PRESENTATION — recorded as
+"hidden", never "not permitted" — and the database enforcement follows after
+Friday. Each line below is a hide that the RLS and the write paths do not yet
+back. Added as they were built; `docs/access-matrix.md` §8 carries the same
+list with the routes.
+
+- **2.3 Nutrition at phone width is the nutritionist's.** The More sheet
+  carries no Nutrition row for any other role and `/nutrition` shows a notice
+  below 768px; the page still answers, and `NUTRITION_EDIT` (sport scientist
+  and nutritionist) still writes. To enforce: narrow the nutrition read/write
+  to the nutritionist, or decide the sport scientist keeps it.
+- **2.4 Gym programme at phone width is the S&C's.** The sheet carries no Gym
+  programme row for any other role and `/programmes` shows a notice below
+  768px; `PROGRAMME_EDIT` (sport scientist and S&C) still writes, and the
+  medic still authors rehab (`REHAB_PROGRAMME`). To enforce: decide whether
+  the phone rule is the rule.

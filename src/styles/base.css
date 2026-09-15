@@ -9893,53 +9893,30 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
     display: none;
   }
 }
-/* The dashboard's strip, 74px a tile: day, date, MD offset, minutes. Five
-   fit at 375, seven scroll; today is the selected tile. */
-.sg-phone-strip {
-  display: flex;
-  gap: var(--sp-6);
-  overflow-x: auto;
-  scroll-snap-type: x proximity;
-  padding-bottom: var(--sp-6);
-  -webkit-overflow-scrolling: touch;
-}
-.sg-phone-tile {
-  flex: 0 0 74px;
+/* The seven-tile week strip (.sg-phone-strip / .sg-phone-tile) stood here
+   until 16 Sept 2026 (Isabella's overnight queue, 2.1: the phone shows the
+   DAY only; the week stays desktop only). The day heading is the stepper. */
+.sg-phone-daynav-btn {
+  flex: none;
+  width: var(--tap-min);
   min-height: var(--tap-min);
-  scroll-snap-align: start;
-  display: flex;
-  flex-direction: column;
+  display: inline-flex;
   align-items: center;
-  gap: var(--sp-2);
-  padding: var(--sp-8) var(--sp-4);
-  background: var(--surf);
+  justify-content: center;
   border: 1px solid var(--border);
   border-radius: var(--r);
+  background: var(--surf);
   color: var(--text);
   font: inherit;
+  font-size: var(--fs-20);
+  line-height: 1;
+  text-decoration: none;
   cursor: pointer;
 }
-.sg-phone-tile[aria-selected='true'] {
-  background: var(--wash-accent);
-  border-color: var(--accent);
-  box-shadow: inset 0 0 0 1px var(--accent);
-}
-.sg-phone-tile[data-match] .sg-phone-tile-meta {
-  color: var(--bad-pill-text);
-  font-weight: var(--w-bold);
-}
-.sg-phone-tile-day {
-  font-size: var(--fs-12);
-  font-weight: var(--w-bold);
-}
-.sg-phone-tile-date {
-  font-size: var(--fs-13);
-  font-weight: var(--w-semi);
-}
-.sg-phone-tile-meta {
-  font-size: var(--fs-11);
-  color: var(--muted-on-tint); /* context ink, 15 Sept 2026 */
-  white-space: nowrap;
+.sg-phone-day-titles {
+  flex: 1;
+  min-width: 0;
+  text-align: center;
 }
 .sg-phone-day-head {
   display: flex;
@@ -14772,6 +14749,43 @@ a.hist-row:active { background: var(--surf-sunken); }
      … Clear filter" line beneath it stays, because it is the one place that
      says the filter follows you to every screen. */
   .main .chiprow[aria-label='Filter by squad group'] {
+    display: none;
+  }
+  /* 2.1 (16 Sept 2026): the schedule's own chip row (ReportHeader's) stands
+     down for the bar's dropdown too, and the week arrows go with the week —
+     the phone shows the day, stepped from its own heading. */
+  .main .rhead-chips[aria-label='Filter by squad group'],
+  .main .sg-weeknav,
+  /* …and the week's own tools: the Week plan / Today tabs and the toolbar
+     (its "+ Session" starts a draft in the grid, which is not drawn here,
+     and its templates are the week's). The Week templates chip carries
+     data-desktop-only. The publish banner and the day's + stay. */
+  .main .sg-viewtabs,
+  .main .sg-toolbar {
+    display: none;
+  }
+  /* 2.5 (16 Sept 2026): the leaderboard's phone view — two stacked
+     dropdowns, then the one board's list. */
+  .lbw-phone-controls {
+    display: flex;
+    flex-wrap: wrap;
+    gap: var(--sp-12);
+    margin-bottom: var(--sp-12);
+  }
+  .lbw-phone-controls .rsel-wrap {
+    max-width: none;
+  }
+  .lbw-phone-group th {
+    text-align: left;
+    background: var(--surf2);
+    font-size: var(--fs-12);
+    font-weight: var(--w-semi);
+    color: var(--muted);
+    padding: var(--sp-8) var(--sp-14);
+  }
+  /* 2.2 (16 Sept 2026): no Back on a bar destination — Flags, Squad,
+     Schedule are tab roots on a phone (BackButton marks them). */
+  .main .back-btn[data-phone-root] {
     display: none;
   }
   /* #12: the dashboard's week strip shows the selected day only — today

@@ -6,7 +6,7 @@ import { mfaRequiredForRoles } from '@/lib/mfa';
 import { requireStaff } from '@/lib/session';
 import { isPremium, tierLabel } from '@/lib/tier';
 import { GPS_IMPORT, REPORT_ACCESS, SETTINGS_ADMIN, hasAnyRole } from '@/lib/access';
-import { settingsGroups } from '@/lib/settingsHub';
+import { PHONE_HIDDEN_CARDS, PHONE_HIDDEN_ROWS, settingsGroups } from '@/lib/settingsHub';
 import { fetchSetupCounts } from '@/lib/queries/setupChecklist';
 import { setupSteps, setupSummary } from '@/lib/setupChecklist';
 
@@ -105,14 +105,21 @@ export default async function SettingsPage() {
 
       <div className="set-groups">
         {cards.map((card) => (
-          <section key={card.key} className="card set-card set-group" aria-labelledby={`set-group-${card.key}`}>
+          <section
+            key={card.key}
+            className="card set-card set-group"
+            aria-labelledby={`set-group-${card.key}`}
+            /* 2.6 (16 Sept 2026): People and Data are desktop-only — hidden at
+               phone width, not withheld (lib/settingsHub.ts). */
+            data-desktop-only={PHONE_HIDDEN_CARDS.has(card.key) ? '' : undefined}
+          >
             <h2 className="card-title set-group-title" id={`set-group-${card.key}`}>
               {card.title}
             </h2>
             <div className="set-group-rows">
               {card.rows.map((row) =>
                 row.href ? (
-                  <Link key={row.key} href={row.href} className="set-list-row">
+                  <Link key={row.key} href={row.href} className="set-list-row" data-desktop-only={PHONE_HIDDEN_ROWS.has(row.key) ? '' : undefined}>
                     <span>
                       <span className="set-row-label">{row.label}</span>
                       <span className="set-row-sub">{row.sub}</span>
@@ -131,7 +138,7 @@ export default async function SettingsPage() {
                      row, no dead link, no title (test-blocked-controls). Its
                      ink is --muted since 15 Sept 2026 (a11y sweep C29 and
                      C31): --faint measured 4.21 / 3.89 on the row's --surf2. */
-                  <div key={row.key} className="set-list-row" data-disabled="true" aria-disabled="true">
+                  <div key={row.key} className="set-list-row" data-disabled="true" aria-disabled="true" data-desktop-only={PHONE_HIDDEN_ROWS.has(row.key) ? '' : undefined}>
                     <span>
                       <span className="set-row-label" style={{ color: 'var(--muted)' }}>
                         {row.label}

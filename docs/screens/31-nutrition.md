@@ -69,7 +69,15 @@ of every athlete and their targets is hidden — it is a desktop view, 1054px
 wide — and a "Find an athlete" dropdown, grouped by unit as the table is,
 makes the same selection the table's rows make. The selected athlete's card
 is unchanged. Hidden at phone width, not withheld: the rows are in the page at
-every width (`docs/access-matrix.md` §8).
+every width (`docs/access-matrix.md` §8). **Since 16 September 2026 (the
+overnight queue, 2.3):** on a phone this screen is the nutritionist's — every
+other role sees a notice with a way to Squad overview, and the More sheet
+carries no Nutrition row for them; hidden by role, with the database
+enforcement to follow after Friday (`docs/after-friday.md`). For the
+nutritionist the **Day type** editor (the rail card that sets the
+carbohydrate multiplier of the preview) and **"The day, as food"** (the day
+priced as meals, with the Food library picker and + Meal) are desktop-only —
+two different cards; the second is not the day-type editor.
 
 **Assigning a plan is the only thing in Fydr that recomputes a target.** A weigh-in
 does not. Decision D-28.

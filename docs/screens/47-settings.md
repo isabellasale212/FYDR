@@ -189,6 +189,14 @@ form. The Plan card, on `/settings/club`, shows the club's real package even
 when a preview is active, and says so, so nobody mistakes a preview for a
 downgrade.
 
+**Phone width (16 September 2026, the overnight queue, 2.6).** Below 768px the
+hub hides Plan, Club details, Groups and Thresholds (the Club card keeps Setup
+checklist and Notifications) and the whole People and Data cards; their routes
+show "This setting is desktop-only" with a way back to Settings
+(`SettingsPhoneNotice`, from `lib/settingsHub.ts`'s `PHONE_HIDDEN_ROUTES`).
+Presentation, not permission: every gate in the table above stands
+(`docs/access-matrix.md` §8).
+
 ## 8. States
 
 **Preview active.** A banner says so. **Base package.** Premium integrations are

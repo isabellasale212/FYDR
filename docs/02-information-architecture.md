@@ -352,6 +352,11 @@ so is creating a gym programme. Every Print control goes to `/print`, a screen w
 Download and the document. None of it is a permission: `docs/access-matrix.md` §8 lists
 each item as "hidden at phone width", and records that a tablet held upright or a narrow
 desktop window gets the same reduced view, because the gate is the width breakpoint.
+**16 September 2026 (the overnight queue, Section 2):** the More sheet carries a Testing row;
+Nutrition is the nutritionist's on a phone and Gym programme the S&C's — hidden by role,
+enforcement after Friday (`docs/after-friday.md`); the schedule shows the day only; the
+leaderboard is one board with two dropdowns; Settings keeps Setup, Notifications and You;
+Flags, Squad and Schedule draw no Back. `docs/access-matrix.md` §8 has the table.
 
 **Status: COMMITTED, 5 August 2026.** The client confirmed staff need a phone app as well as
 the web dashboard. O-6, O-24 and O-725 are resolved: **both**. A fifteen-item flat sidebar

@@ -47,6 +47,11 @@ type Props = {
   eyebrow: string;
   prevHref: string;
   nextHref: string;
+  /** 16 Sept 2026 (2.1): the phone's day stepper — the day the address
+   *  asked for, and how to address a day in another week. */
+  focusDate: string | null;
+  dayHrefPrefix: string;
+  dayHrefSuffix: string;
   timetableHref: string;
   /** SESSION_EDIT, resolved by the page. False hides every write control here
    *  AND makes the grid click inert — a disabled-looking screen that still
@@ -97,6 +102,9 @@ export function ScheduleWorkspace({
   eyebrow,
   prevHref,
   nextHref,
+  focusDate,
+  dayHrefPrefix,
+  dayHrefSuffix,
   timetableHref,
   canEdit,
   initialSessions,
@@ -1145,7 +1153,7 @@ export function ScheduleWorkspace({
               is still SESSION_EDIT, decided on the planner page itself, and
               whether a medic should see scheduling surfaces at all belongs to
               the Schedule access pass, not to a link. */}
-          <Link href="/schedule/planner" className="squad-chip">
+          <Link href="/schedule/planner" className="squad-chip" data-desktop-only="">
           Week templates
           </Link>
       </div>
@@ -1290,7 +1298,16 @@ export function ScheduleWorkspace({
       {/* PATTERN-S4 C6 / B4 (2026-09-13): below 768px the grid is not
           attempted — the day view draws from the same day columns and
           effective sessions, and CSS decides which half is on screen. */}
-      <SchedulePhoneDay days={dayColumns} sessions={effective} today={today} timezone={timezone} canEdit={canEdit} />
+      <SchedulePhoneDay
+        days={dayColumns}
+        sessions={effective}
+        today={today}
+        focusDate={focusDate}
+        dayHrefPrefix={dayHrefPrefix}
+        dayHrefSuffix={dayHrefSuffix}
+        timezone={timezone}
+        canEdit={canEdit}
+      />
 
       <div className="sg-desktop">
       <TimeGrid

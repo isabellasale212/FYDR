@@ -1,7 +1,7 @@
 'use client';
 
 import { BlockedButton } from '@/components/BlockedButton/BlockedButton';
-import { useMemo, useState } from 'react';
+import { Fragment, useMemo, useState } from 'react';
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { ordinal } from '@/lib/format';
@@ -124,6 +124,15 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
   const [sel, setSel] = useState<string | null>(
     () => data.athletes.find((a) => Object.values(a.values).some((v) => v.current !== null))?.id ?? data.athletes[0]?.id ?? null,
   );
+  /* The phone's two dropdowns (2.5, 16 Sept 2026): one board of every board
+     that exists, and the scope it is ranked in. */
+  const [phoneBoardKey, setPhoneBoardKey] = useState<string>(() => data.boards[0]?.key ?? '');
+  const [phoneScope, setPhoneScope] = useState<Scope>('Positional unit');
+  const phoneBoard = data.boards.find((b) => b.key === phoneBoardKey) ?? data.boards[0];
+  const phoneGroups = useMemo(
+    () => buildGroups(data.athletes, phoneScope, activeGroupLabel, phoneBoard),
+    [data.athletes, phoneScope, activeGroupLabel, phoneBoard],
+  );
 
   const isGain = lens === 'Improvement';
   const isStd = lens === 'Standard';
@@ -194,6 +203,108 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
 
   return (
     <>
+      {/* THE PHONE VIEW (Isabella, 16 Sept 2026, overnight queue 2.5): a simple
+          board and two dropdowns — which leaderboard, and how it is ranked
+          (positional unit, age band, whole squad). One board's ranking as a
+          list, grouped by the scope; the wall, its lenses, families, movers
+          and stats are the desktop's (data-desktop-only, below). Presentation
+          only: the same data, at phone width. */}
+      <div className="lbw-phone" data-phone-only="">
+        <div className="lbw-phone-controls">
+          <label className="rsel" data-stacked="true">
+            <span className="rsel-label">Leaderboard</span>
+            <span className="rsel-wrap">
+              <select value={phoneBoard?.key ?? ''} onChange={(e) => setPhoneBoardKey(e.target.value)} aria-label="Which leaderboard to show">
+                {data.boards.map((b) => (
+                  <option key={b.key} value={b.key}>
+                    {b.label} · {b.family}
+                  </option>
+                ))}
+              </select>
+              <span className="rsel-chev" aria-hidden="true">
+                &#9660;
+              </span>
+            </span>
+          </label>
+          <label className="rsel" data-stacked="true">
+            <span className="rsel-label">Ranked in</span>
+            <span className="rsel-wrap">
+              <select value={phoneScope} onChange={(e) => setPhoneScope(e.target.value as Scope)} aria-label="How the board is ranked">
+                {(['Positional unit', 'Age band', 'Whole squad'] as const).map((sc) => (
+                  <option key={sc} value={sc}>
+                    {sc}
+                  </option>
+                ))}
+              </select>
+              <span className="rsel-chev" aria-hidden="true">
+                &#9660;
+              </span>
+            </span>
+          </label>
+        </div>
+        {phoneBoard ? (
+          <div className="card flush">
+            <table className="tbl lb-table">
+              <caption className="visually-hidden">
+                {phoneBoard.label}, ranked in {phoneScope.toLowerCase()}
+              </caption>
+              <thead>
+                <tr>
+                  <th scope="col">Pos</th>
+                  <th scope="col">Athlete</th>
+                  <th scope="col" className="r">
+                    {phoneBoard.label} ({phoneBoard.unit})
+                  </th>
+                </tr>
+              </thead>
+              <tbody>
+                {phoneGroups.map((g) => {
+                  const ranks = rankAthletesInPool(g.athletes, phoneBoard);
+                  const ranked = g.athletes.filter((a) => ranks.has(a.id));
+                  return (
+                    <Fragment key={g.label}>
+                      {phoneScope !== 'Whole squad' ? (
+                        <tr className="lbw-phone-group">
+                          <th scope="rowgroup" colSpan={3}>
+                            {g.label} · {ranked.length} ranked
+                          </th>
+                        </tr>
+                      ) : null}
+                      {ranked.map((a) => {
+                        const r = ranks.get(a.id);
+                        const v = a.values[phoneBoard.key]?.current ?? null;
+                        return (
+                          <tr key={a.id}>
+                            <td className="num sub">
+                              <span className="lb-pos" data-top={r && r.rank <= 3 ? 'true' : undefined}>
+                                {r?.rank}
+                              </span>
+                            </td>
+                            <td className="nm">
+                              <Link href={`/squad/${a.id}`}>{a.name}</Link>
+                            </td>
+                            <td className="r num">{v === null ? '·' : fmt(v, phoneBoard.decimals)}</td>
+                          </tr>
+                        );
+                      })}
+                      {ranked.length === 0 ? (
+                        <tr>
+                          <td colSpan={3} className="sub">
+                            No result on this board in {g.label.toLowerCase()}.
+                          </td>
+                        </tr>
+                      ) : null}
+                    </Fragment>
+                  );
+                })}
+              </tbody>
+            </table>
+          </div>
+        ) : null}
+        {excludedLine ? <p className="cap">{excludedLine}</p> : null}
+      </div>
+
+      <div className="lbw-desktop" data-desktop-only="">
       <div className="card lbw-stats-card dash-stats">
         <div className="dash-stat">
           <p className="dash-stat-label">Boards</p>
@@ -487,6 +598,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
             ))}
           </div>
         </div>
+      </div>
       </div>
     </>
   );

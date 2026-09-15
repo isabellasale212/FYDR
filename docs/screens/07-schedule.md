@@ -87,19 +87,26 @@ existed neither creation screen was linked from anywhere.
 
 **Apply a template.** Puts a saved week shape onto this week.
 
-**On a phone (below 768px) the schedule is day-first** (PATTERN-S4 C6 / B4, 13
-September 2026): no grid at 375. The dashboard's week strip carries the week at
-74px a tile — day, date, MD offset, minutes; five fit, seven scroll; today is the
-selected tile, or Monday on another week. Under it the selected day as a list:
-the heading "Thursday 10 Sept · MD-2 · 1 session · 80 minutes" (an empty day
-"Nothing scheduled") with a 44px **+** that opens the new-session page for that
-day (forms stay pages), then one row per fixture and session at 44px or more —
+**On a phone (below 768px) the schedule is day-first, and the day only**
+(PATTERN-S4 C6 / B4, 13 September 2026; the week strip removed 16 September
+2026, Isabella's overnight queue 2.1 — "show the DAY only … no week view at
+phone width; the week stays desktop only"): no grid at 375 and no strip. The
+day's heading is a stepper — a 44px **‹** and **›** either side of "Today ·
+Wednesday 16 Sept" with "MD-2 · 1 session · 80 minutes" beneath (an empty day
+"Nothing scheduled") — moving a day at a time, inside the loaded week as a
+state change and across its edge as a navigation to that week with the day in
+the address (`?date=`); today, or the day asked for, or Monday. Beside it a
+44px **+** that opens the new-session page for that day (forms stay pages) —
+the day is edited as it always was on a phone, a row opening its session's
+page. The group-filter chip row and the week arrows are not drawn below 768:
+the title bar's dropdown is the filter. Then one row per fixture and session
+at 44px or more —
 "09:30 – 10:50 · Contact prep · Main pitch · 80 min · Backs and Forwards · 27
 expected ›" — each a link to its page; an unpublished edit or draft made on a
 desktop is listed as held, not linked, because the phone has no editor. "Nothing
 on Thursday." when the day is empty; "Next · Fri 11 Sept · Captain's run ·
 10:00 ›" for the first session on a later day of the week. There is no Read/Edit
-control on the phone; the week nav, the publish banner and the toolbar stay.
+control on the phone; the publish banner and the toolbar stay.
 Both views are drawn from the same day columns and the same effective sessions,
 so they cannot disagree.
 

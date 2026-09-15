@@ -56,12 +56,31 @@ export function barRows(roles: readonly AppRole[], premium: boolean): PhoneRow[]
  *  consequence). */
 const PHONE_HIDDEN = new Set(['/reports']);
 
+/** BY ROLE AT PHONE WIDTH (Isabella, 16 Sept 2026, overnight queue 2.3 and
+ *  2.4): Nutrition is the nutritionist's on a phone and Gym programme the
+ *  S&C's — for every other role the row is HIDDEN at phone width (never "not
+ *  permitted": the routes answer, with a notice; the database enforcement
+ *  follows after Friday, docs/after-friday.md). The roles named already take
+ *  those rows into the bar as their fourth slot, so the sheet never carries
+ *  them for anyone. */
+const PHONE_ROLE_ONLY: Record<string, AppRole> = { '/nutrition': 'nutritionist', '/programmes': 'strength_conditioning' };
+
+/** 2.7 (16 Sept 2026): the testing log — results entry, reached from the
+ *  testing report until reports left the phone — has its own sheet row. */
+const TESTING: PhoneRow = { id: 'staff.testing', label: 'Testing', route: '/testing' };
+
 /** Everything the bar does not carry, in the sidebar's order, plus Flags when
- *  the slot went to another role — less the desktop-only sections. */
+ *  the slot went to another role, plus Testing — less the desktop-only
+ *  sections and the rows another role holds on a phone. */
 export function sheetRows(roles: readonly AppRole[], premium: boolean): PhoneRow[] {
   const inBar = new Set(barRows(roles, premium).map((r) => r.route));
-  const rows = visibleSidebar(roles, premium).filter((r) => !inBar.has(r.route) && !PHONE_HIDDEN.has(r.route));
-  return inBar.has(FLAGS.route) ? rows : [...rows, FLAGS];
+  const rows = visibleSidebar(roles, premium).filter((r) => {
+    if (inBar.has(r.route) || PHONE_HIDDEN.has(r.route)) return false;
+    const only = PHONE_ROLE_ONLY[r.route];
+    return !only || roles.includes(only);
+  });
+  const withFlags = inBar.has(FLAGS.route) ? rows : [...rows, FLAGS];
+  return [...withFlags, TESTING];
 }
 
 /** The screen's name for the title bar, from the same route table: the
@@ -71,7 +90,9 @@ export function sheetRows(roles: readonly AppRole[], premium: boolean): PhoneRow
 /* /injuries is its own screen family (the board, a record, team allocation,
    rehab groups) reached from the dashboard's injury panel — it is titled by
    what it is, not by the row it hangs off. */
-const FOLDED: Record<string, string> = { '/timetable': 'Schedule', '/testing': 'Reports', '/flags': 'Flags', '/compliance': 'Reports', '/injuries': 'Injuries' };
+/* /testing is its own row on a phone since 16 Sept 2026 (2.7), so it is
+   titled Testing, not Reports. */
+const FOLDED: Record<string, string> = { '/timetable': 'Schedule', '/testing': 'Testing', '/flags': 'Flags', '/compliance': 'Reports', '/injuries': 'Injuries' };
 export function pageTitle(pathname: string): string {
   const hit = (route: string) => pathname === route || pathname.startsWith(`${route}/`);
   const row = SIDEBAR_ROWS.find((r) => hit(r.route));

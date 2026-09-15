@@ -1,4 +1,5 @@
 import Link from 'next/link';
+import { DesktopOnlyNotice } from '@/components/DesktopOnlyNotice/DesktopOnlyNotice';
 import {
   fetchProgrammeDetail,
   fetchProgrammeListDetails,
@@ -112,6 +113,19 @@ export default async function ProgrammesPage({
 
   return (
     <>
+      {/* 2.4 (Isabella, 16 Sept 2026): on a phone Gym programme is the S&C's.
+          Every other role sees this notice below 768px and nothing else; the
+          page is in the DOM and answers as before — hidden at phone width,
+          not withheld. Database enforcement follows after Friday
+          (docs/after-friday.md). The S&C views, edits and assigns here;
+          creation stays desktop-only (#20). */}
+      {!claims.roles.includes('strength_conditioning') ? (
+        <DesktopOnlyNotice
+          title="Gym programmes are the S&C's on a phone"
+          body="Open an athlete's gym from their profile, or Fydr on a desktop or laptop for the programmes."
+          action={{ href: '/squad', label: 'Squad overview' }}
+        />
+      ) : null}
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">Squad · {orgName}</p>

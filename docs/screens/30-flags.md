@@ -75,7 +75,8 @@ current scope (choosing one with none would show nothing). A "Showing <name>'s
 flags only — show every athlete" line names the state, so it is never carried by
 the dropdown's value alone. A value that is not a uuid is ignored, as a bad
 `?date=` is. At phone width the group chips stand down for the title bar's
-dropdown (`docs/access-matrix.md` §8).
+dropdown, and the layout's Back is not drawn — Flags is one of the bar's own
+destinations (16 September 2026, 2.2; `docs/access-matrix.md` §8).
 
 **Why noting and acknowledging are separate.** A coach may want to record what
 they think about a flag they are not ready to close. Before the standalone note

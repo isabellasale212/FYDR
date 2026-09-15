@@ -570,9 +570,25 @@ is untouched, verified by pixel comparison at 1440 on the day.
 | 15 | Every Print control | the new-tab PDF | `/print?doc=` — Back, Download (attachment), Open in viewer, an inline preview | unchanged: the PDF routes keep their own `requireStaff` and scope; `/print` frames the app's own `…/pdf` routes only |
 | 16 | Player profile | the name card's Edit (both the live control and the medic's blocked one), the author's "Change plan", and the entries-and-corrections panel with its caption | nothing; a reader's "View plan" stays | unchanged: the roster edit, the plan and the correction write are what section 3 says |
 | 17 | Flags | — | an athlete dropdown (`?athlete=<id>`), the athletes with an open flag in scope | unchanged: all staff |
-| 18 | Reports (`/reports/*`) | the whole report | a desktop-only notice; the More sheet has no Reports row | unchanged: the report pages and their PDF and CSV routes answer as section 3.5 says. The testing log (`/testing`), reached only from the testing report, loses its phone entry point with them — see the queue note |
+| 18 | Reports (`/reports/*`) | the whole report | a desktop-only notice; the More sheet has no Reports row | unchanged: the report pages and their PDF and CSV routes answer as section 3.5 says. The testing log (`/testing`) has its own sheet row since 16 September (2.7) |
 | 19 | Nutrition | the table of every athlete and their targets | a "Find an athlete" dropdown; the selected athlete's card carries their plan | unchanged |
 | 20 | Gym programme | "+ New programme" (both places); `/programmes/new` shows the desktop-only notice | — | unchanged: `PROGRAMME_AUTHOR` still gates creation at every width; the form is in the page |
+
+**16 September 2026 — the overnight queue, Section 2 (staff at phone width).** The
+same rule: presentation, "hidden at phone width". Two of these hide by ROLE, and
+Isabella has ruled the database enforcement follows after Friday
+(`docs/after-friday.md`, "Database enforcement to follow").
+
+| # | Where | Hidden at phone width | Shown at phone width instead | Permission |
+|---|---|---|---|---|
+| 2.1 | Schedule | the group-filter chip row (ReportHeader's), the week arrows, the Week plan / Today tabs, the toolbar (draft "+ Session", templates), the Week templates chip, the seven-day tile strip | the day only: a ‹ day › stepper as the heading (across a week's edge, `?date=`), the day's + , the day's rows | unchanged |
+| 2.2 | Flags, Squad, Schedule | the layout's Back (they are the bar's own destinations) | — | unchanged |
+| 2.3 | Nutrition | for every role but the **nutritionist**: the More sheet row and the page (a notice with a way to Squad) — **hidden by role, not permitted-by-role; enforcement after Friday**. For the nutritionist: the Day type editor and "The day, as food" (the meals card with Food library and + Meal) | the plans, Needs a word, Find an athlete, the athlete's card | unchanged: `NUTRITION_EDIT` still writes for the sport scientist too |
+| 2.4 | Gym programme | for every role but the **S&C**: the sheet row and the page (a notice) — **hidden by role; enforcement after Friday**. Creation stays desktop-only (#20) | the S&C views, edits and assigns | unchanged: `PROGRAMME_EDIT` and `REHAB_PROGRAMME` write as before |
+| 2.5 | Leaderboard | the wall — stats, movers, lens, families, the matrix, the athlete panel | a Leaderboard dropdown (every board), a Ranked-in dropdown (unit, age band, whole squad), one board's ranked list | unchanged |
+| 2.6 | Settings | Plan, Club details, Groups, Thresholds (rows), People and Data (cards); their routes show the desktop-only notice | Setup checklist, Notifications, You | unchanged: every gate in §3.6 stands |
+| 2.7 | More sheet | — | a Testing row (the results log lost its entry point when reports left the phone) | unchanged |
+| 2.7 | Player profile | the hero's "‹ Squad" link (the layout's Back is the one back control) | — | unchanged |
 
 Class 3 holds throughout: no state on these screens is carried by colour alone
 (the dropdowns say their value, the notice says what it is, the flags line

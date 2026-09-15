@@ -46,6 +46,15 @@ const SELF_DISMISSING = ['/check-in', '/nutrition-check-in', '/rpe/', '/gym/', '
  *  opts in — live in one file and cannot drift apart. */
 const PLACES_ITS_OWN = new Set(['/programmes/exercises']);
 
+/** The staff phone bar's own destinations (16 Sept 2026, Isabella's overnight
+ *  queue, 2.2: "Flags — remove the back button"). A tab root reached from
+ *  the bottom bar has no parent to go back to on a phone; the control is
+ *  drawn with data-phone-root and base.css hides it below 768px only —
+ *  presentation, the desktop keeps it. The three fixed slots; the fourth
+ *  slot varies by role and is not listed (a coach reaching /programmes
+ *  through More is inside a journey). */
+const PHONE_TAB_ROOTS = new Set(['/squad', '/schedule', '/flags']);
+
 export function BackButton({ inline = false }: { inline?: boolean }) {
   const router = useRouter();
   const pathname = usePathname();
@@ -64,6 +73,7 @@ export function BackButton({ inline = false }: { inline?: boolean }) {
       type="button"
       className="back-btn"
       data-inline={inline ? '' : undefined}
+      data-phone-root={PHONE_TAB_ROOTS.has(pathname) ? '' : undefined}
       onClick={() => router.back()}
     >
       <svg viewBox="0 0 16 16" fill="none" stroke="currentColor" strokeWidth={1.6} aria-hidden="true">

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
+import { DesktopOnlyNotice } from '@/components/DesktopOnlyNotice/DesktopOnlyNotice';
 import { NutritionWorkspace } from '@/components/NutritionWorkspace/NutritionWorkspace';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
@@ -325,6 +326,19 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
 
   return (
     <>
+      {/* 2.3 (Isabella, 16 Sept 2026): on a phone Nutrition is the
+          nutritionist's. Every other role sees this notice below 768px and
+          nothing else (base.css's `.main:has(> .desk-note)`); the page is in
+          the DOM and answers as before — hidden at phone width, not
+          withheld. Database enforcement follows after Friday
+          (docs/after-friday.md). */}
+      {!claims.roles.includes('nutritionist') ? (
+        <DesktopOnlyNotice
+          title="Nutrition is the nutritionist's on a phone"
+          body="Open an athlete's nutrition from their profile, or Fydr on a desktop or laptop for the plans."
+          action={{ href: '/squad', label: 'Squad overview' }}
+        />
+      ) : null}
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">

@@ -5,7 +5,7 @@ import { resolveTargetForDate } from '@/lib/queries/nutritionTargets';
 import { fetchLatestBodyMassForAthletes } from '@/lib/queries/bodyComposition';
 import { targetProvenanceLine } from '@/lib/nutritionNoWeighIn';
 import { Toast } from '@/components/Toast/Toast';
-import { enumLabel, mdExplainer, mdLabel, todayIso } from '@/lib/format';
+import { enumLabel, formatDate, mdExplainer, mdLabel, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'My programme · Fydr' };
@@ -69,10 +69,24 @@ export default async function MyProgrammePage({
   ]);
   const hasWeighIn = latestMass.has(athleteId);
 
-  const programmeName = sessions[0]?.programme_name ?? null;
-  const programmeType = sessions[0]?.programme_type ?? null;
-  const blockName = sessions[0]?.block_name ?? null;
-  const weekNumber = sessions[0]?.week_number ?? null;
+  /* programme-dates.md (Isabella, 15 September 2026; migration 0132): the
+     assignment carries a start date and the end falls out of the length. A
+     session whose assignment has run out of weeks is OVER — the screen says
+     the block finished and when, rather than emptying or listing sessions as
+     if they were still to do. An unmapped assignment (no start date) is
+     shown as before: it has no dates to be over by. Overlap is allowed, so
+     the live sessions are whatever is not finished. No "due today" and no
+     "missed" here: each is its own piece of work, not this decision's. */
+  const isFinished = (s: (typeof sessions)[number]) => s.assignment_ends_on !== null && s.assignment_ends_on < today;
+  const live = sessions.filter((s) => !isFinished(s));
+  const finishedBlocks = [...new Map(sessions.filter(isFinished).map((s) => [s.programme_id, s])).values()];
+
+  const programmeName = live[0]?.programme_name ?? null;
+  const programmeType = live[0]?.programme_type ?? null;
+  const blockName = live[0]?.block_name ?? null;
+  const weekNumber = live[0]?.week_number ?? null;
+  const startsOn = live[0]?.assignment_starts_on ?? null;
+  const endsOn = live[0]?.assignment_ends_on ?? null;
 
   return (
     <>
@@ -84,11 +98,25 @@ export default async function MyProgrammePage({
         <Toast message="Gym session logged." clearHref="/programme" />
       ) : null}
 
-      {sessions.length === 0 ? (
-        <EmptyState
-          title="No programme assigned"
-          body="Nothing has been assigned to you yet. Check back once your coach or physio sets one up."
-        />
+      {finishedBlocks.map((b) => (
+        /* The block finished, and when — never an empty screen with no
+           explanation (programme-dates.md). */
+        <div className="card" key={b.programme_id} data-finished-block>
+          <p className="eyebrow">{enumLabel(b.programme_type)} · finished</p>
+          <p style={{ margin: 0 }}>
+            <strong>{b.programme_name}</strong> finished on {formatDate(b.assignment_ends_on, timezone)}.
+            {live.length === 0 ? ' Nothing new has been assigned yet.' : ''}
+          </p>
+        </div>
+      ))}
+
+      {live.length === 0 ? (
+        finishedBlocks.length === 0 ? (
+          <EmptyState
+            title="No programme assigned"
+            body="Nothing has been assigned to you yet. Check back once your coach or physio sets one up."
+          />
+        ) : null
       ) : (
         <>
           <div className="prog-header">
@@ -108,12 +136,21 @@ export default async function MyProgrammePage({
               {weekNumber ? ` · Week ${weekNumber}` : ''}
             </p>
             <h1>{programmeName}</h1>
+            {/* The block's dates, from the assignment (0132): week 1 day 1 and
+                the last day. An unmapped assignment has none, and says nothing
+                rather than something invented. */}
+            {startsOn ? (
+              <p className="tiny num" style={{ margin: 'var(--sp-4) 0 0' }}>
+                {startsOn > today ? `Starts ${formatDate(startsOn, timezone)}` : `From ${formatDate(startsOn, timezone)}`}
+                {endsOn ? ` to ${formatDate(endsOn, timezone)}` : ''}
+              </p>
+            ) : null}
           </div>
 
           <div className="card">
             <h2 className="card-title">Sessions</h2>
             <div className="card flush" style={{ boxShadow: 'none', border: '1px solid var(--border)' }}>
-              {sessions.map((s, index) => (
+              {live.map((s, index) => (
                 <div key={s.session_id}>
                   {index > 0 ? <div className="hair" /> : null}
                   <Link

@@ -45,9 +45,12 @@ console.log('\nweek N of M is derived, and degrades when it cannot be');
   assert(body.length > 0, 'fetchInjuryProgrammeStatus exists');
   assert(/duration_weeks/.test(body), 'it reads the programme duration');
   assert(/starts_on/.test(body), 'and the assignment start');
+  // 0132 (programme-dates.md): the length is the blocks' sum (the programme's
+  // own figure without blocks) and the week comes from lib/programmeDates.ts —
+  // null for an unmapped assignment, never an invented week.
   assert(
-    /duration_weeks \?\? null/.test(body) && /week =\s*[\s\S]*null/.test(body),
-    'and both are nullable, so a programme with no duration shows a name without inventing a week count',
+    /programmeLengthWeeks\(live\.programmes\?\.programme_blocks \?\? \[\], live\.programmes\?\.duration_weeks \?\? null\)/.test(body) && /assignmentWeekNow\(live\.starts_on, todayIso\(\), totalWeeks\)/.test(body),
+    'and both are nullable, so a programme with no duration, or an assignment with no start date, shows a name without inventing a week count',
   );
 }
 

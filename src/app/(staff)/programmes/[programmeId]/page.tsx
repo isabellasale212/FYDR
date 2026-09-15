@@ -18,6 +18,7 @@ import {
   REHAB_PROGRAMME,
   hasAnyRole,
 } from '@/lib/access';
+import { todayIso } from '@/lib/format';
 
 export const metadata = { title: 'Programme · Fydr' };
 
@@ -32,7 +33,7 @@ export default async function ProgrammeBuilderPage({
   params: Promise<{ programmeId: string }>;
 }) {
   const { programmeId } = await params;
-  const { db, orgId, orgName, claims } = await requireStaff();
+  const { db, orgId, orgName, claims, timezone } = await requireStaff();
   /* Shape-check the route param before it reaches a query. Authenticated
      first, so this never becomes a probe; then 404 rather than 500, because a
      malformed id is a URL that does not name anything, not a server fault. */
@@ -146,6 +147,8 @@ export default async function ProgrammeBuilderPage({
         athletes={athletes}
         groups={groups}
         programmeName={detail.programme.name}
+        today={todayIso(timezone)}
+        timezone={timezone}
         openInjuryByAthlete={openInjuryByAthlete}
       />
     </>

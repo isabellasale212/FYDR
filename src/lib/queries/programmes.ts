@@ -15,6 +15,7 @@ import { fetchAllPaged } from './paged';
 import { beats, type PriorBest } from '@/lib/gymSummary';
 import { recordInjuryEvent } from './injuryTimeline';
 import { mustAffect } from '@/lib/write';
+import { assignmentEndsOn, programmeLengthWeeks } from '@/lib/programmeDates';
 
 /* screens/gym-programmes.md, screens/programme-builder.md, screens/my-programme.md
  * and screens/gym-logging.md, cut down hard. Migration 0021's own header has the
@@ -441,17 +442,29 @@ export async function addExerciseToSession(
   return { error: error ? humanizeDbError(error.message, 'staff') : null };
 }
 
-export type Assignee = { athlete_id: string | null; group_id: string | null; athlete_name: string | null; group_name: string | null };
+export type Assignee = {
+  /** The assignment row, so its start date can be set (programme-dates.md). */
+  id: string;
+  athlete_id: string | null;
+  group_id: string | null;
+  athlete_name: string | null;
+  group_name: string | null;
+  /** Week 1 day 1. Null is an unmapped assignment — made before dates
+   *  existed and not yet given one (0132). */
+  starts_on: string | null;
+};
 
 export async function fetchAssignments(db: Db, orgId: string, programmeId: string): Promise<Assignee[]> {
   const { data, error } = await db
     .from('programme_assignments')
-    .select('athlete_id, group_id, athletes(first_name, last_name), groups(name)')
+    .select('id, athlete_id, group_id, starts_on, athletes(first_name, last_name), groups(name)')
     .eq('org_id', orgId)
     .eq('programme_id', programmeId)
     .eq('status', 'active');
   if (error) throw new Error(error.message);
   return (data ?? []).map((a) => ({
+    id: a.id,
+    starts_on: a.starts_on,
     athlete_id: a.athlete_id,
     group_id: a.group_id,
     athlete_name: a.athletes ? `${a.athletes.first_name} ${a.athletes.last_name}` : null,
@@ -530,8 +543,15 @@ export async function assignProgramme(
     proposeAgainstInjuryId?: string | null;
     /** Only used to write a readable timeline line. */
     programmeName?: string;
+    /** Week 1 day 1 — chosen by the S&C at the moment they assign
+     *  (programme-dates.md, 0132). Required: an assignment made now is never
+     *  unmapped. */
+    startsOn: string;
   },
 ): Promise<{ error: string | null }> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(input.startsOn)) {
+    return { error: 'Choose the day the programme starts. Week 1, day 1 is that day.' };
+  }
   if (input.programmeType === 'rehab' && input.athleteId) {
     // suspend_assignments_for_rehab (migration 0050), not a plain client
     // UPDATE: this used to fail RLS outright — programme_assignments_update's
@@ -560,6 +580,7 @@ export async function assignProgramme(
       programme_id: input.programmeId,
       athlete_id: input.athleteId,
       group_id: input.groupId,
+      starts_on: input.startsOn,
       assigned_by: userId,
       ...(proposeAgainst
         ? { status: 'proposed' as const, injury_id: proposeAgainst }
@@ -597,6 +618,29 @@ export async function assignProgramme(
   return { error: null };
 }
 
+/** Set (or move) an assignment's start date — programme-dates.md: an
+ *  assignment made before dates existed is unmapped until the S&C sets one
+ *  "the next time they touch it", and a block can be re-dated. Through
+ *  mustAffect: the update policy (0022/0070/0082) filters a row the caller
+ *  may not author, and a filtered UPDATE raises nothing. */
+export async function setAssignmentStartDate(
+  db: Db,
+  orgId: string,
+  assignmentId: string,
+  startsOn: string,
+): Promise<{ error: string | null }> {
+  if (!/^\d{4}-\d{2}-\d{2}$/.test(startsOn)) {
+    return { error: 'Choose the day the programme starts. Week 1, day 1 is that day.' };
+  }
+  return mustAffect(
+    db.from('programme_assignments').update({ starts_on: startsOn }).eq('org_id', orgId).eq('id', assignmentId).select('id'),
+    {
+      refusal: 'Not saved: only the sport scientist or the S&C sets a gym programme\'s dates (the sport scientist or the medic for rehab).',
+      onError: (m) => humanizeDbError(m, 'staff'),
+    },
+  );
+}
+
 /* ---------------------------------------------------------------------------
  * Athlete side: resolved reads through the two security-definer functions, and
  * self-logged gym work.
@@ -612,6 +656,12 @@ export type MyProgrammeSession = {
   week_number: number;
   day_number: number | null;
   md_offset: number | null;
+  /** programme-dates.md (0132): the assignment's week 1 day 1, its last day
+   *  (start + weeks·7 − 1), and this session's own date counted forward from
+   *  the start. All null for an unmapped assignment. */
+  assignment_starts_on: string | null;
+  assignment_ends_on: string | null;
+  scheduled_on: string | null;
 };
 
 export type AssignedWeek = {
@@ -661,6 +711,9 @@ export async function fetchMyProgrammeSessions(db: Db, athleteId: string): Promi
     week_number: r.week_number,
     day_number: r.day_number,
     md_offset: r.md_offset,
+    assignment_starts_on: r.assignment_starts_on,
+    assignment_ends_on: r.assignment_ends_on,
+    scheduled_on: r.scheduled_on,
   }));
 }
 
@@ -1443,8 +1496,12 @@ export type AthleteAssignment = {
   programmeType: ProgrammeType;
   goal: string | null;
   status: AssignmentStatus;
-  startsOn: string;
+  /** Week 1 day 1; null is an unmapped assignment (programme-dates.md, 0132). */
+  startsOn: string | null;
+  /** Derived: start + weeks·7 − 1 (lib/programmeDates.ts). Null when unmapped
+   *  or when the programme's length is unknown. */
   endsOn: string | null;
+  /** The programme's length: the sum of its blocks, else its own figure. */
   durationWeeks: number | null;
   /** How the athlete got this programme: named directly, or through a group.
    *  Load-bearing on screen — "you are on this because you are in Forwards" is
@@ -1500,7 +1557,7 @@ export async function fetchAthleteProgrammeAssignments(
   const groupIds = [...groupNameById.keys()];
 
   const columns =
-    'id, athlete_id, group_id, starts_on, ends_on, status, programmes(id, name, goal, programme_type, duration_weeks)';
+    'id, athlete_id, group_id, starts_on, status, programmes(id, name, goal, programme_type, duration_weeks, programme_blocks(duration_weeks))';
 
   const [direct, viaGroup] = await Promise.all([
     db
@@ -1525,8 +1582,7 @@ export async function fetchAthleteProgrammeAssignments(
     id: string;
     athlete_id: string | null;
     group_id: string | null;
-    starts_on: string;
-    ends_on: string | null;
+    starts_on: string | null;
     status: AssignmentStatus;
     programmes: {
       id: string;
@@ -1534,6 +1590,7 @@ export async function fetchAthleteProgrammeAssignments(
       goal: string | null;
       programme_type: ProgrammeType;
       duration_weeks: number | null;
+      programme_blocks: { duration_weeks: number }[];
     } | null;
   };
 
@@ -1566,13 +1623,15 @@ export async function fetchAthleteProgrammeAssignments(
     (a, b) =>
       (rank[a.status] ?? 2) - (rank[b.status] ?? 2) ||
       Number(a.athlete_id === null) - Number(b.athlete_id === null) ||
-      b.starts_on.localeCompare(a.starts_on),
+      // Most recently started first; an unmapped assignment (no date) last.
+      (b.starts_on ?? '').localeCompare(a.starts_on ?? ''),
   );
   const out: AthleteAssignment[] = [];
   const seen = new Set<string>();
   for (const r of rows) {
     if (!r.programmes || seen.has(r.programmes.id)) continue;
     seen.add(r.programmes.id);
+    const lengthWeeks = programmeLengthWeeks(r.programmes.programme_blocks ?? [], r.programmes.duration_weeks);
     out.push({
       assignmentId: r.id,
       programmeId: r.programmes.id,
@@ -1581,8 +1640,8 @@ export async function fetchAthleteProgrammeAssignments(
       goal: r.programmes.goal,
       status: r.status,
       startsOn: r.starts_on,
-      endsOn: r.ends_on,
-      durationWeeks: r.programmes.duration_weeks,
+      endsOn: assignmentEndsOn(r.starts_on, lengthWeeks),
+      durationWeeks: lengthWeeks,
       via:
         r.group_id !== null
           ? { kind: 'group', groupId: r.group_id, groupName: groupNameById.get(r.group_id) ?? null }

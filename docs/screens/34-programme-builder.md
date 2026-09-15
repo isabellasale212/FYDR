@@ -39,6 +39,21 @@ counted twice" (PATTERN-S5 C4, 13 September 2026). Never assignment rows or
 group sizes added: an athlete in two assigned groups counts once. "Nobody
 assigned yet" when there is none.
 
+**Dates live on the assignment, not the programme** (Isabella, 15 September
+2026, `docs/decisions/programme-dates.md`; migration 0132). The programme is
+a template — weeks and sessions, no dates. Each assignment row on the
+Assigned card carries its start date, chosen by the S&C at the moment they
+assign ("Starts on", defaulting to today; "Week 1, day 1 is this day", with
+the last day the length gives: "4 weeks: the last day is Mon 12 Oct."). There
+is no end date to set: it falls out of the start plus the programme's length
+(the sum of its blocks' weeks — `programme_assignment_ends_on`,
+`lib/programmeDates.ts`), so nothing can disagree with anything. A row reads
+"from Mon 14 Sept to Sun 11 Oct", "· finished" once the weeks have run out,
+or **"no start date"** for an assignment made before dates existed — left
+unmapped rather than given an invented one, with **Set start date** for the
+S&C to set it the next time they touch it; **Change date** moves a dated one.
+Overlap is allowed: nothing here refuses an athlete a second live block.
+
 **Where an exercise is prescribed as a percentage**, the basis is shown rather
 than a single weight, because the real weight differs per athlete.
 
@@ -54,7 +69,8 @@ than a single weight, because the real weight differs per athlete.
 | Element and label | Where it sits | What happens | Where it goes | What it writes | Permission | Confirmation | Hidden when |
 |---|---|---|---|---|---|---|---|
 | Edit blocks, sessions, exercises | The body | Changes the programme | Stays here | Updates the programme | S&C and sport scientist | Form submission | **Not built** |
-| Assign an athlete | Athletes panel | Puts them on the programme | Stays here | Creates an assignment | S&C and sport scientist | Form submission | **Not built** |
+| Assign an athlete or a group | Assigned card, + Assign | Puts them on the programme from a chosen start date (week 1 day 1) | Stays here | Creates an assignment with `starts_on` | S&C and sport scientist (a medic for rehab) | Form submission | Hidden from everyone else |
+| Set start date / Change date | Assigned card, each row | Sets week 1 day 1 for an assignment made before dates existed, or moves a dated one | Stays here | `programme_assignments.starts_on` | S&C and sport scientist (a medic for rehab) | Inline Save | Hidden from everyone else |
 | Override for one athlete | An exercise | Exempts, substitutes, changes volume, caps load, or adds a note | Stays here | Writes an override | S&C and sport scientist | Form submission | **Not built** |
 | An athlete's name | Athletes panel | Opens their view of this programme | `/programmes/[programmeId]/athlete/[athleteId]` | Nothing | Any staff | None | Never |
 

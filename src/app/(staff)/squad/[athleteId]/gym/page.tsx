@@ -3,7 +3,8 @@ import { PositionalContext } from '@/components/PositionalContext/PositionalCont
 import { AthleteDomainDenied } from '@/components/AthleteDomainShell/AthleteDomainShell';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { loadAthleteDomainContext } from '@/lib/athleteDomain.server';
-import { addDays, daysBetween, enumLabel, formatDate, formatNumber } from '@/lib/format';
+import { addDays, enumLabel, formatDate, formatNumber } from '@/lib/format';
+import { assignmentWeekNow } from '@/lib/programmeDates';
 import { resolveRange, type RangeKey } from '@/lib/period';
 import { fetchLatestBodyMassForAthletes } from '@/lib/queries/bodyComposition';
 import {
@@ -399,11 +400,9 @@ export default async function AthleteGymPage({
             />
           ) : (
             assignments.map((a) => {
-              const weeksElapsed = Math.floor(daysBetween(a.startsOn, today) / 7) + 1;
-              const weekNow =
-                a.durationWeeks !== null
-                  ? Math.min(Math.max(weeksElapsed, 1), a.durationWeeks)
-                  : Math.max(weeksElapsed, 1);
+              /* programme-dates.md (0132): one arithmetic, lib/programmeDates.ts;
+                 null for an unmapped assignment, which the row says. */
+              const weekNow = assignmentWeekNow(a.startsOn, today, a.durationWeeks);
               return (
                 <div className="pc-row" key={a.assignmentId}>
                   <div className="pc-row-top">
@@ -414,7 +413,11 @@ export default async function AthleteGymPage({
                       </span>
                     </span>
                     <span className="num pc-row-value">
-                      {a.durationWeeks !== null ? `week ${weekNow} of ${a.durationWeeks}` : `week ${weekNow}`}
+                      {weekNow === null
+                        ? 'no start date set'
+                        : a.durationWeeks !== null
+                          ? `week ${weekNow} of ${a.durationWeeks}`
+                          : `week ${weekNow}`}
                     </span>
                   </div>
                   <div className="pc-row-bottom">
@@ -429,8 +432,9 @@ export default async function AthleteGymPage({
                         : ''}
                     </span>
                     <span className="num pc-row-meta">
-                      from {formatDate(a.startsOn, timezone)}
-                      {a.endsOn ? ` to ${formatDate(a.endsOn, timezone)}` : ''}
+                      {a.startsOn === null
+                        ? 'no start date — set one on the programme'
+                        : `from ${formatDate(a.startsOn, timezone)}${a.endsOn ? ` to ${formatDate(a.endsOn, timezone)}` : ''}`}
                     </span>
                   </div>
                   <p style={{ margin: 'var(--s-4) 0 0' }}>

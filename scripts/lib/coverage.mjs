@@ -27,13 +27,13 @@ export class CoverageError extends Error {}
  *  bumped past, it is the run asking what was added or lost. */
 export const COUNTS = {
   /** supabase/migrations/*.sql */
-  migrations: 131,
+  migrations: 132,
   /** supabase/tests/*.sql (pgTAP) */
-  pgtapTests: 92,
+  pgtapTests: 93,
   /** every file under src, of any kind */
-  srcFiles: 544,
+  srcFiles: 545,
   /** .ts and .tsx under src */
-  srcTs: 539,
+  srcTs: 540,
   /** .tsx under src */
   srcTsx: 296,
   /** .css under src (src/styles) */
@@ -61,7 +61,7 @@ export const COUNTS = {
   /** route.ts under src/app */
   appRoutes: 41,
   /** .ts and .tsx under src/lib */
-  libTs: 190,
+  libTs: 191,
   /** page.tsx under src/app */
   appPages: 106,
   /** layout.tsx under src/app */

@@ -568,8 +568,11 @@ create table programme_assignments (
   programme_id  uuid not null references programmes(id),
   athlete_id    uuid references athletes(id),
   group_id      uuid references groups(id),
-  starts_on     date not null,
-  ends_on       date,
+  -- 0132 (programme-dates.md): week 1 day 1, chosen by the S&C at assignment;
+  -- nullable with no default — an unmapped assignment, never an invented date.
+  -- There is no end date: programme_assignment_ends_on(starts_on, programme_id)
+  -- = start + programme_length_weeks·7 − 1. ends_on was dropped.
+  starts_on     date,
   status        assignment_status not null default 'active',  -- active|suspended|completed|cancelled|proposed (0079)|returned (0124)
   suspended_reason text,
   assigned_by   uuid references users(id),

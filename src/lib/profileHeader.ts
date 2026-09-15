@@ -59,11 +59,18 @@ export function headerOwnerLine(
 /** "Development plan · In-Season max · week 2 of 4 · ends Tue 29 Sept" —
  *  the plan bar's three facts as one line inside the header. */
 export function planLine(
-  programme: { name: string; weekNow: number; weekTotal: number | null; endsOn: string | null } | null,
+  programme: { name: string; weekNow: number | null; weekTotal: number | null; endsOn: string | null } | null,
   timezone: string,
 ): string {
   if (!programme) return 'Development plan · none assigned';
-  const week = programme.weekTotal !== null ? `week ${programme.weekNow} of ${programme.weekTotal}` : `week ${programme.weekNow}`;
+  /* programme-dates.md (0132): an unmapped assignment has no week to count
+     and no end; the line says so instead of inventing week 1. */
+  const week =
+    programme.weekNow === null
+      ? 'no start date set'
+      : programme.weekTotal !== null
+        ? `week ${programme.weekNow} of ${programme.weekTotal}`
+        : `week ${programme.weekNow}`;
   return ['Development plan', programme.name, week, programme.endsOn ? `ends ${formatDate(programme.endsOn, timezone)}` : null]
     .filter(Boolean)
     .join(' · ');

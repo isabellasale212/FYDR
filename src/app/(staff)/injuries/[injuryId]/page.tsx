@@ -164,7 +164,7 @@ export default async function InjuryDetailPage({
                       {p.status === 'active' ? 'Signed off' : 'Awaiting medical sign-off'}
                     </span>
                     <span className="tiny">
-                      From {formatDate(p.starts_on, timezone)}
+                      {p.starts_on === null ? 'No start date set' : `From ${formatDate(p.starts_on, timezone)}`}
                       {p.status === 'active' ? '' : ' · not visible to the athlete yet'}
                     </span>
                   </div>

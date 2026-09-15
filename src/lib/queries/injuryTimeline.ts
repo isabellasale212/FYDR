@@ -1,5 +1,7 @@
 import type { AppRole, InjuryTimelineEventType, Json } from '@/lib/types/database';
 import type { Db } from './groups';
+import { assignmentEndsOn, assignmentWeekNow, programmeLengthWeeks } from '@/lib/programmeDates';
+import { todayIso } from '@/lib/format';
 
 /** The injury <-> S&C programme link: one timeline per injury, and a programme
  *  assignment that is not live until the medic signs it off.
@@ -128,7 +130,9 @@ export type InjuryProposal = {
   assignment_id: string;
   programme_id: string;
   programme_name: string;
-  starts_on: string;
+  /** Week 1 day 1; null is an unmapped assignment (programme-dates.md, 0132). */
+  starts_on: string | null;
+  /** Derived: start + weeks·7 − 1 (lib/programmeDates.ts); null when unmapped. */
   ends_on: string | null;
   /** 'returned' since 0124 (PATTERN-S3 C6): the medic sent it back with a
    *  reason, carried on the row so the S&C reads it on the proposals list. */
@@ -149,7 +153,7 @@ export async function fetchInjuryProposals(
 ): Promise<InjuryProposal[]> {
   const { data, error } = await db
     .from('programme_assignments')
-    .select('id, programme_id, starts_on, ends_on, status, return_reason, programmes(name)')
+    .select('id, programme_id, starts_on, status, return_reason, programmes(name, duration_weeks, programme_blocks(duration_weeks))')
     .eq('org_id', orgId)
     .eq('injury_id', injuryId)
     .in('status', ['proposed', 'active', 'returned'])
@@ -158,18 +162,17 @@ export async function fetchInjuryProposals(
   type Row = {
     id: string;
     programme_id: string;
-    starts_on: string;
-    ends_on: string | null;
+    starts_on: string | null;
     status: 'proposed' | 'active' | 'returned';
     return_reason: string | null;
-    programmes: { name: string } | null;
+    programmes: { name: string; duration_weeks: number | null; programme_blocks: { duration_weeks: number }[] } | null;
   };
   return ((data ?? []) as unknown as Row[]).map((r) => ({
     assignment_id: r.id,
     programme_id: r.programme_id,
     programme_name: r.programmes?.name ?? 'Programme',
     starts_on: r.starts_on,
-    ends_on: r.ends_on,
+    ends_on: assignmentEndsOn(r.starts_on, programmeLengthWeeks(r.programmes?.programme_blocks ?? [], r.programmes?.duration_weeks ?? null)),
     status: r.status,
     return_reason: r.return_reason,
   }));
@@ -286,7 +289,7 @@ export async function fetchInjuryProgrammeStatus(
 ): Promise<InjuryProgrammeStatus> {
   const { data, error } = await db
     .from('programme_assignments')
-    .select('status, starts_on, programmes(name, duration_weeks)')
+    .select('status, starts_on, programmes(name, duration_weeks, programme_blocks(duration_weeks))')
     .eq('org_id', orgId)
     .eq('injury_id', injuryId)
     .in('status', ['proposed', 'active'])
@@ -295,8 +298,8 @@ export async function fetchInjuryProgrammeStatus(
 
   type Row = {
     status: 'proposed' | 'active';
-    starts_on: string;
-    programmes: { name: string; duration_weeks: number | null } | null;
+    starts_on: string | null;
+    programmes: { name: string; duration_weeks: number | null; programme_blocks: { duration_weeks: number }[] } | null;
   };
   const rows = (data ?? []) as unknown as Row[];
   if (rows.length === 0) return { kind: 'none' };
@@ -305,13 +308,10 @@ export async function fetchInjuryProgrammeStatus(
   if (proposed) return { kind: 'proposed', name: proposed.programmes?.name ?? 'a programme' };
 
   const live = rows[0]!;
-  const totalWeeks = live.programmes?.duration_weeks ?? null;
-  const started = Date.parse(`${live.starts_on}T12:00:00Z`);
-  const elapsed = Number.isNaN(started)
-    ? null
-    : Math.floor((Date.now() - started) / (7 * 24 * 60 * 60 * 1000)) + 1;
-  const week =
-    elapsed === null || elapsed < 1 ? null : totalWeeks === null ? elapsed : Math.min(elapsed, totalWeeks);
+  /* programme-dates.md (0132): the week comes from the assignment's start
+     and the programme's length, one arithmetic; null for an unmapped one. */
+  const totalWeeks = programmeLengthWeeks(live.programmes?.programme_blocks ?? [], live.programmes?.duration_weeks ?? null);
+  const week = assignmentWeekNow(live.starts_on, todayIso(), totalWeeks);
 
   return { kind: 'active', name: live.programmes?.name ?? 'a programme', week, totalWeeks };
 }

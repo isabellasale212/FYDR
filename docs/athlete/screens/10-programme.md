@@ -51,7 +51,19 @@ None.
 
 ## 10. States
 
-Loading, **no programme assigned**, error.
+Loading, **no programme assigned**, **a block that finished**, error.
+
+**Dates** (Isabella, 15 September 2026, `docs/decisions/programme-dates.md`;
+migration 0132). The assignment carries a start date — week 1 day 1 — and the
+end falls out of the programme's length. Under the programme's name the
+screen shows "From Mon 14 Sept to Sun 11 Oct" ("Starts …" before the start).
+An assignment made before dates existed has none and shows no line rather
+than an invented one. **When the weeks run out the assignment is over**, and
+the screen says so — a card reading "In-Season max finished on Fri 28 Aug."
+above whatever is still live, or with "Nothing new has been assigned yet."
+when nothing is — never an empty screen with no explanation. Two live blocks
+at once (a rehab block beside a lifting block) both list. Nothing here says a
+session is due or was missed: each is its own piece of work.
 
 ## 11. Accessibility and device
 

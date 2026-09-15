@@ -2951,8 +2951,7 @@ export type Database = {
         programme_id: string
         athlete_id: string | null
         group_id: string | null
-        starts_on: string
-        ends_on: string | null
+        starts_on: string | null
         status: Database["public"]["Enums"]["assignment_status"]
         suspended_reason: string | null
         assigned_by: string | null
@@ -2968,8 +2967,7 @@ export type Database = {
         programme_id: string
         athlete_id?: string | null
         group_id?: string | null
-        starts_on?: string
-        ends_on?: string | null
+        starts_on?: string | null
         status?: Database["public"]["Enums"]["assignment_status"]
         suspended_reason?: string | null
         assigned_by?: string | null
@@ -2985,8 +2983,7 @@ export type Database = {
         programme_id?: string
         athlete_id?: string | null
         group_id?: string | null
-        starts_on?: string
-        ends_on?: string | null
+        starts_on?: string | null
         status?: Database["public"]["Enums"]["assignment_status"]
         suspended_reason?: string | null
         assigned_by?: string | null
@@ -5351,6 +5348,19 @@ export type Database = {
           window_days: number
         }[]
     }
+    programme_assignment_ends_on: {
+      Args: {
+        p_starts_on: string
+        p_programme_id: string
+      }
+      Returns: string
+    }
+    programme_length_weeks: {
+      Args: {
+        p_programme_id: string
+      }
+      Returns: number
+    }
     record_athlete_device: {
       Args: {
         p_platform: string
@@ -5420,6 +5430,9 @@ export type Database = {
           day_number: number
           md_offset: number
           session_sequence: number
+          assignment_starts_on: string
+          assignment_ends_on: string
+          scheduled_on: string
         }[]
     }
     resolve_nutrition_targets: {

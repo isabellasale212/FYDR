@@ -112,8 +112,9 @@ function ProposalRow({ proposal, timezone }: { proposal: InjuryProposal; timezon
           </span>
         </div>
         <div className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
-          From {formatDate(proposal.starts_on, timezone)}
-          {proposal.ends_on ? ` to ${formatDate(proposal.ends_on, timezone)}` : ''}
+          {proposal.starts_on === null
+            ? 'No start date set'
+            : `From ${formatDate(proposal.starts_on, timezone)}${proposal.ends_on ? ` to ${formatDate(proposal.ends_on, timezone)}` : ''}`}
           {live ? '' : ' · not visible to the athlete yet'}
         </div>
         {returned && proposal.return_reason ? (

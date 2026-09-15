@@ -20,6 +20,7 @@ import { fetchTestDefinitions } from './testing';
 import { fetchAthleteProgrammeAssignments } from './programmes';
 import { resolveTargetForDate, type ResolvedTarget } from './nutritionTargets';
 import { describeThreshold, fetchThresholds, findActiveAcwrThreshold } from './thresholds';
+import { assignmentWeekNow } from '@/lib/programmeDates';
 import type { Db } from './groups';
 
 /* PLAYER-PROFILE-SPEC.md, the query layer behind it. One function assembles
@@ -286,7 +287,10 @@ export type ProgrammeBanner = {
   programmeId: string;
   name: string;
   goal: string | null;
-  weekNow: number;
+  /** Null for an unmapped assignment (no start date — programme-dates.md,
+   *  0132): the header says "no start date set" rather than counting weeks
+   *  from nothing. */
+  weekNow: number | null;
   weekTotal: number | null;
   endsOn: string | null;
 } | null;
@@ -799,19 +803,17 @@ export async function fetchPlayerProfile(
 
   let programme: ProgrammeBanner = null;
   if (assignmentRow) {
-    const weeksElapsed = Math.floor(daysBetween(assignmentRow.startsOn, today) / 7) + 1;
+    /* programme-dates.md (0132): the week and the end come from the
+       assignment's start and the programme's length, one arithmetic
+       (lib/programmeDates.ts); an unmapped assignment has neither. */
     const weekTotal = assignmentRow.durationWeeks;
-    const weekNow = weekTotal !== null ? Math.min(Math.max(weeksElapsed, 1), weekTotal) : Math.max(weeksElapsed, 1);
-    const endsOn =
-      assignmentRow.endsOn ??
-      (weekTotal !== null ? addDays(assignmentRow.startsOn, weekTotal * 7) : null);
     programme = {
       programmeId: assignmentRow.programmeId,
       name: assignmentRow.name,
       goal: assignmentRow.goal,
-      weekNow,
+      weekNow: assignmentWeekNow(assignmentRow.startsOn, today, weekTotal),
       weekTotal,
-      endsOn,
+      endsOn: assignmentRow.endsOn,
     };
   }
 

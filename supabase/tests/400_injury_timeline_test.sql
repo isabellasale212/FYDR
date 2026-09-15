@@ -255,7 +255,7 @@ select throws_ok(
 );
 
 select lives_ok(
-  format($q$update programme_assignments set ends_on = current_date + 28 where id = %L$q$,
+  format($q$update programme_assignments set starts_on = current_date + 28 where id = %L$q$,
          tests.uid('orga','assign_injury')),
   'but can still edit their own draft, which is what "medic requests changes" needs'
 );
@@ -285,7 +285,7 @@ select lives_ok(
 
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select throws_ok(
-  format($q$update programme_assignments set ends_on = current_date + 7 where id = %L$q$,
+  format($q$update programme_assignments set starts_on = current_date + 7 where id = %L$q$,
          tests.uid('orga','assign_plain')),
   '42501', null,
   'the COACH cannot update an assignment: authorship is the sport scientist and the S&C '
@@ -294,7 +294,7 @@ select throws_ok(
 
 select tests.set_jwt(tests.uid('orga', 'user_nutritionist'));
 select throws_ok(
-  format($q$update programme_assignments set ends_on = current_date + 7 where id = %L$q$,
+  format($q$update programme_assignments set starts_on = current_date + 7 where id = %L$q$,
          tests.uid('orga','assign_plain')),
   '42501', null,
   'and neither can the nutritionist'
@@ -302,7 +302,7 @@ select throws_ok(
 
 select tests.set_jwt(tests.uid('orga', 'user_medical'));
 select throws_ok(
-  format($q$update programme_assignments set ends_on = current_date + 7 where id = %L$q$,
+  format($q$update programme_assignments set starts_on = current_date + 7 where id = %L$q$,
          tests.uid('orga','assign_plain')),
   '42501', null,
   'the medic cannot touch an ORDINARY gym assignment either — the sign-off exception '

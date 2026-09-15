@@ -8,6 +8,7 @@ import { toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import {
   addExerciseToSession,
   assignProgramme,
+  setAssignmentStartDate,
   createBlock,
   createSession,
   type Assignee,
@@ -15,8 +16,9 @@ import {
   type Exercise,
 } from '@/lib/queries/programmes';
 import type { LoadBasis, ProgrammeType } from '@/lib/types/database';
-import { enumLabel, mdLabel } from '@/lib/format';
+import { enumLabel, formatDate, mdLabel } from '@/lib/format';
 import type { AssignmentArithmetic } from '@/lib/assignmentCount';
+import { assignmentEndsOn, assignmentFinished, programmeLengthWeeks } from '@/lib/programmeDates';
 
 type Athlete = { id: string; first_name: string; last_name: string };
 type Group = { id: string; name: string };
@@ -36,6 +38,10 @@ type Props = {
   athletes: readonly Athlete[];
   groups: readonly Group[];
   programmeName: string;
+  /** The club's today (todayIso(timezone)) — the start date's default, and
+   *  what "finished" is judged against. programme-dates.md (0132). */
+  today: string;
+  timezone: string;
   /* athlete id -> their open injury id. Empty for every viewer who is not an
      S&C, which is what makes the proposal path theirs alone. Passed as DATA
      rather than as a predicate: a function prop on a Client Component
@@ -65,6 +71,8 @@ export function ProgrammeBuilder({
   athletes,
   groups,
   programmeName,
+  today,
+  timezone,
   openInjuryByAthlete,
 }: Props) {
   const router = useRouter();
@@ -91,6 +99,9 @@ export function ProgrammeBuilder({
   const [assignScope, setAssignScope] = useState<'athlete' | 'group'>('athlete');
   const [assignAthleteId, setAssignAthleteId] = useState(athletes[0]?.id ?? '');
   const [assignGroupId, setAssignGroupId] = useState(groups[0]?.id ?? '');
+  /* programme-dates.md: the S&C chooses week 1 day 1 at the moment they
+     assign. Defaults to today — a date, never an invented one on the row. */
+  const [assignStartsOn, setAssignStartsOn] = useState(today);
 
   const blockMutation = useMutation({
     mutationFn: () =>
@@ -174,6 +185,7 @@ export function ProgrammeBuilder({
           programmeType,
           programmeName,
           proposeAgainstInjuryId: proposedInjuryId,
+          startsOn: assignStartsOn,
         }),
       ),
     onSuccess: (result) => {
@@ -184,6 +196,23 @@ export function ProgrammeBuilder({
     },
     onError: (err) => setError(toUserMessage(err, 'staff')),
   });
+
+  /* Setting (or moving) an assignment's start date — an assignment made
+     before dates existed is unmapped until the S&C sets one here. */
+  const [datingId, setDatingId] = useState<string | null>(null);
+  const [datingValue, setDatingValue] = useState(today);
+  const dateMutation = useMutation({
+    mutationFn: (input: { assignmentId: string; startsOn: string }) =>
+      withWriteTimeout(setAssignmentStartDate(createClient(), orgId, input.assignmentId, input.startsOn)),
+    onSuccess: (result) => {
+      if (result.error) return setError(result.error);
+      setError(null);
+      setDatingId(null);
+      router.refresh();
+    },
+    onError: (err) => setError(toUserMessage(err, 'staff')),
+  });
+  const lengthWeeks = programmeLengthWeeks(blocks, null);
 
   return (
     <div className="stack">
@@ -448,12 +477,64 @@ export function ProgrammeBuilder({
         {assignees.length === 0 ? (
           <p className="tiny">Nobody assigned yet.</p>
         ) : (
-          <div className="chiprow">
-            {assignees.map((a, i) => (
-              <span key={i} className="chip-static">
-                {a.athlete_name ?? a.group_name}
-              </span>
-            ))}
+          /* One row per assignment, with its dates (programme-dates.md, 0132):
+             week 1 day 1 and the last day that falls out of it, or "no start
+             date" for one made before dates existed — set here, the next time
+             it is touched. Overlap is allowed, so nothing here checks it. */
+          <div className="stack" style={{ gap: 'var(--sp-6)' }}>
+            {assignees.map((a) => {
+              const endsOn = assignmentEndsOn(a.starts_on, lengthWeeks);
+              const finished = assignmentFinished(a.starts_on, today, lengthWeeks);
+              return (
+                <div key={a.id} className="chiprow" style={{ alignItems: 'center' }} data-assignment-row>
+                  <span className="chip-static">{a.athlete_name ?? a.group_name}</span>
+                  {datingId === a.id ? (
+                    <>
+                      <input
+                        className="field"
+                        type="date"
+                        value={datingValue}
+                        onChange={(e) => setDatingValue(e.target.value)}
+                        aria-label={`Start date for ${a.athlete_name ?? a.group_name}`}
+                        style={{ maxWidth: 180 }}
+                      />
+                      <button
+                        type="button"
+                        className="btn-primary"
+                        onClick={() => dateMutation.mutate({ assignmentId: a.id, startsOn: datingValue })}
+                        disabled={dateMutation.isPending}
+                      >
+                        {dateMutation.isPending ? 'Saving…' : 'Save date'}
+                      </button>
+                      <button type="button" className="btn-ghost" onClick={() => setDatingId(null)}>
+                        Cancel
+                      </button>
+                    </>
+                  ) : (
+                    <>
+                      <span className="tiny num">
+                        {a.starts_on === null
+                          ? 'no start date'
+                          : `from ${formatDate(a.starts_on, timezone)}${endsOn ? ` to ${formatDate(endsOn, timezone)}` : ''}${finished ? ' · finished' : ''}`}
+                      </span>
+                      {canEdit ? (
+                        <button
+                          type="button"
+                          className="btn-ghost"
+                          style={{ minHeight: 32, padding: '5px var(--s-6)' }}
+                          onClick={() => {
+                            setDatingValue(a.starts_on ?? today);
+                            setDatingId(a.id);
+                          }}
+                        >
+                          {a.starts_on === null ? 'Set start date' : 'Change date'}
+                        </button>
+                      ) : null}
+                    </>
+                  )}
+                </div>
+              );
+            })}
           </div>
         )}
         {canEdit ? (
@@ -491,6 +572,25 @@ export function ProgrammeBuilder({
                     ))}
                   </select>
                 )}
+              </div>
+              <div style={{ marginTop: 'var(--sp-8)' }}>
+                <label className="label" htmlFor="assign-starts-on">
+                  Starts on
+                </label>
+                <input
+                  id="assign-starts-on"
+                  className="field"
+                  type="date"
+                  value={assignStartsOn}
+                  onChange={(e) => setAssignStartsOn(e.target.value)}
+                  style={{ maxWidth: 200 }}
+                />
+                <p className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
+                  Week 1, day 1 is this day.
+                  {lengthWeeks !== null && assignmentEndsOn(assignStartsOn, lengthWeeks)
+                    ? ` ${lengthWeeks} week${lengthWeeks === 1 ? '' : 's'}: the last day is ${formatDate(assignmentEndsOn(assignStartsOn, lengthWeeks), timezone)}.`
+                    : ''}
+                </p>
               </div>
               {programmeType === 'rehab' && assignScope === 'athlete' ? (
                 <p className="tiny" style={{ marginTop: 'var(--sp-6)' }}>

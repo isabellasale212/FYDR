@@ -25,10 +25,33 @@ const DIR = process.argv[2];
 if (!DIR) { console.error('usage: a11y-sweep-report.mjs <dir>'); process.exit(1); }
 
 /* ---- tokens ------------------------------------------------------------- */
-const tokLines = readFileSync('src/styles/tokens.css', 'utf8').split('\n');
-const BLOCKS = [[22, 398, 'light'], [403, 714, 'light'], [726, 780, 'light'], [787, 920, 'dark']];
+/* The token blocks are found by their selectors, not by line ranges: the
+   adoption layers (14–15 Sept) moved every block. A top-level rule whose
+   selector names dark ([data-theme='dark'], .dark-tokens, or the
+   prefers-color-scheme media block's :root:not([data-theme])) is dark;
+   every other top-level :root block is light. Comments are blanked first so
+   a selector-looking line inside one cannot open a block. */
+const tokRaw = readFileSync('src/styles/tokens.css', 'utf8').replace(/\/\*[\s\S]*?\*\//g, (m) => m.replace(/[^\n]/g, ' '));
+const tokLines = tokRaw.split('\n');
 const tokens = { light: {}, dark: {} };
-for (const [a, b, theme] of BLOCKS) for (let i = a - 1; i < b; i++) { const m = tokLines[i].match(/^\s*(--[a-z0-9-]+):\s*([^;]+);/); if (m) tokens[theme][m[1]] = m[2].trim(); }
+{
+  let depth = 0, theme = null, inDarkMedia = false, selector = '';
+  for (const raw of tokLines) {
+    const line = raw.trim();
+    if (depth === 0 && /^@media/.test(line)) { inDarkMedia = /prefers-color-scheme:\s*dark/.test(line); depth += (line.match(/\{/g) ?? []).length; continue; }
+    if (line.endsWith('{') || (line.includes('{') && !line.includes(';'))) {
+      selector += ' ' + line.replace(/\{.*$/, '');
+      if (/data-theme='dark'|\.dark-tokens/.test(selector) || (inDarkMedia && /:root/.test(selector))) theme = 'dark';
+      else if (/:root/.test(selector)) theme = 'light';
+      depth += (line.match(/\{/g) ?? []).length;
+      continue;
+    }
+    const m = line.match(/^(--[a-z0-9-]+):\s*([^;]+);/);
+    if (m && theme) tokens[theme][m[1]] = m[2].trim();
+    const closes = (line.match(/\}/g) ?? []).length;
+    if (closes) { depth -= closes; if (depth <= 0) { depth = 0; theme = null; inDarkMedia = false; } selector = depth === 0 ? '' : selector; if (depth === 1 && inDarkMedia) theme = null; }
+  }
+}
 for (const k of Object.keys(tokens.light)) if (!(k in tokens.dark)) tokens.dark[k] = tokens.light[k];
 const hex = (s) => { const m = s.match(/^#([0-9a-f]{6})$/i); return m ? { r: parseInt(m[1].slice(0, 2), 16), g: parseInt(m[1].slice(2, 4), 16), b: parseInt(m[1].slice(4, 6), 16), a: 1 } : null; };
 const parseRgb = (s) => { const m = s.match(/rgba?\(([^)]+)\)/); if (!m) return null; const p = m[1].split(/[\s,\/]+/).filter(Boolean).map(Number); return { r: p[0], g: p[1], b: p[2], a: p.length > 3 ? p[3] : 1 }; };
@@ -111,7 +134,7 @@ const findTsx = (cls) => { const out = []; for (const [file, lines] of tsxIndex)
 
 /* ---- load ---------------------------------------------------------------- */
 const runs = [];
-for (const f of readdirSync(DIR)) if (/^a11y-[a-z0-9-]+\.json$/.test(f)) runs.push(...JSON.parse(readFileSync(join(DIR, f), 'utf8')));
+for (const f of readdirSync(DIR)) if (/^a11y-[a-z0-9_-]+\.json$/.test(f)) runs.push(...JSON.parse(readFileSync(join(DIR, f), 'utf8')));
 const short = (u) => u.replace(/^https?:\/\/[^/]+/, '');
 const reached = new Map(); // role -> Map(route -> landed)
 for (const r of runs) { if (!reached.has(r.role)) reached.set(r.role, new Map()); reached.get(r.role).set(r.route, short(r.url || '')); }

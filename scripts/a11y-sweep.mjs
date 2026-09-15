@@ -181,10 +181,20 @@ try {
     for (const width of [1440, 390]) {
       await send('Emulation.setDeviceMetricsOverride', { width, height: width === 390 ? 844 : 900, deviceScaleFactor: 1, mobile: width === 390 }, S);
       await goto(`${BASE}${route}`);
-      await evaluate(`document.querySelectorAll('nextjs-portal').forEach((n) => n.remove()); 'ok'`);
+      /* Measure end states, never a transition's midpoint: the theme switch
+         below changes every token at once, and `transition: color
+         var(--t-state)` on a control means getComputedStyle mid-transition
+         returns an interpolated colour that is no token's. On a heavy page
+         (the flags list, a fixture) the 350ms wait was not enough — the
+         first run measured the sidebar's dark ink on the light ground.
+         Transitions off, the computed value is the destination. */
+      await evaluate(`(() => { const s = document.createElement('style'); s.setAttribute('data-a11y-sweep', ''); s.textContent = '*, *::before, *::after { transition: none !important; animation: none !important; }'; document.head.appendChild(s); document.querySelectorAll('nextjs-portal').forEach((n) => n.remove()); return 'ok'; })()`);
       for (const theme of ['light', 'dark']) {
         await evaluate(`try { localStorage.setItem('fydr-theme', '${theme}'); } catch {} document.documentElement.setAttribute('data-theme', '${theme}'); 'ok'`);
         await sleep(350);
+        /* And confirm the switch has landed before reading: the root's
+           background is the theme's own --bg. */
+        for (let i = 0; i < 20; i++) { const bg = await evaluate(`getComputedStyle(document.documentElement).getPropertyValue('--bg').trim()`); if ((theme === 'dark') === /^#2|^#1|^rgb\(3[0-9],/.test(bg)) break; await sleep(150); }
         const audit = await evaluate(AUDIT);
         results.push({ role: ROLE, route, theme, width, ...(audit ?? { contrast: [], targets: [], swatches: [], title: '', h1: '', url: '' }) });
         process.stderr.write(`${ROLE} ${route} ${theme} ${width}: ${audit?.contrast.length ?? '?'} contrast, ${audit?.targets.length ?? '?'} targets → ${(audit?.url ?? '').replace(BASE, '')}\n`);

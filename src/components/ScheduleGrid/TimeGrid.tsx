@@ -360,8 +360,15 @@ export function TimeGrid({ days, mode, selectedId, nowDecimalHour, h0, h1, gridH
                         <div className="sg-block-name" title={b.title}>
                           {b.title}
                         </div>
-                        {b.height >= 63 && b.groupNames.length > 0 ? (
-                          <div className="sg-block-group">{b.groupNames.join(' + ')}</div>
+                        {/* The type word on the block itself where there is room
+                            (a11y sweep step 2, Class 3.2, 15 Sept 2026): the tone
+                            carried it alone for a sighted reader; the aria-label
+                            always had it. The same line as the groups. */}
+                        {b.height >= 63 ? (
+                          <div className="sg-block-group">
+                            {enumLabel(b.type)}
+                            {b.groupNames.length > 0 ? ` · ${b.groupNames.join(' + ')}` : ''}
+                          </div>
                         ) : null}
                       </>
                     ) : (

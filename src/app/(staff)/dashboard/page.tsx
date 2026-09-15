@@ -11,7 +11,7 @@ import { attentionDomains, dashboardTiles, dashboardVersion, leadCardNames, need
 import { weekStripYields } from '@/lib/dashboardLead';
 import { fetchGroupAthleteIds, fetchGroups, fetchSquadSize } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
-import { addDays, formatDate, formatLongDate, matchdayWeekday, monthShort, todayIso, weekdayLongDayMonthLong } from '@/lib/format';
+import { addDays, enumLabel, formatDate, formatLongDate, matchdayWeekday, monthShort, todayIso, weekdayLongDayMonthLong } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
@@ -429,7 +429,13 @@ async function DashboardPageContent({ searchParams }: { searchParams: SearchPara
                   {d.activities.map((a, i) => (
                     <span key={`${a.title}-${i}`} className="dash-week-act">
                       <span className="dash-week-act-dot" style={{ background: PIP_COLOR[a.type] }} aria-hidden="true" />
-                      <span>{a.title}</span>
+                      {/* The type as a word, not the dot's hue alone (a11y sweep
+                          step 2, Class 3.1, 15 Sept 2026): "Lower A" does not say
+                          gym. The dot stays; the word is the second channel. */}
+                      <span>
+                        {a.title}
+                        <span className="dash-week-act-type"> · {enumLabel(a.type)}</span>
+                      </span>
                     </span>
                   ))}
                 </div>

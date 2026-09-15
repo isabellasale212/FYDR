@@ -114,15 +114,21 @@ export function TrainingScatter({ points, selectedAthleteId, lens, hrefFor }: Pr
                   key={p.athleteId}
                   href={hrefFor(p.athleteId)}
                   className={`tr-scatter-dot${isSelected ? ' selected' : ''}`}
+                  /* One shape per band as well as one hue (a11y sweep step 2,
+                     Class 3.5, 15 Sept 2026): far a filled circle, near a
+                     filled square, mid a ring, low a dashed circle — the
+                     radius and border style of the existing box, the same
+                     fills and strokes. The band is in the label too. */
+                  data-band={p.band}
                   style={{
                     left: `${leftPct}%`,
                     bottom: `${py(p.hsr)}%`,
                     width: size,
                     height: size,
-                    background: style.fill,
+                    background: p.band === 'mid' ? 'transparent' : style.fill,
                     borderColor: style.stroke,
                   }}
-                  aria-label={`${p.name}, ${p.unit}. Total distance ${Math.round(p.td)}m, high speed running ${Math.round(p.hsr)}m.`}
+                  aria-label={`${p.name}, ${p.unit}. ${LABELS[lens][p.band]}. Total distance ${Math.round(p.td)}m, high speed running ${Math.round(p.hsr)}m.`}
                   title={p.name}
                 >
                   {labelSet.has(p.athleteId) ? (
@@ -152,7 +158,11 @@ export function TrainingScatter({ points, selectedAthleteId, lens, hrefFor }: Pr
       <div className="tr-scatter-legend">
         {(['far', 'near', 'mid', 'low'] as const).map((band) => (
           <span key={band}>
-            <span className="tr-scatter-legend-dot" style={{ background: BAND_STYLE[band].stroke }} />
+            <span
+              className="tr-scatter-legend-dot"
+              data-band={band}
+              style={{ background: band === 'mid' ? 'transparent' : BAND_STYLE[band].stroke, borderColor: BAND_STYLE[band].stroke }}
+            />
             {LABELS[lens][band]}
           </span>
         ))}

@@ -73,7 +73,14 @@ colleague.
 
 **The grid itself.** Days across, time down, with each session drawn as a block
 at its real time and for its real length. Matchday labels sit on the days they
-belong to, so a coach can read the week as MD-3, MD-2, MD-1, MD.
+belong to, so a coach can read the week as MD-3, MD-2, MD-1, MD. A block prints
+its time, its title and — where it is tall enough for a third line (63px and
+up) — **its type as a word**, ahead of its groups ("Gym · Backs + Forwards"),
+since 15 September 2026 (the accessibility sweep's Class 3.2): the block's tone
+carried the type alone for a sighted reader; the label for a screen reader
+always had it. The phone's day list prints the type word at the head of every
+titled row's meta line the same way (an untitled row already shows the type as
+its title).
 
 **Two create buttons**, one for a session and one for a fixture. Before these
 existed neither creation screen was linked from anywhere.

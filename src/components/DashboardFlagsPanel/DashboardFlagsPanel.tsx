@@ -4,6 +4,8 @@ import { useState } from 'react';
 import Link from 'next/link';
 import type { ThresholdProvenance } from '@/lib/queries/thresholds';
 import { enumLabel } from '@/lib/format';
+import { Pill } from '@/components/Pill/Pill';
+import { SEVERITY_STATUS } from '@/lib/status';
 import type { AttentionRow } from '@/lib/queries/flags';
 
 type Props = {
@@ -181,6 +183,11 @@ export function DashboardFlagsPanel({ rows, openTotal, allClearLine, athleteTota
                       a pill saying otherwise would be a false claim on the card
                       a medic reads first. */}
                   {r.escalated ? <span className="pill pill-bad">Unacknowledged 24h+</span> : null}
+                  {/* The severity as glyph and word on the collapsed row (a11y
+                      sweep step 2, Class 3.4, 15 Sept 2026): the row's left
+                      edge carried it alone until the row was opened. The edge
+                      stays. */}
+                  <Pill status={SEVERITY_STATUS[r.severity]} />
                   <span className="dash-flags-duration">{r.unreviewed}</span>
                 </span>
                 <span className="dash-flags-chevron" data-open={isOpen} aria-hidden="true">

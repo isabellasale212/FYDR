@@ -6213,8 +6213,21 @@ img.me-avatar {
   width: 9px;
   height: 9px;
   border-radius: var(--r-round);
+  border: 2px solid;
   margin-right: var(--sp-6);
   vertical-align: -1px;
+}
+/* One shape per band (a11y sweep step 2, Class 3.5, 15 Sept 2026): far a
+   filled circle (the default), near a filled square, mid a ring (the fill is
+   transparent, set inline), low a dashed circle. The dots and the legend's
+   swatches take the same rules. */
+.tr-scatter-dot[data-band='near'],
+.tr-scatter-legend-dot[data-band='near'] {
+  border-radius: 0;
+}
+.tr-scatter-dot[data-band='low'],
+.tr-scatter-legend-dot[data-band='low'] {
+  border-style: dashed;
 }
 
 .tr-selected-panel-table {
@@ -6831,6 +6844,15 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .dash-stat-expand-row:first-child {
   border-top: none;
 }
+/* "Modified" / "Out" on the row (a11y sweep step 2, Class 3.3, 15 Sept 2026):
+   neutral status text beside the name, the dot kept. --muted on the card:
+   6.34 / 7.09. */
+.dash-stat-expand-status {
+  margin-left: auto;
+  font-size: var(--fs-12);
+  color: var(--muted);
+  white-space: nowrap;
+}
 .dash-stat-expand-empty {
   padding: var(--sp-14) var(--sp-18);
   color: var(--muted);
@@ -6955,6 +6977,14 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   height: 6px;
   border-radius: var(--r-round);
   transform: translateY(-1px);
+}
+/* The type word after the title (a11y sweep step 2, Class 3.1, 15 Sept 2026).
+   --text, not a muted ink: today's column is the strong accent wash over
+   --bg, where no muted ink clears 4.5 (C13); the regular weight against the
+   title's semibold is what makes it read as the caption. */
+.dash-week-act-type {
+  font-weight: var(--w-regular);
+  color: var(--text);
 }
 .dash-week-col-empty {
   font-size: var(--fs-13);

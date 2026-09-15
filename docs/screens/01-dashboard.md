@@ -84,7 +84,11 @@ five or more athletes needing attention (the panel's own cut) the six-day strip
 is not drawn and the panel takes the space — the only element on the page that
 gives way, because the week is one sidebar row away while the five names are
 not. It never yields while it is the lead (no match inside 14 days), and it is
-absent for the S&C and the nutritionist regardless (§4, role versions).
+absent for the S&C and the nutritionist regardless (§4, role versions). Each
+session in a day's column is its coloured dot, its title and **its type as a
+word** — "Lower A · Gym" — since 15 September 2026 (the accessibility sweep's
+Class 3.1): the dot's hue alone carried the type, and a title does not say gym or
+testing. The dot stays; the word is the second channel.
 
 **Five headline tiles** — for the sport scientist, the coach and
 the medic. **The S&C and the nutritionist read their own versions** (STAFF-SS-01
@@ -119,7 +123,9 @@ up — an S&C who is also a coach reads the full dashboard):
   Clicking it expands to name who has not submitted, rather than sending you to
   another page to find out.
 - **Available.** The squad's availability as a fraction, with modified and out
-  counts beneath. Clicking it expands to name them, each with their reason.
+  counts beneath. Clicking it expands to name them, each with their reason and,
+  since 15 September 2026 (Class 3.3), the word **Modified** or **Out** on the
+  row — the dot's colour no longer carries which is which alone.
 - **Open flags.** How many alerts are unresolved. Clicking it goes to the flags
   screen.
 - **To matchday.** How many days to the next fixture, and who it is against.
@@ -127,6 +133,10 @@ up — an S&C who is also a coach reads the full dashboard):
 
 **Needs attention.** The ranked list of athletes who need a conversation, each
 with a one line reason. This is the page. Everything else is the packaging.
+Each collapsed row carries its severity as the glyph-and-word pill (High,
+Medium, Low) beside how long it has gone unreviewed, since 15 September 2026
+(Class 3.4) — the row's coloured left edge stays, but it no longer carries the
+severity alone until the row is opened.
 The panel's headline counts **athletes** — "5 athletes" over "need attention ·
 12 open flags · 3 not yet reviewed by anyone" — and, when the list is cut,
 "top 5 of 8 athletes" (on a phone, "· top 5 of 8 shown" on the same line)

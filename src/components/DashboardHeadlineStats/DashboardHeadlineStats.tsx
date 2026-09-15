@@ -367,16 +367,21 @@ export function DashboardHeadlineStats({
             <p className="tiny dash-stat-expand-empty">Full squad available — nobody carries a restriction.</p>
           ) : (
             <>
+              {/* Modified versus out as a word on the row (a11y sweep step 2,
+                  Class 3.3, 15 Sept 2026): the dot's hue carried it alone, and
+                  the head line gives the counts, not which is which. */}
               {modifiedNamed.map((name) => (
                 <div key={`mod-${name}`} className="dash-stat-expand-row">
                   <span className="dash-squad-dot" style={{ background: 'var(--warn)' }} aria-hidden="true" />
                   <span style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-semi)' }}>{name}</span>
+                  <span className="dash-stat-expand-status">Modified</span>
                 </div>
               ))}
               {unavailableNamed.map((name) => (
                 <div key={`out-${name}`} className="dash-stat-expand-row">
                   <span className="dash-squad-dot" style={{ background: 'var(--bad)' }} aria-hidden="true" />
                   <span style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-semi)' }}>{name}</span>
+                  <span className="dash-stat-expand-status">Out</span>
                 </div>
               ))}
             </>

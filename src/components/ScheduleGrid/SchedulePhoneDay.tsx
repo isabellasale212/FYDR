@@ -108,6 +108,10 @@ export function SchedulePhoneDay({ days, sessions, today, timezone, canEdit }: P
                   {s.title || enumLabel(s.type)}
                 </span>
                 <span className="sg-phone-row-meta">
+                  {/* The type word on every titled row (a11y sweep step 2, Class
+                      3.2, 15 Sept 2026): the dot's hue carried it alone. An
+                      untitled row already prints the type as its title. */}
+                  {s.title ? `${enumLabel(s.type)} · ` : ''}
                   {rowMeta({ location: s.location, mins: s.mins, groupNames: s.groupNames, expected: s.athleteIds.length })}
                 </span>
                 {s.isNew || s.edited ? (

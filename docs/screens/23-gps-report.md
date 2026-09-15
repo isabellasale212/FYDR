@@ -128,6 +128,16 @@ data" on a board cell and in every comparison table, "No best yet" where an
 athlete has no maximum to be a percentage of, "Not set" for a venue, location or
 duration, "Result not entered" — never a dash.
 
+**The scatter's bands are a shape as well as a hue** (the accessibility sweep's
+Class 3.5, 15 September 2026). Each athlete's dot — total distance across, high
+speed running up — sits in one of four bands against their own normal or their
+unit's: far above is a filled circle, above a filled square, in line a ring, and
+below a dashed circle, with the same fills and strokes as before; the legend draws
+the four the same way, and a dot's label reads the band in words ("Below their
+normal") along with the name, the unit and the two distances. A dot with no
+high-intensity-efforts value is not drawn (the point needs all three figures), so
+a session imported without HIE draws no scatter.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means in plain English | Time window | What shows when data is missing |

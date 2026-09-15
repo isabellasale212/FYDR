@@ -197,6 +197,7 @@ select is(
 -- ===========================================================================
 
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga','user_athlete_1'));
 select is(
   (select array_agg(test_definition_id order by test_definition_id) from public.resolve_my_assigned_tests(tests.uid('orga','athlete_1'))),

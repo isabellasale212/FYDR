@@ -90,9 +90,12 @@ delete from match_participation where id = tests.uid('orga','mp_2');
 reset role;
 select is((select count(*)::int from audit_log where action = 'match_participation.set' and entity_id = tests.uid('orga','fixture')), 4, 'two inserts and two edits: four set rows');
 select is((select count(*)::int from audit_log where action = 'match_participation.remove' and entity_id = tests.uid('orga','fixture')), 1, 'one remove');
-select is((select actor_id from audit_log where action = 'match_participation.remove' order by id desc limit 1), tests.uid('orga','user_coach'), 'with the actor');
-select is((select metadata -> 'was' ->> 'minutes' from audit_log where action = 'match_participation.remove' order by id desc limit 1), '26', 'and what it was');
-select is((select athlete_id from audit_log where action = 'match_participation.set' order by id limit 1), tests.uid('orga','athlete_1'), 'against the athlete');
+-- Scoped to the fixture's fixture (15 Sept 2026, #4): a realistic database
+-- carries other clubs' participation rows, and "the first set row" over the
+-- whole log was somebody else's.
+select is((select actor_id from audit_log where action = 'match_participation.remove' and entity_id = tests.uid('orga','fixture') order by id desc limit 1), tests.uid('orga','user_coach'), 'with the actor');
+select is((select metadata -> 'was' ->> 'minutes' from audit_log where action = 'match_participation.remove' and entity_id = tests.uid('orga','fixture') order by id desc limit 1), '26', 'and what it was');
+select is((select athlete_id from audit_log where action = 'match_participation.set' and entity_id = tests.uid('orga','fixture') order by id limit 1), tests.uid('orga','athlete_1'), 'against the athlete');
 
 select * from finish();
 rollback;

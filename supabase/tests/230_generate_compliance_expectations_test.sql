@@ -71,9 +71,16 @@ select tests.fixtures();
 -- a mismatch between this fixture's two timestamps. Moved into the future instead of
 -- backdating the membership, so this file never mutates the shared tests.build_org()
 -- fixture shape other test files may also depend on.
+-- The fixture session is rated (athlete_1's training entry), and since 0133 a
+-- rated session's start cannot move — at the table, for the owner too. This
+-- move is fixture setup, not the write the rule guards, so the trigger is
+-- stood down for it inside this transaction (rolled back at the end) and put
+-- back at once. 870 proves the rule itself.
+alter table public.sessions disable trigger sessions_rated_read_only;
 update public.sessions
    set starts_at = now() + interval '1 day'
  where id = tests.uid('orga', 'session');
+alter table public.sessions enable trigger sessions_rated_read_only;
 
 -- Stash the fixture session's own local calendar date, computed the same way the
 -- function does, rather than hard-coding a value that would drift with wall-clock time.

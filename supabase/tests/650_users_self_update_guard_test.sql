@@ -174,6 +174,7 @@ select is(
 -- 6. The role-change bump (0010) still passes through the guard
 -- ===========================================================================
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select lives_ok(
   format($q$insert into user_roles (org_id, user_id, role) values (%L, %L, 'strength_conditioning')$q$,

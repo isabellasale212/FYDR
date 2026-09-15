@@ -46,6 +46,7 @@ select is((select count(*)::int from wellness_entries_current where org_id = tes
 reset role;
 update public.organisations set tier = 'performance' where id = tests.uid('orga', 'org');
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select is(public.auth_org_is_premium(), true, 'performance: premium');
 select is((select count(*)::int from public.analytics_daily_rows('wellness_entries_current', current_date - 7, current_date)), 2, 'premium: both athletes'' wellness rows');
@@ -71,12 +72,14 @@ select is((select count(*)::int from public.analytics_daily_rows('gps_records', 
 reset role;
 update public.organisations set tier = 'performance' where id = tests.uid('orgb', 'org');
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orgb', 'user_admin'));
 select is((select count(*)::int from public.analytics_daily_rows('gps_records', current_date - 7, current_date)), 0, 'premium orgb: still none of orga''s GPS — the org scope');
 select is((select count(*)::int from public.analytics_daily_rows('wellness_entries_current', current_date - 7, current_date)), 2, 'and its own wellness rows');
 reset role;
 update public.athletes set consent_withdrawn_at = now() where id = tests.uid('orga','athlete_2');
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select is((select count(*)::int from public.analytics_daily_rows('wellness_entries_current', current_date - 7, current_date)), 1, 'an athlete out of data (0120) is out of the analytics rows');
 
@@ -84,6 +87,7 @@ select is((select count(*)::int from public.analytics_daily_rows('wellness_entri
 reset role;
 update public.organisations set tier = 'core' where id = tests.uid('orga', 'org');
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select is((select count(*)::int from public.analytics_daily_rows('gps_records', current_date - 7, current_date)), 0, 'downgraded: hidden again, the rows kept');
 

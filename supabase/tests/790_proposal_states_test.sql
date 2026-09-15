@@ -46,7 +46,8 @@ select is((select return_reason from programme_assignments where id = tests.uid(
 select is((select count(*)::int from programme_assignments where injury_id = tests.uid('orga','injury_1')), 2, 'and both rows, in one list');
 select tests.clear_jwt();
 reset role;
-select is((select count(*)::int from audit_log where action in ('proposal.approved','proposal.returned')), 2, 'both decisions audited');
+-- Org-scoped (15 Sept 2026, #4): a realistic database carries other clubs' decisions.
+select is((select count(*)::int from audit_log where org_id = tests.uid('orga','org') and action in ('proposal.approved','proposal.returned')), 2, 'both decisions audited');
 
 select * from finish();
 rollback;

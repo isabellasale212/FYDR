@@ -99,6 +99,7 @@ reset role;
 update public.organisations set tier = 'core' where id = tests.uid('orga', 'org');
 select is((select count(*)::int from gps_records where org_id = tests.uid('orga','org')), 2, 'core: both rows are still in the table (kept, not deleted)');
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select is((select count(*)::int from gps_records where athlete_id = tests.uid('orga','athlete_1')), 0, 'core: a coach reads no GPS rows — hidden, not an error');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
@@ -119,6 +120,7 @@ select tests.clear_jwt();
 reset role;
 select is((select count(*)::int from gps_records where athlete_id = tests.uid('orga','athlete_1') and total_distance_m = 1), 0, 'core: the sport scientist''s update matched nothing');
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 
 -- 4. the written exceptions
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
@@ -134,6 +136,7 @@ select is((select count(*)::int from gps_records where org_id = tests.uid('orga'
 -- 5. back on Premium, everything returns
 update public.organisations set tier = 'performance' where id = tests.uid('orga', 'org');
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select is((select count(*)::int from gps_records where athlete_id = tests.uid('orga','athlete_1')), 2, 'premium again: the coach reads both rows — kept and restored');
 

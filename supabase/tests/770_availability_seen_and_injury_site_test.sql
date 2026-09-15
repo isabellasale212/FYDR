@@ -53,6 +53,7 @@ select tests.clear_jwt();
 reset role;
 update organisations set coach_sees_injury_site = true where id = tests.uid('orga','org');
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_coach'));
 select is((select body_area::text from injuries_staff where id = tests.uid('orga','injury_1')), 'knee', 'setting on: the coach reads the site through the view');
 select throws_ok($$select body_area from injuries$$, '42501', null, 'and still not at the table');
@@ -71,7 +72,10 @@ reset role;
 -- Rows in force before 0122 were backfilled as read at their own start; the rows
 -- this test's athletes hold are the fixture's, so the count is theirs alone.
 select is((select count(*)::int from availability where athlete_seen_at is not null and athlete_id in (tests.uid('orga','athlete_1'), tests.uid('orga','athlete_2'))), 2, 'each athlete marked only their own open row');
-select is((select count(*)::int from availability where athlete_seen_at is not null and athlete_seen_at > effective_from and athlete_id not in (tests.uid('orga','athlete_1'), tests.uid('orga','athlete_2'))), 0, 'and nobody else''s row was touched by the function');
+-- Within the two fixture organisations (15 Sept 2026, #4): a realistic database
+-- holds real athletes who have opened their status screen, and a count over
+-- every organisation only passed against an empty one.
+select is((select count(*)::int from availability where org_id in (tests.uid('orga','org'), tests.uid('orgb','org')) and athlete_seen_at is not null and athlete_seen_at > effective_from and athlete_id not in (tests.uid('orga','athlete_1'), tests.uid('orga','athlete_2'))), 0, 'and nobody else''s row was touched by the function');
 
 select * from finish();
 rollback;

@@ -46,6 +46,7 @@ reset role;
 select is((select total_distance_m from gps_records where id = tests.uid('orga','gps_old')), 4100::numeric, '…and cannot update it — the import''s upsert cannot resurrect it');
 select is((select total_distance_m from gps_records where id = tests.uid('orga','gps_live')), 5201::numeric, 'while the live row still updates');
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select is((select count(*)::int from public.analytics_daily_rows('gps_records', current_date - 500, current_date)), 1, 'analytics_daily_rows (definer) filters the retired row itself');
 reset role;
@@ -54,6 +55,7 @@ select is((select count(*)::int from gps_records where athlete_id = tests.uid('o
 
 -- 3. premium_history_kept: what the club holds, on any plan
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select is((select gps_rows from public.premium_history_kept()), 1::bigint, 'premium: one live GPS row (the retired one is not "kept")');
 select is((select first_date from public.premium_history_kept()), current_date - 1, 'first date');
@@ -61,6 +63,7 @@ select is((select import_batches from public.premium_history_kept()), 1::bigint,
 reset role;
 update public.organisations set tier = 'core' where id = tests.uid('orga','org');
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select is((select count(*)::int from gps_records where athlete_id = tests.uid('orga','athlete_1')), 0, 'basic: the table hides every row from the sport scientist (0119)');
 select is((select gps_rows from public.premium_history_kept()), 1::bigint, 'but the plan page can still say what is kept — the one-place sentence');

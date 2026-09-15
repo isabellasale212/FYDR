@@ -94,6 +94,7 @@ select is(
 
 -- 5. a correction carries the snapshot and cannot change it
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
 select lives_ok(
   format($q$select revise_gym_set_log(%L, %L, '{"reps_completed": 7, "load_kg": 102.5, "prescribed_load_kg": 999}'::jsonb)$q$,

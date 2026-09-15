@@ -10,7 +10,12 @@ select tests.fixtures();
 
 -- The same fixture shape 230 uses: the session moved into the future so its
 -- group membership resolves; the local date stashed.
+-- The fixture session is rated, and since 0133 a rated session's start cannot
+-- move at the table; this is fixture setup, so the trigger is stood down for
+-- it inside the transaction (see 230). 870 proves the rule.
+alter table public.sessions disable trigger sessions_rated_read_only;
 update public.sessions set starts_at = now() + interval '1 day' where id = tests.uid('orga', 'session');
+alter table public.sessions enable trigger sessions_rated_read_only;
 select set_config('fydr_test.expectation_date',
   (select ((s.starts_at at time zone o.timezone)::date)::text from public.sessions s join public.organisations o on o.id = s.org_id where s.id = tests.uid('orga', 'session')), true);
 

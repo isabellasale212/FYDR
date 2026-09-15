@@ -101,8 +101,11 @@ select is(
 
 select tests.clear_jwt();
 set local role anon;
+-- Scoped to the fixture organisation's own prefix (the pre-deploy fixes, 15
+-- Sept 2026, #4): a realistic database holds real clubs' logos, and a count
+-- over the whole bucket only passed against an empty one.
 select is(
-  (select count(*) from storage.objects where bucket_id = 'logos'),
+  (select count(*) from storage.objects where bucket_id = 'logos' and name like tests.uid('orga','org') || '/%'),
   1::bigint,
   'even a signed-out caller reads the logos bucket — the public-read policy, matching the public bucket'
 );

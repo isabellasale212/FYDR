@@ -8,7 +8,12 @@ select * from no_plan();
 
 select tests.fixtures();
 -- One expected session for the generator, as 230/730 do.
+-- The fixture session is rated, and since 0133 a rated session's start cannot
+-- move at the table; this is fixture setup, so the trigger is stood down for
+-- it inside the transaction (see 230). 870 proves the rule.
+alter table public.sessions disable trigger sessions_rated_read_only;
 update public.sessions set starts_at = now() + interval '1 day' where id = tests.uid('orga', 'session');
+alter table public.sessions enable trigger sessions_rated_read_only;
 select set_config('fydr_test.expectation_date',
   (select ((s.starts_at at time zone o.timezone)::date)::text from public.sessions s join public.organisations o on o.id = s.org_id where s.id = tests.uid('orga', 'session')), true);
 
@@ -85,6 +90,7 @@ select is((select count(*)::int from audit_log where athlete_id = tests.uid('org
 
 -- 6. withdrawal
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
 select lives_ok($$select public.withdraw_data_consent()$$, 'an athlete in data withdraws');
 select is((select in_data from athletes where id = tests.uid('orga','athlete_1')), false, 'and is out of data');
@@ -99,6 +105,7 @@ update athletes set date_of_birth = current_date - interval '16 years', consent_
   guardian_name = 'Bernadette Rafferty', guardian_email = 'b.rafferty@example.com'
   where id = tests.uid('orga','athlete_1');
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_athlete_1'));
 select throws_ok($$select public.record_data_consent('agree', 'v')$$, 'P0001', 'guardian_decides', 'a minor cannot decide for themselves — a guardian answers');
 select set_config('fydr_test.token', (select token from public.request_guardian_consent(tests.uid('orga','athlete_1'), 'placeholder:LEGAL-3A+3B:2026-09-13')), true);
@@ -128,6 +135,7 @@ reset role;
 -- not a minor: no request
 update athletes set date_of_birth = date '1999-06-09' where id = tests.uid('orga','athlete_2');
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_admin'));
 select throws_ok(format($$select public.request_guardian_consent(%L, 'v')$$, tests.uid('orga','athlete_2')), 'P0001', 'not_a_minor', 'no guardian request for an adult');
 select tests.clear_jwt();
@@ -136,6 +144,7 @@ reset role;
 -- 8. the health gate on the clinical tables
 update athletes set health_consent_declined_at = now() where id = tests.uid('orga','athlete_2');
 set local role authenticated;
+select ok(tests.rls_is_engaged(), 'canary: RLS is engaged after the switch');
 select tests.set_jwt(tests.uid('orga', 'user_medical'));
 select throws_ok(
   format($q$insert into injuries (org_id, athlete_id, body_area, side, onset_date, status, reported_by) values (%L, %L, 'knee', 'left', current_date, 'open', %L)$q$,

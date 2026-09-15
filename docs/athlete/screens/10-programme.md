@@ -84,3 +84,14 @@ primary actions sit low.
 
 - **DECISION 2:** nutrition guidance lives behind a tab called Gym. **Closed 15
   September 2026: the tab is called Programme.**
+
+## 13. Reopening a session the same day (15 September 2026)
+
+A gym session opened today and not finished stays open until it is:
+`startOrGetSessionLog` finds today's in-progress log for the programme session and
+the logger resumes at the next set (Today's To do carries it as its own row). The
+mobile queue's #9 added the way back in from this list: the open session's row
+reads **"Under way · 2 of 13 sets · continue"** (accent ink, and the words carry
+it), a session finished today reads **"Logged today"**, and tapping either opens
+the same log. Finish early closes a log; a closed log takes corrections, not new
+sets (migration 0110).

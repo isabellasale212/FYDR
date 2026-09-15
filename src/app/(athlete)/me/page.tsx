@@ -1,7 +1,4 @@
 import Link from 'next/link';
-import { AthleteProfileEditForm } from '@/components/AthleteProfileEditForm/AthleteProfileEditForm';
-import { AvatarUploadForm } from '@/components/AvatarUploadForm/AvatarUploadForm';
-import { ChangePasswordForm } from '@/components/ChangePasswordForm/ChangePasswordForm';
 import { ThemeToggle } from '@/components/ThemeToggle/ThemeToggle';
 import { fetchAthlete } from '@/lib/queries/squad';
 import { fetchWellnessByAthlete } from '@/lib/queries/wellness';
@@ -229,46 +226,22 @@ export default async function MePage() {
       </div>
 
       <div className="stack">
-        {/* RESTORED 8 September 2026, after the redesign removed it and Isabella
-         *  asked for it back the same day. The reference (screens 11/12) draws
-         *  no profile form, and removing it took away the only place in the app
-         *  an athlete can edit their own phone number — a real loss rather than
-         *  a tidy-up, which is why it is back above the password form where the
-         *  two account forms sat together before.
-         *
-         *  ONE FIELD, and worth stating so nobody restores more than was asked
-         *  for: this form owns the phone number alone. Preferred name came out
-         *  of it earlier and by a separate decision — the club asked for it, and
-         *  staff own that field now — so bringing this form back does not bring
-         *  athlete-editable preferred names back with it. Legal name, date of
-         *  birth, position and squad number were never in scope here either.
-         *
-         *  The avatar and colour picker is still NOT restored: Isabella named
-         *  the profile form, and the reference draws neither. One import if that
-         *  changes too. */}
-        {/* RESTORED 8 September 2026 with the profile form. The reference draws
-         *  neither, and removing this took away the only way an athlete sets
-         *  their own photo or avatar colour — a real write path (users.avatar_url
-         *  and avatar_colour, backed by the Storage bucket migration 0030 added),
-         *  not a decoration. The header above still shows an uploaded photo; this
-         *  is what puts one there. */}
-        <AvatarUploadForm
-          orgId={orgId}
-          userId={claims.userId}
-          fullName={userRow.data?.full_name ?? `${firstName} ${lastName}`}
-          initialAvatarUrl={userRow.data?.avatar_url ?? null}
-          initialAvatarColour={userRow.data?.avatar_colour ?? null}
-        />
-
-        <AthleteProfileEditForm
-          userId={claims.userId}
-          fullName={userRow.data?.full_name ?? `${firstName} ${lastName}`}
-          initialPhone={userRow.data?.phone ?? ''}
-        />
-
-        <ChangePasswordForm />
+        {/* The photo, the phone number and the password are one page now —
+            Profile settings, the first row of the settings card below
+            (Isabella, 15 Sept 2026, mobile queue #11). The three forms this
+            screen carried inline since 8 September moved there unchanged. */}
 
         <div className="card flush me-set">
+          <Link href="/me/profile" className="me-row" data-profile-row>
+            <span className="k">
+              Profile settings
+              <span className="s">photo, phone number, password</span>
+            </span>
+            <span className="chev" aria-hidden="true">
+              ›
+            </span>
+          </Link>
+          <div className="hair" />
           {/* PATTERN-S3 C2: the status screen's standing door — the told card
               on Today is the other, and it goes once the screen has been opened. */}
           <Link href="/me/status" className="me-row" data-status-row>

@@ -45,6 +45,8 @@ const ATHLETE_COMPONENTS = [
   'AthleteTabBar', 'EmptyState', 'FlagNotice', 'PeriodSelector',
   'NotificationPreferencesForm', 'HideLeaderboardsToggle',
   'GlobalOptOutToggle', 'NutritionCheckinForm', 'OutboxFlusher', 'Toast', 'FydrLockup',
+  /* 15 Sept 2026 (mobile queue #8): the day's targets card, on Today and Programme. */
+  'NutritionTargetsCard',
 ];
 const files: string[] = [];
 const walk = (d: string) => {
@@ -55,17 +57,17 @@ const walk = (d: string) => {
   }
 };
 walk('src/app/(athlete)');
-expectCount('athlete route files', files, 29);
+expectCount('athlete route files', files, 30); // +1 on 15 Sept 2026: me/profile (mobile queue #11)
 /* Every listed component must exist. This used to swallow a missing directory
    ("component may not exist"), and did: 'TestSparkline' was listed for months
    and is a local function of my-data/page.tsx, never a component — the walk
    silently audited nothing for it. Coverage pass, 15 Sept 2026. */
-for (const c of expectCount('athlete-reachable component directories', ATHLETE_COMPONENTS, 20)) {
+for (const c of expectCount('athlete-reachable component directories', ATHLETE_COMPONENTS, 21)) {
   const dir = join('src/components', c);
   if (!existsSync(dir)) { console.log(`  FAIL - listed athlete component ${c} does not exist at ${dir}`); process.exit(1); }
   walk(dir);
 }
-expectCount('athlete surface files (routes and reachable components)', files, 51);
+expectCount('athlete surface files (routes and reachable components)', files, 53); // +1 route (me/profile), +1 component (NutritionTargetsCard), 15 Sept 2026
 
 console.log(`the athlete surface: ${files.length} files`);
 

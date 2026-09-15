@@ -291,11 +291,21 @@ export function CheckInForm({
       {WELLNESS_SCALES.map((scale) => (
         <ScaleInput
           key={scale}
+          id={`ci-scale-${scale}`}
           name={scale}
           value={scales[scale]}
-          onChange={(value) =>
-            setScales((current) => ({ ...current, [scale]: value }))
-          }
+          onChange={(value) => {
+            setScales((current) => ({ ...current, [scale]: value }));
+            /* The form scrolls as you answer (Isabella, 15 Sept 2026, mobile
+               queue #2): the next section still to answer comes into view —
+               the next unanswered scale, else the comment box at the end. Only
+               on a tap, never on restore; centred, so the answered key stays
+               on screen; smooth unless the person asked for reduced motion. */
+            const remaining = WELLNESS_SCALES.filter((s) => s !== scale && scales[s] === null);
+            const after = remaining.find((s) => WELLNESS_SCALES.indexOf(s) > WELLNESS_SCALES.indexOf(scale)) ?? remaining[0];
+            const next = document.getElementById(after ? `ci-scale-${after}` : 'ci-comment-block');
+            if (next) next.scrollIntoView({ block: 'center', behavior: window.matchMedia('(prefers-reduced-motion: reduce)').matches ? 'auto' : 'smooth' });
+          }}
         />
       ))}
 
@@ -375,7 +385,7 @@ export function CheckInForm({
           that did not mention injuries at all. The state and the payload are
           unchanged — this only moves where the field is and what it is
           called. */}
-      <label className="ci-comment">
+      <label className="ci-comment" id="ci-comment-block">
         <span className="label">Comment or injury issue (optional)</span>
         <textarea
           className="field"

@@ -102,6 +102,13 @@ nothing on this screen says the club is missing anything. The rating screen,
 reached by an old link, says so in the athlete's own words (03-session-rating.md
 §10).
 
+**Fuelling today** sits right below the day's schedule (Isabella, 15 September
+2026, mobile queue #8): the day's nutrition targets — energy, protein,
+carbohydrate, fluid — resolved for today through the same resolver and drawn by
+the same card (`NutritionTargetsCard`) as Programme's "Nutrition targets", with
+the provenance line saying whose numbers they are and a Meal ideas row. Guidance
+only; nothing to log (CLAUDE.md rule 8). One rendering, two places on screen.
+
 **The availability card, item 7, in detail**, because it is the part of this
 screen an athlete reads when something is wrong:
 

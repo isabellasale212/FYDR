@@ -27,8 +27,11 @@ console.log('\nnutrition plan');
   assert(/noWeighInLine\(\{ firstName: athlete\.first_name, sourceScope: nutrition\.source_scope \}\)/.test(page), 'a plan with no weigh-in says what the figures are and whose');
   /* PATTERN-S5 C7, Isabella's ruling 2026-09-13: show the club default,
      labelled as the club default, on every resolved surface. */
-  const athleteProgramme = flat('src/app/(athlete)/programme/page.tsx');
-  assert(/targetProvenanceLine\(\{ sourceScope: target\.source_scope, hasWeighIn, you: true \}\)/.test(athleteProgramme), 'the athlete\'s own targets card says whose the numbers are');
+  /* The card is one component since 15 Sept 2026 (mobile queue #8), drawn on
+     Programme and on Today; the provenance line lives in the component. */
+  const targetsCard = flat('src/components/NutritionTargetsCard/NutritionTargetsCard.tsx');
+  assert(/targetProvenanceLine\(\{ sourceScope: target\.source_scope, hasWeighIn, you: true \}\)/.test(targetsCard), 'the athlete\'s own targets card says whose the numbers are');
+  assert(/<NutritionTargetsCard/.test(flat('src/app/(athlete)/programme/page.tsx')) && /<NutritionTargetsCard/.test(flat('src/app/(athlete)/today/page.tsx')), 'and Programme and Today both draw that card');
   const staffNutrition = flat('src/app/(staff)/squad/[athleteId]/nutrition/page.tsx');
   assert(/targetProvenanceLine\(\{ sourceScope: resolved\.source_scope, hasWeighIn: latestOwn !== null, you: false \}\)/.test(staffNutrition), 'and so does the staff athlete nutrition page');
   const words = readFileSync('src/lib/nutritionNoWeighIn.ts', 'utf8');

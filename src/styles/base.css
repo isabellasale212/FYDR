@@ -1669,6 +1669,13 @@ body:has(.phone) {
 .hd .status-pill {
   margin-left: auto;
 }
+/* A programme row's state today (mobile queue #9, 15 Sept 2026): the open
+   session's row says how far it has got and that it continues; a finished
+   one says so. The word carries it; the accent ink is the second channel. */
+.prog-row-state[data-state='open'] {
+  color: var(--accent-text);
+  font-weight: var(--w-semi);
+}
 /* A control on the title row — My data's Leaderboards (mobile queue #5). */
 .hd .hd-action {
   margin-left: auto;

@@ -50,6 +50,13 @@ the bottom of the screen, labelled after where it goes: **Back to Today** for
 today's entry, **Back to My data** for a past day. A past day with no entry shows
 "Nothing submitted" in the same shape.
 
+**The form scrolls as you answer** (Isabella, 15 September 2026, mobile queue
+#2): choosing a value on a scale brings the next section still to answer into
+view — the next unanswered scale, else the comment box at the end — centred, so
+the key just tapped stays on screen; smooth, or instant under
+`prefers-reduced-motion`. Only on a tap, never on restoring a draft; the sleep
+stepper (several taps) does not scroll.
+
 ## 4. What the athlete enters here
 
 **This is the most important table in the athlete specification.** Wording is

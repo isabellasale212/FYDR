@@ -6,6 +6,8 @@ type Props = {
   name: WellnessScale;
   value: number | null;
   onChange: (value: number) => void;
+  /** The element id, so the form can scroll a section into view (mobile queue #2). */
+  id?: string;
 };
 
 /**
@@ -24,11 +26,11 @@ type Props = {
  * the spec itself lists that picker's contents under "Not designed" — left
  * out here rather than shipping a chip that opens onto nothing.
  */
-export function ScaleInput({ name, value, onChange }: Props) {
+export function ScaleInput({ name, value, onChange, id }: Props) {
   const copy = SCALE_COPY[name];
 
   return (
-    <fieldset className="sc">
+    <fieldset className="sc" id={id}>
       <div className="sc-h">
         <legend className="sc-l">{copy.label}</legend>
         {/* "Not answered", in neutral --muted — ATH-ADULT-03 A6 (2026-09-11).

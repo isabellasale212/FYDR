@@ -1,21 +1,14 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
-import { fetchMyProgrammeSessions } from '@/lib/queries/programmes';
+import { fetchMyOpenGymSessionToday, fetchMyProgrammeSessions } from '@/lib/queries/programmes';
 import { resolveTargetForDate } from '@/lib/queries/nutritionTargets';
 import { fetchLatestBodyMassForAthletes } from '@/lib/queries/bodyComposition';
-import { targetProvenanceLine } from '@/lib/nutritionNoWeighIn';
+import { NutritionTargetsCard } from '@/components/NutritionTargetsCard/NutritionTargetsCard';
 import { Toast } from '@/components/Toast/Toast';
 import { enumLabel, formatDate, mdExplainer, mdLabel, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'My programme · Fydr' };
-
-const TARGET_ROWS = [
-  { key: 'energy_kcal', label: 'Energy', unit: ' kcal', litres: false },
-  { key: 'protein_g', label: 'Protein', unit: 'g', litres: false },
-  { key: 'carbs_g', label: 'Carbohydrate', unit: 'g', litres: false },
-  { key: 'fluid_ml', label: 'Fluid', unit: 'L', litres: true },
-] as const;
 
 /** Gameplan 4.2 / audit S8: block names are free text a coach types in
  *  ProgrammeBuilder (no fixed list), so this can only explain the
@@ -60,12 +53,32 @@ export default async function MyProgrammePage({
      pill they fed. Nothing else on this screen asks what is still to do, and
      that count belongs on Today, beside the list it counts. Two fewer round
      trips, and one fewer sequential await after the parallel batch. */
-  const [sessions, target, latestMass] = await Promise.all([
+  const [sessions, target, latestMass, openGym, doneToday] = await Promise.all([
     fetchMyProgrammeSessions(db, athleteId),
     resolveTargetForDate(db, athleteId, today),
     /* PATTERN-S5 C7: whether there is a weigh-in to scale the target to,
        for the provenance line — the athlete's own row, RLS. */
     fetchLatestBodyMassForAthletes(db, orgId, [athleteId], { since: '1900-01-01', asOf: today }),
+    /* Reopening (Isabella, 15 Sept 2026, mobile queue #9): a session opened
+       today and not finished stays open until it is — startOrGetSessionLog
+       finds today's in-progress log and the logger resumes at the next set.
+       That already held; what was missing was the way back in from THIS
+       list, which read the same for every row. The open session's row now
+       says "Under way · 2 of 13 sets", a session finished today says so,
+       and tapping either opens the same log. Today's To do carries the
+       open one as well. */
+    fetchMyOpenGymSessionToday(db, orgId, athleteId, today),
+    db
+      .from('gym_session_logs')
+      .select('programme_session_id')
+      .eq('org_id', orgId)
+      .eq('athlete_id', athleteId)
+      .eq('entry_date', today)
+      .eq('status', 'complete')
+      .then(({ data, error }) => {
+        if (error) throw new Error(error.message);
+        return new Set((data ?? []).map((r) => r.programme_session_id).filter((id): id is string => !!id));
+      }),
   ]);
   const hasWeighIn = latestMass.has(athleteId);
 
@@ -167,6 +180,15 @@ export default async function MyProgrammePage({
                       >
                         <div>
                           <span className="nm">{s.session_name}</span>
+                          {openGym && openGym.programmeSessionId === s.session_id ? (
+                            <div className="tiny num prog-row-state" data-state="open">
+                              Under way · {openGym.logged} of {openGym.total} sets · continue
+                            </div>
+                          ) : doneToday.has(s.session_id) ? (
+                            <div className="tiny prog-row-state" data-state="done">
+                              Logged today
+                            </div>
+                          ) : null}
                           <div className="tiny">
                             <span title={BLOCK_PHASE_EXPLAINER[s.block_name.toLowerCase()]}>{s.block_name}</span> · Week {s.week_number}
                             {s.day_number ? ` · Day ${s.day_number}` : ''}
@@ -195,74 +217,9 @@ export default async function MyProgrammePage({
         })
       )}
 
-      {target ? (
-        <div className="card">
-          <h2 className="card-title">Nutrition targets</h2>
-          <p className="import-sub">
-            {target.md_specific ? (
-              <>
-                {/* Not the audit-B2 bug class: nutrition_targets.md_offset is an
-                    authored rule ("apply on MD-2"), resolved for `today` server-side
-                    by resolve_nutrition_targets — no fixture_id, nothing that could
-                    drift against a different week's fixture the way sessions.md_offset
-                    (schedule) can. */}
-                Set for{' '}
-                <span title={mdExplainer(target.md_offset) ?? undefined}>{mdLabel(target.md_offset) ?? 'today'}</span>.
-              </>
-            ) : (
-              'Your standing target.'
-            )}{' '}
-            Guidance only &mdash; nothing to log here.
-          </p>
-          {/* PATTERN-S5 C7 (Isabella, 2026-09-13): whose numbers these are,
-              on the face of the card — the club default is labelled as the
-              club default, and an unscaled one says so. */}
-          <p className="tiny" style={{ margin: '0 0 var(--sp-10)' }}>
-            {targetProvenanceLine({ sourceScope: target.source_scope, hasWeighIn, you: true })}
-          </p>
-          {TARGET_ROWS.map((row) => {
-            const raw = target[row.key];
-            if (raw === null) return null;
-            const value = row.litres ? (raw / 1000).toFixed(1) : raw;
-            return (
-              <div className="target-bar" key={row.key}>
-                <div className="th">
-                  <span className="k">{row.label}</span>
-                  <span className="v num">
-                    {value}
-                    {row.unit}
-                  </span>
-                </div>
-              </div>
-            );
-          })}
-          <Link
-            href="/programme/nutrition"
-            className="load-row"
-            style={{ gridTemplateColumns: '1fr auto', textDecoration: 'none', color: 'inherit' }}
-          >
-            <span className="nm">Meal ideas</span>
-            <span className="chev" aria-hidden="true">
-              ›
-            </span>
-          </Link>
-        </div>
-      ) : (
-        <div className="card">
-          <h2 className="card-title">Nutrition</h2>
-          <p className="import-sub">Your coach hasn&rsquo;t set targets yet, but meal ideas are ready to browse.</p>
-          <Link
-            href="/programme/nutrition"
-            className="load-row"
-            style={{ gridTemplateColumns: '1fr auto', textDecoration: 'none', color: 'inherit' }}
-          >
-            <span className="nm">Meal ideas</span>
-            <span className="chev" aria-hidden="true">
-              ›
-            </span>
-          </Link>
-        </div>
-      )}
+      {/* The targets card is shared with Today since 15 Sept 2026 (mobile
+          queue #8) — NutritionTargetsCard draws it for both. */}
+      <NutritionTargetsCard target={target} hasWeighIn={hasWeighIn} title="Nutrition targets" />
     </>
   );
 }

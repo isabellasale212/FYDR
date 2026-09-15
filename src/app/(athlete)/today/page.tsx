@@ -12,6 +12,9 @@ import { fetchAthleteAvailability } from '@/lib/queries/availability';
 import { fetchAthleteInjuryClinical } from '@/lib/queries/athleteInjuryClinical';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
 import { fetchMyOpenGymSessionToday } from '@/lib/queries/programmes';
+import { resolveTargetForDate } from '@/lib/queries/nutritionTargets';
+import { fetchLatestBodyMassForAthletes } from '@/lib/queries/bodyComposition';
+import { NutritionTargetsCard } from '@/components/NutritionTargetsCard/NutritionTargetsCard';
 import { availabilityStatus } from '@/lib/status';
 import { availabilityLine, rpeWhen, sessionMeta } from '@/lib/todayRows';
 import {
@@ -105,6 +108,8 @@ export default async function TodayPage({
     nextFixture,
     sessions,
     openGym,
+    target,
+    latestMass,
   ] = await Promise.all([
       fetchAthleteAvailability(db, orgId, athleteId),
       fetchMyOutstanding(db, athleteId, today, Date.now(), { collectsRpe }),
@@ -120,6 +125,10 @@ export default async function TodayPage({
       fetchAthleteDaySessions(db, orgId, athleteId, today, timezone),
       /* PATTERN-S6 C2: the gym session under way, for its own row. */
       formsOpen ? fetchMyOpenGymSessionToday(db, orgId, athleteId, today) : Promise.resolve(null),
+      /* The day's nutrition targets, below the schedule (mobile queue #8,
+         15 Sept 2026) — the same resolver and card Programme uses. */
+      resolveTargetForDate(db, athleteId, today),
+      fetchLatestBodyMassForAthletes(db, orgId, [athleteId], { since: '1900-01-01', asOf: today }),
     ]);
 
   /* Sequential rather than joined to the Promise.all above, because it needs
@@ -458,6 +467,10 @@ export default async function TodayPage({
           </div>
         )}
       </section>
+
+      {/* The day's targets, right below the day's schedule (Isabella, 15 Sept
+          2026, mobile queue #8) — the card Programme draws, drawn here too. */}
+      <NutritionTargetsCard target={target} hasWeighIn={latestMass.has(athleteId)} title="Fuelling today" />
 
       {/* "Working towards" keeps its card below Today; the seven-day strip
           that shared it moved above To do (see the section under the

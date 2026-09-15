@@ -25,17 +25,19 @@ export class CoverageError extends Error {}
  *  number beside the walk. Every number is a claim about the repository as
  *  of the commit that last changed it; a mismatch is not a nuisance to be
  *  bumped past, it is the run asking what was added or lost. */
+/* 15 Sept 2026, the mobile queue: +1 athlete page (me/profile) and +1
+   component (NutritionTargetsCard) — twelve counts moved by one or two. */
 export const COUNTS = {
   /** supabase/migrations/*.sql */
   migrations: 133,
   /** supabase/tests/*.sql (pgTAP) */
   pgtapTests: 94,
   /** every file under src, of any kind */
-  srcFiles: 545,
+  srcFiles: 547,
   /** .ts and .tsx under src */
-  srcTs: 540,
+  srcTs: 542,
   /** .tsx under src */
-  srcTsx: 296,
+  srcTsx: 298,
   /** .css under src (src/styles) */
   srcCss: 2,
   /** page.tsx under src/app/(staff) */
@@ -45,29 +47,29 @@ export const COUNTS = {
   /** route.ts / route.tsx under src/app/(staff) */
   staffRoutes: 44,
   /** .tsx under src/app/(athlete) */
-  athleteTsx: 26,
+  athleteTsx: 27,
   /** .tsx under src/components */
-  componentTsx: 164,
+  componentTsx: 165,
   /** .ts and .tsx under src/components */
-  componentTs: 170,
+  componentTs: 171,
   /** .tsx under src/app */
-  appTsx: 131,
+  appTsx: 132,
   /** .ts and .tsx under src/app */
-  appTs: 178,
+  appTs: 179,
   /** every file under src/app, of any kind */
-  appFiles: 181,
+  appFiles: 182,
   /** route.ts and .tsx under src/app */
-  appRoutesAndTsx: 172,
+  appRoutesAndTsx: 173,
   /** route.ts under src/app */
   appRoutes: 41,
   /** .ts and .tsx under src/lib */
   libTs: 191,
   /** page.tsx under src/app */
-  appPages: 106,
+  appPages: 107,
   /** layout.tsx under src/app */
   appLayouts: 3,
   /** page.tsx under src/app/(athlete) */
-  athletePages: 24,
+  athletePages: 25,
 };
 
 const bootstrap = process.env.COVERAGE_BOOTSTRAP === '1';

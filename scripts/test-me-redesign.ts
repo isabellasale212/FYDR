@@ -40,6 +40,9 @@ const strip = (src: string): string =>
   src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\{\/\*[\s\S]*?\*\/\}/g, '').replace(/\/\/.*$/gm, '');
 
 const page = strip(readFileSync('src/app/(athlete)/me/page.tsx', 'utf8'));
+/* Profile settings (15 Sept 2026, mobile queue #11): the three account forms
+   Me carried inline live here now, behind a row on Me. */
+const profile = strip(readFileSync('src/app/(athlete)/me/profile/page.tsx', 'utf8'));
 const css = readFileSync('src/styles/base.css', 'utf8');
 const tokens = readFileSync('src/styles/tokens.css', 'utf8');
 
@@ -57,7 +60,12 @@ console.log('\nthree removals');
      (users.avatar_url and avatar_colour, on the Storage bucket migration 0030
      added), not a decoration. The header shows an uploaded photo; this is the
      only thing in the app that puts one there. */
-  assert(/<AvatarUploadForm/.test(page), 'the photo and avatar-colour picker is KEPT');
+  /* ONE PAGE ON, 15 Sept 2026 (Isabella's mobile queue #11): the three forms
+     Me carried inline live at /me/profile behind a "Profile settings" row —
+     moved, not removed. The write paths are asserted on that page. */
+  assert(/href="\/me\/profile"/.test(page) && /Profile settings/.test(page), 'Me carries the Profile settings row, first on the settings card');
+  assert(!/<AvatarUploadForm/.test(page) && !/AthleteProfileEditForm/.test(page) && !/ChangePasswordForm/.test(page), 'and no longer draws the three forms inline');
+  assert(/<AvatarUploadForm/.test(profile), 'the photo and avatar-colour picker is KEPT — on Profile settings');
   /* NOT a removal any more. The redesign took this form out; Isabella asked
      for it back the same day, because removing it left an athlete no way to
      edit their own phone number anywhere in the app. Asserted as PRESENT, with
@@ -66,9 +74,9 @@ console.log('\nthree removals');
 
      The AvatarUploadForm assertion above stays a removal: she named the profile
      form specifically, and the reference draws neither. */
-  assert(/AthleteProfileEditForm/.test(page),
-    'the profile edit form is KEPT — it is the only route to an athlete editing their own phone');
-  assert(/initialPhone=/.test(page) && /full_name/.test(page),
+  assert(/AthleteProfileEditForm/.test(profile),
+    'the profile edit form is KEPT — on Profile settings, the only route to an athlete editing their own phone');
+  assert(/initialPhone=/.test(profile) && /full_name/.test(profile),
     'and it is passed the phone plus the legal name it resends unchanged, so full_name cannot be blanked');
   assert(!/health-title/.test(page), 'the Apple Health marketing card is gone');
   assert(!/me-footer/.test(page), 'the version footer is gone');
@@ -113,8 +121,8 @@ console.log('\nthe values are read, not written into the markup');
 console.log('\nQ-02 survives: an athlete can still change their own password');
 {
   assert(
-    /ChangePasswordForm/.test(page),
-    'the password form is kept — Q-02 makes it one of two things an athlete may do to their account',
+    /ChangePasswordForm/.test(profile),
+    'the password form is kept — on Profile settings; Q-02 makes it one of two things an athlete may do to their account',
   );
 }
 

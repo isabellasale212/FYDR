@@ -231,5 +231,10 @@ value. Verified at 375px and 1440px.
 - Finding 1: the decline is visible to the coach by name — for the solicitor.
 - Whether wellness (sleep, soreness, mood) is Article 9 data — the solicitor's,
   beside LEGAL-3B; today it is performance data, block 1.
-- The seed backfill of the performance record for linked synthetic athletes
-  (0120) — on the decision sheet.
+- ~~The seed backfill of the performance record for linked synthetic athletes
+  (0120) — on the decision sheet.~~ **Ruled 14 September 2026 (decision batch
+  #6) and reversed by migration 0129**: every existing athlete goes through
+  this flow on their next open; nothing real is lost (all accounts are
+  synthetic) and it is the only way the flow is tested before a real club
+  depends on it. Accepted cost: staff screens look empty until athletes are
+  clicked through.

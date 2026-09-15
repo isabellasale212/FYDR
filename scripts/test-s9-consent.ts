@@ -37,6 +37,12 @@ console.log('1. the record: two, and only one named');
   assert(/and a\.in_data/.test(body) && /where exists \(select 1 from public\.athletes a where a\.id = c\.athlete_id and a\.in_data\)/.test(body), 'the generator asks nothing of an athlete not in data');
   assert(/new\.consent_given_at is distinct from old\.consent_given_at/.test(body) && /new\.guardian_email is distinct from old\.guardian_email/.test(body) && /new\.parental_consent_method is distinct from old\.parental_consent_method/.test(body), 'the self-update guard refuses the consent, guardian and parental columns');
   assert(/consent_version = 'seed-pre-S9'/.test(body) && !/health_consent_given_at = now\(\)[\s\S]*?seed/.test(body.slice(body.indexOf('9. Seed backfill'))), 'the seed backfill writes the performance record only');
+  /* Decision batch 14 September 2026, #6: the backfill is removed — every
+     existing athlete goes through the flow on next open. 0120 is applied and
+     stays; 0129 reverses exactly the rows it stamped, by their version mark. */
+  const reversal = read('supabase/migrations/0129_remove_consent_backfill.sql');
+  assert(/set consent_given_at = null, consent_version = null\s+where consent_version = 'seed-pre-S9'/.test(reversal), '0129 reverses the backfill by its version mark and nothing else');
+  assert(!/health_consent/.test(reversal.replace(/--.*$/gm, '')), 'and touches no health column');
   const t = read('supabase/tests/750_athlete_consent_test.sql');
   assert(/declined: a morning check-in does not land/.test(t) && /the guardian agrees/.test(t) && /single use/.test(t) && /health declined: the medic cannot open an injury/.test(t) && /a hole closed/.test(t), 'pgTAP 750 covers the gates, the guardian route, single use and the guard');
 }

@@ -103,17 +103,36 @@ export function SkChips({ n = 5 }: { n?: number }) {
  *  one (`$RT + 300`); telling it the skeleton's appearance was the last
  *  reveal makes its own batching pay the floor, with no second copy of the
  *  swap. It is a runtime internal, so scripts/test-skeleton-hold.ts pins the
- *  installed runtime's shape and fails the build if a React upgrade moves
- *  it. On a soft navigation the browser inserts this script without
- *  running it (innerHTML never executes scripts), and SkHeld's effect is
- *  the recorder instead. */
+ *  installed runtime's shape AND its version, and fails the build if a
+ *  React upgrade moves either.
+ *
+ *  ITS FAILURE MODE IS BORING, BY CONSTRUCTION (Isabella, 15 Sept 2026):
+ *  if the internal moves under a patch release the floor degrades to not
+ *  being enforced on a hard load — a flicker — never to a crash or a
+ *  skeleton that never clears. Every statement is in try/catch; the clock
+ *  is written only where it is absent or already a number, so a runtime
+ *  that used the name for anything else is left untouched; and a watchdog
+ *  hands the clock back after 3s if nothing has revealed while our value
+ *  still stands. The soft-navigation half is bounded on its own: the floor
+ *  promise resolves by setTimeout within FLOOR_MS, whatever happens. On a
+ *  soft navigation the browser inserts this script without running it
+ *  (innerHTML never executes scripts), and SkHeld's effect is the recorder
+ *  instead. */
 const SHOWN_SCRIPT =
-  "<script>(function(){var s=document.currentScript,e=s&&s.parentNode&&s.parentNode.previousElementSibling;" +
+  "<script>(function(){try{var s=document.currentScript,e=s&&s.parentNode&&s.parentNode.previousElementSibling;" +
   "if(!e||!e.classList.contains('sk-page'))return;" +
-  "e.addEventListener('animationstart',function(ev){" +
+  "e.addEventListener('animationstart',function(ev){try{" +
   "if(ev.target!==e||ev.animationName!=='sk-appear')return;" +
   "var t=performance.now();(window.__fydrSkeleton=window.__fydrSkeleton||{}).shownAt=t;" +
-  "if(typeof window.$RT!=='number'||window.$RT<t)window.$RT=t;});})();</script>";
+  // The reveal clock is set only where it is absent or already a number:
+  // a runtime that used the name for anything else is left alone, and the
+  // floor is simply not enforced on this hard load.
+  "if(typeof window.$RT==='undefined'||(typeof window.$RT==='number'&&window.$RT<t))window.$RT=t;" +
+  // The watchdog: if nothing has revealed after 3s and our clock still
+  // stands, hand the clock back, so a runtime that read it differently
+  // cannot be held by it. A reveal moves $RT to its own time first.
+  "setTimeout(function(){try{if(window.$RT===t&&document.body.contains(e))delete window.$RT;}catch(x){}},3000);" +
+  "}catch(x){}});}catch(x){}})();</script>";
 
 export function SkPage({ label, children }: { label: string; children: React.ReactNode }) {
   return (

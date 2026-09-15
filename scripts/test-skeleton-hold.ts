@@ -92,7 +92,30 @@ console.log('SkPage: the live region is outside the held element; the hard-load 
   assert(/s\.parentNode\.previousElementSibling/.test(shown) && /classList\.contains\('sk-page'\)/.test(shown), 'it finds the held element as the span\'s previous sibling and checks it is .sk-page');
   assert(/ev\.animationName!=='sk-appear'/.test(shown) && /ev\.target!==e/.test(shown), 'it listens for sk-appear on that element only (the shimmer bubbles up)');
   assert(/__fydrSkeleton=window\.__fydrSkeleton\|\|\{\}\)\.shownAt=t/.test(shown), 'it writes shownAt to the shared record');
-  assert(/if\(typeof window\.\$RT!=='number'\|\|window\.\$RT<t\)window\.\$RT=t/.test(shown), 'and sets React\'s reveal clock $RT to the appearance, never backwards');
+  assert(/if\(typeof window\.\$RT==='undefined'\|\|\(typeof window\.\$RT==='number'&&window\.\$RT<t\)\)window\.\$RT=t/.test(shown), 'and sets React\'s reveal clock $RT to the appearance — only where it is absent or already a number, never backwards');
+}
+
+console.log('\nthe hard-load half\'s failure mode is boring (Isabella, 15 Sept): a flicker, never a crash or a skeleton that never clears');
+{
+  const m = skeleton.match(/const SHOWN_SCRIPT =\n([\s\S]*?);\n/);
+  const shown = m?.[1] ? ((0, eval)(m[1]) as string) : '';
+  assert(/^<script>\(function\(\)\{try\{/.test(shown) && /\}catch\(x\)\{\}\}\)\(\);<\/script>$/.test(shown), 'the whole script is in try/catch — nothing here can throw into the page');
+  assert(/addEventListener\('animationstart',function\(ev\)\{try\{/.test(shown) && /\}catch\(x\)\{\}\}\);/.test(shown), 'and so is the listener');
+  assert(!/typeof window\.\$RT!=='number'/.test(shown), 'a $RT that is anything but undefined or a number is left alone (a runtime that used the name differently is never clobbered)');
+  assert(/setTimeout\(function\(\)\{try\{if\(window\.\$RT===t&&document\.body\.contains\(e\)\)delete window\.\$RT;\}catch\(x\)\{\}\},3000\);/.test(shown), 'the watchdog hands the clock back after 3s if nothing has revealed while our value still stands');
+  const clockSrc = stripComments(clock);
+  assert(/setTimeout\(resolve, floorRemaining\(\)\);/.test(clockSrc) && /Math\.max\(0, t \+ FLOOR_MS - now\)/.test(clockSrc), 'the soft half is bounded on its own: the floor promise resolves by setTimeout within FLOOR_MS');
+  // The internal is pinned by version as well as by shape, so a patch
+  // release moving it is a build failure with a name, not a runtime
+  // surprise. Raise this after re-running the hard-load harness
+  // (scratchpad sk-floor-hard.mjs: normal, MUTATE=ignore, MUTATE=function).
+  const vendored = read('node_modules/next/dist/compiled/react-dom/cjs/react-dom-server.edge.production.js').match(/"(19\.[0-9.]+-canary-[a-z0-9-]+)"/)?.[1] ?? 'not found';
+  assert(vendored === '19.3.0-canary-cbb046ab-20260731' && JSON.parse(read('node_modules/next/package.json')).version === '16.3.0', `the vendored react-dom (what ships) is 19.3.0-canary-cbb046ab-20260731 under next 16.3.0 (found ${vendored} / next ${JSON.parse(read('node_modules/next/package.json')).version}) — a new version means re-verifying the reveal clock's shape and the floor's degradation before raising this`);
+  // Measured 15 Sept 2026 in the hard-load harness with the real runtime
+  // text: normal → content at 230/320/450ms revealed at ~500ms (the floor);
+  // MUTATE=ignore ($RC never reads $RT, a moved internal) → revealed at
+  // 263/461ms, a 36ms flicker, no hang; MUTATE=function ($RT predefined as
+  // a function) → the script leaves it, revealed at 244/462ms, no crash.
 }
 
 console.log('SkFloor: the content waits out the floor, or keeps the skeleton down when it beat the hold');

@@ -359,7 +359,10 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
           ) : null}
         </p>
         {isCurrentWeek ? (
-          <span className="btn-ghost" aria-disabled="true" style={{ opacity: 0.4, pointerEvents: 'none' }}>
+          /* The unavailable ink, not a fade (a11y sweep C4, 15 Sept 2026):
+             aria-disabled is in the tree and in scope for 4.5:1; the 0.4 fade
+             measured 1.74:1. --unavailable is 4.61 / 5.32 on --bg. */
+          <span className="btn-ghost" aria-disabled="true" style={{ color: 'var(--unavailable)', pointerEvents: 'none' }}>
             Next week ›
           </span>
         ) : (

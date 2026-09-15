@@ -104,7 +104,12 @@ export const KNOWN_BELOW_AA: ReadonlyArray<{ token: string; theme: string; why: 
       '5 text uses); the 5 text uses want --accent-text. Narrowed to dark on ' +
       '11 Sept 2026: the brand navy #17489b clears AA as ink in light (7.20:1 on ' +
       '--bg), while the dark fill #2a6ddf is still 2.87:1 there. Fixing the call ' +
-      'sites is the right change, not moving a fill colour.',
+      'sites is the right change, not moving a fill colour. 15 Sept 2026 (a11y ' +
+      'sweep C10/C11, Isabella\'s ruling): the staff phone tab bar\'s active tab, ' +
+      'the one TEXT reader this note was asking about, now reads --accent-text. ' +
+      'What still paints --accent as `color` is the athlete tab bar\'s active ' +
+      'glyph (.athlete-tab-glyph, an icon on currentColor), which keeps the ' +
+      'exemption alive until that is ruled on.',
   },
   /* bad-text (dark) was here at 4.47:1 on --surf. Fixed 11 Sept 2026: #ff7460,
      5.61:1 on --surf, 5.22 on --bg — see scripts/test-brand-accent.ts. */

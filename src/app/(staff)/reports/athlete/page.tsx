@@ -147,7 +147,8 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
             <i style={{ background: 'var(--bad)' }} />
             {counts.unavailable} unavailable
           </span>
-          <span style={{ color: 'var(--faint)' }}>
+          {/* --muted since 15 Sept 2026 (a11y sweep C35): --faint 3.98:1 on --bg */}
+          <span style={{ color: 'var(--muted)' }}>
             n = {rows.length} athlete{rows.length === 1 ? '' : 's'}
           </span>
         </span>

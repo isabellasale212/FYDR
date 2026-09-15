@@ -175,7 +175,8 @@ function ComparisonTableView({ table }: { table: ComparisonTable }) {
                 <div className="nm" style={{ fontSize: 'var(--fs-13)' }}>
                   {row.label}
                 </div>
-                {row.sublabel ? <div className="tiny num" style={{ color: 'var(--faint)' }}>{row.sublabel}</div> : null}
+                {/* --muted since 15 Sept 2026 (a11y sweep C45): --faint 4.41:1 on the highlighted row's wash */}
+                {row.sublabel ? <div className="tiny num" style={{ color: 'var(--muted)' }}>{row.sublabel}</div> : null}
               </div>
               {row.cells.map((cell, i) => {
                 const tone = cell.pct !== null ? scoreTone(cell.pct).tone : null;

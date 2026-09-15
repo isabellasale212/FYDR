@@ -446,7 +446,11 @@
      batch 2026-09-14 #9: the fade signals unavailable, the reason on tap
      carries the meaning, and darkening the text would make an unavailable
      control look available. Its text measures under 4.5:1 through the fade
-     by design; the accessibility sweep records it, it does not fix it. */
+     by design; the accessibility sweep records it, it does not fix it.
+     NARROWED 15 Sept 2026 (the sweep's step 2): that ruling holds for
+     NATIVELY disabled controls only. An aria-disabled control is in the
+     accessibility tree, focusable and in scope for 4.5:1, so it takes
+     --unavailable (the ink scale, below) instead of this fade. */
   --o-disabled: 0.45;
   --o-gated: 0.62;
   --blur: 14px;
@@ -850,6 +854,23 @@
      clear every dark ground — no dark colour changes. */
   --faint-on-tint: #5c677a;
   --muted-on-tint: #4f596c;
+  /* THE UNAVAILABLE INK — 15 Sept 2026, Isabella's ruling narrowing #8 of
+     14 September (the accessibility sweep, C4–C7). An aria-disabled control
+     stays in the accessibility tree, stays focusable and is in scope for the
+     contrast rule, so the 45% fade (--o-disabled) measured 1.74–2.0:1 on it
+     was a defect, not a style. The fade stays for NATIVELY disabled controls
+     only (WCAG 1.4.3 exempts an inactive component); an aria-disabled one
+     takes this ink instead of the fade — it must still look unavailable and
+     it must also be readable. Derived the §3.7 way from the ink scale's hue
+     and saturation (218°, 14%): the lightest value clearing 4.5 on every
+     flat ground an unavailable control sits on — 4.61 on --bg, 5.63 on
+     --surf, 4.88 on --surf2, 4.51 on --phone-bg — so it sits between
+     --faint (3.98 on --bg) and --muted (5.19), one visible step lighter than
+     the enabled control's --muted ink. It cannot also clear the hero card's
+     accent wash and stay lighter than --muted (4.5 there needs #515b6c,
+     darker than --muted), so on that one ground base.css keeps the pill on
+     --muted-on-tint, the same ink as an enabled pill — recorded there. */
+  --unavailable: #5d687b;
   /* SOLID, not an ink alpha, 4 Sept 2026 — CHANGELOG-headers-spec.md measures
      #dce1e8 and the client asked the tokens to match. It is the one token in
      this group that no longer adapts to what is behind it: the old
@@ -1176,6 +1197,11 @@ Every alpha here is the handoff's own figure (§4 and §5),
      every dark ground, so both alias them and no dark colour changes. */
   --faint-on-tint: var(--faint);
   --muted-on-tint: var(--muted);
+  /* The unavailable ink, dark (see the light block): derived on the dark
+     grounds the same way — 5.32 on --bg, 5.73 on --surf, 4.60 on --surf2,
+     6.54 on --phone-bg, 4.55 on the hero card's wash — between --faint
+     (#8492bd) and --muted (#a6b3d2). A new dark colour, by the ruling. */
+  --unavailable: #90a0cb;
   /* THE HEAT RAMPS' DARK VALUES — 15 Sept 2026, Isabella's ruling: the one
      place tonight a dark colour changes, deliberately. System A's ramps are
      light tints under one dark ink, which in a dark table rendered as light
@@ -1382,6 +1408,7 @@ Every alpha here is the handoff's own figure (§4 and §5),
     --pill-fill-alpha-accent: 0.22;
     --faint-on-tint: var(--faint);
     --muted-on-tint: var(--muted);
+    --unavailable: #90a0cb; /* the unavailable ink, dark — see [data-theme='dark'] */
   /* THE HEAT RAMPS' DARK VALUES — 15 Sept 2026, Isabella's ruling: the one
        place tonight a dark colour changes, deliberately. System A's ramps are
        light tints under one dark ink, which in a dark table rendered as light

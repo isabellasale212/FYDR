@@ -534,7 +534,8 @@ async function AthleteReportPageContent({
                           <div key={t.test_definition_id} className="ath-test-row" data-heavy={delta?.heavy ?? false}>
                             <span>
                               <span style={{ fontSize: 'var(--fs-13)', fontWeight: 'var(--w-semi)' }}>{t.name}</span>{' '}
-                              <span className="tiny" style={{ color: 'var(--faint)' }}>
+                              {/* --muted since 15 Sept 2026 (a11y sweep C36): --faint 4.48:1 on a heavy row's wash */}
+                              <span className="tiny" style={{ color: 'var(--muted)' }}>
                                 ({t.unit})
                               </span>
                             </span>

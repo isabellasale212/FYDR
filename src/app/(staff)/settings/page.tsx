@@ -128,15 +128,17 @@ export default async function SettingsPage() {
                   </Link>
                 ) : (
                   /* A row this role cannot open: the reason printed in the
-                     row, no dead link, no title (test-blocked-controls). */
+                     row, no dead link, no title (test-blocked-controls). Its
+                     ink is --muted since 15 Sept 2026 (a11y sweep C29 and
+                     C31): --faint measured 4.21 / 3.89 on the row's --surf2. */
                   <div key={row.key} className="set-list-row" data-disabled="true" aria-disabled="true">
                     <span>
-                      <span className="set-row-label" style={{ color: 'var(--faint)' }}>
+                      <span className="set-row-label" style={{ color: 'var(--muted)' }}>
                         {row.label}
                       </span>
                       <span className="set-row-sub">{row.sub}</span>
                     </span>
-                    <span className="num set-row-count" style={{ color: 'var(--faint)' }}>
+                    <span className="num set-row-count" style={{ color: 'var(--muted)' }}>
                       —
                     </span>
                     <span aria-hidden="true" />

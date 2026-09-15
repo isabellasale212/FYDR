@@ -105,7 +105,9 @@ console.log('\n4. A10 rhythm and A5 fill, from the spacing scale');
   assert(/min-height:\s*100dvh/.test(p) && /grid-template-rows:\s*auto auto 1fr/.test(p), 'the page fills the viewport and the third row takes the slack');
   assert(/align-self:\s*end/.test(rule('.launch .launch-foot')), 'so the disclosure line pins to the bottom edge');
   assert(/gap:\s*0/.test(rule('.launch .launch-head')), 'the head block has no flow gap — every space is stated as a margin');
-  assert(/margin:\s*0/.test(rule('.launch .launch-head .eyebrow')) && /color:\s*var\(--faint\)/.test(rule('.launch .launch-head .eyebrow')), 'eyebrow tight under the wordmark, in --faint');
+  /* --muted since 15 Sept 2026 (a11y sweep C33, Isabella's ruling on the
+     --faint family): --faint measured 3.98:1 on --bg at 390; --muted 5.19. */
+  assert(/margin:\s*0/.test(rule('.launch .launch-head .eyebrow')) && /color:\s*var\(--muted\)/.test(rule('.launch .launch-head .eyebrow')), 'eyebrow tight under the wordmark, in --muted (C33)');
   assert(/margin-top:\s*var\(--sp-32\)/.test(rule('.launch .launch-head .launch-title')), 'wordmark group → heading 32 (--sp-32)');
   assert(/margin-top:\s*var\(--sp-8\)/.test(rule('.launch .launch-head .launch-sub')) && /font-size:\s*var\(--fs-14\)/.test(rule('.launch .launch-head .launch-sub')), 'heading → sub 8 (--sp-8), sub at --fs-14');
   assert(/margin-top:\s*0/.test(rule('.launch .signin-fields')), 'the form block carries no margin of its own');

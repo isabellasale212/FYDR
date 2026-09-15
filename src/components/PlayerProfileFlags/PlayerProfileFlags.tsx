@@ -191,7 +191,13 @@ export function PlayerProfileFlags({
                     </span>
                   ) : null}
                   {flag.observed ? (
-                    <span className="num pp-flag-value" style={{ color: TONE_VAR[flag.severity] }}>
+                    /* --warn-pill-text, not the tone colour, since 15 Sept 2026
+                       (a11y sweep C3, Isabella's ruling): --warn as ink on the
+                       warn wash measured 1.48:1, --accent 2.49 in dark. The
+                       tone still marks the card's edge above. 6.33 / 6.17 on
+                       --wash-warn, 5.99 / 6.57 on --wash-bad, 5.46 / 6.08 on
+                       --wash-accent. */
+                    <span className="num pp-flag-value" style={{ color: 'var(--warn-pill-text)' }}>
                       {flag.observed}
                     </span>
                   ) : null}

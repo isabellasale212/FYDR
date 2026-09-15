@@ -230,6 +230,7 @@ violates the system's own rule. See §14.
 | `--field` | `#f0f2f5` | `#1a2340` | Input fill |
 | `--shadow` | `0 1px 3px rgba(16,18,23,.08)` | `0 1px 2px rgba(0,0,0,.4)` | The one elevation |
 | `--tab-inactive` | `#4a5578` | `#8590bb` | Inactive tab label |
+| `--unavailable` | `#5d687b` | `#90a0cb` | The ink of an aria-disabled control (15 Sept 2026) |
 
 Note that in dark, `--surf2`, `--elev`, `--field` and `--avatar-bg` are all `#1a2340`. There
 is one raised surface in dark, not a scale.
@@ -240,6 +241,25 @@ margin," inactive tab text, no disabled-control exemption). Live-measured agains
 app rather than derived on paper like the rest of this section: `#8590bb`, 4.99:1 on `--bg`,
 4.94:1 on `--elev`. Dimmer than `--muted` so the active/inactive hierarchy still reads, closer
 in hue to the light value than a bare reuse of `--muted` would be. Light is unchanged.
+
+**`--unavailable`, the ink of an aria-disabled control — 15 September 2026, Isabella's
+ruling narrowing #8 of 14 September (the accessibility sweep, step 2).** The 45% fade
+(`--o-disabled`) stays for **natively** disabled controls only, which WCAG 1.4.3 exempts.
+An `aria-disabled` control stays in the accessibility tree, stays focusable and is in scope
+for the contrast rule, so the fade's 1.74–2.0:1 on it was a defect and not a style; it takes
+this ink instead, and no fade. Derived the §3.7 way, from the ink scale's hue and saturation
+(218°, 14%): the lightest value clearing 4.5:1 on every flat ground an unavailable control
+sits on. Light `#5d687b`: 4.61 on `--bg`, 5.63 on `--surf`, 4.88 on `--surf2`, 4.51 on
+`--phone-bg`; it sits between `--faint` (3.98 on `--bg`) and `--muted` (5.19), one visible step
+lighter than the enabled control's `--muted`. Dark `#90a0cb`: 5.32 on `--bg`, 5.73 on
+`--surf`, 4.60 on `--surf2`, 6.54 on `--phone-bg` — a new dark colour, by the ruling. The one
+ground it cannot serve is the emphasised card's accent wash (the profile's status header):
+4.5 there needs `#515b6c`, darker than `--muted`, so an unavailable pill on that card keeps
+`--muted-on-tint` — the same ink as an enabled pill, with the cursor and the absent hover
+response as its cue. Used by `.btn-ghost-pill[aria-disabled]`, `.squad-chip[aria-disabled]`,
+the week navigator's inert forward step and the nutrition page's "Next week" on the current
+week; `[data-blocked]` (the BlockedButton pattern) still reads `--muted` and was not in the
+ruling.
 
 ### 2.4 How dark is delivered
 

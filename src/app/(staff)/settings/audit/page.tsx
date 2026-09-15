@@ -212,7 +212,8 @@ export default async function AuditLogPage({ searchParams }: { searchParams: Sea
                   ← Previous
                 </Link>
               ) : null}
-              <span className="tiny" style={{ color: 'var(--faint)' }}>
+              {/* --muted since 15 Sept 2026 (a11y sweep C36): --faint 3.98:1 on --bg */}
+              <span className="tiny" style={{ color: 'var(--muted)' }}>
                 Page {page} of {totalPages}
               </span>
               {page < totalPages ? (

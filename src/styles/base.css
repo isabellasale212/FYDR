@@ -882,15 +882,23 @@ a {
  * LeaderboardWall.tsx layers .lbw-chip-disabled on top of it. Same honest
  * treatment either way: "nothing to do here" must read differently from
  * "pressed". */
-.squad-chip:disabled,
-.squad-chip[aria-disabled='true'] {
+.squad-chip:disabled {
   opacity: var(--o-disabled);
   cursor: not-allowed;
 }
-.squad-chip:disabled:hover,
-.squad-chip[aria-disabled='true']:hover {
+/* aria-disabled: the unavailable ink, not the fade — see .btn-ghost-pill
+   (a11y sweep C7, 15 Sept 2026: the fade measured 2.0:1). */
+.squad-chip[aria-disabled='true'] {
+  color: var(--unavailable);
+  cursor: not-allowed;
+}
+.squad-chip:disabled:hover {
   border-color: var(--border);
   color: var(--muted);
+}
+.squad-chip[aria-disabled='true']:hover {
+  border-color: var(--border);
+  color: var(--unavailable);
 }
 
 /* A read-only sibling of .squad-chip for stating a fact rather than
@@ -1169,7 +1177,7 @@ table.tbl th {
   font-size: var(--fs-11);
   text-transform: uppercase;
   letter-spacing: 0.09em;
-  color: var(--faint);
+  color: var(--muted); /* a11y sweep C37, 15 Sept 2026: --faint 3.98:1 where a table sits on --bg (subject access) → 5.19 / 6.59; 6.34 / 7.09 on a card */
   font-weight: var(--w-bold);
   text-align: left;
   padding: 0 var(--sp-8) var(--sp-10);
@@ -4430,15 +4438,25 @@ img.me-avatar {
   color: var(--accent-text);
   font-weight: var(--w-bold);
 }
-.btn-ghost-pill:disabled,
-.btn-ghost-pill[aria-disabled='true'] {
+.btn-ghost-pill:disabled {
   opacity: var(--o-disabled);
   cursor: not-allowed;
 }
-.btn-ghost-pill:disabled:hover,
-.btn-ghost-pill[aria-disabled='true']:hover {
+/* aria-disabled is in the accessibility tree, focusable and in scope for
+   4.5:1, so it takes the unavailable ink and not the fade (Isabella,
+   15 Sept 2026, narrowing ruling #8 of 14 September; a11y sweep C5: the
+   fade measured 1.83:1). The fade above stays for a natively disabled pill. */
+.btn-ghost-pill[aria-disabled='true'] {
+  color: var(--unavailable);
+  cursor: not-allowed;
+}
+.btn-ghost-pill:disabled:hover {
   border-color: var(--border);
   color: var(--muted);
+}
+.btn-ghost-pill[aria-disabled='true']:hover {
+  border-color: var(--border);
+  color: var(--unavailable);
 }
 
 /* -------- §3 The status header — STAFF-SS-02-05 C1 (2026-09-13) --------
@@ -4456,6 +4474,18 @@ img.me-avatar {
    15 Sept 2026, the context-ink fix. */
 .pp-hero .btn-ghost-pill,
 .pp-hero .squad-chip {
+  color: var(--muted-on-tint);
+}
+/* An aria-disabled pill on the hero's wash keeps the SAME ink as an enabled
+   one (a11y sweep C5, 15 Sept 2026): --unavailable is 4.1:1 on this wash,
+   and the only inks that clear 4.5 here are --muted-on-tint and darker —
+   a lighter "unavailable" ink cannot exist on this ground. What marks it
+   unavailable is the cursor and the absent hover response; a stronger cue
+   here would be a design decision, not a swap. Repeated with :hover so the
+   generic aria-disabled hover rule (higher specificity) does not paint
+   --unavailable over it. */
+.pp-hero .btn-ghost-pill[aria-disabled='true'],
+.pp-hero .btn-ghost-pill[aria-disabled='true']:hover {
   color: var(--muted-on-tint);
 }
 .pp-hero-sub {
@@ -4565,12 +4595,12 @@ img.me-avatar {
 }
 .pp-wellness-mini .v {
   font-size: var(--fs-15);
-  color: var(--faint);
+  color: var(--muted-on-tint); /* a11y sweep C14, 15 Sept 2026: --faint was 3.20:1 on the hero's wash; the hero's context ink, 4.64 / 5.63 */
   line-height: 1;
 }
 .pp-wellness-mini .l {
   font-size: var(--fs-9);
-  color: var(--faint);
+  color: var(--muted-on-tint); /* a11y sweep C15, as .v above */
   margin-top: var(--sp-2);
 }
 
@@ -4595,7 +4625,7 @@ img.me-avatar {
 }
 .pp-detail-cell .l {
   font-size: var(--fs-12);
-  color: var(--faint);
+  color: var(--muted-on-tint); /* a11y sweep C15, 15 Sept 2026: 3.20:1 on the hero's wash → 4.64 / 5.63 */
 }
 .pp-detail-cell .v {
   font-size: var(--fs-15);
@@ -4752,7 +4782,7 @@ img.me-avatar {
 }
 .pp-bench-meta {
   font-size: var(--fs-12);
-  color: var(--faint);
+  color: var(--muted); /* a11y sweep C43, 15 Sept 2026: --faint 4.18 / 4.16 on the benchmark washes → 5.47 / 6.09 */
 }
 
 /* -------- §8 Flags card --------
@@ -4789,7 +4819,7 @@ img.me-avatar {
 }
 .pp-flag-threshold {
   font-size: var(--fs-12);
-  color: var(--faint);
+  color: var(--muted); /* a11y sweep C18, 15 Sept 2026: --faint 3.70:1 on --wash-warn → 4.83 / 5.72 */
 }
 .pp-flag-rule {
   font-size: var(--fs-14);
@@ -4797,7 +4827,7 @@ img.me-avatar {
 }
 .pp-flag-evidence {
   font-size: var(--fs-12);
-  color: var(--faint);
+  color: var(--muted); /* a11y sweep C19, as .pp-flag-threshold */
   margin-top: var(--sp-4);
 }
 .pp-flag-bottom {
@@ -4809,7 +4839,7 @@ img.me-avatar {
 }
 .pp-flag-raised {
   font-size: var(--fs-12);
-  color: var(--faint);
+  color: var(--muted); /* a11y sweep C20, as .pp-flag-threshold */
 }
 .pp-ack-btn {
   border-radius: var(--r);
@@ -5301,7 +5331,7 @@ img.me-avatar {
 }
 .set-row-sub {
   font-size: var(--fs-12);
-  color: var(--faint);
+  color: var(--muted); /* a11y sweep C30, 15 Sept 2026: --faint 4.21 / 3.89 on the locked rows' --surf2 → 5.50 / 5.69 */
 }
 .set-row-count {
   font-size: var(--fs-12);
@@ -6625,7 +6655,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-weight: var(--w-semi);
   letter-spacing: var(--t-eyebrow-tracking);
   text-transform: uppercase;
-  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
+  color: var(--muted); /* a11y sweep C23, 15 Sept 2026: --faint-on-tint = dark --faint 3.89:1 on --surf2 → 5.50 / 5.69 */
 }
 /* THE VISUAL LIFT'S KPI STRIP ("Fydr Visual Lift.dc.html", variant 2a — the
    comment on its own markup reads "KPI strip, one domain colour per tile").
@@ -6734,7 +6764,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .dash-stat-foot {
   font-size: var(--fs-11);
-  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
+  color: var(--muted); /* a11y sweep C24 and C32, 15 Sept 2026: dark 3.89:1 on --surf2 → 5.50 / 5.69 */
   margin-top: var(--sp-6);
 }
 
@@ -6898,7 +6928,10 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .dash-week-col-empty {
   font-size: var(--fs-13);
-  color: var(--faint);
+  /* --text since 15 Sept 2026 (a11y sweep C13): on today's column — the
+     strong accent wash over --bg — --faint was 3.08:1 and no muted ink
+     clears 4.5 there (--muted 4.04, --muted-on-tint 4.49). 11.41 / 9.51. */
+  color: var(--text);
 }
 .dash-week-col-flag {
   display: flex;
@@ -8589,7 +8622,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-weight: var(--w-semi);
   letter-spacing: var(--t-colhead-tracking);
   text-transform: uppercase;
-  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
+  color: var(--muted); /* a11y sweep C25 (C26 inherits it), 15 Sept 2026: dark 3.89:1 on --surf2 → 5.50 / 5.69 */
 }
 .lbw-sel-row {
   display: grid;
@@ -8661,7 +8694,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-weight: var(--w-semi);
   letter-spacing: var(--t-colhead-tracking);
   text-transform: uppercase;
-  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
+  color: var(--muted); /* a11y sweep C27, 15 Sept 2026: dark 3.89:1 on --surf2 → 5.50 / 5.69 */
   margin: 0 0 var(--sp-8);
 }
 .lbw-leader-row {
@@ -8673,7 +8706,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .lbw-leader-unit {
   font-size: var(--fs-11);
-  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
+  color: var(--muted); /* a11y sweep C28, 15 Sept 2026: dark 3.89:1 on --surf2 → 5.50 / 5.69 */
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
@@ -10700,7 +10733,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .rep-exports {
   margin-left: auto;
   font-size: var(--fs-12);
-  color: var(--faint);
+  color: var(--muted); /* a11y sweep C17, 15 Sept 2026: --faint 3.52:1 on the hub tiles' washes → 4.58 / 5.26 */
 }
 
 /* The five tones. Each sets three custom properties and lets the rules above
@@ -11526,7 +11559,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .inj-unit {
   font-size: var(--fs-12);
-  color: var(--faint);
+  color: var(--muted); /* a11y sweep C41, 15 Sept 2026: dark 4.11:1 on the injury rows' washes → 5.52 / 6.01 */
 }
 .inj-site {
   font-size: var(--fs-13);
@@ -11885,7 +11918,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 .lb-gap {
   text-align: right;
   font-size: var(--fs-13);
-  color: var(--faint);
+  color: var(--muted); /* a11y sweep C44, 15 Sept 2026: --faint 4.48 / 4.39 on the ranked rows → 5.85 / 6.43 */
   font-variant-numeric: tabular-nums;
 }
 .lb-track {
@@ -12324,10 +12357,11 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-variant-numeric: tabular-nums;
 }
 /* The forward step on the current week: present so the control keeps its
-   shape, visibly inert because there is no next week to go to. */
+   shape, visibly inert because there is no next week to go to. The
+   unavailable ink and no fade since 15 Sept 2026 (a11y sweep C6: --faint
+   at 0.5 measured 1.88:1; it is aria-disabled, so in scope). */
 .week-nav span[data-disabled='true'] {
-  color: var(--faint);
-  opacity: 0.5;
+  color: var(--unavailable);
 }
 
 /* ===== Exercise library (exlib) ===== */
@@ -13355,7 +13389,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   }
   .launch .launch-head .eyebrow {
     margin: 0;
-    color: var(--faint);
+    color: var(--muted); /* a11y sweep C33, 15 Sept 2026: --faint 3.98:1 on --bg → 5.19 / 6.59 */
   }
   .launch .launch-head .launch-title {
     margin-top: var(--sp-32);
@@ -13778,7 +13812,7 @@ main:has(.rhead) > .back-btn > :first-child {
   font-size: var(--fs-12);
   letter-spacing: 0.09em;
   text-transform: uppercase;
-  color: var(--faint);
+  color: var(--muted); /* a11y sweep C34, 15 Sept 2026: --faint 3.98:1 on --bg → 5.19 / 6.59 */
   margin: 0;
 }
 .rhead-actions {
@@ -14380,9 +14414,12 @@ a.hist-row:active { background: var(--surf-sunken); }
     transition: color var(--t-state);
   }
   /* All icons neutral, the active one in the accent — the board's rule for
-     the staff bar, and the same rule the sidebar's own rows follow. */
+     the staff bar, and the same rule the sidebar's own rows follow. As INK
+     it is --accent-text (15 Sept 2026, a11y sweep C10/C11, Isabella's
+     ruling): --accent is the fill token and measured 2.87:1 on dark --bg,
+     the KNOWN_BELOW_AA case; --accent-text is 7.05 / 6.68. */
   .ph-tab[data-active] {
-    color: var(--accent);
+    color: var(--accent-text);
     font-weight: var(--w-bold);
   }
   .ph-tab:focus-visible {

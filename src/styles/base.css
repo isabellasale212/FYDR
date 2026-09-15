@@ -4509,14 +4509,19 @@ img.me-avatar {
 /* An aria-disabled pill on the hero's wash keeps the SAME ink as an enabled
    one (a11y sweep C5, 15 Sept 2026): --unavailable is 4.1:1 on this wash,
    and the only inks that clear 4.5 here are --muted-on-tint and darker —
-   a lighter "unavailable" ink cannot exist on this ground. What marks it
-   unavailable is the cursor and the absent hover response; a stronger cue
-   here would be a design decision, not a swap. Repeated with :hover so the
-   generic aria-disabled hover rule (higher specificity) does not paint
-   --unavailable over it. */
+   a lighter "unavailable" ink cannot exist on this ground. So the cue is
+   SHAPE, not colour (Isabella, 15 Sept, the two closing fixes): the border
+   and background go, and "Edit" reads as plain text rather than as a
+   button — an unavailable control that looks available gets clicked. The
+   border stays as a transparent 1px so the box keeps its size and the row
+   does not shift; the reason on tap (.blocked-why) is unchanged. Repeated
+   with :hover so the generic aria-disabled hover rule (higher specificity)
+   does not paint --unavailable or the border back. */
 .pp-hero .btn-ghost-pill[aria-disabled='true'],
 .pp-hero .btn-ghost-pill[aria-disabled='true']:hover {
   color: var(--muted-on-tint);
+  border-color: transparent;
+  background: none;
 }
 .pp-hero-sub {
   margin: var(--sp-6) 0 0;
@@ -8445,8 +8450,12 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-size: var(--fs-11);
   opacity: 0.65;
 }
+/* The unavailable ink, not the fade (15 Sept 2026, the two closing fixes):
+   the chip is aria-disabled (a BlockedButton), the same shape as C7, and
+   .squad-chip[aria-disabled] already paints --unavailable — this rule now
+   only says so again and keeps the cursor. 4.61 on --bg light, 5.32 dark. */
 .lbw-chip-disabled {
-  opacity: var(--o-disabled);
+  color: var(--unavailable);
   cursor: not-allowed;
 }
 
@@ -14752,9 +14761,13 @@ a.hist-row:active { background: var(--surf-sunken); }
 
 /* A blocked control (BlockedButton, 2026-09-12): keeps its box, mutes its
    ink, keeps the pointer — it is reachable and says why on tap. The reason
-   takes a full line of a wrapping row, beneath the control it describes. */
+   takes a full line of a wrapping row, beneath the control it describes.
+   The ink is --unavailable since 15 Sept 2026 (the two closing fixes): a
+   blocked control is aria-disabled, the one state the token was made for,
+   and --muted was the enabled ghost button's own ink — two treatments for
+   one state. 5.63 on a card, 4.61 on --bg (light); 5.73 / 5.32 (dark). */
 [data-blocked] {
-  color: var(--muted);
+  color: var(--unavailable);
   cursor: pointer;
 }
 .blocked-why {

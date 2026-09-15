@@ -255,11 +255,14 @@ lighter than the enabled control's `--muted`. Dark `#90a0cb`: 5.32 on `--bg`, 5.
 `--surf`, 4.60 on `--surf2`, 6.54 on `--phone-bg` — a new dark colour, by the ruling. The one
 ground it cannot serve is the emphasised card's accent wash (the profile's status header):
 4.5 there needs `#515b6c`, darker than `--muted`, so an unavailable pill on that card keeps
-`--muted-on-tint` — the same ink as an enabled pill, with the cursor and the absent hover
-response as its cue. Used by `.btn-ghost-pill[aria-disabled]`, `.squad-chip[aria-disabled]`,
-the week navigator's inert forward step and the nutrition page's "Next week" on the current
-week; `[data-blocked]` (the BlockedButton pattern) still reads `--muted` and was not in the
-ruling.
+`--muted-on-tint` and carries "this is not a control" by **shape** instead — no border, no
+background, plain text beside the bordered chips (Isabella, 15 September, the two closing
+fixes: an unavailable control that looks available gets clicked; the same principle as the
+Class 3 work, meaning through shape rather than colour). The reason on tap is unchanged. Used
+by `.btn-ghost-pill[aria-disabled]`, `.squad-chip[aria-disabled]`, the week navigator's inert
+forward step, the nutrition page's "Next week" on the current week, `[data-blocked]` (the
+BlockedButton pattern) and the leaderboard wall's `.lbw-chip-disabled` — one state, one ink;
+the last two took it in the closing fixes, having fallen outside the ruling's letter.
 
 ### 2.4 How dark is delivered
 

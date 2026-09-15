@@ -59,7 +59,14 @@ console.log('\nthe sites');
 console.log('\nthe style');
 {
   const css = strip(read('src/styles/base.css'));
-  assert(/\[data-blocked\]\s*\{[^}]*color:\s*var\(--muted\)/.test(css), 'a blocked control keeps its box and mutes its ink');
+  /* --unavailable since 15 Sept 2026 (Isabella's closing fix after the a11y
+     sweep's step 2): a blocked control is aria-disabled, the one state the
+     token exists for, and --muted was the enabled ghost button's own ink —
+     two treatments for one state. */
+  assert(/\[data-blocked\]\s*\{[^}]*color:\s*var\(--unavailable\)/.test(css), 'a blocked control keeps its box and takes the unavailable ink');
+  assert(/\.lbw-chip-disabled\s*\{[^}]*color:\s*var\(--unavailable\)/.test(css) && !/\.lbw-chip-disabled\s*\{[^}]*opacity/.test(css), 'the leaderboard wall\'s unavailable chip takes the same ink and no fade');
+  const heroPill = /\.pp-hero \.btn-ghost-pill\[aria-disabled='true'\],\s*\.pp-hero \.btn-ghost-pill\[aria-disabled='true'\]:hover\s*\{([^}]*)\}/.exec(css)?.[1] ?? '';
+  assert(/border-color:\s*transparent/.test(heroPill) && /background:\s*none/.test(heroPill) && /color:\s*var\(--muted-on-tint\)/.test(heroPill), 'on the hero wash, where no lighter ink clears 4.5, the blocked pill drops its border and background and reads as plain text');
   assert(/\.blocked-why\s*\{[^}]*flex-basis:\s*100%/.test(css), 'the reason takes a full line of a wrapping row');
 }
 

@@ -869,7 +869,11 @@
      the enabled control's --muted ink. It cannot also clear the hero card's
      accent wash and stay lighter than --muted (4.5 there needs #515b6c,
      darker than --muted), so on that one ground base.css keeps the pill on
-     --muted-on-tint, the same ink as an enabled pill — recorded there. */
+     --muted-on-tint and carries "not a control" by SHAPE instead — no
+     border, no background, plain text (Isabella, 15 Sept, the two closing
+     fixes). Every aria-disabled control reads this ink, BlockedButton's
+     [data-blocked] and the leaderboard wall's chips included: one state,
+     one treatment. */
   --unavailable: #5d687b;
   /* SOLID, not an ink alpha, 4 Sept 2026 — CHANGELOG-headers-spec.md measures
      #dce1e8 and the client asked the tokens to match. It is the one token in

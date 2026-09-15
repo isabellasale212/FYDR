@@ -672,7 +672,7 @@ small and is A below; the rest is C and needs the data first.
 - **C6 Proposals with three states (Proposed / Approved / Returned) and a required return reason** — proposal states beyond "proposed" do not exist (Q3). ⚠ migration.
 - **C7 Availability history** — one row per change with author, timestamp, previous value; rows never edited. The availability table is append-only by date range today but carries no explicit previous value or author on every path (Q2). ⚠ migration (likely a view over `availability` + the audit log from 0097-style triggers).
 - **C8 Body site not coach-visible** — the card renders `bodyAreaPhrase` to every staff role; the board withholds site and side from the coach behind a club setting defaulting to off. ⚠ permissions ⚠ migration (the setting; and RLS if the column is to be withheld at the database rather than in the render).
-- **C9 The injury form split by permission** (left column for all injury roles, right column clinical) and the pitch-side four-field form at 44px — `NewInjuryForm` / `InjuryMedicalForm` restructure. Medium.
+- **C9 The injury form split by permission** (left column for all injury roles, right column clinical) and the pitch-side four-field form at 44px — `NewInjuryForm` / `InjuryMedicalForm` restructure. Medium. **Board corrected by ruling, 15 Sept 2026 (`decisions/decision-batch-2026-09-15.md` #1): the pitch-side frame's availability buttons and restriction chips are the medic's, not the coach's — injury-linked availability is medical staff's write, the coach keeps non-injury absences. The code stands as built; the board's four-field frame is read as three for a coach.**
 - **C10 "Not known" / "Not recorded" on the new screens** — with each screen.
 
 ### D

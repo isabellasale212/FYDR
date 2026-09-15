@@ -134,7 +134,15 @@ be before the onset, and the expected return cannot be before the onset
 
 ## 9. Open issues
 
-- **The board draws availability and restrictions on the coach's pitch-side
+- ~~**The board draws availability and restrictions on the coach's pitch-side
   form** ("the four that change what anyone else sees"); the database gives
   injury-linked availability to medical staff alone, so the built form follows
-  the rule and the sheet carries the question (PATTERN-S3 C9's row).
+  the rule and the sheet carries the question (PATTERN-S3 C9's row).~~
+  **Ruled 15 September 2026 (Isabella, `decisions/decision-batch-2026-09-15.md`
+  #1): the database rule stands and the board is wrong.** Only medical staff
+  set injury-linked availability; "unavailable because of an injury" is a
+  medical judgement wearing an availability label, and a coach who could make
+  it would put a door in the clinical boundary at exactly the moment someone
+  is hurt. The coach keeps non-injury absences, unchanged. The form above is
+  as built; the PATTERN-S3 board's pitch-side frame is to be read without its
+  status buttons and restriction chips for a coach.

@@ -1135,8 +1135,13 @@ class of Android font-substitution bug that a proportional-figure UI font would 
 overnight queue).** The home-screen icon (`src/app/apple-icon.png` at 180, the manifest's
 `/icon-192.png` and `/icon-512.png` as both `any` and `maskable`) and the link preview
 (`src/app/opengraph-image.png`, 1200×630) are the sidebar lockup on a white ground: the Sora
-ExtraBold wordmark in `--text`, the trace running beneath it in the accent at the sidebar's
-0.45, ending in the ringed dot to the right of the "r". The wordmark is **outlined paths**,
+ExtraBold wordmark in `--text`, the trace running beneath it in the **solid** accent, ending
+in the ringed dot to the right of the "r" — the mark's dark-theme "one flat ink" treatment,
+not the sidebar's translucent tints (Isabella's call, 15 September, after seeing the first
+build at 60pt: at 0.45 the trace was a faint grey line and the ringed dot had effectively
+disappeared at the size the icon is actually seen at; rendered at 0.45, 0.7, 0.85 and 1 and
+read at 60, 120, 180 and 512, full strength is the first tone at which the ring reads at 60pt,
+and at 512 the thin trace still sits behind the word). The wordmark is **outlined paths**,
 not text — an SVG cannot carry a webfont as live text, and outlining removes the dependency —
 converted from the weight-800 face the build itself ships, at the sidebar's own setting (48px,
 −0.035em, the font's kerning). The mark is the sidebar's 242×66 drawing at its sidebar
@@ -1144,8 +1149,7 @@ placement, with two adjustments to the trace and none to the letterforms, both m
 180px render at actual size: the dip's left shoulder moves from x=44 to x=38 so the trace
 clears the corner of the y's descender (the sidebar's slant passes 1.4 units under it — a
 hairline at 180px), and the trace ends where its cap meets the ring's outer edge instead of
-inside the ring. The ring takes the trace's tone (0.45) rather than the sidebar's 0.34, which
-at a 1.8px stroke all but vanishes. Full-bleed squares with no rounded corners (iOS and
+inside the ring. Full-bleed squares with no rounded corners (iOS and
 Android apply their own masks); the Android icons keep the whole logo inside the central 80%
 safe zone; the Apple icon fills 88% of its side, its extremities clear of the corner curve.
 The browser-tab icon (`src/app/icon.svg`, 16–32px) stays the trace-and-dot mark: a wordmark

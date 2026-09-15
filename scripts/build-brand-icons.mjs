@@ -41,11 +41,18 @@
  *     translucent strokes at 132px, a smudge at 180px opaque. The new end is
  *     on the same line, where the cap meets the ring's outer edge.
  *
- * COLOURS are the product's light-theme mark flattened onto white, because an
- * icon is opaque: the wordmark in --text (#121722); the trace in the accent
- * (#17489b) at the sidebar's 0.45 over white; the dot solid accent. The ring
- * takes the trace's tone rather than the sidebar's 0.34: at 180px its stroke
- * is 1.8px and at 0.34 it all but vanishes.
+ * COLOURS: the wordmark in --text (#121722); the trace, the ring and the dot
+ * in the SOLID accent (#17489b) — the product's dark-theme "one flat ink"
+ * treatment of the mark, not the sidebar's translucent 0.45 / 0.34. Isabella's
+ * call, 15 Sept 2026, after seeing the first build at 60pt: at that tone the
+ * trace was a faint grey line and the ringed dot — the distinctive part of the
+ * mark — had effectively disappeared at the size the icon is actually seen
+ * at. Rendered at 0.45, 0.7, 0.85 and 1 and read at 60, 120, 180 and 512:
+ * full strength is the first tone at which the ring reads as a ring at 60pt,
+ * and at 512 the trace (a third of a letter stem's weight, beneath the word)
+ * still sits behind the wordmark rather than competing with it, so no
+ * intermediate tone was needed. An icon is opaque, so everything is
+ * flattened onto white.
  *
  * Run: node scripts/build-brand-icons.mjs
  */
@@ -82,7 +89,10 @@ const x0 = Math.min(...xs), x1 = Math.max(...xs), y0 = Math.min(...ys), y1 = Mat
 const W = x1 - x0, H = y1 - y0;
 
 const over = (hex, a) => '#' + [0, 2, 4].map((i) => Math.round(255 + (parseInt(hex.slice(1 + i, 3 + i), 16) - 255) * a).toString(16).padStart(2, '0')).join('');
-const ACCENT = '#17489b', INK = '#121722', TRACE = over(ACCENT, 0.45), RING = over(ACCENT, 0.45);
+/* TONE: the trace and ring's strength over white — 1 is the solid accent. Overridable for a scratch comparison
+   (TONE=0.7 OUT=/tmp/x node scripts/build-brand-icons.mjs); the committed icons are built at the default. */
+const TONE = Number(process.env.TONE ?? 1);
+const ACCENT = '#17489b', INK = '#121722', TRACE = over(ACCENT, TONE), RING = over(ACCENT, TONE);
 
 const lockup = () =>
   `<g id="wordmark" fill="${INK}">${GLYPHS.map((g) => `<path d="${g.d}"/>`).join('')}</g>` +
@@ -100,13 +110,17 @@ const framed = (w, h, frac) => {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="${w}" height="${h}" viewBox="0 0 ${w} ${h}"><rect width="${w}" height="${h}" fill="#ffffff"/><g transform="translate(${f(ox)} ${f(oy)}) scale(${f(s)})">${lockup()}</g></svg>`;
 };
 
-mkdirSync('public', { recursive: true });
-writeFileSync('public/fydr-logo.svg', master);
+const OUT = process.env.OUT ?? '';
+const at = (file) => (OUT ? `${OUT}/${file.split('/').pop()}` : file);
+mkdirSync(OUT || 'public', { recursive: true });
+writeFileSync(at('public/fydr-logo.svg'), master);
 const jobs = [
-  ['src/app/apple-icon.png', framed(180, 180, 0.88)],
-  ['public/icon-192.png', framed(192, 192, 0.8)],
-  ['public/icon-512.png', framed(512, 512, 0.8)],
-  ['src/app/opengraph-image.png', framed(1200, 630, 0.5)],
+  [at('src/app/apple-icon.png'), framed(180, 180, 0.88)],
+  [at('public/icon-192.png'), framed(192, 192, 0.8)],
+  [at('public/icon-512.png'), framed(512, 512, 0.8)],
+  [at('src/app/opengraph-image.png'), framed(1200, 630, 0.5)],
+  /* The 60pt preview — the size a home-screen icon is actually seen at on a 1× display; the apple icon's composition. */
+  ...(OUT ? [[at('preview-60pt.png'), framed(60, 60, 0.88)], [at('preview-120.png'), framed(120, 120, 0.88)]] : []),
 ];
 for (const [file, svg] of jobs) {
   const m = /width="(\d+)" height="(\d+)"/.exec(svg); const w = Number(m[1]), h = Number(m[2]);
@@ -114,4 +128,4 @@ for (const [file, svg] of jobs) {
   await sharp(Buffer.from(svg), { density: 72 * 4 }).resize(w, h, { kernel: 'lanczos3' }).flatten({ background: '#ffffff' }).removeAlpha().png({ compressionLevel: 9 }).toFile(file);
   console.log(`wrote ${file} ${w}×${h}`);
 }
-console.log(`wrote public/fydr-logo.svg (viewBox ${f(x0)} ${f(y0)} ${f(W)} ${f(H)})`);
+console.log(`wrote ${at('public/fydr-logo.svg')} (viewBox ${f(x0)} ${f(y0)} ${f(W)} ${f(H)}) at tone ${TONE}`);

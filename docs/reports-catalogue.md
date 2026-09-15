@@ -73,8 +73,8 @@ denominator, and a body that scrolls sideways on a phone rather than the page. T
 **The question:** who is unavailable, for how long, and where are injuries happening?
 
 - **Shape:** the squad's availability now, injuries over a period. Three figures, no chart.
-- **Definition sentence (CONFIRMED, the addendum, 13 Sept 2026):** "Every injury open at any point in the period, with each athlete's availability as it stands today. Diagnosis, mechanism and clinical notes appear only in the medic's copy."
-- **The medic's copy:** the sentence promises diagnosis, mechanism and clinical notes in the medic's copy; today the CSV holds the same eight columns for both — on the sheet with a proposal (found at PATTERN-S7 C3).
+- **Definition sentence (CONFIRMED, the addendum, 13 Sept 2026; corrected by Isabella's ruling of 14 Sept, decision batch #5):** "Every injury open at any point in the period, with each athlete's availability as it stands today. Diagnosis, mechanism and severity appear only in the medic's copy; clinical notes are in no export." The source catalogue's line still reads "diagnosis, mechanism and clinical notes" — it predates the ruling.
+- **The medic's copy (built 14 Sept 2026):** three columns after Expected return — Diagnosis, Mechanism, Severity — read from `injury_clinical` through the medic-only policy for the open injuries in the Current list. Clinical notes stay out of every export: free text a physio types, which can carry a third party's name, a guess, or something about a player's family, and an export is the thing that leaves the club. The coach's copy is unchanged (eight columns, no clinical field).
 - **Roles:** medic (clinical columns), sport scientist, coach, S&C (status word, restriction line, expected return only). The nutritionist cannot open it.
 - **Figure:** available now of the roster, the count before the percentage; days lost and new injuries beneath it; athletes with no recorded status and athletes who joined in the period named as exclusions.
 - **Chart:** none — the body-area table stands in for it.

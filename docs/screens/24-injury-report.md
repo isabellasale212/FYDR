@@ -142,7 +142,14 @@ and the days-lost-by-site panel carries one "Withheld" bucket. The database mask
 
 **The downloads carry the limited view too.** A coach's spreadsheet of this report
 does not contain a diagnosis, because the underlying query never reads the
-clinical table.
+clinical table. **The medic's spreadsheet carries three clinical columns** after
+Expected return — Diagnosis, Mechanism, Severity — read from `injury_clinical`
+through the medic-only policy for the open injuries in the Current list
+(decision batch 14 September 2026, #5, built the same day). **Clinical notes are
+in no export**, the medic's included: free text a physio types can carry a third
+party's name, a guess, or something about a player's family, and an export is the
+thing that leaves the club. The notes stay on the medic's screen. The export
+dialog's filter line says which copy it is.
 
 ---
 

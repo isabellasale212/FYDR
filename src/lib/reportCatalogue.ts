@@ -26,7 +26,7 @@ export const REPORT_DEFINITIONS: Record<ReportKey, string | null> = {
   compliance:
     "The share of expected entries that were submitted, over the period. An entry counts as expected only where the schedule or the club's settings asked for one, so a day nobody was asked about is not counted against anybody.",
   injuries:
-    "Every injury open at any point in the period, with each athlete's availability as it stands today. Diagnosis, mechanism and clinical notes appear only in the medic's copy.",
+    "Every injury open at any point in the period, with each athlete's availability as it stands today. Diagnosis, mechanism and severity appear only in the medic's copy; clinical notes are in no export.",
   gps: 'Per-session GPS totals for each athlete, from the files imported for that session. An athlete with no GPS file for a session shows as no record, never as zero.',
   trainingLoad:
     'Session load is RPE multiplied by session minutes, summed over the period. Only sessions an athlete was expected at are counted, and a session with no rating is not counted as zero.',

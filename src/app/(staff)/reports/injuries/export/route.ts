@@ -16,6 +16,16 @@ import { periodParamsFromUrl, resolveInjuryPeriod } from '../period';
  *  the fact — isMedical gates which fields fetchInjuryAvailabilityReport
  *  even reads, the same boundary the report page itself holds.
  *
+ *  The medic's copy carries THREE clinical columns after Expected return —
+ *  Diagnosis, Mechanism, Severity — read from injury_clinical for the open
+ *  injuries in the Current list, through the medic-only policy
+ *  (clinical_medical_only; nobody else can even run the read, and nobody
+ *  else's export calls it). Decision batch 14 September 2026, #5: three, not
+ *  four. Clinical notes stay out of every export: they are free text a physio
+ *  types, can carry a third party's name, a guess, or something about a
+ *  player's family, and an export is the thing that leaves the club. The
+ *  notes stay on the medic's screen.
+ *
  *  Scoped through resolveGroupFilter (URL param, then the sticky filter
  *  cookie), not parseGroupParam on the URL alone: the audit's S4 finding
  *  (analysis findings 27/49) was a group filter that silently re-scoped
@@ -45,18 +55,45 @@ export async function GET(request: Request) {
     fetchInjuryAvailabilityReport(db, orgId, groupIds, fromDate, today, isMedical),
   ]);
 
-  const rows = report.current.map((r) => ({
-    name: r.name,
-    position: r.position ?? '',
-    squad_number: r.squad_number ?? '',
-    status: r.status,
-    restrictions: r.restrictions.join('; '),
-    body_area: r.body_area ?? '',
-    side: r.side ?? '',
-    expected_return: r.expected_return ?? '',
-  }));
+  /* The medic's three, keyed by the open injury each Current row is linked
+     to. Never read for anyone else — the branch, not a filter, is the gate. */
+  const clinicalByInjury = new Map<string, { diagnosis: string | null; mechanism: string | null; severity: string | null }>();
+  if (isMedical) {
+    const injuryIds = report.current.map((r) => r.injury_id).filter((id): id is string => id !== null);
+    if (injuryIds.length > 0) {
+      const { data, error } = await db
+        .from('injury_clinical')
+        .select('injury_id, diagnosis, mechanism, severity')
+        .eq('org_id', orgId)
+        .in('injury_id', injuryIds);
+      if (error) throw new Error(error.message);
+      for (const c of data ?? []) clinicalByInjury.set(c.injury_id, { diagnosis: c.diagnosis, mechanism: c.mechanism, severity: c.severity });
+    }
+  }
 
-  const csv = toCsv(rows, [
+  const rows = report.current.map((r) => {
+    const clinical = r.injury_id ? clinicalByInjury.get(r.injury_id) : undefined;
+    return {
+      name: r.name,
+      position: r.position ?? '',
+      squad_number: r.squad_number ?? '',
+      status: r.status,
+      restrictions: r.restrictions.join('; '),
+      body_area: r.body_area ?? '',
+      side: r.side ?? '',
+      expected_return: r.expected_return ?? '',
+      ...(isMedical
+        ? {
+            diagnosis: clinical?.diagnosis ?? '',
+            mechanism: clinical?.mechanism ?? '',
+            severity: clinical?.severity ?? '',
+          }
+        : {}),
+    };
+  });
+
+  type Row = (typeof rows)[number];
+  const headers: [keyof Row, string][] = [
     ['name', 'Name'],
     ['position', 'Position'],
     ['squad_number', 'Squad number'],
@@ -65,7 +102,9 @@ export async function GET(request: Request) {
     ['body_area', 'Body area'],
     ['side', 'Side'],
     ['expected_return', 'Expected return'],
-  ]);
+  ];
+  if (isMedical) headers.push(['diagnosis', 'Diagnosis'], ['mechanism', 'Mechanism'], ['severity', 'Severity']);
+  const csv = toCsv(rows, headers);
 
   /* PATTERN-S7 C3 / S8 C8: the same descriptor the dialog showed. The
      medic's copy carries the medical line; the coach's copy names itself as
@@ -77,7 +116,7 @@ export async function GET(request: Request) {
     scope: `${groupScopeLabel(groups, groupIds)} (${report.summary.athleteCount} athlete${report.summary.athleteCount === 1 ? '' : 's'})`,
     rows: rows.length,
     rowNoun: 'athlete not fully available',
-    filters: [isMedical ? "The medic's copy" : 'The coach view: availability, restrictions, body area — no diagnosis'],
+    filters: [isMedical ? "The medic's copy: diagnosis, mechanism and severity; clinical notes stay on your screen" : 'The coach view: availability, restrictions, body area — no diagnosis'],
     medical: isMedical,
   };
 

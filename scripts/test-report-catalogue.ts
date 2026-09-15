@@ -58,12 +58,28 @@ console.log('1. the source, the working copy and the module agree');
     ['GPS report', '1. GPS report', 'gps'],
     ['Training load report', '8. Training load report', 'trainingLoad'],
     ['Compliance report', '6. Compliance', 'compliance'],
-    ['Injury and availability report', '7. Injury and availability', 'injuries'],
   ] as const) {
     const a = addendumSentence(name);
     const w = workSentence(wrk);
     assert(a !== null && a === w, `${key}: the working copy carries the addendum's confirmed sentence verbatim`);
     assert(REPORT_DEFINITIONS[key] === a, `${key}: the module mirrors it`);
+  }
+  /* Injuries: the addendum's sentence, corrected by Isabella's ruling of 14
+     September 2026 (decision batch #5): the medic's copy carries diagnosis,
+     mechanism and SEVERITY — three, not four — and clinical notes are in no
+     export. The batch states the correction, not the sentence, so the sentence
+     is checked against both: the addendum's first half verbatim, the second
+     half naming the three and the notes' absence. The source still carries
+     the pre-ruling sentence and is not edited (it is the source). */
+  {
+    const a = addendumSentence('Injury and availability report');
+    const w = workSentence('7. Injury and availability');
+    const batch14 = read('docs/decisions/decision-batch-2026-09-14.md');
+    assert(/THREE extra columns, not four: diagnosis, mechanism, severity/.test(batch14) && /catalogue sentence is corrected to name the three/.test(batch14), 'injuries: the 14 Sept batch rules three columns and a corrected sentence');
+    const firstHalf = a?.split('. ')[0];
+    assert(!!firstHalf && !!w && w.startsWith(`${firstHalf}. `), 'injuries: the working copy keeps the addendum\'s first sentence verbatim');
+    assert(!!w && /Diagnosis, mechanism and severity appear only in the medic's copy/.test(w) && /clinical notes are in no export/.test(w), 'injuries: and names the three, with clinical notes in no export');
+    assert(REPORT_DEFINITIONS.injuries === w, 'injuries: the module mirrors it');
   }
   assert(TRAINING_LOAD_DEFINITION === REPORT_DEFINITIONS.trainingLoad, 'the seventh report\'s sentence is one string, named twice');
   const off = addendum.slice(addendum.indexOf('Its off state')).match(/\n> ([\s\S]*?)\n\n/)![1]!.replace(/\n> /g, ' ').trim();

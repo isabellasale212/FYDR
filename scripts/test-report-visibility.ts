@@ -101,12 +101,27 @@ assert(/aggregate compliance and usage|coach.*medic/is.test(hub), 'and the heade
 
 /* The load-bearing claim of the whole change: the injury report cannot reach a
    diagnosis, so admitting a role to it is not a redaction decision. If this ever
-   becomes false, the nutritionist's access becomes a leak in the same commit. */
-console.log('\nthe injury report still cannot reach a diagnosis');
+   becomes false, the nutritionist's access becomes a leak in the same commit.
+
+   ONE exception since 2026-09-14 (decision batch #5): the medic's CSV carries
+   diagnosis, mechanism and severity. The export route reads injury_clinical
+   inside an `if (isMedical)` branch — and the database's clinical_medical_only
+   policy is the real gate, so the branch is the second lock, not the only one.
+   The read names three columns and never clinical_notes: notes are in no
+   export. The page and the query layer stay clean. */
+console.log('\nthe injury report still cannot reach a diagnosis (the medic\'s CSV excepted)');
+const MEDIC_CSV = 'src/app/(staff)/reports/injuries/export/route.ts';
 for (const f of walk('src/app/(staff)/reports/injuries').concat(['src/lib/queries/reports.ts', 'src/lib/queries/availability.ts'])) {
   if (!/\.(tsx?|ts)$/.test(f)) continue;
   const src = readFileSync(f, 'utf8');
   const code = src.replace(/\/\*[\s\S]*?\*\//g, '').replace(/\/\/.*$/gm, '');
+  if (f === MEDIC_CSV) {
+    const branch = code.slice(code.indexOf('if (isMedical) {'), code.indexOf('const rows = report.current.map'));
+    assert(/from\('injury_clinical'\)/.test(branch) && (code.match(/from\('injury_clinical'\)/g) ?? []).length === 1, `${f} reads injury_clinical once, inside the isMedical branch`);
+    assert(/\.select\('injury_id, diagnosis, mechanism, severity'\)/.test(branch), 'and reads exactly diagnosis, mechanism and severity');
+    assert(!/clinical_notes|treatment_plan/.test(code), 'and never clinical notes or the treatment plan — in no export');
+    continue;
+  }
   assert(!/from\('injury_clinical'\)/.test(code), `${f} does not select injury_clinical`);
 }
 

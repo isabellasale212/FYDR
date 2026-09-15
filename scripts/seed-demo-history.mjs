@@ -1,4 +1,5 @@
-/* Twelve weeks of coherent history for Ashcombe, plus this week's schedule.
+/* Twelve weeks of coherent history for Glenbrae (the club seed.sql calls
+ * Ashcombe, renamed here — Isabella, 15 Sept), plus this week's schedule.
  *
  * WHAT THIS IS. The demo data for Friday 18 September 2026 (Isabella, 15 Sept:
  * "the last work of the week and the biggest"). A performance scientist will
@@ -137,7 +138,11 @@ const ts = (date, hm) => `${date} ${hm}`; // local wall clock; cast in SQL with 
  * Context from the database
  * ------------------------------------------------------------------------- */
 const org = await one(`select id, name, timezone from public.organisations where id = $1 and deleted_at is null`, [ORG]);
-if (!org || !/ashcombe/i.test(org.name)) { console.error(`REFUSING: organisation ${ORG} is not Ashcombe here (${org?.name ?? 'absent'}).`); await c.end(); process.exit(1); }
+if (!org || !/ashcombe|glenbrae/i.test(org.name)) { console.error(`REFUSING: organisation ${ORG} is not the demo club here (${org?.name ?? 'absent'}).`); await c.end(); process.exit(1); }
+/* The club is Scottish for a Scottish audience (Isabella, 15 Sept): the
+   organisation row is renamed in the same pass — the accounts' @ashcomberfc
+   addresses are auth-level and stay. */
+const CLUB = 'Glenbrae Rugby Club';
 const TZ = org.timezone;
 const { today, now } = await one(`select (now() at time zone $1)::date::text as today, now()::text as now`, [TZ]);
 const nowLocalHm = (await one(`select to_char(now() at time zone $1, 'HH24:MI') as hm`, [TZ])).hm;
@@ -170,13 +175,14 @@ const days = []; for (let d = W0; d <= lastDay; d = addDays(d, 1)) days.push(d);
 const isPast = (date, hm) => date < today || (date === today && hm < nowLocalHm);
 
 /* Fixtures: Saturdays of weeks 5, 7, 9, 10 played; 11 (this week) and 12 to come. */
+/* Scottish opposition for a Scottish club: the Super Series clubs and their grounds. */
 const FIXTURES = [
-  { w: 5, opponent: 'Exeter Chiefs', venue: 'Sandy Park', homeAway: 'away', competition: 'Pre-season', importance: 'friendly', result: 'L 17-24' },
-  { w: 7, opponent: 'Bristol Bears', venue: 'Ashcombe Park', homeAway: 'home', competition: 'Pre-season', importance: 'friendly', result: 'W 31-20' },
-  { w: 9, opponent: 'Northampton Saints', venue: 'Ashcombe Park', homeAway: 'home', competition: 'Premiership', importance: 'key', result: 'W 24-19' },
-  { w: 10, opponent: 'Gloucester', venue: 'Kingsholm', homeAway: 'away', competition: 'Premiership', importance: 'normal', result: 'L 20-27' },
-  { w: 11, opponent: 'Harlequins', venue: 'Ashcombe Park', homeAway: 'home', competition: 'Premiership', importance: 'key', result: null },
-  { w: 12, opponent: 'Sale Sharks', venue: 'AJ Bell Stadium', homeAway: 'away', competition: 'Premiership', importance: 'normal', result: null },
+  { w: 5, opponent: 'Ayr', venue: 'Millbrae', homeAway: 'away', competition: 'Pre-season', importance: 'friendly', result: 'L 17-24' },
+  { w: 7, opponent: 'Stirling Wolves', venue: 'Glenbrae Park', homeAway: 'home', competition: 'Pre-season', importance: 'friendly', result: 'W 31-20' },
+  { w: 9, opponent: "Heriot's", venue: 'Glenbrae Park', homeAway: 'home', competition: 'Super Series', importance: 'key', result: 'W 24-19' },
+  { w: 10, opponent: 'Watsonians', venue: 'Myreside', homeAway: 'away', competition: 'Super Series', importance: 'normal', result: 'L 20-27' },
+  { w: 11, opponent: 'Boroughmuir Bears', venue: 'Glenbrae Park', homeAway: 'home', competition: 'Super Series', importance: 'key', result: null },
+  { w: 12, opponent: 'Currie Chieftains', venue: 'Malleny Park', homeAway: 'away', competition: 'Super Series', importance: 'normal', result: null },
 ].map((f) => ({ ...f, date: addDays(W0, f.w * 7 + 5), kickoff: '15:00', id: uuid(`fixture:${f.w}`) }));
 const fixtureOn = (date) => FIXTURES.find((f) => f.date === date);
 const fixtureWeek = (w) => FIXTURES.some((f) => f.w === w);
@@ -431,7 +437,7 @@ for (const a of athletes) {
 /* ---------------------------------------------------------------------------
  * Gym: the programme the squad is on, and the logs against it.
  * ------------------------------------------------------------------------- */
-const PROGRAMME = { name: 'Ashcombe strength 2026/27', blocks: [['Foundation', 'General strength, 4–6 reps'], ['Strength', 'Heavy 3–5 reps'], ['Power', 'Speed-strength, 3 reps'], ['In-season', 'Maintain, 2 lifts a week']] };
+const PROGRAMME = { name: 'Glenbrae strength 2026/27', blocks: [['Foundation', 'General strength, 4–6 reps'], ['Strength', 'Heavy 3–5 reps'], ['Power', 'Speed-strength, 3 reps'], ['In-season', 'Maintain, 2 lifts a week']] };
 const EXERCISES = { 'Back squat': ['squat', 2.5], 'Romanian deadlift': ['hinge', 2.5], 'Split squat': ['squat', 2.5], 'Nordic curl': ['hinge', 2.5], 'Bench press': ['push', 2.5], 'Seated row': ['pull', 2.5], 'Overhead press': ['push', 2.5], 'Pull-up': ['pull', 1.0] };
 const PLAN = { lower: [['Back squat', 4, 5, 'percent_1rm', [72, 80, 85, 80]], ['Romanian deadlift', 3, 8, 'percent_1rm', [45, 50, 55, 50]], ['Split squat', 3, 8, 'absolute', [30, 34, 38, 36]], ['Nordic curl', 3, 6, 'none', [null, null, null, null]]], upper: [['Bench press', 4, 5, 'percent_1rm', [72, 80, 85, 80]], ['Seated row', 3, 8, 'absolute', [65, 72, 78, 75]], ['Overhead press', 3, 8, 'absolute', [40, 45, 50, 48]], ['Pull-up', 3, 8, 'percent_bw', [null, null, null, null]]] };
 const gymLogs = []; // { id, athleteId, programmeSessionKey, sessionId, date, startedAt, completedAt, rpe, sets: [...] }
@@ -463,7 +469,7 @@ for (const s of sessions.filter((x) => x.status === 'completed' && x.type === 'g
  * ------------------------------------------------------------------------- */
 const TESTS = [
   ['CMJ height', 'power', 'cm', true, 3, 1, 'cmj', 1], ['10m sprint', 'speed', 's', false, 3, 2, 's10', 1], ['40m sprint', 'speed', 's', false, 3, 2, 's40', 1],
-  ['Bronco test', 'endurance', 's', false, 1, 1, 'bronco', 0], ['IMTP peak force', 'strength', 'N', true, 3, 0, 'imtp', 0], ['Yo-Yo IR1', 'endurance', 'm', true, 1, 0, 'yoyo', 0], ['Broad jump', 'power', 'cm', true, 3, 0, 'broad', 1],
+  ['Bronco test', 'endurance', 's', false, 1, 1, 'bronco', 0], ['IMTP peak force', 'strength', 'N', true, 1, 0, 'imtp', 0], ['Yo-Yo IR1', 'endurance', 'm', true, 1, 0, 'yoyo', 0], ['Broad jump', 'power', 'cm', true, 2, 0, 'broad', 1],
 ];
 const testResults = [];
 for (const s of sessions.filter((x) => x.status === 'completed' && x.type === 'testing')) {
@@ -567,6 +573,19 @@ const bulk = async (table, cols, types, rows) => {
 const written = {};
 const note = (k, n) => { written[k] = (written[k] ?? 0) + n; };
 
+/* The triggers stood down below are stood back up INSIDE the same transaction,
+   before the commit. ALTER TABLE ... DISABLE TRIGGER is transactional in
+   Postgres: if anything between the disable and the commit throws, the
+   rollback in the catch reverts the disable along with every row; if the
+   process dies or the connection drops mid-run, the server rolls the open
+   transaction back and the disable with it. There is no path on which a
+   commit lands with a trigger still off — and disabledTriggers() below is
+   run after the commit (and after a rollback) to prove it from the catalogue
+   rather than assume it. */
+const disabledTriggers = async () => q(`select c.relname, t.tgname from pg_trigger t join pg_class c on c.oid = t.tgrelid where not t.tgisinternal and c.relnamespace = 'public'::regnamespace and t.tgenabled = 'D' order by 1, 2`);
+const before = await disabledTriggers();
+if (before.length > 0) { console.error('REFUSING: triggers are already disabled on this database:', before.map((t) => `${t.relname}.${t.tgname}`).join(', ')); await c.end(); process.exit(1); }
+
 await c.query('begin');
 try {
   /* Stand down the audit triggers and the submitted_at clamp for the duration. */
@@ -614,7 +633,8 @@ try {
     const row = await one(`select id from public.exercises where (org_id = $1 or org_id is null) and name = $2 and deleted_at is null order by org_id nulls last limit 1`, [ORG, nm]);
     exerciseId[nm] = row?.id ?? (await one(`insert into public.exercises (id, org_id, name, category, weight_step_kg) values ($1, $2, $3, $4::exercise_category, $5) returning id`, [uuid(`exercise:${nm}`), ORG, nm, cat, step])).id;
   }
-  let programmeId = (await one(`select id from public.programmes where org_id = $1 and name = $2 and deleted_at is null`, [ORG, PROGRAMME.name]))?.id;
+  let programmeId = (await one(`select id from public.programmes where org_id = $1 and (id = $3 or name = $2) and deleted_at is null order by (id = $3) desc limit 1`, [ORG, PROGRAMME.name, uuid('programme:main')]))?.id;
+  if (programmeId) await c.query(`update public.programmes set name = $2 where id = $1 and name <> $2`, [programmeId, PROGRAMME.name]);
   const programmeSession = {}; // `${block}:${weekIn}:${kind}` → { id, exercises: { name → id } }
   if (!programmeId) {
     programmeId = uuid('programme:main');
@@ -646,6 +666,10 @@ try {
     testId[nm] = row?.id ?? (await one(`insert into public.test_definitions (id, org_id, name, test_category, unit, higher_is_better, default_attempts, decimal_places, sort_order) values ($1, $2, $3, $4::test_category, $5, $6, $7, $8, $9) returning id`, [uuid(`test:${nm}`), ORG, nm, cat, unit, higher, attempts, dp, sort])).id;
   }
   if (!(await one(`select 1 from public.nutrition_targets where org_id = $1 and org_default and deleted_at is null and effective_to is null and md_offset is null`, [ORG]))) { await c.query(`insert into public.nutrition_targets (id, org_id, org_default, energy_kcal, protein_g, carbs_g, fat_g, fluid_ml, effective_from, created_by) values ($1, $2, true, 3200, 160, 400, 90, 3000, $3, $4)`, [uuid('nt:default'), ORG, W0, staff.nut]); note('nutrition default created', 1); }
+
+  /* The club's name. */
+  await c.query(`update public.organisations set name = $2 where id = $1 and name <> $2`, [ORG, CLUB]);
+  note('club named', 1);
 
   /* Consent: the demo athletes are through the flow. */
   const cr = await c.query(`update public.athletes set consent_given_at = ($2::timestamp at time zone $3), consent_version = $4, health_consent_given_at = ($2::timestamp at time zone $3), health_consent_version = $4 where org_id = $1 and deleted_at is null and consent_given_at is null and consent_declined_at is null and consent_withdrawn_at is null`, [ORG, ts(addDays(W0, -3), '18:40'), TZ, CONSENT_VERSION]);
@@ -766,12 +790,21 @@ try {
      triggers can be stood back up inside the same transaction. */
   await c.query('set constraints all immediate');
   for (const t of trig) await c.query(`alter table public.${t.relname} enable trigger ${t.tgname}`);
+  const still = await disabledTriggers();
+  if (still.length > 0) throw new Error(`a trigger is still disabled before commit: ${still.map((t) => `${t.relname}.${t.tgname}`).join(', ')}`);
   await c.query('commit');
 } catch (err) {
   await c.query('rollback');
   console.error('\nFAILED — rolled back, nothing changed:', err.message, err.detail ?? '');
+  const after = await disabledTriggers();
+  console.error(after.length === 0 ? 'triggers: all enabled (the rollback restored them)' : `TRIGGERS STILL DISABLED — investigate: ${after.map((t) => `${t.relname}.${t.tgname}`).join(', ')}`);
   await c.end();
   process.exit(1);
+}
+{
+  const after = await disabledTriggers();
+  if (after.length > 0) { console.error(`TRIGGERS STILL DISABLED AFTER COMMIT — investigate before doing anything else: ${after.map((t) => `${t.relname}.${t.tgname}`).join(', ')}`); await c.end(); process.exit(2); }
+  console.log('\ntriggers: every trigger on public tables is enabled (checked in the catalogue after the commit)');
 }
 
 console.log(`\nWRITTEN in ${Math.round((Date.now() - t0) / 1000)}s`);

@@ -83,10 +83,20 @@ export default async function ProgrammeAthletePage({
   if (!detail || !athleteRow.data) notFound();
 
   const athleteName = `${athleteRow.data.first_name} ${athleteRow.data.last_name}`;
-  const canEdit =
+  const mayEdit =
     detail.programme.programme_type === 'rehab'
       ? hasAnyRole(claims.roles, REHAB_PROGRAMME)
       : hasAnyRole(claims.roles, PROGRAMME_EDIT);
+  /* 3.1 (Isabella, 16 Sept 2026): "only the S&C the gym page, within the
+     profile buttons" — the edit controls on a GYM programme are shown to the
+     S&C alone; the sport scientist, whom PROGRAMME_EDIT still admits, sees
+     the page read-only. HIDDEN, not withheld: the RPC is unchanged and the
+     database enforcement follows after Friday (docs/after-friday.md). A
+     rehab programme keeps its medical authors. */
+  // access-exempt: a hide, not a gate — PROGRAMME_EDIT above is the set; the
+  // S&C alone is SHOWN the editor on a gym programme until the enforcement
+  // after Friday (docs/after-friday.md).
+  const canEdit = mayEdit && (detail.programme.programme_type === 'rehab' || claims.roles.includes('strength_conditioning'));
 
   const sessionsFlat = detail.blocks.flatMap((b) => b.sessions.map((s) => ({ ...s, blockName: b.name })));
   const sessionIds = sessionsFlat.map((s) => s.id);

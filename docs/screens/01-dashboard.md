@@ -97,6 +97,16 @@ in the page, and a tablet held upright sees the day too
 (`docs/access-matrix.md` §8). The group filter chips stand down for the title
 bar's dropdown at the same width (#14).
 
+**Two tabs for the coach — Overview and Match** (16 September 2026, Isabella's
+overnight queue 3.4), under the title in the schedule's view-tab idiom. Match
+(`/dashboard/match`) is the week's team selection — the same board, teams and
+draft/published allocations as `/injuries/team-allocation`, moved off Manage
+groups — for selecting on match days; the coach allocates and publishes, and
+the tab is drawn for the coach only (any other role opening the address reads
+the board; hidden, enforcement after Friday). **Everyone can see the
+dashboard** — verified 16 September for all five roles. The group filter is a
+dropdown in the top right (3.5).
+
 **Five headline tiles** — for the sport scientist, the coach and
 the medic. **The S&C and the nutritionist read their own versions** (STAFF-SS-01
 C2 role versions, 13 September 2026, from the board's frame 7; the rule is

@@ -79,6 +79,15 @@ carbohydrate multiplier of the preview) and **"The day, as food"** (the day
 priced as meals, with the Food library picker and + Meal) are desktop-only —
 two different cards; the second is not the day-type editor.
 
+**The food library is a button in the top right** (16 September 2026, 3.3):
+**Food library** beside Manual target opens the library panel at the top of
+the workspace (`?library=1`) — every library meal with "Add to the day" for the
+preview beneath, and **+ Meal** to author an entry (`MEAL_LIBRARY_EDIT`;
+everyone else reads); the two buttons that sat on "The day, as food" are gone.
+The rest of 3.3 was already so: a plan for a group (New plan) or an individual
+(Manual target), the day type, and protein, carbohydrate, fat and fluid on
+the rule tiles. The group filter is a dropdown in the top right (3.5).
+
 **Assigning a plan is the only thing in Fydr that recomputes a target.** A weigh-in
 does not. Decision D-28.
 

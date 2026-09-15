@@ -57,13 +57,14 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
           </p>
           <h1>Rehab groups</h1>
         </div>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+          {/* 3.5 (16 Sept 2026): the group filter, a dropdown in the top right. */}
+          <GroupFilter groups={squadGroups} selected={groupIds} />
+        </div>
       </div>
 
       <p className="eyebrow">{groupScopeLabel(squadGroups, groupIds)} · {orgName}</p>
 
-      <div style={{ margin: 'var(--s-5) 0' }}>
-        <GroupFilter groups={squadGroups} selected={groupIds} />
-      </div>
 
       {!isMedical ? (
         <div className="note" style={{ marginTop: 'var(--sp-10)' }}>

@@ -70,3 +70,26 @@ list with the routes.
   768px; `PROGRAMME_EDIT` (sport scientist and S&C) still writes, and the
   medic still authors rehab (`REHAB_PROGRAMME`). To enforce: decide whether
   the phone rule is the rule.
+- **3.1 The athlete's nutrition and gym pages, within the profile buttons.**
+  Only the nutritionist is shown the edit ways on `/squad/[id]/nutrition`
+  (Set a manual target, Edit plans) and only the S&C the override editor on
+  a gym programme's per-athlete page (`/programmes/[id]/athlete/[id]`); the
+  sport scientist, whom `NUTRITION_EDIT` and `PROGRAMME_EDIT` still admit at
+  the RPC, reads. To enforce: narrow those two sets, or rule that the sport
+  scientist keeps them.
+- **3.2 Tabs by role.** The sidebar's Nutrition row is the nutritionist's
+  and Gym programme the S&C's and the medic's (`Sidebar/rows.ts`); every
+  other role reaches both through the player profile. The routes answer for
+  every staff role. To enforce: decide whether a coach opening `/nutrition`
+  by address should be refused.
+- **3.2 The medic's creation is a return-to-play protocol.** The medic's
+  "+ New programme" reads "+ New return-to-play protocol" and ProgrammeForm
+  holds them to the rehab type (`REHAB_PROGRAMME`, migration 0067) — that
+  part is enforced. Not yet decided: whether a rehab programme and an injury's
+  stage protocol (`injury_protocols`, 0123) should be one thing.
+- **3.4 The dashboard's Match tab is the coach's.** The tab is drawn for the
+  coach only and the allocate and publish controls on `/dashboard/match` are
+  the coach's alone; `SESSION_EDIT` still admits the sport scientist at the
+  RPC (`/injuries/team-allocation` still offers them the controls). To
+  enforce: narrow the team-allocation writes to the coach, or rule that the
+  sport scientist keeps them.

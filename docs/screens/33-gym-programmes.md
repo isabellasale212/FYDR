@@ -60,6 +60,13 @@ Gym programme row for them; hidden by role, enforcement after Friday
 (`docs/after-friday.md`). The S&C views, edits and assigns from a phone;
 creation stays desktop-only.
 
+**The medic creates return-to-play protocols** (16 September 2026, 3.2): for a
+medic without `PROGRAMME_EDIT` the create control reads "+ New return-to-play
+protocol" and `/programmes/new` is titled so; `ProgrammeForm` holds them to the
+rehab type (`REHAB_PROGRAMME`, migration 0067) — a distinct creation from the
+S&C's gym programme. The sidebar's Gym programme row is the S&C's and the
+medic's (3.2); every other role reaches the gym through the player profile.
+
 ## 7. How this page is built, in plain English
 
 Built on the server. Programmes, their blocks and their assignments are read

@@ -106,6 +106,12 @@ export default async function ProgrammesPage({
      gym authoring is the sport scientist and the S&C, rehab is the medic and the
      sport scientist. Before this a coach was offered "Edit this programme" on
      every gym programme and got a 42501 on saving. */
+  /* 3.2 (Isabella, 16 Sept 2026): the medic creates RETURN-TO-PLAY PROTOCOLS
+     — a distinct creation from the S&C's gym programme. ProgrammeForm already
+     holds a medic without PROGRAMME_EDIT to the rehab type (REHAB_PROGRAMME,
+     0067); here the control says what it makes. The stage ladder on an
+     injury record (injury_protocols, 0123) is the protocol's own record. */
+  const createLabel = hasAnyRole(claims.roles, PROGRAMME_EDIT) ? '+ New programme' : '+ New return-to-play protocol';
   const canEditSelected =
     !!selected &&
     ((hasAnyRole(claims.roles, PROGRAMME_EDIT) && selected.programme_type !== 'rehab') ||
@@ -156,7 +162,7 @@ export default async function ProgrammesPage({
           <p className="tiny">No programmes yet.</p>
           {hasAnyRole(claims.roles, PROGRAMME_AUTHOR) ? (
             <Link href="/programmes/new" className="btn-primary" style={{ marginTop: 'var(--sp-12)', display: 'inline-flex' }} data-desktop-only="">
-              + New programme
+              {createLabel}
             </Link>
           ) : null}
         </div>
@@ -199,7 +205,7 @@ export default async function ProgrammesPage({
                 style={{ marginTop: 'var(--sp-12)', width: '100%', display: 'inline-flex', justifyContent: 'center' }}
                 data-desktop-only=""
               >
-                + New programme
+                {createLabel}
               </Link>
             ) : null}
           </div>

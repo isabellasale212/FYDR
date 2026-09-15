@@ -4822,6 +4822,76 @@ img.me-avatar {
   display: flex;
   gap: var(--sp-8);
 }
+/* The three domain buttons in three colours (16 Sept 2026, 3.1): a tint of
+   the family at the wash alpha, a border at the border alpha, --text as ink
+   so every one clears AA on its tint; the word is the label. Nutrition the
+   accent, wellness the good tone, gym the gym gold. */
+.pp-domain-chip,
+.pp-hero .pp-domain-chip {
+  /* (0,2,0), after .pp-hero .squad-chip's --muted-on-tint: on these tints
+     the context ink measured 3.79 (nutrition, light) and 3.61 (gym, dark);
+     --text clears every one. */
+  color: var(--text);
+  font-weight: var(--w-bold);
+}
+.pp-domain-chip[data-domain='nutrition'] {
+  background: var(--wash-accent);
+  border-color: var(--border-accent-soft);
+}
+.pp-domain-chip[data-domain='wellness'] {
+  background: var(--wash-good);
+  border-color: var(--border-good);
+}
+.pp-domain-chip[data-domain='gym'] {
+  background: rgb(var(--gym-rgb) / 0.22);
+  border-color: rgb(var(--gym-rgb) / 0.7);
+}
+/* 3.5 (16 Sept 2026): the group filter as a dropdown in the page's top
+   right — GroupFilter in the topbar's actions, GroupSelect in the report
+   header's actions. The status line ("Filtered to …") sits under the
+   control, right-aligned, and may wrap. */
+.group-filter {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  gap: var(--sp-4);
+  min-width: 0;
+}
+.group-filter-status {
+  margin: 0;
+  text-align: right;
+  max-width: 44ch;
+}
+.rhead-actions .group-select {
+  margin-right: var(--sp-6);
+}
+/* 3.4 (16 Sept 2026): the dashboard's Overview | Match tabs, the schedule's
+   view-tab idiom (the rules above, shared by class), under the title. */
+.dash-tabs {
+  margin-bottom: var(--sp-12);
+}
+/* 3.4 (16 Sept 2026): Edit and Remove on a group row, and the armed
+   confirmation that takes the row's full width when Remove is pressed. */
+.grp-row-actions {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-8);
+}
+.grp-row-confirm {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: var(--sp-10);
+  flex-basis: 100%;
+  padding: var(--sp-10) 0;
+}
+/* 3.1: the availability form, expanded in place under the plan row. */
+.pp-hero-availability {
+  margin-top: var(--sp-12);
+  padding-top: var(--sp-12);
+  border-top: 1px solid var(--hair);
+}
 .pp-wellness-mini {
   width: 62px;
   height: 62px;
@@ -7651,6 +7721,12 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   flex-direction: column;
   gap: var(--sp-14);
   min-width: 0;
+}
+/* The food library panel at the top of the column (16 Sept 2026, 3.3):
+   the picker card with its accent edge, and beneath it the + Meal form. */
+.nutr-library-panel {
+  display: flex;
+  flex-direction: column;
 }
 
 @media (max-width: 1150px) {
@@ -14384,14 +14460,16 @@ main:has(.rhead) > .back-btn > :first-child {
 /* Week plan / Today on the schedule. Two routes rather than two views of one,
    so the current page is a span and the other is a link — but they read as one
    segmented control, so they take the canvas's tab measurements. */
-.rhead-tabrow .sg-viewtabs {
+.rhead-tabrow .sg-viewtabs,
+.dash-tabs.sg-viewtabs {
   display: inline-flex;
   background: var(--surf);
   border: 1px solid var(--border);
   border-radius: var(--r);
   padding: var(--sp-4);
 }
-.rhead-tabrow .sg-viewtab {
+.rhead-tabrow .sg-viewtab,
+.dash-tabs .sg-viewtab {
   padding: var(--sp-10) var(--sp-18);
   border-radius: var(--r);
   font-weight: var(--w-bold);
@@ -14400,7 +14478,8 @@ main:has(.rhead) > .back-btn > :first-child {
   text-decoration: none;
   white-space: nowrap;
 }
-.rhead-tabrow .sg-viewtab[aria-selected='true'] {
+.rhead-tabrow .sg-viewtab[aria-selected='true'],
+.dash-tabs .sg-viewtab[aria-selected='true'] {
   background: #fff;
   color: var(--accent);
 }
@@ -14748,7 +14827,10 @@ a.hist-row:active { background: var(--surf-sunken); }
   /* #14: the chip row stands down for the bar's dropdown; the "Filtered to
      … Clear filter" line beneath it stays, because it is the one place that
      says the filter follows you to every screen. */
-  .main .chiprow[aria-label='Filter by squad group'] {
+  .main .chiprow[aria-label='Filter by squad group'],
+  /* …and the desktop's dropdown (3.5, 16 Sept 2026): the title bar's is
+     the filter on a phone; the "Filtered to" line beneath stays. */
+  .main .group-select {
     display: none;
   }
   /* 2.1 (16 Sept 2026): the schedule's own chip row (ReportHeader's) stands

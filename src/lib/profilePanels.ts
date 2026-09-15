@@ -31,39 +31,26 @@
 import type { AppRole } from '@/lib/types/database';
 import { hasAnyRole } from '@/lib/access';
 
-export type ProfilePanelKey =
-  | 'flags'
-  | 'athleticism'
-  | 'acwr'
-  | 'availability'
-  | 'entries'
-  | 'bodyWeight'
-  | 'nutrition'
-  | 'injury'
-  | 'goals'
-  | 'scLog'
-  | 'sar';
+/* FOUR PANELS LEFT THE PROFILE on 16 September 2026 (Isabella's overnight
+ * queue, 3.1 — the screen Isabella will spend most of Friday on):
+ *   - 'nutrition' (the plan card) lives behind the Nutrition button;
+ *   - 'entries' (entries and corrections) lives behind the Wellness button;
+ *   - 'scLog' (the S&C history log) lives behind the Gym button;
+ *   - 'availability' (the absence form) is "Edit availability" on the name
+ *     card, beside Change plan, expanding in place.
+ * The ACWR and wellness-rating card ('acwr') STAYS in view, by name. One
+ * panel joined: 'medicalRecord', the medic's own record area — every injury with
+ * the clinical fields that already exist and are already withheld from
+ * every other role (docs/access-matrix.md §4.1). */
+export type ProfilePanelKey = 'flags' | 'athleticism' | 'acwr' | 'bodyWeight' | 'injury' | 'medicalRecord' | 'goals' | 'sar';
 
-/** The sport scientist's order, the board's frame 12 — with Entries and
- *  corrections at the foot (15 September 2026), before the subject access
- *  request. */
-export const SPORT_SCIENTIST_PANEL_ORDER: readonly ProfilePanelKey[] = [
-  'flags',
-  'athleticism',
-  'acwr',
-  'availability',
-  'bodyWeight',
-  'nutrition',
-  'injury',
-  'goals',
-  'scLog',
-  'entries',
-  'sar',
-];
+/** The sport scientist's order, the board's frame 12 less the four panels
+ *  above; the medical record directly after the injury card it extends. */
+export const SPORT_SCIENTIST_PANEL_ORDER: readonly ProfilePanelKey[] = ['flags', 'athleticism', 'acwr', 'bodyWeight', 'injury', 'medicalRecord', 'goals', 'sar'];
 
-/** Wide tables with a per-row expansion; half a grid column would force a
- *  horizontal scroll or a truncated history. */
-export const FULL_WIDTH_PANELS: readonly ProfilePanelKey[] = ['entries', 'sar'];
+/** Wide tables; half a grid column would force a horizontal scroll or a
+ *  truncated history. The medical record is a table of every injury. */
+export const FULL_WIDTH_PANELS: readonly ProfilePanelKey[] = ['medicalRecord', 'sar'];
 
 const BASE_ORDER_ROLES: readonly AppRole[] = ['sport_scientist', 'coach', 'medic'];
 const RAISED_BODY_WEIGHT_ROLES: readonly AppRole[] = ['strength_conditioning', 'nutritionist'];

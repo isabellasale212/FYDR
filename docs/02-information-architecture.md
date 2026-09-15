@@ -343,6 +343,15 @@ installable web app `docs/platform-decision.md` decides on (13 September 2026); 
 no native phone app and none is planned, so the paragraphs below that commit to one are
 the record of a superseded proposal, and their five-tab grouping is not to be built.
 
+**Desktop, 16 September 2026 (Isabella's overnight queue, Section 3).** The sidebar's
+Nutrition row is the nutritionist's and Gym programme the S&C's and the medic's — every other
+role reaches both through the player profile's Nutrition, Wellness and Gym buttons, which
+carry three distinct colours. The dashboard has two tabs for the coach, Overview and Match:
+the week's team selection (the same board as `/injuries/team-allocation`) lives on Match,
+and has left Manage groups. The group filter is a dropdown in each page's top right,
+everywhere but Analytics. `docs/access-matrix.md` §8 records what is hidden by role and
+`docs/after-friday.md` what the database must still enforce.
+
 **Phone-width presentation, 15 September 2026 (Isabella, "Mobile-only edits, ahead of
 Friday").** Below 768px the title bar carries the page's own title (the in-page `h1` is
 hidden from sight, not from assistive technology) and the group filter as a dropdown in

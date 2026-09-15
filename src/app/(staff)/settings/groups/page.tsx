@@ -1,11 +1,11 @@
 import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { GroupSwatch } from '@/components/GroupSwatch/GroupSwatch';
+import { GroupRowActions } from '@/components/GroupRowActions/GroupRowActions';
 import { GroupReorderButtons } from '@/components/GroupReorderButtons/GroupReorderButtons';
 import { fetchAthletesInNoGroup, fetchGroupsWithCounts } from '@/lib/queries/groups';
-import { fetchTeams } from '@/lib/queries/teamAllocation';
 import { enumLabel } from '@/lib/format';
-import { GROUP_EDIT, SESSION_EDIT, hasAnyRole } from '@/lib/access';
+import { GROUP_EDIT, hasAnyRole } from '@/lib/access';
 import { requireStaff } from '@/lib/session';
 
 export const metadata = { title: 'Groups · Fydr' };
@@ -19,19 +19,11 @@ export const metadata = { title: 'Groups · Fydr' };
 export default async function GroupsPage() {
   const { db, orgId, claims } = await requireStaff();
 
-  const [groups, noGroup, teams] = await Promise.all([
+  const [groups, noGroup] = await Promise.all([
     fetchGroupsWithCounts(db, orgId),
     fetchAthletesInNoGroup(db, orgId),
-    fetchTeams(db, orgId),
   ]);
 
-  /* The comment here used to say team allocation "redirects anyone who is not
-   * coach or medical", and justified this link's condition by that. It stopped
-   * being true when that page moved to SESSION_EDIT: the link was then hidden
-   * from the sport scientist, who may allocate, and offered to the medic, who
-   * may not. Reading the destination's gate rather than describing it is what
-   * keeps the two from drifting again. Hiding UI only, CLAUDE.md rule 2. */
-  const canAllocate = hasAnyRole(claims.roles, SESSION_EDIT);
   const canEditGroups = hasAnyRole(claims.roles, GROUP_EDIT);
 
   const sections = new Map<string, typeof groups>();
@@ -65,66 +57,13 @@ export default async function GroupsPage() {
 
       
 
-      {/* "Different team selections."
-        *
-        * This is a signpost, not a new concept, and that is a deliberate
-        * decision rather than a shortcut. A weekly team selection already
-        * exists in this build, in full: the `teams` table (migration 0003)
-        * and `team_allocations` with its draft/published states, surfaced at
-        * /injuries/team-allocation. Building a second selection concept here
-        * would have meant two places a team is defined and two answers to
-        * "who is in the 1st XV this week".
-        *
-        * The obvious alternative — a new group_type value such as 'team' or
-        * 'selection' — is explicitly ruled out by a recorded decision, not
-        * merely by preference: migration 0001 states "04-data-model.md
-        * §17.13 is explicit that group_type does not gain a 'team' value.
-        * Teams are a separate table so there is exactly one place a team is
-        * defined", and migration 0003 gives the modelling reason — an
-        * athlete is in Forwards and S&C Group A and Under 20 all at once,
-        * but plays for exactly one team on a given weekend, and that
-        * exclusivity cannot be expressed on group_memberships. Groups are
-        * many-per-athlete and standing; a selection is one-per-athlete and
-        * weekly. CLAUDE.md §1 says to stop and say so rather than contradict
-        * a recorded decision, so this contradicts nothing and points at what
-        * is already there.
-        *
-        * This also keeps CLAUDE.md rule 7 intact: the global group filter
-        * keeps exactly one vocabulary. Teams deliberately do not enter it
-        * (team-allocation.md's O-808, recorded as cut in
-        * lib/queries/teamAllocation.ts), and adding a selection-shaped group
-        * type here would have quietly created the second parallel filtering
-        * concept that rule exists to prevent. */}
-      <section className="card" aria-labelledby="teams-title" style={{ marginBottom: 'var(--sp-14)' }}>
-        <h2 className="card-title" id="teams-title">
-          Team selections
-        </h2>
-        
-
-        {teams.length > 0 ? (
-          <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
-            {teams.length} team{teams.length === 1 ? '' : 's'} set up: {teams.map((t) => t.name).join(', ')}.
-          </p>
-        ) : (
-          <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
-            No teams are set up yet, so there is nothing to select into. Teams are standing squads
-            such as 1st XV, 2nd XV or Colts.
-          </p>
-        )}
-
-        {canAllocate ? (
-          <div style={{ marginTop: 'var(--sp-10)' }}>
-            <Link href="/injuries/team-allocation" className="btn-ghost">
-              Open team allocation →
-            </Link>
-          </div>
-        ) : (
-          <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
-            Selecting teams is a coach decision, with medical able to see the board. It is not part
-            of your role.
-          </p>
-        )}
-      </section>
+      {/* The "Team selections" signpost that stood here — teams are a separate
+          table, never a group type (migration 0001, 04-data-model.md §17.13),
+          and the weekly selection is /injuries/team-allocation — moved off
+          this page on 16 Sept 2026 (Isabella's overnight queue, 3.4): team
+          selection is the dashboard's Match tab, the coach's, for selecting
+          on match days. The reasoning about groups versus teams stands and
+          is repeated on that page. */}
 
       {groups.length === 0 ? (
         <EmptyState
@@ -188,6 +127,8 @@ export default async function GroupsPage() {
                       ›
                     </span>
                   </Link>
+                  {/* 3.4 (16 Sept 2026): Edit and Remove on every row. */}
+                  <GroupRowActions orgId={orgId} groupId={g.id} name={g.name} groupType={g.group_type} members={g.member_count} canEdit={canEditGroups} />
                 </div>
               ))}
             </section>

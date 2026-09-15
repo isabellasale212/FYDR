@@ -1,7 +1,7 @@
 'use client';
 
 import { useEffect, useMemo, useState } from 'react';
-import { useRouter } from 'next/navigation';
+import { useRouter, useSearchParams } from 'next/navigation';
 import { useMutation } from '@tanstack/react-query';
 import { createClient } from '@/lib/supabase/client';
 import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
@@ -61,6 +61,8 @@ type Props = {
    *  shown in "The day, as food" for this viewing session is local state below
    *  (extraMeals), not persisted — see nutritionMeals.ts's own header. */
   mealLibrary: LibraryMeal[];
+  /** 3.3 (16 Sept 2026): the page opens the library panel from ?library=1. */
+  libraryOpen: boolean;
 };
 
 /* NUTRITION-SPEC.md §2's layout skeleton and §9's state model, adapted for real data.
@@ -91,6 +93,7 @@ export function NutritionWorkspace({
   weekEnd,
   timezone,
   mealLibrary,
+  libraryOpen,
 }: Props) {
   const router = useRouter();
   const canEdit = canManageNutrition;
@@ -132,7 +135,25 @@ export function NutritionWorkspace({
   // itself, mealLibrary above, is what's persisted). Keyed by meal_library.id so the
   // picker can grey out a meal already added instead of allowing a silent duplicate.
   const [extraMeals, setExtraMeals] = useState<{ id: string; meal: Meal }[]>([]);
-  const [showLibraryPicker, setShowLibraryPicker] = useState(false);
+  const [showLibraryPicker, setShowLibraryPicker] = useState(libraryOpen);
+  /* The top-right button (page.tsx) is a link to ?library=1; a second press
+     with the panel closed is the same address, so the param is watched, and
+     Close drops it so the next press opens it again. */
+  const searchParams = useSearchParams();
+  useEffect(() => {
+    if (searchParams.get('library') === '1') setShowLibraryPicker(true);
+  }, [searchParams]);
+  const closeLibrary = () => {
+    setShowLibraryPicker(false);
+    setShowMealForm(false);
+    setMealFormError(null);
+    if (searchParams.get('library') === '1') {
+      const next = new URLSearchParams(searchParams.toString());
+      next.delete('library');
+      const qs = next.toString();
+      router.replace(qs ? `/nutrition?${qs}` : '/nutrition');
+    }
+  };
   const [showMealForm, setShowMealForm] = useState(false);
   const [mealFormError, setMealFormError] = useState<string | null>(null);
 
@@ -384,6 +405,39 @@ export function NutritionWorkspace({
       </div>
 
       <div className="nutr-main">
+        {/* THE FOOD LIBRARY PANEL (Isabella, 16 Sept 2026, overnight queue 3.3:
+            "the food library becomes a button in the top right, opening the
+            library, where entries can be added"). Opened by the page's
+            top-right button through ?library=1 (the button is the server's;
+            this is client state), closed here. The library's meals with
+            "Add to the day" for the preview beneath, and + Meal to author an
+            entry (MEAL_LIBRARY_EDIT roles; everyone else reads). */}
+        {showLibraryPicker ? (
+          <div className="nutr-library-panel">
+            <MealLibraryPicker meals={mealLibrary} addedIds={extraMeals.map((m) => m.id)} onAdd={addLibraryMeal} onClose={closeLibrary} />
+            {canAuthorMeals ? (
+              showMealForm ? (
+                <NewMealForm
+                  onSubmit={(input) => createMealMutation.mutate(input)}
+                  onCancel={() => {
+                    setShowMealForm(false);
+                    setMealFormError(null);
+                  }}
+                  isSubmitting={createMealMutation.isPending}
+                  error={mealFormError}
+                />
+              ) : (
+                <button type="button" className="btn-ghost" style={{ marginTop: 'var(--sp-10)' }} onClick={() => setShowMealForm(true)}>
+                  + Meal — add an entry to the library
+                </button>
+              )
+            ) : (
+              <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
+                The meal library is authored by the sport scientist, the coach and the nutritionist. Everyone else reads it.
+              </p>
+            )}
+          </div>
+        ) : null}
         <div className="card nutr-plan-rules-card">
           <div className="nutr-card-head">
             <div>
@@ -509,56 +563,10 @@ export function NutritionWorkspace({
                 <div className="nutr-plan-rules-sub">Pick an athlete below to price this day.</div>
               )}
             </div>
-            <div style={{ display: 'flex', gap: 'var(--sp-8)' }}>
-              <button
-                type="button"
-                className="btn-ghost"
-                onClick={() => {
-                  setShowMealForm(false);
-                  setShowLibraryPicker((s) => !s);
-                }}
-              >
-                Food library
-              </button>
-              <button
-                type="button"
-                className="btn-ghost"
-                disabled={!canAuthorMeals}
-                title={
-                  canAuthorMeals
-                    ? undefined
-                    : 'The meal library is authored by the sport scientist, the coach and the nutritionist. Everyone else reads it for context.'
-                }
-                onClick={() => {
-                  setShowLibraryPicker(false);
-                  setShowMealForm((s) => !s);
-                }}
-              >
-                + Meal
-              </button>
-            </div>
+            {/* The Food library and + Meal buttons that sat here moved to the
+                page's top right on 16 Sept 2026 (3.3) — the library panel at
+                the top of this column is where both live now. */}
           </div>
-
-          {showLibraryPicker ? (
-            <MealLibraryPicker
-              meals={mealLibrary}
-              addedIds={extraMeals.map((m) => m.id)}
-              onAdd={addLibraryMeal}
-              onClose={() => setShowLibraryPicker(false)}
-            />
-          ) : null}
-
-          {showMealForm ? (
-            <NewMealForm
-              onSubmit={(input) => createMealMutation.mutate(input)}
-              onCancel={() => {
-                setShowMealForm(false);
-                setMealFormError(null);
-              }}
-              isSubmitting={createMealMutation.isPending}
-              error={mealFormError}
-            />
-          ) : null}
 
           {selectedAthlete && dayTotals && selectedAthlete.targets ? (
             <TotalsBars dayTotals={dayTotals} targets={selectedAthlete.targets} />

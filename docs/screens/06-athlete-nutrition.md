@@ -105,6 +105,14 @@ withdrawn does not reappear as history.
 
 ---
 
+**Only the nutritionist is shown the edit ways since 16 September 2026** (3.1:
+"only the nutritionist can edit the nutrition page, within the profile
+buttons"): **Set a manual target** (`/nutrition/new`) and **Edit plans**
+(`/nutrition`) in the page's top right, for the nutritionist alone. The page
+stays a reading for everyone; the sport scientist, whom `NUTRITION_EDIT` still
+admits, sees neither — hidden, enforcement after Friday. The profile's own
+Nutrition plan card is gone (3.1); this page is the plan.
+
 ## 8. States
 
 **Loading.** Renders when ready.

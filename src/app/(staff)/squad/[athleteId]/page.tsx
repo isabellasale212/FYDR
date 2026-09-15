@@ -1,7 +1,6 @@
 import { Fragment, type ReactNode } from 'react';
 import { notFound } from 'next/navigation';
 import Link from 'next/link';
-import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { Pill } from '@/components/Pill/Pill';
 import { Dial } from '@/components/Dial/Dial';
 import { DomainChips } from '@/components/DomainChips/DomainChips';
@@ -10,10 +9,9 @@ import { PlayerProfileFlags } from '@/components/PlayerProfileFlags/PlayerProfil
 import { InjuryCard } from '@/components/InjuryCard/InjuryCard';
 import { fetchCurrentAvailability } from '@/lib/queries/availability';
 import { fetchInjuryProgrammeStatus } from '@/lib/queries/injuryTimeline';
-import { fetchInjuryClinical } from '@/lib/queries/injuries';
+import { fetchInjuryClinical, fetchInjuryClinicalMany, type InjuryClinical } from '@/lib/queries/injuries';
 import { BodyWeightPanel } from '@/components/BodyWeightPanel/BodyWeightPanel';
 import { SetAvailabilityFormCoach } from '@/components/SetAvailabilityFormCoach/SetAvailabilityFormCoach';
-import { EntryCorrectionPanel } from '@/components/EntryCorrectionPanel/EntryCorrectionPanel';
 import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import {
   fetchPlayerProfile,
@@ -26,16 +24,11 @@ import { fetchBodyCompositionEntries } from '@/lib/queries/bodyComposition';
 import { fetchTargetRangeHistory } from '@/lib/queries/bodyMassTargetRange';
 import { massState } from '@/lib/nutritionRules';
 import { fetchCurrentSeason } from '@/lib/queries/schedule';
-import {
-  fetchTrainingWithRevisions,
-  fetchWellnessWithRevisions,
-} from '@/lib/queries/entryRevisions';
-import { addDays, formatDate, formatNumber, initials, ordinal, todayIso } from '@/lib/format';
+import { enumLabel, formatDate, formatNumber, initials, ordinal, todayIso } from '@/lib/format';
 import { DEFAULT_RANGE, clampPeriod, resolveRange, type RangeKey } from '@/lib/period';
 import { resolvePeriod } from '@/lib/period.server';
 import { availabilityStatus } from '@/lib/status';
 import { headerOwnerLine, headerRestrictionLine, headerSubLine, planLine } from '@/lib/profileHeader';
-import { noWeighInLine } from '@/lib/nutritionNoWeighIn';
 import { isPremium } from '@/lib/tier';
 import { requireStaff } from '@/lib/session';
 import { rpeOffLine } from '@/lib/rpeSetting';
@@ -44,9 +37,7 @@ import { GuardianCard } from '@/components/GuardianCard/GuardianCard';
 import { fetchLatestGuardianRequest } from '@/lib/guardianConsent';
 import { isUuid } from '@/lib/uuid';
 import { profilePanelOrder, profilePanelSegments, type ProfilePanelKey } from '@/lib/profilePanels';
-import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, ENTRY_CORRECTION, INJURY_ACCESS, NUTRITION_EDIT, PROGRAMME_AUTHOR, SETTINGS_ADMIN, THRESHOLD_VIEW, WEIGH_IN_DELETE_ANY_TIME, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
-import { ReadOnlyOwner } from '@/components/ReadOnlyOwner/ReadOnlyOwner';
-import { fetchRules, resolveRuleForAthlete } from '@/lib/queries/nutritionRules';
+import { ALL_STAFF, ATHLETE_BIO_EDIT, AVAILABILITY_EDIT, BODY_MASS_VIEW, CLINICAL_ONLY, INJURY_ACCESS, PROGRAMME_AUTHOR, SETTINGS_ADMIN, THRESHOLD_VIEW, WEIGH_IN_DELETE_ANY_TIME, WEIGH_IN_EDIT, editableFlagDomains, hasAnyRole } from '@/lib/access';
 import { fetchUserNames } from '@/lib/queries/users';
 import { SkFloor } from '@/components/Skeleton/SkFloor';
 
@@ -429,45 +420,12 @@ async function AthletePageContent({
      already refuses the write. */
   const canAuthorProgramme = hasAnyRole(claims.roles, PROGRAMME_AUTHOR);
 
-  /* The coach-facing correction path the club asked for: "the athlete shouldnt be
-   * able to edit an entry only the coach should be able to do it on the system —
-   * show me exactly how they can do this and is this a feature in the system for
-   * each player profile." It is, and this is where: one card per player profile.
-   *
-   * The client check and the server check are the same predicate again, after a
-   * detour: 0058 narrowed the two RPCs to coach-or-medical, 0065 widened them to
-   * all five staff roles with the five-role model, and 0075 settles them at the
-   * sport scientist, the coach and the medic. `canCorrect` hides a control the
-   * RPC would refuse anyway. CLAUDE.md §2 rule 2: the RPC is the authorisation,
-   * this boolean is only the tidiness.
-   *
-   * 28 days, not the profile's other windows. Long enough that a coach reviewing a
-   * block finds the entry they remember being wrong, short enough that the base-
-   * table read behind it (see queries/entryRevisions.ts on why it must be the base
-   * table and not the _current view) stays a small result set. A correction to an
-   * older entry is still possible — it is just not reachable from this card, and
-   * the card says which window it is showing rather than implying it is everything. */
-  const CORRECTION_WINDOW_DAYS = 28;
-  const correctionRange = { from: addDays(today, -(CORRECTION_WINDOW_DAYS - 1)), to: today };
-  /* Was ALL_STAFF, because 0065 made all five staff roles count as staff inside
-     revise_wellness_entry and revise_training_entry. Narrowed 2026-09-06: the
-     S&C may raise a flag but may not edit a wellness entry or an RPE score, and
-     the nutritionist's writes on this profile are bodyweight and the nutrition
-     plan only. training_entries.rpe is what makes the training half an RPE
-     question rather than a separate one.
+  /* The entries-and-corrections panel, its 28-day correction window and its
+     two revision reads left this page on 16 Sept 2026 (3.1): they live
+     behind the Wellness button now (/squad/[athleteId]/wellness), with the
+     same bound and the same ENTRY_CORRECTION gate. */
 
-     Migration 0075 narrows both RPCs to the same three roles, so this hides a
-     control the database would refuse anyway -- which is the right order:
-     the RPC is the authorisation, this is the tidiness. */
-  const canCorrect = hasAnyRole(claims.roles, ENTRY_CORRECTION);
-  /* No longer true for every reader, which is the point: this page is open to all
-   * five staff roles and two of them now see the panel read-only. */
-  const [wellnessRevisions, trainingRevisions] = await Promise.all([
-    fetchWellnessWithRevisions(db, orgId, athleteId, correctionRange),
-    fetchTrainingWithRevisions(db, orgId, athleteId, correctionRange),
-  ]);
-
-  const { athlete, athleticism, acwr, wellnessRating, headerWellness, programme, nutrition, bodyWeight } = profile;
+  const { athlete, athleticism, acwr, wellnessRating, headerWellness, programme, bodyWeight } = profile;
   const guardianRequest = athlete.consent.isMinor ? await fetchLatestGuardianRequest(db, athleteId) : null;
 
   /* The clinical record is fetched ONLY for a medic. Not fetched-then-hidden:
@@ -479,6 +437,9 @@ async function AthletePageContent({
   const viewerIsClinical = hasAnyRole(claims.roles, CLINICAL_ONLY);
   const activeInjuryClinical =
     viewerIsClinical && activeInjury ? await fetchInjuryClinical(db, orgId, activeInjury.id) : null;
+  /* The medical record panel (3.1, 16 Sept 2026): the clinical row of every
+     injury on record, one read, the medic only. */
+  const clinicalByInjury = viewerIsClinical ? await fetchInjuryClinicalMany(db, orgId, profile.injuries.map((i) => i.id)) : new Map<string, InjuryClinical>();
   /* Same condition as the clinical fetch above, for the same reason: a coach's
      render pass never asks for it. The card's programme line and its link to the
      injury record are medic-only. */
@@ -492,16 +453,12 @@ async function AthletePageContent({
      reason behind them. */
   const currentAvailability = await fetchCurrentAvailability(db, orgId, [athlete.id]);
   const currentRestrictions = currentAvailability[0]?.restrictions ?? [];
-  /* STAFF-SS-02-05 C5 (2026-09-12): a read-only panel ends with its owner.
-     Who set the nutrition rule that reaches this athlete (personal > group >
-     org default, the resolver nutrition already uses) and who set the current
-     availability, named through one small users read. */
-  const canEditNutrition = hasAnyRole(claims.roles, NUTRITION_EDIT);
-  const nutritionRule = canEditNutrition
-    ? null
-    : resolveRuleForAthlete(await fetchRules(db, orgId), athlete.id, athlete.group_ids);
+  /* STAFF-SS-02-05 C5 (2026-09-12): a read-only panel ends with its owner —
+     who set the current availability, named through one small users read.
+     The nutrition rule's owner went with the nutrition card (3.1, 16 Sept
+     2026; the nutrition page names it). */
   const availabilityRow = currentAvailability[0] ?? null;
-  const ownerNames = await fetchUserNames(db, orgId, [nutritionRule?.rule.created_by ?? null, availabilityRow?.set_by ?? null]);
+  const ownerNames = await fetchUserNames(db, orgId, [availabilityRow?.set_by ?? null]);
   const availabilitySetBy =
     availabilityRow && availabilityRow.injury_id
       ? {
@@ -736,72 +693,6 @@ async function AthletePageContent({
       </section>
       </>
     ),
-    availability: (
-      <>
-      {/* ADR-008 / migration 0041: non-injury availability, reachable by
-       * coach or medical, without an injury record existing at all —
-       * the entry point the audit found missing (gameplan 2.6). Gated
-       * on the same two roles as the weigh-in button above, since
-       * availability_coach_insert_noninjury (0041) and
-       * availability_medical_insert (0012) are exactly those two roles. */}
-      {canSetAvailability ? (
-        <section className="card pp-card" aria-labelledby="pp-availability-title">
-          <h2 className="card-title" id="pp-availability-title">
-            Availability
-          </h2>
-          <SetAvailabilityFormCoach
-            orgId={orgId}
-            userId={claims.userId}
-            athleteId={athlete.id}
-            athleteName={`${athlete.first_name} ${athlete.last_name}`}
-            /* A non-injury absence this form could end: no injury link, a
-               real non-injury reason (the coach's update policy, 0068,
-               excludes a row with reason 'injury'), and not Available. */
-            currentAbsence={
-              !!availabilityRow &&
-              availabilityRow.injury_id === null &&
-              availabilityRow.reason_category !== null &&
-              availabilityRow.reason_category !== 'injury' &&
-              availabilityRow.status !== 'available'
-            }
-          />
-        </section>
-      ) : null}
-      </>
-    ),
-    entries: (
-      <>
-      {/* Full width, below the two-column grid rather than inside it: these are
-        * wide tables with a per-row expansion, and half a grid column would force
-        * either a horizontal scroll on every row or a truncated history. Placed
-        * above the admin-only subject-access block so the last thing a coach sees
-        * on the page is their own tool, not a compliance one. */}
-      {/* Captioned, not moved. CORRECTION_WINDOW_DAYS is a performance bound
-        * on a base-table read (see its own comment above), so the header's
-        * period control deliberately does not reach it — and a coach who has
-        * set the page to a year must be told that, or a correction they
-        * cannot find here reads as an entry that does not exist. */}
-      {/* #16 (Isabella, 15 Sept 2026, mobile queue): the entries and their
-        * corrections are DESKTOP-ONLY VIEWS — hidden at phone width by
-        * base.css's width gate, the caption with the panel. Presentation,
-        * not permission: the correction write is unchanged for canCorrect. */}
-      <p className="cap" style={{ margin: '0 0 -6px' }} data-desktop-only="">
-        Entry corrections cover a fixed {CORRECTION_WINDOW_DAYS} days ({formatDate(correctionRange.from, timezone)}{' '}
-        to {formatDate(correctionRange.to, timezone)}) and do not follow the period control &mdash; it is a
-        bound on how much of the entry base table this card reads, not a view window. An older entry is
-        still correctable, just not from here.
-      </p>
-
-      <EntryCorrectionPanel
-        athleteId={athlete.id}
-        athleteFirstName={athlete.first_name}
-        timezone={timezone}
-        canCorrect={canCorrect}
-        wellness={wellnessRevisions}
-        training={trainingRevisions}
-      />
-      </>
-    ),
     bodyWeight: (
       <>
       {canSeeBodyMass ? (
@@ -930,91 +821,6 @@ async function AthletePageContent({
       ) : null}
       </>
     ),
-    nutrition: (
-      <>
-      <section className="card pp-card" aria-labelledby="pp-nutrition-title">
-        <div className="pp-card-row">
-          <h2 className="card-title" id="pp-nutrition-title">
-            Nutrition plan
-          </h2>
-          {/* C5: Edit only for a role that may (NUTRITION_EDIT); a reader
-              gets View and the owner well at the panel's end. */}
-          {canEditNutrition ? (
-            <Link href="/nutrition" className="btn-ghost">
-              Edit
-            </Link>
-          ) : (
-            <Link href="/nutrition" className="btn-ghost">
-              View
-            </Link>
-          )}
-        </div>
-        {/* An empty panel states the requirement, never a zero
-            (STAFF-SS-02-05 C8, 2026-09-12): the targets are per
-            kilogram, so a plan without a weigh-in has nothing to scale. */}
-        {!nutrition ? (
-          <p className="cap" style={{ margin: '0 0 var(--sp-8)' }}>
-            No plan assigned. Targets are per kilogram, so a plan needs a weigh-in.
-          </p>
-        ) : bodyWeight.latestKg === null ? (
-          /* PATTERN-S5 C7 (2026-09-13): the figures below are real —
-             the resolver's absolute fallback — so say what they are
-             rather than "needs a weigh-in" above them. */
-          <p className="cap" style={{ margin: '0 0 var(--sp-8)' }}>
-            {noWeighInLine({ firstName: athlete.first_name, sourceScope: nutrition.source_scope })}
-          </p>
-        ) : null}
-        <div className="pp-macro-tiles">
-          <div className="pp-macro-tile">
-            <p className="num pp-macro-value" style={{ margin: 0 }}>
-              {nutrition?.energy_kcal !== null && nutrition?.energy_kcal !== undefined ? formatNumber(nutrition.energy_kcal, 0) : EM_DASH}
-            </p>
-            <p className="pp-macro-label" style={{ margin: 0 }}>
-              kcal
-            </p>
-          </div>
-          <div className="pp-macro-tile">
-            <p className="num pp-macro-value" style={{ margin: 0 }}>
-              {nutrition?.protein_g !== null && nutrition?.protein_g !== undefined ? formatNumber(nutrition.protein_g, 0) : EM_DASH}
-            </p>
-            <p className="pp-macro-label" style={{ margin: 0 }}>
-              protein g
-            </p>
-          </div>
-          <div className="pp-macro-tile">
-            <p className="num pp-macro-value" style={{ margin: 0 }}>
-              {nutrition?.carbs_g !== null && nutrition?.carbs_g !== undefined ? formatNumber(nutrition.carbs_g, 0) : EM_DASH}
-            </p>
-            <p className="pp-macro-label" style={{ margin: 0 }}>
-              carbs g
-            </p>
-          </div>
-          <div className="pp-macro-tile">
-            <p className="num pp-macro-value" style={{ margin: 0 }}>
-              {nutrition?.fat_g !== null && nutrition?.fat_g !== undefined ? formatNumber(nutrition.fat_g, 0) : EM_DASH}
-            </p>
-            <p className="pp-macro-label" style={{ margin: 0 }}>
-              fat g
-            </p>
-          </div>
-        </div>
-        {!canEditNutrition ? (
-          <ReadOnlyOwner
-            owner="the nutritionist or the sport scientist"
-            name={nutritionRule?.rule.created_by ? (ownerNames.get(nutritionRule.rule.created_by) ?? null) : null}
-            date={nutritionRule ? formatDate(nutritionRule.rule.effective_from, timezone) : null}
-            note={
-              nutritionRule?.source === 'group'
-                ? `Set for ${nutritionRule.rule.group_name ?? 'the group'}, not for this athlete alone.`
-                : nutritionRule?.source === 'org_default'
-                  ? 'The club default; nothing set for this athlete or their group.'
-                  : undefined
-            }
-          />
-        ) : null}
-      </section>
-      </>
-    ),
     injury: (
       <>
       {/* The injury card, CHANGELOG-injury-card-spec.md. Position is
@@ -1056,6 +862,71 @@ async function AthletePageContent({
       ) : null}
       </>
     ),
+    medicalRecord: (
+      <>
+      {/* THE MEDIC'S RECORD AREA (Isabella, 16 Sept 2026, overnight queue 3.1):
+          every injury on record with the clinical fields that already exist
+          and are already withheld from every other role — body area, side,
+          severity, diagnosis, mechanism — and the history itself. Fetched
+          for the medic only (clinical_medical_only, 0012, would answer
+          nobody else anyway); no new field, no free text. */}
+      {viewerIsClinical ? (
+        <section className="card pp-card" aria-labelledby="pp-medical-title">
+          <h2 className="card-title" id="pp-medical-title">
+            Medical record
+          </h2>
+          <p className="cap" style={{ margin: '0 0 var(--sp-10)' }}>
+            For medical staff only — the coach, S&amp;C and nutritionist see none of this (access matrix §4.1).
+            {' '}{profile.injuries.length} injur{profile.injuries.length === 1 ? 'y' : 'ies'} on record.
+          </p>
+          {profile.injuries.length === 0 ? (
+            <p className="import-sub" style={{ margin: 0 }}>No injury has been recorded for {athlete.first_name}.</p>
+          ) : (
+            <div style={{ overflowX: 'auto' }}>
+              <table className="tbl">
+                <caption className="visually-hidden">Injury history with clinical detail</caption>
+                <thead>
+                  <tr>
+                    <th scope="col">Onset</th>
+                    <th scope="col">Body area</th>
+                    <th scope="col">Side</th>
+                    <th scope="col">Status</th>
+                    <th scope="col">Severity</th>
+                    <th scope="col">Diagnosis</th>
+                    <th scope="col">Mechanism</th>
+                    <th scope="col">Return</th>
+                  </tr>
+                </thead>
+                <tbody>
+                  {profile.injuries.map((inj) => {
+                    const c = clinicalByInjury.get(inj.id) ?? null;
+                    return (
+                      <tr key={inj.id}>
+                        <td className="num">{formatDate(inj.onset_date, timezone)}</td>
+                        <td className="nm">
+                          <Link href={`/injuries/${inj.id}`}>{inj.body_area ? enumLabel(inj.body_area) : 'Not recorded'}</Link>
+                        </td>
+                        <td>{inj.side ? enumLabel(inj.side) : EM_DASH}</td>
+                        <td>
+                          <span className={`pill ${inj.status === 'closed' ? 'pill-neutral' : 'pill-bad'}`}>{enumLabel(inj.status)}</span>
+                        </td>
+                        <td>{c?.severity ? enumLabel(c.severity) : EM_DASH}</td>
+                        <td>{c?.diagnosis ?? EM_DASH}</td>
+                        <td>{c?.mechanism ?? EM_DASH}</td>
+                        <td className="num">
+                          {inj.actual_return ? formatDate(inj.actual_return, timezone) : inj.expected_return ? `exp. ${formatDate(inj.expected_return, timezone)}` : EM_DASH}
+                        </td>
+                      </tr>
+                    );
+                  })}
+                </tbody>
+              </table>
+            </div>
+          )}
+        </section>
+      ) : null}
+      </>
+    ),
     goals: (
       <>
       <section className="card pp-card" aria-labelledby="pp-goals-title">
@@ -1076,20 +947,6 @@ async function AthletePageContent({
           No coaching note on record — only the programme&apos;s own stated goal is shown
           here.
         </p>
-      </section>
-      </>
-    ),
-    scLog: (
-      <>
-      <section className="card pp-card" aria-labelledby="pp-sc-title">
-        <h2 className="card-title" id="pp-sc-title">
-          S&amp;C history log
-        </h2>
-        <EmptyState
-          headingLevel={3}
-          title="No adaptation log entries"
-          body="Adaptation notes are planned but not available yet. Nothing has been recorded here."
-        />
       </section>
       </>
     ),
@@ -1122,13 +979,10 @@ async function AthletePageContent({
     flags: true,
     athleticism: true,
     acwr: true,
-    availability: canSetAvailability,
-    entries: true,
     bodyWeight: canSeeBodyMass,
-    nutrition: true,
     injury: true,
+    medicalRecord: viewerIsClinical,
     goals: true,
-    scLog: true,
     sar: claims.roles.includes('sport_scientist'),
   };
   const segments = profilePanelSegments(profilePanelOrder(claims.roles), (key) => present[key]);
@@ -1276,6 +1130,32 @@ async function AthletePageContent({
             planHref={programme ? `/programmes/${programme.programmeId}` : null}
             planLabel={canAuthorProgramme ? 'Change plan' : 'View plan'}
             planPhoneHidden={canAuthorProgramme}
+            /* 3.1 (16 Sept 2026): the availability card became "Edit
+               availability" on the name card. ADR-008 / migration 0041:
+               non-injury availability, by coach or medical, without an
+               injury record existing at all; the same two roles as
+               availability_coach_insert_noninjury (0041) and
+               availability_medical_insert (0012). */
+            availabilityForm={
+              canSetAvailability ? (
+                <SetAvailabilityFormCoach
+                  orgId={orgId}
+                  userId={claims.userId}
+                  athleteId={athlete.id}
+                  athleteName={`${athlete.first_name} ${athlete.last_name}`}
+                  /* A non-injury absence this form could end: no injury link, a
+                     real non-injury reason (the coach's update policy, 0068,
+                     excludes a row with reason 'injury'), and not Available. */
+                  currentAbsence={
+                    !!availabilityRow &&
+                    availabilityRow.injury_id === null &&
+                    availabilityRow.reason_category !== null &&
+                    availabilityRow.reason_category !== 'injury' &&
+                    availabilityRow.status !== 'available'
+                  }
+                />
+              ) : null
+            }
             ageDisplay={emDash(profile.age)}
             weightDisplay={
               !canSeeBodyMass ? null : bodyWeight.latestKg !== null ? `${formatNumber(bodyWeight.latestKg, 1)} kg` : EM_DASH

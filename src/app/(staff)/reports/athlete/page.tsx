@@ -106,6 +106,9 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
             empty `groups` as "the user just cleared it", so echoing an empty
             hidden field would silently wipe a filter that came from the
             cookie. Absent means absent, and the cookie resolves it again. */}
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center', flexWrap: 'wrap' }}>
+        {/* 3.5 (16 Sept 2026): the group filter, a dropdown in the top right. */}
+        <GroupFilter groups={groups} selected={groupIds} />
         <form method="get" role="search" style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           {groupParam.map((value, i) => (
             <input key={`${value}-${i}`} type="hidden" name="groups" value={value} />
@@ -127,10 +130,10 @@ export default async function AthleteReportPickerPage({ searchParams }: { search
               exactly one Back and it is the history one, so this row loses its
               copy rather than the app growing a second convention. */}
         </form>
+        </div>
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-14)', flexWrap: 'wrap', marginBottom: 'var(--sp-14)' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
         {/* The squad's shape at a glance, counted off the same rows the table
             renders. Each figure carries its status colour so the legend and
             the pills below cannot disagree about what "modified" looks like. */}

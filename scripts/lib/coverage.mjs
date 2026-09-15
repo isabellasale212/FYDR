@@ -36,46 +36,47 @@ export class CoverageError extends Error {}
    +2 lib (todayStatus.ts, gymWeeks.ts), −1 component (TodayGymRow, its row
    now a status card) — six counts. Then the staff phone section: +1
    component (SettingsPhoneNotice), +1 layout (settings/layout.tsx) — eleven
-   counts. */
+   counts. Then the desktop section: +3 components (GroupSelect,
+   GroupRowActions, DashboardTabs), +1 page (dashboard/match) — twelve. */
 export const COUNTS = {
   /** supabase/migrations/*.sql */
   migrations: 133,
   /** supabase/tests/*.sql (pgTAP) */
   pgtapTests: 94,
   /** every file under src, of any kind */
-  srcFiles: 559,
+  srcFiles: 563,
   /** .ts and .tsx under src */
-  srcTs: 554,
+  srcTs: 558,
   /** .tsx under src */
-  srcTsx: 306,
+  srcTsx: 310,
   /** .css under src (src/styles) */
   srcCss: 2,
   /** page.tsx under src/app/(staff) */
-  staffPages: 77,
+  staffPages: 78,
   /** .tsx under src/app/(staff) */
-  staffTsx: 98,
+  staffTsx: 99,
   /** route.ts / route.tsx under src/app/(staff) */
   staffRoutes: 44,
   /** .tsx under src/app/(athlete) */
   athleteTsx: 27,
   /** .tsx under src/components */
-  componentTsx: 170,
+  componentTsx: 173,
   /** .ts and .tsx under src/components */
-  componentTs: 176,
+  componentTs: 179,
   /** .tsx under src/app */
-  appTsx: 135,
+  appTsx: 136,
   /** .ts and .tsx under src/app */
-  appTs: 182,
+  appTs: 183,
   /** every file under src/app, of any kind */
-  appFiles: 185,
+  appFiles: 186,
   /** route.ts and .tsx under src/app */
-  appRoutesAndTsx: 176,
+  appRoutesAndTsx: 177,
   /** route.ts under src/app */
   appRoutes: 41,
   /** .ts and .tsx under src/lib */
   libTs: 195,
   /** page.tsx under src/app */
-  appPages: 108,
+  appPages: 109,
   /** layout.tsx under src/app */
   appLayouts: 5,
   /** page.tsx under src/app/(athlete) */

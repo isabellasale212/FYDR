@@ -593,3 +593,20 @@ Isabella has ruled the database enforcement follows after Friday
 Class 3 holds throughout: no state on these screens is carried by colour alone
 (the dropdowns say their value, the notice says what it is, the flags line
 names the athlete).
+
+**16 September 2026 — the overnight queue, Section 3 (staff desktop).** Not a
+width rule: these are hidden BY ROLE, at every width, and Isabella has ruled
+the database enforcement follows after Friday (`docs/after-friday.md`).
+"Hidden", never "not permitted".
+
+| # | Where | Hidden by role | Shown instead | Permission today |
+|---|---|---|---|---|
+| 3.1 | Player profile | nothing by role: the nutrition plan card, the entries-and-corrections panel, the S&C history log and the availability card left the body for every role — behind the Nutrition, Wellness and Gym buttons, and "Edit availability" on the name card | the **Medical record** card (every injury with body area, side, severity, diagnosis, mechanism, status, return) for the **medic only** — the fields §4.1 already withholds from every other role; fetched for the medic only | unchanged |
+| 3.1 | `/squad/[id]/nutrition` | the edit ways (Set a manual target, Edit plans) for every role but the **nutritionist** | a reading | `NUTRITION_EDIT` (sport scientist, nutritionist) writes |
+| 3.1 | `/programmes/[id]/athlete/[id]` | the override editor on a gym programme for every role but the **S&C**; a rehab programme keeps its medical authors | read-only | `PROGRAMME_EDIT` (sport scientist, S&C) writes |
+| 3.2 | Sidebar | the Nutrition row for every role but the **nutritionist**; the Gym programme row for every role but the **S&C and the medic** | the player profile's Nutrition and Gym buttons | the routes answer for all staff |
+| 3.2 | Gym programme | the medic's creation is a **return-to-play protocol** (the rehab type, which `ProgrammeForm` holds a medic to) | — | `REHAB_PROGRAMME` — enforced |
+| 3.4 | Dashboard | the **Match** tab (team selection) for every role but the **coach**; on `/dashboard/match` the allocate and publish controls for every role but the coach | `/injuries/team-allocation` still answers as §3.2 says | `SESSION_EDIT` (sport scientist, coach) writes |
+| 3.4 | Squad overview | — | "Has app on home screen · N of M", a small status in the top right | unchanged |
+| 3.4 | Manage groups | — | Edit and Remove on every row; Remove archives after a second press (a group is never hard-deleted) | `GROUP_EDIT` — enforced |
+| 3.5 | Every screen with the group filter | — | the filter as a dropdown in the page's top right (`GroupSelect`), the chip rows gone everywhere but Analytics | unchanged |

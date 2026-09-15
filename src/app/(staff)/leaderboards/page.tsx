@@ -86,6 +86,8 @@ export default async function LeaderboardWallPage({
           <h1>Leaderboard</h1>
         </div>
         <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+          {/* 3.5 (16 Sept 2026): the group filter, a dropdown in the top right. */}
+          <GroupFilter groups={groups} selected={groupIds} />
           <Link href="/leaderboards/manage" className="btn-ghost">
             Manage published boards →
           </Link>
@@ -96,9 +98,6 @@ export default async function LeaderboardWallPage({
           live control on the wall below and reads on every row; the sentence
           was an argument for a default the reader can already see and change. */}
 
-      <div style={{ marginBottom: 'var(--sp-14)' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
-      </div>
 
       <LeaderboardWall data={wall} activeGroupLabel={activeGroupLabel} />
     </>

@@ -87,9 +87,13 @@ console.log('\ncard position: where the one panel order puts it (STAFF-SS-02-05 
 const orderSrc = readFileSync('src/lib/profilePanels.ts', 'utf8');
 const orderBlock = orderSrc.slice(orderSrc.indexOf('SPORT_SCIENTIST_PANEL_ORDER'), orderSrc.indexOf('];', orderSrc.indexOf('SPORT_SCIENTIST_PANEL_ORDER')));
 const pos = (key: string) => orderBlock.indexOf(`'${key}'`);
-assert(pos('injury') > -1 && pos('nutrition') > -1 && pos('injury') > pos('nutrition'), 'the injury card comes after the nutrition plan');
-assert(pos('goals') > pos('injury'), 'and before Goals');
-assert(pos('scLog') > pos('goals'), 'with the S&C history log after Goals, not before the injury card as it once was');
+/* 16 Sept 2026 (Isabella's overnight queue, 3.1): the nutrition plan and the
+   S&C history log left the profile (behind the Nutrition and Gym buttons);
+   the injury card follows Body weight and precedes the medic's Medical
+   record and Goals. */
+assert(pos('injury') > -1 && pos('nutrition') === -1 && pos('scLog') === -1, 'the nutrition plan and the S&C log are no longer profile panels (16 Sept 2026)');
+assert(pos('bodyWeight') > -1 && pos('injury') > pos('bodyWeight'), 'the injury card comes after Body weight');
+assert(pos('medicalRecord') > pos('injury') && pos('goals') > pos('medicalRecord'), 'then the medic\'s Medical record, then Goals');
 assert(/panels\[segment\.key\]|panels\[key\]/.test(pageCode) && /profilePanelOrder\(claims\.roles\)/.test(pageCode), 'and the page renders its panels from that order, per role');
 
 console.log(`\n${passed} passed, ${failed} failed`);

@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { DashboardFlagsPanel } from '@/components/DashboardFlagsPanel/DashboardFlagsPanel';
+import { DashboardTabs } from '@/components/DashboardTabs/DashboardTabs';
 import { DashboardHeadlineStats } from '@/components/DashboardHeadlineStats/DashboardHeadlineStats';
 import { DashboardLeadCard } from '@/components/DashboardLeadCard/DashboardLeadCard';
 import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
@@ -289,15 +290,20 @@ async function DashboardPageContent({ searchParams }: { searchParams: SearchPara
           <h1>Dashboard</h1>
         </div>
         <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+          {/* 3.5 (16 Sept 2026): the group filter, a dropdown in the top right. */}
+          <GroupFilter groups={groups} selected={groupIds} />
           {/* PATTERN-S7 C4: Print opens the availability board's PDF — the
               treatment-room wall board, and nothing else on this screen. */}
           <PrintLink href={`/dashboard/pdf${groupIds.length ? `?groups=${groupIds.join(',')}` : ''}`} />
         </div>
       </div>
 
-      <div style={{ margin: 'var(--s-5) 0 var(--s-7)' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
-      </div>
+      {/* 3.4 (Isabella, 16 Sept 2026): Overview | Match, the coach's — the
+          week's team selection lives on the Match tab now. Desktop; the
+          phone's dashboard is as it was (the view tabs are not drawn below
+          768px). */}
+      <DashboardTabs current="overview" show={claims.roles.includes('coach')} groupIds={groupIds} />
+
 
       {isAnchoredToPast ? (
         <div

@@ -109,6 +109,14 @@ second question.
 
 ---
 
+**The S&C history log lives here since 16 September 2026** (3.1: "move the S&C
+history logs behind the Gym button") — the same placeholder card the profile
+carried: adaptation notes are planned and nothing has been recorded. **Only the
+S&C edits a gym programme's per-athlete page** (`/programmes/[id]/athlete/[id]`,
+reached from this page's assignment rows) since the same day — the sport
+scientist, whom `PROGRAMME_EDIT` still admits, reads; hidden, enforcement after
+Friday (`docs/after-friday.md`).
+
 ## 8. States
 
 **Loading.** Renders when ready.

@@ -357,6 +357,13 @@ const rows = expectCount('sidebar rows read from rows.ts', [...sidebar.matchAll(
    by a general rule, so a SECOND row quietly narrowing still fails. */
 const SIDEBAR_EXCEPTIONS: Record<string, readonly string[]> = {
   Analytics: ['sport_scientist'],
+  /* 16 Sept 2026 (Isabella's overnight queue, 3.2): tabs by role — Nutrition
+     the nutritionist's, Gym programme the S&C's and the medic's; every other
+     role reaches both through the player profile. Hidden, not withheld: the
+     routes answer, NUTRITION_EDIT and PROGRAMME_EDIT are unchanged, and the
+     database enforcement follows after Friday. */
+  Nutrition: ['nutritionist'],
+  'Gym programme': ['strength_conditioning', 'medic'],
 };
 for (const r of rows) {
   /* A row may write its roles inline or name a set from access.ts. Resolve the
@@ -456,7 +463,8 @@ const HIDDEN_REGIONS: [string, string][] = [
      four of them found only because the guard enumerated them, not because
      anybody suspected these files. */
   ['schedule/planner/[templateId]/page.tsx', 'SESSION_EDIT'],
-  ['settings/groups/page.tsx', 'SESSION_EDIT'],
+  /* settings/groups/page.tsx's SESSION_EDIT region — the team-selection
+     signpost — moved to the dashboard's Match tab on 16 Sept 2026 (3.4). */
   ['injuries/team-allocation/page.tsx', 'SESSION_EDIT'],
   ['nutrition/page.tsx', 'NUTRITION_EDIT'],
   ['programmes/[programmeId]/athlete/[athleteId]/page.tsx', 'PROGRAMME_EDIT'],
@@ -561,10 +569,16 @@ for (const [name, want] of [
      profile are bodyweight and the nutrition plan. Migration 0075 narrows
      revise_wellness_entry and revise_training_entry to match, so this is the
      control matching the authorisation rather than guarding it. */
-  ['canCorrect', 'ENTRY_CORRECTION'],
 ] as [string, string][]) {
   const m = athlete.match(new RegExp(`const ${name} = ([^;]*);`));
   assert((m?.[1] ?? '').includes(want), `${name} resolves from ${want}`);
+}
+/* canCorrect moved with the entries-and-corrections panel to the athlete's
+   wellness page on 16 Sept 2026 (Isabella's overnight queue, 3.1). */
+{
+  const wellness = readFileSync('src/app/(staff)/squad/[athleteId]/wellness/page.tsx', 'utf8');
+  const m = wellness.match(/const canCorrect = ([^;]*);/);
+  assert((m?.[1] ?? '').includes('ENTRY_CORRECTION'), 'canCorrect resolves from ENTRY_CORRECTION (on the wellness page since 16 Sept 2026)');
 }
 /* The two sites that were INVERTED rather than merely stale, asserted on their
    own because "the file mentions the right set" would pass while the control

@@ -78,8 +78,12 @@ console.log('\nC5. a read-only panel ends with its owner line (2026-09-12)');
   assert(/\.ro-owner\s*\{[^}]*background:\s*var\(--surf2\)[^}]*border:\s*1px solid var\(--border\)/.test(css) || /\.ro-owner\s*\{[^}]*border:\s*1px solid var\(--border\)[^}]*background:\s*var\(--surf2\)/.test(css), 'the well treatment: --surf2 in --border');
   assert(!/\.ro-owner[^{]*\{[^}]*opacity/.test(css), 'nothing at 45% opacity — read-only is not disabled');
   const profile = strip(read('src/app/(staff)/squad/[athleteId]/page.tsx'));
-  assert(/canEditNutrition \? \(\s*<Link href="\/nutrition" className="btn-ghost">\s*Edit/.test(profile) && /View\s*<\/Link>/.test(profile), 'the Nutrition plan panel offers Edit only to NUTRITION_EDIT — View otherwise');
-  assert(/<ReadOnlyOwner\s+owner="the nutritionist or the sport scientist"/.test(profile), 'and the read-only well names who owns it');
+  /* The Nutrition plan panel left the profile on 16 Sept 2026 (Isabella's
+     overnight queue, 3.1); it lives behind the Nutrition button, whose
+     page shows the nutritionist the edit ways. */
+  assert(!/pp-nutrition-title/.test(profile) && !/<ReadOnlyOwner/.test(profile), 'the Nutrition plan panel is no longer on the profile (16 Sept 2026)');
+  const nutritionPage = strip(read('src/app/(staff)/squad/[athleteId]/nutrition/page.tsx'));
+  assert(/isNutritionist \? \(/.test(nutritionPage) && /Edit plans/.test(nutritionPage), 'the athlete\'s nutrition page shows the nutritionist alone the edit ways (3.1; hidden for others, enforcement after Friday)');
   assert(/fetchUserNames\(|fetchStaffNames\(|nameById/.test(profile) && /set_by/.test(strip(read('src/lib/queries/availability.ts'))), 'the availability read carries set_by so the injury card can name who set it');
   const card = strip(read('src/components/InjuryCard/InjuryCard.tsx'));
   assert(/<ReadOnlyOwner\s+owner="medical staff"/.test(card) && /availabilitySetBy/.test(card), 'the injury card ends with "Read-only · set by medical staff · Ruth Callaghan · Fri 11 Sept" for a reader who is not the medic');

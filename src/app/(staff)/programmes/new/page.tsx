@@ -17,6 +17,12 @@ export default async function NewProgrammePage() {
     redirect('/programmes');
   }
 
+  /* 3.2 (16 Sept 2026): a medic without PROGRAMME_EDIT is here to open a
+     return-to-play protocol — the rehab type, which ProgrammeForm holds
+     them to — and the page says so. */
+  const rtpOnly = !hasAnyRole(claims.roles, PROGRAMME_EDIT);
+  const title = rtpOnly ? 'New return-to-play protocol' : 'New programme';
+
   return (
     <>
       {/* #20 (Isabella, 15 Sept 2026, mobile queue): creation is desktop-only.
@@ -32,9 +38,9 @@ export default async function NewProgrammePage() {
       <div className="topbar">
         <div className="page-head">
           <p className="eyebrow">
-            <Link href="/programmes">Gym programme</Link> · New programme
+            <Link href="/programmes">Gym programme</Link> · {title}
           </p>
-          <h1>New programme</h1>
+          <h1>{title}</h1>
         </div>
       </div>
 

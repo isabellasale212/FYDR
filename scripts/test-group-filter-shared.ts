@@ -44,9 +44,12 @@ console.log('one cookie, one writer');
   const header = strip(read('src/components/ReportHeader/ReportHeader.tsx'));
   const server = strip(read('src/lib/groupFilter.server.ts'));
   assert(/writeGroupFilterCookie\(next\)/.test(filter) && !/document\.cookie/.test(filter), 'GroupFilter writes through writeGroupFilterCookie, not its own document.cookie');
-  assert(/writeGroupFilterCookie\(next\)/.test(header) && !/document\.cookie/.test(header), 'ReportHeader writes through the same function — the half that was missing');
-  const setGroups = /function setGroups\(next: string\[\]\) \{([\s\S]*?)\n  \}/.exec(header)?.[1] ?? '';
-  assert(/writeGroupFilterCookie\(next\);[\s\S]*router\.push\(/.test(setGroups), 'and writes it before the navigation, so the next screen reads the new choice');
+  /* 3.5 (16 Sept 2026): both headers draw GroupSelect, the one dropdown,
+     which writes the cookie before it pushes. */
+  const select = strip(read('src/components/GroupFilter/GroupSelect.tsx'));
+  assert(/<GroupSelect/.test(header) && /<GroupSelect/.test(filter) && !/document\.cookie/.test(header), 'ReportHeader and GroupFilter draw the same GroupSelect — one control, one cookie write');
+  const apply = /const apply = \(next: string\) => \{([\s\S]*?)\n  \};/.exec(select)?.[1] ?? '';
+  assert(/writeGroupFilterCookie\(ids\);[\s\S]*router\.push\(/.test(apply), 'and GroupSelect writes it before the navigation, so the next screen reads the new choice');
   assert(/from '\.\/groupFilterCookie'/.test(server) && !/const GROUP_FILTER_COOKIE = /.test(server), 'the server reader takes the cookie name from the same module — one name, three files');
   assert(!/cookies\(\)[\s\S]*\.set\(/.test(server) && !/\.set\(GROUP_FILTER_COOKIE/.test(server), 'and never writes it: a ?groups= link is a one-load override, not a sticky choice');
   // Repointed 2026-09-13 (PATTERN-S8 D9): the same rule, now inside resolveGroupFilterDetailed.
@@ -73,7 +76,7 @@ console.log('\nthe sweep: every screen with a chip row resolves through the cook
      athlete report (one athlete, the filter deliberately off — route map §6.2)
      uses the pager without one. */
   const withChips = pages.filter((p) => { const src = strip(read(p)); return /<GroupFilter\b|<ReportHeader\b/.test(src) || (/<ReportPager\b/.test(src) && /header=\{/.test(src)); });
-  expectCount('staff screens rendering a group chip row (GroupFilter, ReportHeader or a ReportPager header)', withChips, 21);
+  expectCount('staff screens rendering a group filter (GroupFilter, ReportHeader or a ReportPager header)', withChips, 22); // +1 on 16 Sept 2026: /dashboard/match (3.4)
   const notResolving = withChips.filter((p) => !/resolveGroupFilter\(/.test(strip(read(p))));
   assert(notResolving.length === 0, notResolving.length === 0
     ? 'every one of them resolves its scope through resolveGroupFilter() — URL first, then the cookie'

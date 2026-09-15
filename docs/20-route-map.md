@@ -175,11 +175,12 @@ doc of its own yet — LEADERBOARD-SPEC.md is the only spec for it today.
 
 | 29 | Billing | `/settings/billing` | `screens/settings.md` | staff web | admin | `/settings` |
 | 29 | Retention and erasure | `/settings/retention` | `screens/settings.md` | staff web | admin | `/settings` |
+| — | Match | `/dashboard/match` | `screens/29-team-allocation.md` and `access-matrix.md` §8 (3.4) | staff web | the coach selects and publishes; every other role reads (hidden, enforcement after Friday) | `/dashboard` — the coach's second tab, Overview being the first |
 | — | Print or save | `/print?doc=<one of this app's …/pdf routes>` | `access-matrix.md` §8 (#15) | staff phone (reached from a Print control below 768px only; answers at any width) | any staff — the PDF route it frames keeps its own gate | the screen whose Print was pressed (Back is a history step) |
 
   *Built 15 September 2026 (mobile queue #15): Back, Download (attachment) and Open in viewer (inline) around an inline preview of the document. `doc` is validated as a same-origin path ending in `/pdf` (`lib/printableDoc.ts`); anything else is not found.*
 
-**66 routes.** 18 athlete, 48 staff. Screen numbers are the inventory in
+**67 routes.** 18 athlete, 49 staff. Screen numbers are the inventory in
 `02-information-architecture.md` §5. Screens 35, 36, 43 and 44 are RESERVED there and appear
 either as a gap in §11 or, for 43, as a section inside `screens/settings.md` at `/me/privacy`.
 Screen 38 is removed from the product and has no route, and none is to be added.
@@ -221,6 +222,13 @@ export const SIDEBAR: readonly SidebarRow[] = [
   { id: 'staff.settings',     label: 'Settings',       route: '/settings',     icon: 'Settings',        roles: ['coach', 'medical', 'admin'] },
 ] as const;
 ```
+
+**As built on 16 September 2026 (Isabella's overnight queue, 3.2), the roles on two
+rows are narrower than the array above:** `staff.nutrition` is `['nutritionist']` and
+`staff.programmes` is `['strength_conditioning', 'medic']` (`src/components/Sidebar/rows.ts`).
+Every other role reaches nutrition and the gym through the player profile's Nutrition and
+Gym buttons. Hiding only — the routes answer for every staff role and the write sets are
+unchanged; the database enforcement follows after Friday (`docs/after-friday.md`).
 
 Three things this array asserts, each of which is a decision and not an accident.
 
@@ -958,6 +966,9 @@ This is the implementation of `CLAUDE.md` §3 and of the header rule in `19-page
   A `?groups=` parameter overrides for that page load only — it exists for shared links —
   and does not write the cookie; the server never writes it. Until 2026-09-12 `ReportHeader`
   wrote the URL only, which is why a filter chosen on a report was gone by Squad overview.
+  **The chip rows are a dropdown everywhere since 16 September 2026** (3.5, `GroupSelect`):
+  in each page's top right, and in the report header's actions row, writing the same cookie
+  through the same function; Analytics alone keeps its chips (not in that queue).
   **Below 768px the chip rows stand down for a dropdown in the phone title bar**
   (`StaffPhoneShell`, 15 September 2026, mobile queue #14): it writes the same cookie through
   the same function and pushes the same `?groups=`, and reads its own value the way the pages

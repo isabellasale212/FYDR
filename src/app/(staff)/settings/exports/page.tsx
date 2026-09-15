@@ -53,6 +53,10 @@ export default async function ExportsPage({ searchParams }: { searchParams: Sear
           </p>
           <h1>Exports</h1>
         </div>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+          {/* 3.5 (16 Sept 2026): the group filter, a dropdown in the top right. */}
+          <GroupFilter groups={groups} selected={groupIds} />
+        </div>
       </div>
 
       <p className="sub" style={{ marginBottom: 'var(--sp-14)', maxWidth: '70ch' }}>
@@ -64,9 +68,6 @@ export default async function ExportsPage({ searchParams }: { searchParams: Sear
         Every domain below, squad-wide. Medical records are never exported here.
       </p>
 
-      <div style={{ margin: '0 0 var(--s-8)' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
-      </div>
 
       {athletes.length === 0 ? (
         <div className="empty">

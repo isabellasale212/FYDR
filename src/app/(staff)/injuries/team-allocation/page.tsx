@@ -75,6 +75,8 @@ export default async function TeamAllocationPage({
           <h1>Team allocation</h1>
         </div>
         <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+          {/* 3.5 (16 Sept 2026): the group filter, a dropdown in the top right. */}
+          <GroupFilter groups={groups} selected={groupIds} />
           {canManageWeek ? <PublishWeekButton
           canManage={hasAnyRole(claims.roles, SESSION_EDIT)} orgId={orgId} userId={claims.userId} weekStart={weekStart} draftCount={draftCount} /> : null}
         </div>
@@ -82,9 +84,6 @@ export default async function TeamAllocationPage({
 
       <p className="eyebrow">{groupScopeLabel(groups, groupIds)} · {orgName}</p>
 
-      <div style={{ margin: 'var(--s-5) 0' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
-      </div>
 
       <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between' }}>
         <Link href={weekHref(prevWeek)} className="btn-ghost" aria-label="Previous week">

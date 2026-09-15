@@ -81,6 +81,8 @@ export default async function InjuriesPage({
           <h1>Injuries</h1>
         </div>
         <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+          {/* 3.5 (16 Sept 2026): the group filter, a dropdown in the top right. */}
+          <GroupFilter groups={groups} selected={groupIds} />
           {isMedical ? (
             <Link href="/injuries/new" className="btn-primary">
               + Injury
@@ -124,9 +126,6 @@ export default async function InjuriesPage({
         </section>
       ) : null}
 
-      <div style={{ marginBottom: 'var(--sp-14)' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
-      </div>
 
       {injuries.length === 0 ? (
         <EmptyState

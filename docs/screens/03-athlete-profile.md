@@ -47,8 +47,9 @@ mistake looks like a broken page even though no data crossed the boundary
 **The status header** — the one emphasised card on the screen (STAFF-SS-02-05
 C1, 13 September 2026; the accent wash and its soft border, B1's mapping of the
 board's tint). The initials, the name and the availability pill in the
-dashboard's words and tones; under them the sub line "Flanker · #7 · Forwards,
-Rehab" (position · jersey · groups, a missing part said); the restriction line —
+dashboard's words and tones; under them the sub line "Forwards, Rehab" (the
+groups — the position and the jersey are the bio row's, and the line restated
+them until 16 September 2026, Isabella's overnight queue 3.1); the restriction line —
 what a coach acts on, never a protocol or a diagnosis: "No contact · No collision
 drills. Expected return to full training Mon 21 Sept." (the return from the
 linked open injury's coach-safe row), an absence as "Academic — Exams this week,
@@ -56,27 +57,42 @@ back Monday 24th", and no status as "No restriction recorded. Not counted as
 available and not counted as out."; then the owner line, "Set by medical staff ·
 Ruth Callaghan · Fri 11 Sept" (an injury-linked row is the medic's; any other row
 "Set by coaching staff"; nothing recorded reads "Set by medical staff · nothing
-recorded"). The domain chips (Nutrition, Wellness, Gym), Edit and today's
-wellness dial sit on the name row as before. Then the bio row (Position, Jersey,
-Height, Age, Hand, Weight — the coach's without Weight, C9), and last the
-development-plan line the old bar carried — "Development plan · In-Season max ·
-week 2 of 4 · ends Tue 29 Sept", or "Development plan · none assigned" — with
-its "View plan" / "Change plan" link. The separate plan bar is gone.
+recorded"). The domain chips (Nutrition, Wellness, Gym — **three distinct
+colours since 16 September 2026**: the accent, the good tone and the gym gold,
+as a tinted fill and edge, the word the label), Edit and today's wellness dial
+sit on the name row as before. Then the bio row (Position, Jersey, Height, Age,
+Hand, Weight — the coach's without Weight, C9), and last the development-plan
+line the old bar carried — "Development plan · In-Season max · week 2 of 4 ·
+ends Tue 29 Sept", or "Development plan · none assigned" — with its "View plan"
+/ "Change plan" link and, beside it for a role that may set availability,
+**Edit availability** (16 September 2026, 3.1): a disclosure that expands the
+absence form (`SetAvailabilityFormCoach`) in place under the plan row; the
+separate Availability card is gone. The separate plan bar is gone.
 
 **The panels, in one order** (STAFF-SS-02-05 C4, ruled 13 September 2026 and
 built 14 September; `lib/profilePanels.ts`). Every role reads the sport
 scientist's order — the board's own "All panels" sheet — with the panels that
 role cannot see simply absent, never locked: **Flags, Athleticism, ACWR and
-wellness rating, Availability, Body weight, Nutrition plan, Injury, Goals,
-S&C history log, Entries and corrections, Subject access request.** One
+wellness rating, Body weight, Injury, Medical record (the medic only), Goals,
+Subject access request.** Four panels left the body on 16 September 2026
+(Isabella's overnight queue, 3.1 — "the screen Isabella will spend most time
+on"): the Nutrition plan card lives behind the Nutrition button, the Entries
+and corrections panel behind the Wellness button (`/squad/[id]/wellness`, the
+same 28-day bound and `ENTRY_CORRECTION` gate), the S&C history log behind the
+Gym button, and Availability became "Edit availability" on the name card. The
+ACWR and wellness-rating card **stays in view**, by name. The **Medical record**
+card, full-width after Injury and drawn for the medic only, is a table of every
+injury on record — onset, body area, side, status, severity, diagnosis,
+mechanism, return — the clinical fields that already exist and are already
+withheld from every other role (`access-matrix.md` §4.1), fetched for the medic
+only (`fetchInjuryClinicalMany`); no new field, no free text. One
 exception: for the S&C and the nutritionist on their own, **Body weight moves
 above Flags** (roles add up, so an S&C who is also a coach reads the base
 order). Layout follows the sequence: on a desktop the column panels fill the
 two-column grid column-first — the first half down the left, the rest down
 the right — so "above" is above; on a phone the one column reads the list
-straight through. The two wide panels (Entries and corrections, the subject
-access request) stand full-width at the foot, and the grid runs unbroken
-above them. The ACWR and wellness card is not on the board (its dial is in
+straight through. The two wide panels (the medical record, the subject access
+request) stand full-width where the sequence puts them. The ACWR and wellness card is not on the board (its dial is in
 the header there) and sits directly after Athleticism, as its own card.
 
 **Ruled 15 September 2026** (Isabella, `decisions/decision-batch-2026-09-15-pm.md`
@@ -245,13 +261,14 @@ creates a new record and marks the old one superseded rather than overwriting it
 
 | Element and label | Where it sits | What happens when used | Where it takes you | What it writes | Permission | Confirmation | Disabled or hidden when |
 |---|---|---|---|---|---|---|---|
-| Record an absence / Mark available again | Availability card (the coach's and sport scientist's absence form) | Records a non-injury absence — reason, Modified or Unavailable, a note — or ends the open one | Stays here | A new availability record; the previous one is closed | Coach, sport scientist (the medic's own form sits on the injury record) | Yes — the who-will-read-what step | Hidden from S&C and nutritionist |
+| Record an absence / Mark available again | Under **Edit availability** on the name card (the coach's and sport scientist's absence form; the separate card is gone since 16 September 2026) | Records a non-injury absence — reason, Modified or Unavailable, a note — or ends the open one | Stays here | A new availability record; the previous one is closed | Coach, sport scientist (the medic's own form sits on the injury record) | Yes — the who-will-read-what step | Hidden from S&C and nutritionist |
 | Log a weigh in | Body weight card | Records a weight for a date — one per athlete per day | Stays here | A new body weight record | Sport scientist, S&C, nutritionist, medic (`WEIGH_IN_EDIT`) | Form submission | The card itself is absent for the coach (`BODY_MASS_VIEW`, 12 September 2026) |
 | Edit a weigh-in | Body weight card, Edit entries | Corrects a weigh-in taken today | Stays here | The row, in place | The same four roles | Form submission | Read-only on any row taken before today (0131 §3) |
 | Delete a weigh-in | Body weight card, Edit entries | Soft-deletes a weigh-in, audited | Stays here | `deleted_at`, `deleted_by`; an audit row `body_composition.delete` | A sport scientist on any row; medic, S&C, nutritionist on a row logged today (`WEIGH_IN_DELETE_ANY_TIME`, `delete_weigh_in()`) | Yes, inline | Absent where it would be refused |
 | Edit biographical details | Bio card | Changes position, squad number and similar | Stays here | Updates the athlete record | **Coach only** | Form submission | Hidden from everyone else, medics included; **hidden at phone width** (below 768px, the control and the medic's blocked one — presentation, not permission, `docs/access-matrix.md` §8, 15 September 2026) |
 | Change plan | Bio card, the plan row | Opens the programme builder | `/programmes/[programmeId]` | Nothing | Programme authors; others read "View plan" | None | **"Change plan" hidden at phone width**; "View plan" stays |
-| Correct an entry | Corrections panel | Supersedes a submitted entry with a new one | Stays here | A new entry marked as the live one; the old marked superseded. **Never an overwrite** | Coach, medic, sport scientist | Form submission | Hidden from others; **the whole entries-and-corrections panel and its caption are hidden at phone width** (desktop-only views, 15 September 2026, mobile queue #16 — the write is unchanged) |
+| Edit availability | Bio card, the plan row, beside Change plan (16 September 2026, 3.1) | Expands the absence form in place — the same form the Availability card carried | Stays here | A new availability record; the previous one is closed | Coach, sport scientist (`AVAILABILITY_EDIT`) | The form's own who-will-read-what step | Not drawn for the S&C, the medic or the nutritionist |
+| Correct an entry | **Behind the Wellness button since 16 September 2026** (`/squad/[id]/wellness`, the corrections panel at its foot) | Supersedes a submitted entry with a new one | Stays there | A new entry marked as the live one; the old marked superseded. **Never an overwrite** | Coach, medic, sport scientist | Form submission | Hidden from others; the panel is hidden at phone width (mobile queue #16) |
 | Wellness, Gym, Nutrition chips | Domain chips | Opens that domain for this athlete | `/squad/[athleteId]/wellness` and siblings | Nothing | Coach or medic today | None | Never |
 | Period selector | Above the charts | Changes how far back the charts reach | Stays here, with the period in the address | Nothing | Any staff | None | A period the data cannot honestly express is shown disabled with its reason, never hidden |
 | Start a subject access request | Foot of page | Begins the formal process of handing this athlete their data | A server route | Creates a request record | **Sport scientist** in the target model; admin today | Yes | Hidden from everyone else |

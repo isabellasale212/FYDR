@@ -5,7 +5,10 @@ import { WellnessChart } from '@/components/WellnessChart/WellnessChart';
 import { AthleteDomainDenied } from '@/components/AthleteDomainShell/AthleteDomainShell';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { loadAthleteDomainContext } from '@/lib/athleteDomain.server';
-import { addDays, formatNumber } from '@/lib/format';
+import { EntryCorrectionPanel } from '@/components/EntryCorrectionPanel/EntryCorrectionPanel';
+import { fetchTrainingWithRevisions, fetchWellnessWithRevisions } from '@/lib/queries/entryRevisions';
+import { ENTRY_CORRECTION, hasAnyRole } from '@/lib/access';
+import { addDays, formatDate, formatNumber } from '@/lib/format';
 import { resolveRange, type RangeKey } from '@/lib/period';
 import { availabilityStatus } from '@/lib/status';
 import { mean, readiness } from '@/lib/stats';
@@ -153,7 +156,25 @@ export default async function AthleteWellnessPage({
   const ctx = await loadAthleteDomainContext(athleteId, sp, { allowed: WELLNESS_PERIODS });
   if (ctx.denied) return <AthleteDomainDenied orgName={ctx.orgName} domain="Wellness" />;
 
-  const { db, orgId, timezone, today, athlete, groups, groupIds, season, periodKey } = ctx;
+  const { db, orgId, timezone, today, athlete, groups, groupIds, season, periodKey, claims } = ctx;
+
+  /* THE ENTRIES AND THEIR CORRECTIONS LIVE HERE since 16 Sept 2026 (Isabella's
+     overnight queue, 3.1: "remove the wellness entries and edit card from the
+     foot of the profile. It lives behind the Wellness button."). The panel,
+     its 28-day bound and its gate are exactly what the profile had: coach,
+     medic and sport scientist correct (ENTRY_CORRECTION, migrations 0058 and
+     0075 — the RPC is the authorisation, the boolean the tidiness), everyone
+     else reads. The header note above about "no edit affordance" is
+     superseded by that ruling for this one panel; the wellness entry is still
+     immutable — a correction is a new revision row (CLAUDE.md rule 6). The
+     RPE corrections travel with it: the panel is one. */
+  const CORRECTION_WINDOW_DAYS = 28;
+  const correctionRange = { from: addDays(today, -(CORRECTION_WINDOW_DAYS - 1)), to: today };
+  const canCorrect = hasAnyRole(claims.roles, ENTRY_CORRECTION);
+  const [wellnessRevisions, trainingRevisions] = await Promise.all([
+    fetchWellnessWithRevisions(db, orgId, athleteId, correctionRange),
+    fetchTrainingWithRevisions(db, orgId, athleteId, correctionRange),
+  ]);
 
   const earliest = await fetchEarliestEntryDate(db, orgId, 'wellness');
   const range = resolveRange(periodKey, today, season?.starts_on ?? null, earliest);
@@ -397,6 +418,20 @@ export default async function AthleteWellnessPage({
             />
           </section>
         )}
+
+        <p className="cap" style={{ margin: '0 0 -6px' }} data-desktop-only="">
+          Entry corrections cover a fixed {CORRECTION_WINDOW_DAYS} days ({formatDate(correctionRange.from, timezone)} to{' '}
+          {formatDate(correctionRange.to, timezone)}) and do not follow the period control &mdash; it is a bound on how much of
+          the entry base table this card reads, not a view window. An older entry is still correctable, just not from here.
+        </p>
+        <EntryCorrectionPanel
+          athleteId={athlete.id}
+          athleteFirstName={athlete.first_name}
+          timezone={timezone}
+          canCorrect={canCorrect}
+          wellness={wellnessRevisions}
+          training={trainingRevisions}
+        />
       </div>
     </>
   );

@@ -58,15 +58,16 @@ export default async function TestLogPage({
           </p>
           <h1>{definition.name}</h1>
         </div>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+          {/* 3.5 (16 Sept 2026): the group filter, a dropdown in the top right. */}
+          <GroupFilter groups={groups} selected={groupIds} />
+        </div>
       </div>
 
       <p className="eyebrow" style={{ marginBottom: 'var(--sp-10)' }}>
         {groupScopeLabel(groups, groupIds)} · {orgName}
       </p>
 
-      <div style={{ marginBottom: 'var(--sp-14)' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
-      </div>
 
       <div style={{ marginBottom: 'var(--sp-14)' }}>
         <TestAssignmentPanel

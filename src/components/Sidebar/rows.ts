@@ -46,8 +46,16 @@ export const SIDEBAR_ROWS: readonly SidebarRow[] = [
   { id: 'staff.squad', label: 'Squad overview', route: '/squad', roles: ALL_STAFF },
   { id: 'staff.schedule', label: 'Schedule', route: '/schedule', roles: ALL_STAFF },
   { id: 'staff.reports', label: 'Reports', route: '/reports', roles: ALL_STAFF },
-  { id: 'staff.nutrition', label: 'Nutrition', route: '/nutrition', roles: ALL_STAFF },
-  { id: 'staff.programmes', label: 'Gym programme', route: '/programmes', roles: ALL_STAFF },
+  /* TABS BY ROLE (Isabella, 16 Sept 2026, overnight queue 3.2): Nutrition is
+     a tab for the nutritionist only; Gym programme for the S&C and the medic
+     only. Every other role reaches nutrition and the gym through the player
+     profile's Nutrition and Gym buttons. HIDDEN, not withheld: the routes
+     answer for every staff role, NUTRITION_EDIT and PROGRAMME_EDIT are
+     unchanged, and the database enforcement follows after Friday
+     (docs/after-friday.md). The phone shell reads this same table and adds
+     its own narrower rule (shell.ts: Gym is the S&C's alone on a phone). */
+  { id: 'staff.nutrition', label: 'Nutrition', route: '/nutrition', roles: ['nutritionist'] },
+  { id: 'staff.programmes', label: 'Gym programme', route: '/programmes', roles: ['strength_conditioning', 'medic'] },
   // Admin stays in this row's roles deliberately — 20-route-map.md's own
   // sidebar array keeps it (`roles: ["coach", "medic", "sport_scientist"]`), and
   // 01-roles-and-permissions.md (superseded) §2 gives admin `A` (aggregate), not `no`,

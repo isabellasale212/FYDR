@@ -81,11 +81,12 @@ export default async function FlagsPage({
           </p>
           <h1>Flags</h1>
         </div>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+          {/* 3.5 (16 Sept 2026): the group filter, a dropdown in the top right. */}
+          <GroupFilter groups={groups} selected={groupIds} />
+        </div>
       </div>
 
-      <div style={{ marginBottom: 'var(--sp-14)' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
-      </div>
 
       {/* #17: the athlete dropdown, phone width only. ReportSelectNav keeps
           every other param (the group filter, the day) as it writes this one;

@@ -18,13 +18,15 @@ console.log('body weight');
 }
 console.log('\nnutrition plan');
 {
-  assert(/No plan assigned\. Targets are per kilogram, so a plan needs a weigh-in\./.test(page), 'no plan: the requirement, stated');
+  /* The nutrition plan card left the profile on 16 Sept 2026 (3.1): the
+     athlete's nutrition page carries the plan; the profile carries none. */
+  assert(!/pp-nutrition-title/.test(page), 'no nutrition plan card on the profile (16 Sept 2026)');
   /* PATTERN-S5 C7 (2026-09-13): with no weigh-in the resolver serves the
      club's absolute default (04-data-model §17.3), so the card used to say
      "this plan needs a weigh-in" above numbers it was showing anyway. Now it
      says what the numbers are. */
   assert(!/Targets are per kilogram, so this plan needs a weigh-in\./.test(page), 'the contradiction is gone');
-  assert(/noWeighInLine\(\{ firstName: athlete\.first_name, sourceScope: nutrition\.source_scope \}\)/.test(page), 'a plan with no weigh-in says what the figures are and whose');
+  assert(!/noWeighInLine\(/.test(page), 'and the no-weigh-in line went with it (the nutrition page and NutritionTargetsCard still say whose the figures are)');
   /* PATTERN-S5 C7, Isabella's ruling 2026-09-13: show the club default,
      labelled as the club default, on every resolved surface. */
   /* The card is one component since 15 Sept 2026 (mobile queue #8), drawn on

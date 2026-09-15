@@ -51,13 +51,17 @@ type Props = {
 export function DomainChips({ athleteId }: Props) {
   return (
     <div className="pp-domain-chips" role="group" aria-label="Open a domain detail page">
-      <Link href={`/squad/${athleteId}/nutrition`} className="squad-chip">
+      {/* Three distinct colours (Isabella, 16 Sept 2026, overnight queue 3.1:
+          "clearly findable") from the system's own families — nutrition the
+          accent, wellness the good tone, gym the gym gold — as a tinted fill
+          and a coloured edge; the word stays the label. */}
+      <Link href={`/squad/${athleteId}/nutrition`} className="squad-chip pp-domain-chip" data-domain="nutrition">
         Nutrition
       </Link>
-      <Link href={`/squad/${athleteId}/wellness`} className="squad-chip">
+      <Link href={`/squad/${athleteId}/wellness`} className="squad-chip pp-domain-chip" data-domain="wellness">
         Wellness
       </Link>
-      <Link href={`/squad/${athleteId}/gym`} className="squad-chip">
+      <Link href={`/squad/${athleteId}/gym`} className="squad-chip pp-domain-chip" data-domain="gym">
         Gym
       </Link>
     </div>

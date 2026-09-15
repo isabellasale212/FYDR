@@ -6,10 +6,14 @@ import { useState } from 'react';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { writeGroupFilterCookie } from '@/lib/groupFilterCookie';
 import type { Group } from '@/lib/queries/groups';
+import { GroupSelect } from './GroupSelect';
 
 type Props = {
   groups: readonly Group[];
   selected: readonly string[];
+  /** 3.5 (16 Sept 2026): the dropdown everywhere; 'chips' only where the
+   *  queue said not to touch — Analytics. */
+  variant?: 'select' | 'chips';
 };
 
 /**
@@ -49,7 +53,7 @@ type Props = {
  *   clear affordance, on every screen this component is mounted on, which is
  *   every screen the filter can scope.
  */
-export function GroupFilter({ groups, selected }: Props) {
+export function GroupFilter({ groups, selected, variant = 'select' }: Props) {
   const router = useRouter();
   const pathname = usePathname();
   const params = useSearchParams();
@@ -86,6 +90,28 @@ export function GroupFilter({ groups, selected }: Props) {
         : [...effective, id],
     );
   };
+
+  /* THE DROPDOWN (Isabella, 16 Sept 2026, overnight queue 3.5): the same
+     filter as one native select, in the page's top right, everywhere the
+     chips were — GroupSelect writes the same cookie and the same ?groups=.
+     The "Filtered to … Clear filter" line beneath stays: it is the one
+     place that says the filter follows you to every screen. Analytics keeps
+     the chips (variant='chips'): not in this queue. */
+  if (variant === 'select') {
+    return (
+      <div className="group-filter">
+        <GroupSelect groups={groups} selected={selected} />
+        {selected.length > 0 ? (
+          <p className="cap group-filter-status" role="status">
+            Filtered to <b>{groupScopeLabel(groups, selected)}</b> — this filter follows you to every screen, report and export until cleared.{' '}
+            <button type="button" className="linklike" onClick={() => apply([])}>
+              Clear filter
+            </button>
+          </p>
+        ) : null}
+      </div>
+    );
+  }
 
   return (
     <div aria-busy={isPending} style={isPending ? { opacity: 0.6 } : undefined}>

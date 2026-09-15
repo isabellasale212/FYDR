@@ -55,6 +55,14 @@ not a hierarchy and do not have to be exclusive.
 
 Built on the server, reading the groups with their membership counts.
 
+**Edit and Remove on every row (16 September 2026, 3.4).** Edit opens the
+group's page (the one editor). Remove archives — a group is never hard-deleted
+— after a second press: the row expands to "Remove <name>? It is archived, not
+deleted — its N athletes keep their other groups, and it can be restored from
+its page", with Confirm remove and Cancel. `GROUP_EDIT` only; a rehab group
+says on tap that it is closed from its injury record. The "Team selections"
+signpost that stood at the top of this page moved to the dashboard's Match tab.
+
 ## 8. States
 
 **No groups.** An empty state. The whole squad is still reachable: no groups means

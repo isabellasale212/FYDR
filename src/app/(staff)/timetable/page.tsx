@@ -68,6 +68,10 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
           <p className="eyebrow">{groupScopeLabel(groups, groupIds)} · {orgName}</p>
           <h1>Timetable</h1>
         </div>
+        <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+          {/* 3.5 (16 Sept 2026): the group filter, a dropdown in the top right. */}
+          <GroupFilter groups={groups} selected={groupIds} />
+        </div>
       </div>
 
       {/* Mirrors the toggle on /schedule — one sidebar entry, two real
@@ -82,9 +86,6 @@ export default async function TimetablePage({ searchParams }: { searchParams: Se
         </span>
       </div>
 
-      <div style={{ marginBottom: 'var(--sp-14)' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
-      </div>
 
       <div className="card" style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--sp-14)' }}>
         <Link href={dayHref(addDays(date, -1))} className="btn-ghost" aria-label="Previous day">

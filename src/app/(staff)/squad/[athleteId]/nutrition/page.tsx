@@ -140,7 +140,18 @@ export default async function AthleteNutritionPage({
   });
   if (ctx.denied) return <AthleteDomainDenied orgName={ctx.orgName} domain="Nutrition" />;
 
-  const { db, orgId, timezone, today, athlete, groups, groupIds, season, periodKey } = ctx;
+  const { db, orgId, timezone, today, athlete, groups, groupIds, season, periodKey, claims } = ctx;
+  /* 3.1 (Isabella, 16 Sept 2026): "only the nutritionist can edit the
+     nutrition page, within the profile buttons". This page stays a reading
+     (the client's own clarification in the header); the nutritionist alone
+     is shown the ways to change what it shows — the manual target form and
+     the plans workspace. HIDDEN for every other role, not withheld:
+     NUTRITION_EDIT still admits the sport scientist at the RPC, and the
+     database enforcement follows after Friday (docs/after-friday.md). */
+  // access-exempt: a hide, not a gate — NUTRITION_EDIT is the set; the
+  // nutritionist alone is SHOWN the edit ways until the enforcement after
+  // Friday (docs/after-friday.md).
+  const isNutritionist = claims.roles.includes('nutritionist');
   /* STAFF-SS-02-05 C9 (decided 2026-09-12): the coach does not see body mass
      at all — the Body mass card is absent for a role outside BODY_MASS_VIEW. */
   const canSeeBodyMass = hasAnyRole(ctx.claims.roles, BODY_MASS_VIEW);
@@ -297,6 +308,16 @@ export default async function AthleteNutritionPage({
           </p>
           <h1>Nutrition</h1>
         </div>
+        {isNutritionist ? (
+          <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+            <Link href="/nutrition/new" className="btn-ghost">
+              Set a manual target
+            </Link>
+            <Link href="/nutrition" className="btn-primary">
+              Edit plans
+            </Link>
+          </div>
+        ) : null}
       </div>
 
       {/* The scope sentence is gone with the controls that made it necessary —

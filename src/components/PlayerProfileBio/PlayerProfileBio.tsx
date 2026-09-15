@@ -49,6 +49,11 @@ type Props = {
   /** #16: true when the link is the author's "Change plan" — hidden at phone
    *  width; a reader's "View plan" is not. */
   planPhoneHidden?: boolean;
+  /** 3.1 (Isabella, 16 Sept 2026): the availability form, for a role that
+   *  may set availability — "Edit availability" beside Change plan expands
+   *  it in place. Null for a reader: no control. The form is a server-built
+   *  element passed down; this component only shows and hides it. */
+  availabilityForm?: ReactNode;
   /** Never editable here — computed from date_of_birth, not a stored field. */
   ageDisplay: string;
   /** Never editable here — BodyWeightPanel, right below on this same page,
@@ -102,6 +107,7 @@ export function PlayerProfileBio({
   planHref,
   planLabel,
   planPhoneHidden = false,
+  availabilityForm = null,
   ageDisplay,
   weightDisplay,
   initialPosition,
@@ -111,6 +117,7 @@ export function PlayerProfileBio({
 }: Props) {
   const router = useRouter();
   const [editing, setEditing] = useState(false);
+  const [availabilityOpen, setAvailabilityOpen] = useState(false);
   const [position, setPosition] = useState(initialPosition ?? '');
   const [squadNumber, setSquadNumber] = useState(initialSquadNumber !== null ? String(initialSquadNumber) : '');
   const [heightCm, setHeightCm] = useState(initialHeightCm !== null ? String(initialHeightCm) : '');
@@ -332,7 +339,26 @@ export function PlayerProfileBio({
             {planLabel}
           </Link>
         ) : null}
+        {/* 3.1 (16 Sept 2026): the availability card left the body; this
+            control, beside Change plan, expands the same form in place. A
+            disclosure, not a dialog (B11: dialogs are for the destructive). */}
+        {availabilityForm ? (
+          <button
+            type="button"
+            className="btn-ghost-pill"
+            aria-expanded={availabilityOpen}
+            aria-controls="pp-availability-form"
+            onClick={() => setAvailabilityOpen((v) => !v)}
+          >
+            {availabilityOpen ? 'Close availability' : 'Edit availability'}
+          </button>
+        ) : null}
       </div>
+      {availabilityForm ? (
+        <div id="pp-availability-form" className="pp-hero-availability" hidden={!availabilityOpen}>
+          {availabilityForm}
+        </div>
+      ) : null}
     </>
   );
 }

@@ -26,9 +26,12 @@ const tz = 'Europe/London';
 
 console.log('1. the sub line: position · jersey · groups');
 {
-  assert(headerSubLine({ position: 'Flanker', squadNumber: 7, groupNames: ['Forwards', 'Rehab'] }) === 'Flanker · #7 · Forwards, Rehab', '"Flanker · #7 · Forwards, Rehab"');
-  assert(headerSubLine({ position: null, squadNumber: null, groupNames: [] }) === 'No position · no jersey · no group', 'nothing recorded is said, not blank');
-  assert(headerSubLine({ position: 'Hooker', squadNumber: 2, groupNames: [] }) === 'Hooker · #2 · no group', 'a missing group is said');
+  /* Groups only since 16 Sept 2026 (Isabella's overnight queue, 3.1): the
+     position and the jersey are in the detail row beneath, and the line
+     restated them. */
+  assert(headerSubLine({ position: 'Flanker', squadNumber: 7, groupNames: ['Forwards', 'Rehab'] }) === 'Forwards, Rehab', '"Forwards, Rehab" — the groups, not the position and jersey the detail row already shows');
+  assert(headerSubLine({ position: null, squadNumber: null, groupNames: [] }) === 'No group', 'nothing recorded is said, not blank');
+  assert(headerSubLine({ position: 'Hooker', squadNumber: 2, groupNames: [] }) === 'No group', 'a missing group is said');
 }
 
 console.log('\n2. the restriction line: what a coach acts on, and the expected return');

@@ -227,7 +227,10 @@ console.log('\n9. artboard 6 — install teaching, and the two named rows');
   const reach = strip(read('src/lib/queries/reachability.ts'));
   assert(/display_mode === 'standalone' && d\.push_supported/.test(reach) && /not from a reminder sent/.test(reach) && /of whom/.test(reach) && /not opened the app yet/.test(reach), 'the figure measures the phone\'s readiness and its caption names the cause');
   const squad = strip(read('src/app/(staff)/squad/page.tsx'));
-  assert(/label="Can receive reminders"/.test(squad) && /fetchReachability\(/.test(squad) && !/complianceFigure|Submitted of expected/.test(squad), 'on the squad view, in the figure shape, and never merged with a compliance figure');
+  /* 16 Sept 2026 (Isabella's overnight queue, 3.4): the figure is a small
+     status in the top right — "Has app on home screen · N of M" — beside
+     Manage groups, the same reachability read; never a compliance figure. */
+  assert(/Has app on home screen/.test(squad) && /fetchReachability\(/.test(squad) && !/label="Can receive reminders"/.test(squad) && !/complianceFigure|Submitted of expected/.test(squad), 'on the squad view as a small status in the top right (16 Sept 2026), never merged with a compliance figure');
   // the withdrawal row and LEGAL-3F
   const dc = strip(read('src/app/(athlete)/me/data-consent/page.tsx'));
   assert(/agreeLabel=\{inData \? 'Keep my consent as it is' : 'I agree to both blocks'\}/.test(dc) && /declineLabel=\{inData \? 'Withdraw my consent' : 'I do not agree'\}/.test(dc), 'the withdrawal screen opens the same two blocks with the opposite pair');

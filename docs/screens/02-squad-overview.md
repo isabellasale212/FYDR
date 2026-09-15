@@ -127,6 +127,12 @@ Forwards should not be able to find a back by typing their name.
 
 ---
 
+**16 September 2026 (Isabella's overnight queue, 3.4 and 3.5).** "Can receive
+reminders" is no longer a report figure leading the page: it is a small status
+in the top right beside Manage groups — **"Has app on home screen · N of M"**,
+the same reachability read, its exclusions sentence as the title. The group
+filter is a dropdown in the top right (`GroupSelect`), the chip row gone.
+
 ## 8. States
 
 **Loading.** The page renders when the roster is ready.

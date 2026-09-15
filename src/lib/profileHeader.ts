@@ -9,11 +9,13 @@ import { enumLabel, formatDate } from '@/lib/format';
 /** "Flanker · #7 · Forwards, Rehab" — the sub line under the name. A missing
  *  part is said, not skipped, so the line always has the same three parts. */
 export function headerSubLine(o: { position: string | null; squadNumber: number | null; groupNames: readonly string[] }): string {
-  return [
-    o.position ?? 'No position',
-    o.squadNumber !== null ? `#${o.squadNumber}` : 'no jersey',
-    o.groupNames.length > 0 ? o.groupNames.join(', ') : 'no group',
-  ].join(' · ');
+  /* Groups only since 16 Sept 2026 (Isabella's overnight queue, 3.1: "remove
+     the repeated text in the player information card — it restates what is
+     already shown, for example the position, twice"). Position and jersey
+     are the detail row's; this line is what the row does not carry. */
+  void o.position;
+  void o.squadNumber;
+  return o.groupNames.length > 0 ? o.groupNames.join(', ') : 'No group';
 }
 
 /** The restriction line: what a coach acts on (the board's rule 7 — never a

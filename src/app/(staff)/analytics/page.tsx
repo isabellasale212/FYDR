@@ -231,7 +231,7 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
 
       <div className="cmp-against" style={{ marginBottom: 'var(--sp-14)' }}>
         <span className="cmp-against-label">Compare against</span>
-        <GroupFilter groups={groups} selected={groupIds} />
+        <GroupFilter groups={groups} selected={groupIds} variant="chips" />
         <span className="cmp-against-n">
           n = {athletes.length} · {scopeLabel.toLowerCase()}
         </span>

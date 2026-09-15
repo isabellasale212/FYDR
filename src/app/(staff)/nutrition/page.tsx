@@ -347,17 +347,22 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
           <h1>Nutrition</h1>
         </div>
         <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+          {/* 3.5 (16 Sept 2026): the group filter, a dropdown in the top right. */}
+          <GroupFilter groups={groups} selected={groupIds} />
           {canManualTarget ? (
             <Link href="/nutrition/new" className="btn-ghost" title="Set one absolute target by hand, outside the rule engine">
               Manual target
             </Link>
           ) : null}
+          {/* 3.3 (Isabella, 16 Sept 2026): the food library is a button in the
+              top right — it opens the library panel in the workspace, where
+              entries are added. Desktop-only, with the library (2.3). */}
+          <Link href={`/nutrition?library=1${groupIds.length ? `&groups=${groupIds.join(',')}` : ''}`} className="btn-ghost" data-desktop-only="">
+            Food library
+          </Link>
         </div>
       </div>
 
-      <div style={{ marginBottom: 'var(--sp-14)' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
-      </div>
 
       {/* The week navigator — a different control from the one above, for a
         * different panel, deliberately. Same shape as /reports/squad's own week
@@ -392,6 +397,7 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
         userId={claims.userId}
         canAuthorMeals={canAuthorMeals}
         canManageNutrition={hasAnyRole(claims.roles, NUTRITION_EDIT)}
+        libraryOpen={params.library === '1'}
         plans={plans.map((p) => ({
           ruleId: p.rule.id,
           name: p.name,

@@ -199,6 +199,8 @@ export default async function LeaderboardDetailPage({
             file downloads, and a client-side navigation to a route handler would try
             to render the response as a page. */}
         <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+          {/* 3.5 (16 Sept 2026): the group filter, a dropdown in the top right. */}
+          <GroupFilter groups={groups} selected={groupIds} />
           <a href={`/leaderboards/${board.id}/export${groupQuery}`} className="btn-ghost">
             Download CSV
           </a>
@@ -244,7 +246,6 @@ export default async function LeaderboardDetailPage({
       </div>
 
       <div style={{ display: 'flex', alignItems: 'center', gap: 'var(--sp-14)', flexWrap: 'wrap', margin: 'var(--s-7) 0' }}>
-        <GroupFilter groups={groups} selected={groupIds} />
         {fullRanking.length > 0 ? (
           <span className="lb-stats">
             <span>

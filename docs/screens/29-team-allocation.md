@@ -23,6 +23,11 @@ injuries area because availability is what constrains it.
 ## 3. How you get here
 
 - A link from the injuries area. **Not in the sidebar.** Decision D-34.
+- **The dashboard's Match tab, since 16 September 2026** (`/dashboard/match`, the
+  coach's — Isabella's overnight queue 3.4): the same board, drawn as the
+  second tab of the dashboard, where selecting for a match day happens; the
+  coach allocates and publishes there, every other role reads. This route
+  still answers as the table above says.
 
 ## 4. What you see
 

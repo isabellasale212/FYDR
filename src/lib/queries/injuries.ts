@@ -211,6 +211,25 @@ export type InjuryClinical = {
  *  which is why the page itself must never call this for a non-medical viewer: an
  *  empty clinical object rendered by mistake still looks like a broken page, even
  *  though no data actually crossed the boundary. */
+/** The clinical row of every injury in a list, keyed by injury — the medic's
+ *  record area on the profile (16 Sept 2026, 3.1). The same policy: anyone
+ *  but a medic gets an empty map, so the page asks only for a medic. */
+export async function fetchInjuryClinicalMany(db: Db, orgId: string, injuryIds: readonly string[]): Promise<Map<string, InjuryClinical>> {
+  if (injuryIds.length === 0) return new Map();
+  const { data, error } = await db
+    .from('injury_clinical')
+    .select('injury_id, diagnosis, mechanism, severity, tissue_type, imaging, referral, clinical_notes, treatment_plan')
+    .eq('org_id', orgId)
+    .in('injury_id', [...injuryIds]);
+  if (error) throw new Error(error.message);
+  const out = new Map<string, InjuryClinical>();
+  for (const row of data ?? []) {
+    const { injury_id, ...clinical } = row;
+    out.set(injury_id, clinical);
+  }
+  return out;
+}
+
 export async function fetchInjuryClinical(db: Db, orgId: string, injuryId: string): Promise<InjuryClinical | null> {
   const { data, error } = await db
     .from('injury_clinical')

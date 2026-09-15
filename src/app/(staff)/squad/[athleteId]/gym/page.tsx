@@ -600,6 +600,17 @@ export default async function AthleteGymPage({
             ) : null}
           </>
         ) : null}
+
+        {/* THE S&C HISTORY LOG lives here since 16 Sept 2026 (Isabella's
+            overnight queue, 3.1: "move the S&C history logs behind the Gym
+            button") — the same placeholder the profile carried: adaptation
+            notes are planned and nothing has been recorded. */}
+        <section className="card pp-card" aria-labelledby="pp-sc-title">
+          <h2 className="card-title" id="pp-sc-title">
+            S&amp;C history log
+          </h2>
+          <EmptyState headingLevel={3} title="No adaptation log entries" body="Adaptation notes are planned but not available yet. Nothing has been recorded here." />
+        </section>
       </div>
     </>
   );

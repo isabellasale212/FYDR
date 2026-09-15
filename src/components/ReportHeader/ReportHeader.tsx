@@ -1,7 +1,6 @@
 'use client';
 
-import { useRouter, usePathname, useSearchParams } from 'next/navigation';
-import { writeGroupFilterCookie } from '@/lib/groupFilterCookie';
+import { GroupSelect } from '@/components/GroupFilter/GroupSelect';
 
 export type HeaderTab = { label: string; selected: boolean; onSelect: () => void };
 
@@ -75,60 +74,29 @@ export function ReportHeader({
   definition,
   roleNote,
 }: ReportHeaderProps) {
-  const router = useRouter();
-  const pathname = usePathname();
-  const params = useSearchParams();
-
   /* The same contract GroupFilter has: the selection lives in the address,
      so a filtered report can be sent to a colleague and read the same — AND
      in the shared cookie, so it follows the coach to Squad overview and every
      other multi-athlete screen (§0ak, Isabella 2026-09-11). Until 2026-09-12
      this wrote the URL only, which is why a filter set on the squad report
-     vanished on the way back to Squad overview while the reverse worked. */
-  function setGroups(next: string[]) {
-    const q = new URLSearchParams(params.toString());
-    if (next.length === 0) q.delete('groups');
-    else q.set('groups', next.join(','));
-    writeGroupFilterCookie(next);
-    router.push(`${pathname}${q.toString() ? `?${q}` : ''}`);
-  }
-
-  const whole = groupIds.length === 0;
+     vanished on the way back to Squad overview while the reverse worked.
+     Since 16 Sept 2026 (3.5) GroupSelect does the writing, for this header
+     and every other. */
 
   return (
     <header className="rhead">
-      <div className="rhead-chips" role="group" aria-label="Filter by squad group">
-        <button
-          type="button"
-          className="rhead-chip"
-          aria-pressed={whole}
-          onClick={() => setGroups([])}
-        >
-          {whole ? <span aria-hidden="true">✓</span> : null}
-          Whole squad
-        </button>
-        {groups.map((g) => {
-          const on = groupIds.includes(g.id);
-          return (
-            <button
-              key={g.id}
-              type="button"
-              className="rhead-chip"
-              aria-pressed={on}
-              onClick={() =>
-                setGroups(on ? groupIds.filter((id) => id !== g.id) : [...groupIds, g.id])
-              }
-            >
-              {on ? <span aria-hidden="true">✓</span> : null}
-              {g.name}
-            </button>
-          );
-        })}
-      </div>
-
+      {/* THE CHIP ROW IS A DROPDOWN IN THE TOP RIGHT since 16 Sept 2026
+          (Isabella's overnight queue, 3.5) — GroupSelect, the same control
+          every other screen's header carries, writing the same cookie. The
+          eyebrow row is the header's top line, so the filter sits at its
+          right end, before the screen's own actions. The chip row's
+          "Filtered to" state is the eyebrow's scope line. */}
       <div className="rhead-eyerow">
         {eyebrow ? <p className="rhead-eyebrow">{eyebrow}</p> : null}
-        {actions ? <div className="rhead-actions">{actions}</div> : null}
+        <div className="rhead-actions">
+          <GroupSelect groups={groups} selected={groupIds} />
+          {actions}
+        </div>
       </div>
 
       <h1 className="rhead-title">{title}</h1>

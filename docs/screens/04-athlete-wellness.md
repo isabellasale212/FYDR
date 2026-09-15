@@ -115,6 +115,16 @@ appears.
 
 ---
 
+**The entries and their corrections live here since 16 September 2026**
+(Isabella's overnight queue, 3.1: "remove the wellness entries and edit card
+from the foot of the profile — it lives behind the Wellness button"). The
+`EntryCorrectionPanel` the profile carried — every wellness and RPE entry of
+the last 28 days with its revision chain, and the correction form for the
+coach, medic and sport scientist (`ENTRY_CORRECTION`, migrations 0058 and
+0075) — closes this page, with the same caption about its fixed window. The
+header's "no edit affordance" note is superseded for this one panel; the entry
+is still immutable, a correction a new revision row (CLAUDE.md rule 6).
+
 ## 8. States
 
 **Loading.** Renders when ready.

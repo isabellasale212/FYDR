@@ -115,14 +115,16 @@ Do not deploy anything between `d6fb005` and `075d5ce`.
 
 System A's motion file says "almost nothing moves" — one transition for state
 changes, one keyframe for the dials. **Isabella reversed that for one case,
-deliberately: the loading skeleton's shimmer.** Where the performance
-measurement shows a wait that survives the optimisation
-(`docs/perf-measurements-2026-09-16.md`), the route streams with a
+deliberately: the loading skeleton's shimmer.** Five routes stream with a
 `loading.tsx` whose blocks shimmer — a static grey block reads as broken, a
 moving one reads as loading — over `--dur-ring`, in `--surf2` and `--surf`,
 on `--r`. `prefers-reduced-motion` stops it like every other animation.
 Recorded here with the date and the name so that nobody later removes the
-shimmer as a violation of the rule it reverses. The same night adds the
+shimmer as a violation of the rule it reverses. **Amended 15 September
+(`decisions/skeleton-gate.md`): which routes carry a skeleton is no longer
+gated on the measurement. All five keep theirs, held invisible for the
+first 200ms and shown for at least 300ms once shown, so a fast render
+never shows one at all.** The same night adds the
 keyboard focus ring (`--ring-focus`, 3px of the accent at a higher alpha than
 `--ring-select`, 2px offset, `:focus-visible` only) — an addition, not a
 reversal: nothing defined it before.

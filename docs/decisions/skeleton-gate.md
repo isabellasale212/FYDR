@@ -55,6 +55,29 @@ season of data is slower than 29 synthetic athletes, so routes that sit
 under the line today will cross it later. Deleting the skeletons now would
 mean rebuilding them then.
 
+## Amendment, same day: a 300ms minimum display
+
+The ruling above specified the 200ms hold and said nothing about a floor
+once the skeleton is showing. That was incomplete, and the builder found
+it: `docs/06-design-system.md` §12.1 had specified a 150ms delay **and** a
+400ms minimum display, and the minimum is what closes the gap.
+
+Without a floor, a render finishing at 210ms shows the skeleton for 10ms —
+a flash, which is the defect the hold exists to remove. Not theoretical: of
+the five measured warm streams (246, 265, 310, 356, 737ms) three sit in the
+200 to 400ms band where a hold with no floor flickers.
+
+**Once shown, the skeleton stays for at least 300ms.**
+
+Not the 400 the design system wrote: that figure was set against a 150ms
+delay, and 200 plus 400 puts a 600ms floor on a product whose slowest
+measured route streams in 737. 200 plus 300 means a page ready at 210ms is
+held to 500ms — a deliberate slowdown, in a narrow band, in exchange for a
+skeleton that always reads as loading rather than as a glitch.
+
+`docs/06-design-system.md` §12.1 is brought back into line by this: the
+delay row is 200ms, the minimum-display row is 300ms and is built.
+
 ## What was not decided, and is now the bigger number
 
 `ttfb` is 217 to 456ms on every route measured, and 260 to 750ms on the

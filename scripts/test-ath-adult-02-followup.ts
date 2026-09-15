@@ -39,7 +39,7 @@ const at = (needle: string): number => page.indexOf(needle);
 
 console.log('1. the compact week strip sits above To do; "Working towards" stays in the card below');
 {
-  const stripAt = at('className="wk-strip wk-compact"'), todo = at('id="todo-title"'), today = at('id="today-title"'), card = at('className="card wk-card"'), towards = at('wk-towards'), line = at('href="#availability"');
+  const stripAt = at('className="wk-strip wk-compact"'), todo = at('id="todo-title"'), today = at('id="today-title"'), card = at('className="card wk-card"'), towards = at('wk-towards'), line = at('href="/me/status" className="avail-line"');
   assert(stripAt > 0 && stripAt < todo, 'the strip renders before To do');
   assert(line > 0 && line < stripAt, 'and after the availability line, which stays directly under the greeting');
   assert(card > today && towards > card, 'the week card is still below Today and still carries "Working towards"');
@@ -48,7 +48,10 @@ console.log('1. the compact week strip sits above To do; "Working towards" stays
   assert(/id="week-title"/.test(page) && /aria-labelledby="week-title"/.test(page), 'the strip is a labelled section, "This week", like To do and Today');
   assert(/mdLabel\(/.test(page) && /className="wo num"/.test(page), 'and each day still carries its MD label');
   const compact = rule('.wk-compact');
-  assert(compact !== '' && /padding:\s*0/.test(compact), '.wk-compact drops the card padding — it sits on the ground');
+  /* 16 Sept 2026 (Isabella's overnight queue, 1.1): "a thick border around
+     the weekly timetable so it stands out" — 2px of --border-strong on the
+     control radius, the strip's own inset inside it. No card, still. */
+  assert(compact !== '' && /border:\s*2px solid var\(--border-strong\)/.test(compact) && /border-radius:\s*var\(--r-toggle\)/.test(compact), '.wk-compact carries the thick border (16 Sept 2026) on the control radius');
   const day = rule('.wk-compact .wk-day');
   assert(/gap:\s*var\(--sp-2\)/.test(day) && /padding:\s*var\(--sp-4\) 0/.test(day), 'each day is tighter: gap --sp-2, padding --sp-4');
   const num = rule('.wk-compact .wk-day .wn');

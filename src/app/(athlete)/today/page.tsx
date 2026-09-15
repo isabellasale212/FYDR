@@ -1,16 +1,15 @@
 import Link from 'next/link';
-import { AvailabilityBanner } from '@/components/AvailabilityBanner/AvailabilityBanner';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
-import { InjuryClinical } from '@/components/InjuryClinical/InjuryClinical';
 import { OutboxFlusher } from '@/components/OutboxFlusher/OutboxFlusher';
 import { TodayRpeRow } from '@/components/TodayRpeRow/TodayRpeRow';
-import { TodayGymRow } from '@/components/TodayGymRow/TodayGymRow';
+import { TodoStatusCard } from '@/components/TodoStatusCard/TodoStatusCard';
 import { InstallCard } from '@/components/InstallCard/InstallCard';
 import { StatusToldCard } from '@/components/StatusToldCard/StatusToldCard';
 import { fetchStaffName } from '@/lib/queries/staffName';
 import { fetchAthleteAvailability } from '@/lib/queries/availability';
-import { fetchAthleteInjuryClinical } from '@/lib/queries/athleteInjuryClinical';
 import { fetchMyOutstanding } from '@/lib/queries/compliance';
+import { fetchWellnessDay } from '@/lib/queries/wellness';
+import { CHECKIN_WINDOW_CLOSES, checkinState, gymState, nutritionState } from '@/lib/todayStatus';
 import { fetchMyOpenGymSessionToday } from '@/lib/queries/programmes';
 import { resolveTargetForDate } from '@/lib/queries/nutritionTargets';
 import { fetchLatestBodyMassForAthletes } from '@/lib/queries/bodyComposition';
@@ -110,6 +109,8 @@ export default async function TodayPage({
     openGym,
     target,
     latestMass,
+    wellnessToday,
+    gymDoneToday,
   ] = await Promise.all([
       fetchAthleteAvailability(db, orgId, athleteId),
       fetchMyOutstanding(db, athleteId, today, Date.now(), { collectsRpe }),
@@ -129,13 +130,32 @@ export default async function TodayPage({
          15 Sept 2026) — the same resolver and card Programme uses. */
       resolveTargetForDate(db, athleteId, today),
       fetchLatestBodyMassForAthletes(db, orgId, [athleteId], { since: '1900-01-01', asOf: today }),
+      /* The three status cards (16 Sept 2026, 1.1): today's check-in as a
+         fact — done is done whether or not it was expected — and whether a
+         gym session log was completed today (the Programme page's own
+         "Logged today" read). */
+      fetchWellnessDay(db, athleteId, today),
+      db
+        .from('gym_session_logs_current')
+        .select('programme_session_id, programme_sessions(name)')
+        .eq('athlete_id', athleteId)
+        .eq('entry_date', today)
+        .eq('status', 'complete')
+        .order('completed_at', { ascending: false })
+        .limit(1)
+        .maybeSingle()
+        .then((r) => {
+          if (r.error) throw new Error(r.error.message);
+          const row = r.data as { programme_session_id: string | null; programme_sessions: { name: string } | { name: string }[] | null } | null;
+          if (!row) return null;
+          const ps = Array.isArray(row.programme_sessions) ? row.programme_sessions[0] : row.programme_sessions;
+          return { name: ps?.name ?? 'Gym session' };
+        }),
     ]);
 
-  /* Sequential rather than joined to the Promise.all above, because it needs
-     the injury id that availability resolves. Skipped entirely when there is no
-     linked injury, which is the common case — and when there is one, the view
-     returns nothing for an athlete under 18 (migration 0093). */
-  const injuryClinical = await fetchAthleteInjuryClinical(db, availability.injury?.id);
+  /* NO DIAGNOSIS CARD HERE since 16 Sept 2026 (1.1): it is on the status
+     page (/me/status, InjuryClinical), where the availability card went too.
+     The clinical read this page made for it went with it. */
 
 
   /* ATH-ADULT-02, 2026-09-11. Each row is a name, a subtitle and a chevron;
@@ -150,47 +170,79 @@ export default async function TodayPage({
      docs/screens/legacy/training-entry.md, which is not binding, so it is
      not shipped until Isabella decides. Its subtitle is when the session
      was — "Today 10:45", "Yesterday" — from rpeWhen, in club time. */
-  const todoItems = !formsOpen ? [] : [
-    ...outstanding.map((item) => ({
-      domain: item.domain,
-      href: item.href,
-      name: item.domain === 'wellness' ? 'Wellness' : item.label,
-      sub: item.domain === 'wellness' ? '45 sec' : item.session ? rpeWhen(item.session, today, timezone) : '',
-      /* The RPE package, change two (2026-09-13): a rating row carries the
-         scale itself and sends on one tap (components/TodayRpeRow). The
-         entry date is the session's own club-local day — the same rule the
-         rating screen uses, so a rating from either lands on one row. */
-      session: item.domain === 'training_rpe' ? item.session : null,
-      gym: null,
-    })),
-    /* The gym session under way sits after what the morning owes (wellness,
-       a rating) and before the weekly check-in — the one row that is about
-       right now. */
-    ...(openGym
-      ? [
-          {
-            domain: 'gym' as const,
-            href: `/gym/${openGym.programmeSessionId}`,
-            name: openGym.name,
-            sub: `${openGym.logged} of ${openGym.total} sets`,
-            session: null,
-            gym: openGym,
-          },
-        ]
-      : []),
-    ...(!nutritionCheckin
-      ? [
-          {
-            domain: 'nutrition' as const,
-            href: '/nutrition-check-in',
-            name: 'Weekly nutrition check-in',
-            sub: 'about 10 sec',
-            session: null,
-            gym: null,
-          },
-        ]
-      : []),
+  /* THE RATING ROWS keep their shape: one per session, the scale on the row,
+     sent on one tap (TodayRpeRow). The RPE package, change two (2026-09-13):
+     the entry date is the session's own club-local day — the same rule the
+     rating screen uses, so a rating from either lands on one row. */
+  const rpeItems = !formsOpen
+    ? []
+    : outstanding.flatMap((item) =>
+        item.domain === 'training_rpe' && item.session
+          ? [{ href: item.href, name: item.label, sub: rpeWhen(item.session, today, timezone), session: item.session }]
+          : [],
+      );
+
+  /* THE THREE STATUS CARDS (Isabella, 16 Sept 2026, 1.1): check-in, gym and
+     the weekly nutrition check-in stay in place and carry their state —
+     done, to do, overdue — as a tone and as a word (lib/todayStatus.ts has
+     the windows and why). A done card is not a control. */
+  const clockHm = (() => {
+    const c = civilParts(new Date(), timezone);
+    return `${String(c.hour).padStart(2, '0')}:${String(c.minute).padStart(2, '0')}`;
+  })();
+  const checkin = checkinState({
+    done: wellnessToday !== null,
+    expected: outstanding.some((item) => item.domain === 'wellness'),
+    clockHm,
+  });
+  const gymSessionsToday = sessions.filter((sn) => sn.session_type === 'gym' && sn.status !== 'cancelled');
+  const gym = gymState({
+    doneToday: gymDoneToday !== null,
+    underWay: openGym !== null,
+    gymEndsAtMs: gymSessionsToday.map((sn) => Date.parse(sn.starts_at) + (sn.duration_min ?? 0) * 60_000),
+    nowMs: Date.now(),
+  });
+  const nutrition = nutritionState({ done: nutritionCheckin !== null });
+  const todoCards = [
+    {
+      domain: 'checkin' as const,
+      name: 'Morning check-in',
+      state: checkin,
+      sub:
+        checkin === 'done'
+          ? `Sent${wellnessToday?.submitted_at ? ` at ${formatTime(wellnessToday.submitted_at, timezone)}` : ''}`
+          : checkin === 'overdue'
+            ? `Window closed ${CHECKIN_WINDOW_CLOSES} · still counts today`
+            : checkin === 'todo'
+              ? `45 sec · window closes ${CHECKIN_WINDOW_CLOSES}`
+              : 'Not expected today',
+      href: checkin === 'todo' || checkin === 'overdue' ? '/check-in' : null,
+    },
+    {
+      domain: 'gym' as const,
+      name: openGym ? openGym.name : gym === 'done' ? (gymDoneToday?.name ?? 'Gym') : (gymSessionsToday[0]?.title ?? 'Gym'),
+      state: gym,
+      sub:
+        gym === 'done'
+          ? 'Every set logged'
+          : openGym
+            ? `Under way · ${openGym.logged} of ${openGym.total} sets`
+            : gym === 'overdue'
+              ? 'The session has ended and nothing was logged'
+              : gym === 'todo'
+                ? gymSessionsToday.map((sn) => formatTime(sn.starts_at, timezone)).join(' · ') || 'Today'
+                : 'No gym session on today\u2019s schedule',
+      href: gym === 'done' || gym === 'none' ? null : openGym ? `/gym/${openGym.programmeSessionId}` : '/programme',
+    },
+    {
+      domain: 'nutrition' as const,
+      name: 'Weekly nutrition check-in',
+      state: nutrition,
+      sub: nutrition === 'done' ? 'Answered for last week' : 'about 10 sec · one question about last week',
+      href: nutrition === 'todo' ? '/nutrition-check-in' : null,
+    },
   ];
+  const leftCount = todoCards.filter((c) => c.state === 'todo' || c.state === 'overdue').length + rpeItems.length;
 
   /* The one-line banner above To do, only when something is wrong (S2). It
      says the status and what they may do, in the card's own words, and
@@ -263,10 +315,17 @@ export default async function TodayPage({
       {/* S2: when something is wrong it is said once, in one line, above the
           list — and the card it links to sits below the day with every line it
           had. Available says nothing here. */}
+      {/* THE ONE AVAILABILITY CARD (16 Sept 2026, 1.1): this line is it, and
+          it opens the status page. The card that used to repeat it below
+          the day is gone from here — it lives on /me/status with the
+          diagnosis. */}
       {availSummary ? (
-        <a href="#availability" className="avail-line" data-tone={availTone}>
-          {availSummary}
-        </a>
+        <Link href="/me/status" className="avail-line" data-tone={availTone}>
+          <span style={{ minWidth: 0, flex: 1 }}>{availSummary}</span>
+          <span className="chev td-chev" aria-hidden="true">
+            ›
+          </span>
+        </Link>
       ) : null}
 
       {/* THE WEEK, COMPACT, ABOVE TO DO — ATH-ADULT-02 follow-up, Isabella's
@@ -359,7 +418,7 @@ export default async function TodayPage({
       <section aria-labelledby="todo-title">
         <h2 className="eyebrow today-sect todo-head" id="todo-title">
           <span>To do</span>
-          <span className="num">{!formsOpen ? 'Closed' : todoItems.length > 0 ? `${todoItems.length} left` : 'None left'}</span>
+          <span className="num">{!formsOpen ? 'Closed' : leftCount > 0 ? `${leftCount} left` : 'None left'}</span>
         </h2>
         <div className="td-list">
           {!formsOpen ? (
@@ -374,49 +433,26 @@ export default async function TodayPage({
                 ›
               </span>
             </Link>
-          ) : todoItems.length > 0 ? (
-            todoItems.map((item, index) => item.gym ? (
-              <TodayGymRow
-                key={`gym-${item.gym.sessionLogId}`}
-                programmeSessionId={item.gym.programmeSessionId}
-                sessionLogId={item.gym.sessionLogId}
-                name={item.gym.name}
-                logged={item.gym.logged}
-                total={item.gym.total}
-              />
-            ) : item.session ? (
-              <TodayRpeRow
-                key={`${item.domain}-${index}`}
-                orgId={orgId}
-                athleteId={athleteId}
-                userId={claims.userId}
-                sessionId={item.session.id}
-                sessionTitle={item.session.title?.trim() || 'Training'}
-                entryDate={dateInTz(new Date(item.session.starts_at), timezone)}
-                durationMin={item.session.duration_min}
-                name={item.name}
-                sub={item.sub}
-              />
-            ) : (
-              <Link key={`${item.domain}-${index}`} href={item.href} className="card td-row">
-                <span style={{ minWidth: 0 }}>
-                  {/* Spec §7.1: row name 17/700 — 1.0625rem IS that 17px at the
-                      default root, in rem so it follows the text setting. */}
-                  <span className="td-name" style={{ fontSize: 'var(--t-body-lg)' }}>{item.name}</span>
-                  <span className="td-sub num">{item.sub}</span>
-                </span>
-                <span className="chev td-chev" aria-hidden="true">
-                  ›
-                </span>
-              </Link>
-            ))
           ) : (
-            <div className="card td-row td-empty">
-              <span style={{ minWidth: 0 }}>
-                <span className="td-name" style={{ fontSize: 'var(--t-body-lg)' }}>You&rsquo;re up to date</span>
-                <span className="td-sub">Nothing expected of you today is outstanding.</span>
-              </span>
-            </div>
+            <>
+              {todoCards.map((card) => (
+                <TodoStatusCard key={card.domain} domain={card.domain} name={card.name} state={card.state} sub={card.sub} href={card.href} />
+              ))}
+              {rpeItems.map((item, index) => (
+                <TodayRpeRow
+                  key={`rpe-${index}`}
+                  orgId={orgId}
+                  athleteId={athleteId}
+                  userId={claims.userId}
+                  sessionId={item.session.id}
+                  sessionTitle={item.session.title?.trim() || 'Training'}
+                  entryDate={dateInTz(new Date(item.session.starts_at), timezone)}
+                  durationMin={item.session.duration_min}
+                  name={item.name}
+                  sub={item.sub}
+                />
+              ))}
+            </>
           )}
         </div>
       </section>
@@ -505,39 +541,9 @@ export default async function TodayPage({
         </div>
       ) : null}
 
-      <AvailabilityBanner
-        status={availability.current?.status ?? null}
-        restrictions={availability.current?.restrictions ?? []}
-        reasonCategory={availability.current?.reason_category ?? null}
-        /* Already fetched above and, until 2026-09-08, thrown away on every
-           load. fetchAthleteAvailability only resolves this when the
-           availability row actually names the injury, so an athlete who is out
-           for a non-injury reason with an unrelated injury on file gets null
-           rather than the wrong injury attached to the wrong absence. */
-        injury={availability.injury}
-        /* RESTORED 8 September 2026. The redesign dropped this prop because the
-           reference's Modified row has no third line; dropping it took away the
-           only place an athlete reads what medical staff actually wrote about
-           their own availability, which is a worse outcome than a taller card. */
-        note={availability.current?.note ?? null}
-        timezone={timezone}
-      />
-
-      {/* RESTORED with the note above, and this is the one that mattered most.
-          Diagnosis and mechanism were scoped, built, age-gated (migration 0093),
-          confirmed on production for a real athlete, and then the Today redesign
-          removed their ONLY route — leaving the component, the query and the
-          view all live and unreachable.
-
-          Renders nothing when there is no clinical record, no injury, or the
-          reader is a minor: the view draws that last line, not this page. Each
-          field is guarded inside the component, because a record can carry one
-          and not the other. */}
-      <InjuryClinical
-        diagnosis={injuryClinical.diagnosis}
-        mechanism={injuryClinical.mechanism}
-      />
-
+      {/* The availability card and the diagnosis card stood here until 16 Sept
+          2026 (1.1): both are on /me/status, which the line above the week
+          opens. Everything they said is still one tap away. */}
 
       {/* Plain text below the card, as drawn: a fact, not a status banner. */}
       {myAllocation ? (

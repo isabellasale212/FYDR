@@ -175,10 +175,15 @@ console.log('\nnot wired to Today any more, and deliberately kept rather than de
      confirmed live on production for a real athlete, leaving query, component
      and database view all alive and unreachable. Asserted on the CALL and the
      ELEMENT, never the import — an import reaches nothing. */
-  assert(/fetchAthleteInjuryClinical\(/.test(today),
-    'and Today calls it');
-  assert(/<InjuryClinical/.test(today),
-    'and renders it');
+  /* AND SINCE 16 SEPT 2026 (Isabella's overnight queue, 1.1) THE STATUS
+     PAGE IS THE ROUTE, NOT TODAY: "remove the diagnosis card, it is already
+     on the modified page". /me/status calls the query and renders the
+     block; Today does neither and links there from its availability line. */
+  const status = strip(readFileSync('src/app/(athlete)/me/status/page.tsx', 'utf8'));
+  assert(/fetchAthleteInjuryClinical\(/.test(status) && /<InjuryClinical/.test(status),
+    'the status page calls it and renders it');
+  assert(!/fetchAthleteInjuryClinical\(/.test(today) && !/<InjuryClinical/.test(today),
+    'and Today no longer does — the diagnosis card left Today on 16 Sept 2026');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

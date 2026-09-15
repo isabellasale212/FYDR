@@ -2143,6 +2143,14 @@ body:has(.phone) {
   overflow: hidden;
   text-overflow: ellipsis;
 }
+/* The week's kilograms under its label (16 Sept 2026, 1.2) — the bar's
+   value said, not only drawn. */
+.gb-value {
+  font-size: var(--fs-11);
+  color: var(--text);
+  text-align: center;
+  white-space: nowrap;
+}
 
 /* My data · Tests, Fydr Athlete App.dc.html 23m: the name reads first and the
    date qualifies it, so the name carries the weight the score carries in the
@@ -2432,8 +2440,13 @@ a.hist-row:focus-visible {
    a matchday as an outline. Measured at 375×812 with the availability line
    showing: the strip is 70px tall and To do's first row moved from 244px to
    367px — still inside the fold, with the whole row (to 443px) in view. */
+/* A THICK BORDER around the week (Isabella, 16 Sept 2026, 1.1: "so it
+   stands out") — 2px of --border-strong, the weight the Unavailable card
+   uses for its edge, on the control radius. */
 .wk-compact {
-  padding: 0;
+  padding: var(--sp-6) var(--sp-4);
+  border: 2px solid var(--border-strong);
+  border-radius: var(--r-toggle);
 }
 .wk-compact .wk-day {
   gap: var(--sp-2);
@@ -2735,6 +2748,63 @@ a.hist-row:focus-visible {
    empty list is a row that says so rather than a region that vanished. */
 .td-empty {
   cursor: default;
+}
+/* THE THREE STATUS CARDS (Isabella, 16 Sept 2026, 1.1): check-in, gym and
+   the weekly nutrition check-in as three cards that stay in place — bigger
+   than the row (a taller inset, --fs-18 name) — and carry the state as a
+   4px edge and a wash in the tone family AND as the word in the family's
+   pill. Done is the product's good tone (cyan by a recorded decision, the
+   system's own "green"), to do the accent, overdue bad, nothing today
+   neutral. A done card is not a control and has no chevron. */
+.td-card {
+  display: flex;
+  align-items: center;
+  gap: var(--sp-12);
+  padding: var(--sp-16) var(--pad-card-x);
+  min-height: 72px;
+  border-left: 4px solid var(--border-strong);
+  color: inherit;
+  text-decoration: none;
+}
+.td-card-main {
+  flex: 1;
+  min-width: 0;
+}
+.td-card-name {
+  display: block;
+  font-size: var(--fs-18);
+  font-weight: var(--w-bold);
+  letter-spacing: -0.01em;
+  line-height: var(--lh-tight);
+}
+.td-card-sub {
+  display: block;
+  margin-top: var(--sp-4);
+  font-size: var(--fs-13);
+  color: var(--muted);
+  font-variant-numeric: tabular-nums;
+}
+.td-card-state {
+  flex: none;
+}
+/* On a toned wash the sub line takes the context ink (--muted-on-tint, 15
+   Sept 2026): --muted on the bad wash measured 4.49:1 in light. */
+.td-card[data-state='done'] .td-card-sub,
+.td-card[data-state='todo'] .td-card-sub,
+.td-card[data-state='overdue'] .td-card-sub {
+  color: var(--muted-on-tint);
+}
+.td-card[data-state='done'] {
+  border-left-color: var(--good);
+  background: var(--wash-good);
+}
+.td-card[data-state='todo'] {
+  border-left-color: var(--accent);
+  background: var(--wash-accent-soft);
+}
+.td-card[data-state='overdue'] {
+  border-left-color: var(--bad);
+  background: var(--wash-bad);
 }
 /* The day's sessions: name, then start · place · finished / starts in. */
 .day-row {
@@ -4352,23 +4422,51 @@ a.hist-row:focus-visible {
   letter-spacing: var(--t-section-tracking);
   margin: var(--sp-4) 0 0;
 }
-.target-bar + .target-bar {
-  margin-top: var(--sp-12);
-}
-.target-bar .th {
+/* FUELLING TODAY, bigger numbers and less wording (Isabella, 16 Sept 2026,
+   1.1): four figures in two columns at --fs-28 with the unit at --fs-13
+   beside and the label under; the provenance line is the one sentence. */
+.fuel-head {
   display: flex;
-  align-items: baseline;
+  align-items: center;
   justify-content: space-between;
-  gap: var(--sp-8);
+  gap: var(--sp-10);
+  margin-bottom: var(--sp-12);
 }
-.target-bar .th .k {
+.fuel-grid {
+  display: grid;
+  grid-template-columns: repeat(2, minmax(0, 1fr));
+  gap: var(--sp-12) var(--sp-16);
+}
+.fuel-cell {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  min-width: 0;
+}
+.fuel-v {
+  font-size: var(--fs-28);
+  font-weight: var(--w-black);
+  letter-spacing: var(--t-section-tracking);
+  line-height: var(--lh-num);
+  color: var(--text);
+}
+.fuel-u {
+  margin-left: var(--sp-4);
   font-size: var(--fs-13);
   font-weight: var(--w-semi);
+  color: var(--muted);
+  letter-spacing: 0;
 }
-.target-bar .th .v {
-  font-size: var(--fs-13);
+.fuel-k {
+  font-size: var(--fs-12);
+  font-weight: var(--w-semi);
   color: var(--muted);
 }
+.fuel-prov {
+  margin: var(--sp-12) 0 var(--sp-10);
+}
+/* .target-bar (the fuelling card's label/value rows) retired 16 Sept 2026
+   for .fuel-grid above. */
 /* ---------- Me, §12 ---------- */
 .me-profile {
   display: flex;
@@ -7928,6 +8026,31 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-size: var(--fs-12);
   color: var(--muted);
   flex-shrink: 0;
+}
+/* The athlete's meal row (16 Sept 2026, 1.1): a <details> whose summary is
+   the card header — the marker hidden, a chevron of the app's own that
+   turns when open, the row at the 44px floor. The staff workspace's
+   MealCard keeps the plain header. */
+.meal-idea > .meal-idea-row {
+  grid-template-columns: minmax(0, 1fr) auto auto;
+  min-height: var(--tap-min);
+  cursor: pointer;
+  list-style: none;
+}
+.meal-idea > .meal-idea-row::-webkit-details-marker {
+  display: none;
+}
+.meal-idea-chev {
+  font-size: var(--fs-12);
+  color: var(--muted);
+  transition: transform var(--t-state);
+}
+.meal-idea[open] > .meal-idea-row .meal-idea-chev {
+  transform: rotate(180deg);
+}
+.meal-idea > .meal-idea-row:focus-visible {
+  outline: var(--ring-focus);
+  outline-offset: -3px;
 }
 .nutr-meal-macros {
   display: grid;

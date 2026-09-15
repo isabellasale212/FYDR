@@ -57,9 +57,13 @@ console.log('\nthe read and the page');
   const q = strip(read('src/lib/queries/myLatestRecord.ts'));
   assert(/export async function fetchMyLatestRecord\(/.test(q) && /order\('entry_date', \{ ascending: false \}\)/.test(q) && /order\('week_start', \{ ascending: false \}\)/.test(q), 'fetchMyLatestRecord reads the latest date per domain, unbounded by the period');
   const page = strip(read('src/app/(athlete)/my-data/page.tsx'));
-  for (const d of ['wellness', 'gym', 'training', 'nutrition']) {
+  /* Two tabs since 16 Sept 2026 (Isabella's overnight queue, 1.2): the
+     Sessions (training) and Nutrition tabs left My data with their empty
+     states. The grammar (lib/myDataEmpty.ts) keeps every domain. */
+  for (const d of ['wellness', 'gym']) {
     assert(new RegExp(`<EmptyPeriod db=\\{db\\} athleteId=\\{athleteId\\} domain="${d}" tab="${d}"`).test(page), `the ${d} tab's empty state is the grammar's`);
   }
+  assert(!/domain="training" tab="training"/.test(page) && !/domain="nutrition" tab="nutrition"/.test(page), 'and the two removed tabs are not on the page (16 Sept 2026)');
   assert(/<EmptyPeriod /.test(page) && /period=\$\{copy\.action\.period\}|PERIOD_PARAM\}=\$\{copy\.action\.period\}/.test(page), 'the action is a Link that changes the period — never automatic');
   assert(!/title="Nothing logged yet"/.test(page) && !/title="Nothing in this window"/.test(page) && !/title="Nothing answered yet"/.test(page), 'the four old titles are gone');
   const css = strip(read('src/styles/base.css'));

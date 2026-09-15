@@ -62,29 +62,25 @@ export default async function MealIdeasPage() {
         <h1 className="d">Meal ideas</h1>
       </div>
 
+      {/* SHORTER (Isabella, 16 Sept 2026, 1.1): one line of context, then
+          each meal as a closed row — name, time, energy — that opens into the
+          actual meal. The scaling sentence is what it always said, cut to
+          the fact. */}
       <p className="import-sub">
         {latestMass !== null ? (
           <>
-            Portions below are scaled to your last recorded weight,{' '}
-            <span className="nutr-mono">{latestMass.toFixed(1)} kg</span>, on a{' '}
+            Portions scaled to your last weigh-in, <span className="nutr-mono">{latestMass.toFixed(1)} kg</span>, on a{' '}
             {dayTypeInfo.label.toLowerCase()}.
           </>
         ) : (
           <>
-            We don&rsquo;t have a recent weigh-in on file for you, so portions are shown at a
-            standard reference weight (<span className="nutr-mono">{REFERENCE_MASS_KG} kg</span>)
-            until your club&rsquo;s staff log one.
+            No weigh-in on file — portions at a reference <span className="nutr-mono">{REFERENCE_MASS_KG} kg</span>.
           </>
         )}{' '}
-        Reference only — nothing here is logged or tracked.
+        Nothing here is logged.
       </p>
 
-      {mealLibrary.length === 0 ? (
-        <p className="tiny">
-          Your club hasn&rsquo;t added its own recipes to the library yet — these are the
-          standard starting meal ideas everyone begins with.
-        </p>
-      ) : null}
+      {mealLibrary.length === 0 ? <p className="tiny">The standard starting meals — your club has not added its own yet.</p> : null}
 
       <div className="nutr-meal-grid">
         {scaledMeals.map((meal, i) => (
@@ -100,13 +96,22 @@ export default async function MealIdeasPage() {
   );
 }
 
+/* Each meal is a native disclosure (16 Sept 2026, 1.1: "shorter, and
+   clickable to expand into the actual meal"): closed, one row — the name,
+   its time, its energy; open, the items with their scaled portions and the
+   four macros. No JavaScript; the row is the summary, at the 44px floor. */
 function MealIdeaCard({ meal }: { meal: ScaledMeal }) {
   return (
-    <div className="nutr-meal-card">
-      <div className="nutr-meal-header">
+    <details className="nutr-meal-card meal-idea">
+      <summary className="nutr-meal-header meal-idea-row">
         <span className="nutr-meal-name">{meal.name}</span>
-        <span className="nutr-mono nutr-meal-time">{meal.time}</span>
-      </div>
+        <span className="nutr-mono nutr-meal-time">
+          {meal.time} · {Math.round(meal.totals.energyKcal)} kcal
+        </span>
+        <span className="meal-idea-chev" aria-hidden="true">
+          ▾
+        </span>
+      </summary>
       {meal.items.map((item) => (
         <div key={item.name} className="nutr-meal-item">
           <span className="nutr-meal-item-name">{item.name}</span>
@@ -133,6 +138,6 @@ function MealIdeaCard({ meal }: { meal: ScaledMeal }) {
           <div className="nutr-meal-macro-label">F</div>
         </div>
       </div>
-    </div>
+    </details>
   );
 }

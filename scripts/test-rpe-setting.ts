@@ -81,7 +81,8 @@ console.log('\n4. every dependent surface says so');
     ['src/app/(athlete)/today/page.tsx', /fetchMyOutstanding\(db, athleteId, today, Date\.now\(\), \{ collectsRpe \}\)/, 'Today asks for no rating'],
     ['src/lib/queries/compliance.ts', /opts\.collectsRpe !== false \|\| e\.domain !== 'training_rpe'/, 'because the outstanding list drops the RPE rows'],
     ['src/app/(athlete)/rpe/[sessionId]/page.tsx', /RPE_OFF_ATHLETE/, 'the rating screen'],
-    ['src/app/(athlete)/my-data/page.tsx', /RPE_OFF_ATHLETE/, 'and My data\'s sessions tab, in the athlete\'s words'],
+    /* My data's sessions tab left on 16 Sept 2026 (Isabella's overnight
+       queue, 1.2); the rating screen still says it. */
   ];
   for (const [file, re, what] of surfaces) assert(re.test(strip(read(file))), `${what} (${file.split('/').slice(-2).join('/')})`);
   const dash = strip(read('src/app/(staff)/dashboard/page.tsx'));

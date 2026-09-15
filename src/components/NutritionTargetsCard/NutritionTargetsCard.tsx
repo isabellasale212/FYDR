@@ -44,51 +44,54 @@ export function NutritionTargetsCard({ target, hasWeighIn, title, headingLevel =
     return (
       <div className="card">
         <H className="card-title">{title}</H>
-        <p className="import-sub">Your coach hasn&rsquo;t set targets yet, but meal ideas are ready to browse.</p>
+        <p className="import-sub">No targets set yet.</p>
         {mealIdeas}
       </div>
     );
   }
+  /* BIGGER NUMBERS, LESS WORDING (Isabella, 16 Sept 2026, 1.1): the four
+     figures as a 2×2 grid at --fs-28 with the unit beside, the label under;
+     the only sentence left is PATTERN-S5 C7's provenance line (whose numbers
+     these are — Isabella's own rule of 13 Sept), and a matchday-specific
+     rule says which day it is for as a pill beside the title. The
+     "guidance only — nothing to log" sentence is gone from the card: the
+     card has nothing to log on it, which says the same. */
   return (
     <div className="card">
-      <H className="card-title">{title}</H>
-      <p className="import-sub">
+      <div className="fuel-head">
+        <H className="card-title" style={{ margin: 0 }}>
+          {title}
+        </H>
         {target.md_specific ? (
-          <>
-            {/* Not the audit-B2 bug class: nutrition_targets.md_offset is an
-                authored rule ("apply on MD-2"), resolved for the day server-side
-                by resolve_nutrition_targets — no fixture_id, nothing that could
-                drift against a different week's fixture the way sessions.md_offset
-                (schedule) can. */}
-            Set for <span title={mdExplainer(target.md_offset) ?? undefined}>{mdLabel(target.md_offset) ?? 'today'}</span>.
-          </>
-        ) : (
-          'Your standing target.'
-        )}{' '}
-        Guidance only &mdash; nothing to log here.
-      </p>
-      {/* PATTERN-S5 C7 (Isabella, 2026-09-13): whose numbers these are, on the
-          face of the card — the club default is labelled as the club default,
-          and an unscaled one says so. */}
-      <p className="tiny" style={{ margin: '0 0 var(--sp-10)' }}>
+          /* Not the audit-B2 bug class: nutrition_targets.md_offset is an
+             authored rule ("apply on MD-2"), resolved for the day server-side
+             by resolve_nutrition_targets — no fixture_id, nothing that could
+             drift against a different week's fixture the way sessions.md_offset
+             (schedule) can. */
+          <span className="pill pill-accent num" title={mdExplainer(target.md_offset) ?? undefined}>
+            {mdLabel(target.md_offset) ?? 'Today'}
+          </span>
+        ) : null}
+      </div>
+      <div className="fuel-grid">
+        {TARGET_ROWS.map((row) => {
+          const raw = target[row.key];
+          if (raw === null) return null;
+          const value = row.litres ? (raw / 1000).toFixed(1) : raw;
+          return (
+            <div className="fuel-cell" key={row.key}>
+              <span className="fuel-v num">
+                {value}
+                <span className="fuel-u">{row.unit.trim()}</span>
+              </span>
+              <span className="fuel-k">{row.label}</span>
+            </div>
+          );
+        })}
+      </div>
+      <p className="tiny fuel-prov">
         {targetProvenanceLine({ sourceScope: target.source_scope, hasWeighIn, you: true })}
       </p>
-      {TARGET_ROWS.map((row) => {
-        const raw = target[row.key];
-        if (raw === null) return null;
-        const value = row.litres ? (raw / 1000).toFixed(1) : raw;
-        return (
-          <div className="target-bar" key={row.key}>
-            <div className="th">
-              <span className="k">{row.label}</span>
-              <span className="v num">
-                {value}
-                {row.unit}
-              </span>
-            </div>
-          </div>
-        );
-      })}
       {mealIdeas}
     </div>
   );

@@ -9,7 +9,13 @@ type Props = {
   status: AvailabilityStatus | null;
   restrictions: readonly string[];
   reasonCategory?: AvailabilityReason | null;
-  /** The injury this availability row is linked to, or null. Null is the common
+  /* NOT MOUNTED since 16 Sept 2026 (Isabella's overnight queue, 1.1): Today
+ * drew this card below the day and a one-line banner above To do — "two
+ * Modified cards" — and the ruling was to keep the line, make it open the
+ * status page, and drop this card. /me/status draws the same facts in its
+ * own cards. Kept, with its guard (test-availability-banner), for the
+ * screen that next needs the card; delete both together or neither. */
+/** The injury this availability row is linked to, or null. Null is the common
    *  case and not an error: an athlete can be unavailable for illness, exams,
    *  personal leave or a representative call-up, and fetchAthleteAvailability
    *  deliberately returns null rather than guessing at an unrelated open injury.

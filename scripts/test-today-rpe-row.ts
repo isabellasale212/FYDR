@@ -37,7 +37,10 @@ console.log('1. the row');
 console.log('\n2. on Today');
 {
   const page = strip(read('src/app/(athlete)/today/page.tsx'));
-  assert(/<TodayRpeRow/.test(page) && /item\.session \? \(/.test(page), 'a rating row renders the grid; wellness and nutrition stay links');
+  /* 16 Sept 2026 (1.1): the check-in and nutrition rows are status cards
+     (TodoStatusCard, a Link while there is something to do); the rating
+     rows keep the grid. */
+  assert(/<TodayRpeRow/.test(page) && /rpeItems\.map\(/.test(page) && /<TodoStatusCard/.test(page), 'a rating row renders the grid; check-in and nutrition are the status cards');
   assert(/entryDate=\{dateInTz\(new Date\(item\.session\.starts_at\), timezone\)\}/.test(page), 'the entry date is the session\'s club-local day — the rating screen\'s rule');
   assert(/durationMin=\{item\.session\.duration_min\}/.test(page), 'the scheduled minutes come from the session');
   const screen = strip(read('src/app/(athlete)/rpe/[sessionId]/page.tsx'));

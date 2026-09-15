@@ -31,18 +31,21 @@ export class CoverageError extends Error {}
    (reports/layout.tsx), +1 component (DesktopOnlyNotice), +1 lib
    (printableDoc.ts) — fourteen counts moved. Then the athlete zoom and
    docked-footer pass: +2 components (StandaloneViewport, AthleteFooterDock),
-   +1 lib (viewportMeta.ts) — six counts. */
+   +1 lib (viewportMeta.ts) — six counts. 16 Sept 2026, the overnight
+   queue's athlete section: +2 components (TodoStatusCard, AthleteBoardTable),
+   +2 lib (todayStatus.ts, gymWeeks.ts), −1 component (TodayGymRow, its row
+   now a status card) — six counts. */
 export const COUNTS = {
   /** supabase/migrations/*.sql */
   migrations: 133,
   /** supabase/tests/*.sql (pgTAP) */
   pgtapTests: 94,
   /** every file under src, of any kind */
-  srcFiles: 554,
+  srcFiles: 557,
   /** .ts and .tsx under src */
-  srcTs: 549,
+  srcTs: 552,
   /** .tsx under src */
-  srcTsx: 303,
+  srcTsx: 304,
   /** .css under src (src/styles) */
   srcCss: 2,
   /** page.tsx under src/app/(staff) */
@@ -54,9 +57,9 @@ export const COUNTS = {
   /** .tsx under src/app/(athlete) */
   athleteTsx: 27,
   /** .tsx under src/components */
-  componentTsx: 168,
+  componentTsx: 169,
   /** .ts and .tsx under src/components */
-  componentTs: 174,
+  componentTs: 175,
   /** .tsx under src/app */
   appTsx: 134,
   /** .ts and .tsx under src/app */
@@ -68,7 +71,7 @@ export const COUNTS = {
   /** route.ts under src/app */
   appRoutes: 41,
   /** .ts and .tsx under src/lib */
-  libTs: 193,
+  libTs: 195,
   /** page.tsx under src/app */
   appPages: 108,
   /** layout.tsx under src/app */

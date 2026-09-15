@@ -1528,10 +1528,12 @@ Any request to make readiness rankable should be refused with that sentence.
 with "Best before today 100 kg × 8 · 21 Aug" beneath it.
 
 **Surfaces.** Athlete app (the gym session summary, ATH-ADULT-09 C6, 12
-September 2026; and My data's gym hero, ATH-ADULT-12 C5, 13 September 2026 —
-"102.5 kg · Back squat best · × 5 · Sat 5 Sept · up 5 kg on your best before
-Mon 17 Aug": the same rule twice, the best inside the chosen period and the best
-before it, for the lift with the most working sets in the period). The staff
+September 2026; and, until 16 September 2026, My data's gym hero, ATH-ADULT-12
+C5, 13 September 2026 — "102.5 kg · Back squat best · × 5 · Sat 5 Sept · up 5 kg
+on your best before Mon 17 Aug": the same rule twice, the best inside the chosen
+period and the best before it, for the lift with the most working sets in the
+period; that surface went with Isabella's 16 September ruling and MET-044 is
+the tab's headline now). The staff
 app's positional band on the athlete's gym page reads the same working-set rule
 for its heaviest-load comparison (`fetchBestSetLoadsForAthletes`), without the
 reps or the date. One read, `fetchWorkingSets` in `src/lib/queries/programmes.ts`,
@@ -1734,3 +1736,38 @@ weigh-ins alone. Two purposes, two identifiers.
 
 **Related.** MET-005, MET-036 (the target range, a different question: where
 the weight should sit, not whether it has moved).
+
+---
+
+## MET-044. Weekly tonnage
+
+**Name on screen.** "Lifted this week" on the athlete's My data gym tab, with the
+four calendar weeks beneath it.
+
+**Surfaces.** Athlete app only.
+
+**What it means.** How much weight the athlete moved in a calendar week: the
+sum of MET-041 (session volume) across the week's completed gym sessions.
+
+**Exact calculation.** For each week starting on a Monday in the club's own
+day, sum `total_volume_kg` (MET-041's rule: load × reps over each session's
+live sets, every set carrying both) over the athlete's completed session logs
+whose `entry_date` falls in that week. Rounded to one decimal for the sum,
+shown as whole kilograms with a thousands separator. The current week runs
+from its Monday to today and is drawn lighter, being unfinished. The
+comparison line is this week's figure against last week's, said as a word —
+"up 1,240 kg on last week", "down", "the same as last week" — never as a
+colour. `src/lib/gymWeeks.ts`.
+
+**Time window.** Four calendar weeks on the tab; the headline is the current one.
+
+**When data is missing.** A week with no completed session reads "None"
+beneath its bar; a current week with nothing lifted reads "Nothing lifted yet"
+with last week's figure beside it. A session with no loaded set contributes
+0 (MET-041's own rule).
+
+**Roles and tier.** The athlete about themselves. Base.
+
+**Added 16 September 2026** (Isabella's overnight queue, 1.2), replacing the
+best-lift hero (MET-040 stays; its surface on My data is gone) and the
+sessions-by-week count on that tab.

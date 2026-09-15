@@ -93,13 +93,14 @@ console.log('\nC2. a saved correction stays on the page');
   assert(/This is your one correction — you can’t change it again after you save\./.test(form.replace(/\s+/g, ' ')), 'the correction footer says it is the one correction');
 }
 
-console.log('\nMy data marks the week (the saved state promises it)');
+console.log('\nMy data no longer lists the weeks (Isabella, 16 Sept 2026, overnight queue 1.2: "remove the nutrition data")');
 {
+  /* The nutrition tab — and with it the Corrected pill on a corrected week
+     and the per-week Correct link — left My data on 16 Sept 2026. The
+     check-in page itself still says "Already answered · Corrected" and
+     still refuses a second correction (the assertions above). */
   const md = strip(read('src/app/(athlete)/my-data/page.tsx'));
-  const rows = md.slice(md.indexOf('Weekly nutrition check-ins, most recent first'), md.indexOf('<ListCapNote shown={shown.length} more={checkins.length > shown.length} noun="weeks" />'));
-  assert(/c\.prior \? \(\s*<>\s*<span className="pill pill-neutral"[^>]*>\s*Corrected/.test(rows), 'a corrected week carries the Corrected pill');
-  assert(/was \{ANSWER_LABEL\[c\.prior\.answer\]/.test(rows), 'and says what it was');
-  assert(/c\.prior \? [\s\S]{0,120}: \(\s*<Link href=\{`\/nutrition-check-in\?week=\$\{c\.week_start\}&correct=1`\}>/.test(rows) || /\{c\.prior \? null : \(/.test(rows) || /!c\.prior \?/.test(rows), 'the Correct link is not offered on a corrected week');
+  assert(!/Weekly nutrition check-ins, most recent first/.test(md) && !/async function NutritionTab/.test(md), 'the nutrition tab is gone from My data');
 }
 
 console.log('\nthe spec');

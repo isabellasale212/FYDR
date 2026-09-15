@@ -15,6 +15,14 @@ Targets, and real meals from the club's own meal library (`meal_library`,
 migration 0051, athlete read added by migration 0054). **The athlete browses the
 same real meals the nutritionist authored**, not a separate athlete copy.
 
+**Each meal is a closed row that opens** (16 September 2026, Isabella's
+overnight queue, 1.1: "meal ideas: shorter, and clickable to expand into the
+actual meal"): the name, its time and its energy on one 44px row (a native
+`<details>` — no JavaScript, the app's own chevron turning when open), and the
+actual meal beneath when tapped — the items with their scaled portions and the
+four macros. The page's own wording is one line: what the portions are scaled
+to, and that nothing here is logged.
+
 ## 4. What the athlete enters here
 
 **Nothing, and that is a product rule rather than a gap.** The file states it:

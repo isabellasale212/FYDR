@@ -23,15 +23,18 @@ screen used to pass before the first actionable row):
    No avatar (removed 12 September 2026, ATH-ADULT-02 follow-up): the tab
    bar's Me is the way to the profile.
 2. **One line, only when something is wrong**: "Modified · …" or
-   "Unavailable · …" — the status and what you may do, linking down to the
-   full card (item 7). Nothing here when you are available. Its fill is the
-   tone mixed into the card surface, the same rule as the card, so it reads
-   amber or red on the blue ground rather than grey.
+   "Unavailable · …" — the status and what you may do, and **it opens the
+   status page** (`/me/status`, with a chevron) since 16 September 2026
+   (Isabella's overnight queue, 1.1: "two Modified cards — remove the
+   second, make the first clickable, going straight to the modified page").
+   Nothing here when you are available. Its fill is the tone mixed into the
+   card surface, so it reads amber or red on the blue ground rather than
+   grey.
 3. **This week**, the seven-day strip, compact: each day's initial, its
    number (today filled) and its MD label, coloured by session type. On the
-   ground, not in a card (moved up from item 5 on 12 September 2026 so the
-   shape of the week is read before the list; To do's first row stays inside
-   an 812px screen, measured at 367px).
+   ground, not in a card, **inside a thick border** — 2px of
+   `--border-strong` on the control radius (16 September 2026, 1.1: "so it
+   stands out").
 3a. **"Your status changed"** (`StatusToldCard`, PATTERN-S3 C1, migration
    0122, 13 September 2026) — the one emphasised card on this screen, only
    while the availability row in force was set by staff and the athlete has
@@ -42,18 +45,39 @@ screen used to pass before the first actionable row):
    opened once, then never returns for that row. A return to available after
    an injury is a change too and is told the same way. Decided 2026-09-12:
    the card takes the emphasis while unread.
-4. **What you owe**, as a to-do list. This is the screen's real job. Always
-   rendered: with nothing outstanding the slot holds one row reading "You're
-   up to date" and the count reads "None left".
+4. **What you owe**, as **three status cards that stay in place** (16
+   September 2026, 1.1) — Morning check-in, the gym session, the weekly
+   nutrition check-in — each carrying its state as a tone family (edge and
+   wash) AND as a word in the family's pill: **Done** (the product's good
+   tone, cyan — the system's own reading of "green", by the decision in
+   `06-design-system.md` §3), **To do** (the accent), **Overdue** (bad), and a
+   neutral **Nothing today** / **Not expected today**. A card with something
+   to do is a link to its form; a done card is not a control and has no
+   chevron. The states and their windows are `lib/todayStatus.ts`: the
+   check-in is overdue after 09:00 club time (the window the staff
+   dashboard has always stated) and stays tappable — the form accepts the
+   day's entry, and the card says "still counts today"; the gym card is done
+   once a session log is completed today, to do while one is under way
+   ("Under way · 2 of 13 sets", opening the logger) or a gym session is on
+   the schedule, overdue once the day's last gym session has ended with
+   nothing logged; the weekly nutrition check-in is done or to do and is
+   never overdue inside its own week. Then a rating row per session still
+   owed (§4). The count reads "N left" or "None left".
 5. **What is on today**, the sessions from the schedule — each with its start,
    place, and whether it has finished, is under way, or starts within two
    hours, in club time.
 6. **What the club is working towards**, the next fixture
    (`fetchNextFixture`), in its own card — absent when no fixture is scheduled.
-7. **Whether you are available, and what you may do today**
-   (`AvailabilityBanner`). Always present, on every load, whatever the status.
-8. **Your own diagnosis, if there is one** (`InjuryClinical`). Often absent.
-9. **Team this week**, only when a rehab team allocation exists.
+7. **Fuelling today** (`NutritionTargetsCard`): the four figures at `--fs-28`
+   in two columns, the unit beside each, the label under; one line saying
+   whose numbers they are (PATTERN-S5 C7); a matchday-specific rule as a
+   pill beside the title; then the Meal ideas row. Bigger numbers, less
+   wording (16 September 2026, 1.1).
+8. **Team this week**, only when a rehab team allocation exists.
+
+The availability card and the diagnosis card that closed this screen until
+16 September 2026 are gone from it: both live on `/me/status`, which item 2
+opens ("it is already on the modified page").
 
 Every card on this screen — and on every athlete screen — has 9px corners
 (`--r-toggle`, Isabella's decision of 11 September 2026); staff cards keep
@@ -62,8 +86,9 @@ Every card on this screen — and on every athlete screen — has 9px corners
 The "Something not right?" row is not on this screen; the report route is
 reached from Me.
 
-**The to-do rows.** Each is a name, one line and a chevron — no domain tiles —
-except the rating row, which carries the CR-10 grid in place of a chevron and
+**The to-do rows.** The three status cards are a name at `--fs-18`, one line
+and the state pill, a chevron only while there is somewhere to go. The
+rating row keeps its shape: a name, one line and — instead of a chevron — which carries the CR-10 grid in place of a chevron and
 sends on one tap (§4). Its line reads "Today 20:39 · 45 min · change or add a
 note", the last part a link to the rating screen for the athlete who trained
 longer than scheduled or wants to say something; once sent, the line is the
@@ -225,11 +250,11 @@ stated here rather than left to be rediscovered:
 
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
-| A to-do item | The list | Opens the entry screen for that item | `/check-in`, `/nutrition-check-in`, `/gym/[id]` | nothing | no | the item is not owed |
+| A status card that is To do or Overdue | The list | Opens the entry screen for that item | `/check-in`, `/nutrition-check-in`, `/gym/[id]` (a session under way) or `/programme` (a gym session on the schedule not yet started) | nothing | no | it is not a control when Done, Nothing today or Not expected today — the card stays, without a chevron (16 September 2026, 1.1) |
 | A number on the rating row | The rating row's CR-10 grid | Sends the rating for that session with its scheduled minutes | stays here; the row becomes the receipt | `training_entries` (through the outbox) | **no — one tap**; the coach corrects a wrong one | the rating is not owed, or was sent |
 | "change or add a note" | The rating row's line | Opens the full rating screen | `/rpe/[id]` | nothing | no | the rating was sent, or the session has no scheduled length (then the whole row hands over: "Rate on the next screen") |
 | See what it means | The "Your status changed" card | Opens the status screen, which marks the row seen | `/me/status` | `availability.athlete_seen_at` (on arrival, through `mark_availability_seen`) | no | the row has been seen, or was not set by staff |
-| What this means for you › | The availability card's last line | Opens the status screen | `/me/status` | nothing | no | available |
+| The availability line ("Modified · …") | Above the week | Opens the status screen — the one availability control on this screen since 16 September 2026 | `/me/status` | nothing | no | available |
 | Report a problem | Below the list | Opens the problem form | `/report-problem` | nothing | no | never |
 | Tab bar | Fixed, bottom | Switches tab | the tab | nothing | no | never |
 

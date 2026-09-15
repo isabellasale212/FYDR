@@ -83,7 +83,9 @@ console.log('\nthe Modified row is compact: status, one restriction line, one in
      unrendered, so rendering, declaration and hand-off are checked apart. */
   assert(/\{note\}/.test(banner), 'the staff note is rendered again');
   assert(/note\?:\s*string/.test(banner), 'the prop is declared');
-  assert(/note=\{/.test(page), 'and Today passes it');
+  /* 16 Sept 2026 (1.1): the banner left Today for /me/status, which draws
+     the note in its own status card. */
+  assert(/current\.note/.test(readFileSync('src/app/(athlete)/me/status/page.tsx', 'utf8')), 'and the status page prints it (the banner left Today on 16 Sept 2026)');
 }
 
 console.log('\nTIER 1 SURVIVES, which the reference argues against');
@@ -106,8 +108,12 @@ console.log('\nthe clinical block and the session list are BACK; only the report
      removed their only route, leaving component, query and database view all
      alive and unreachable. Asserted on the RENDER and the CALL, not the import,
      because an import satisfies neither. */
-  assert(/<InjuryClinical/.test(page), 'the diagnosis and mechanism block renders again');
-  assert(/fetchAthleteInjuryClinical\(/.test(page), 'and its query is called, not merely imported');
+  /* 16 Sept 2026 (Isabella's overnight queue, 1.1): "remove the diagnosis
+     card, it is already on the modified page" — the block renders on
+     /me/status, and Today's availability line opens that page. */
+  const status = strip(readFileSync('src/app/(athlete)/me/status/page.tsx', 'utf8'));
+  assert(/<InjuryClinical/.test(status) && /fetchAthleteInjuryClinical\(/.test(status), 'the diagnosis and mechanism block renders on the status page, with its query');
+  assert(!/<InjuryClinical/.test(page) && /href="\/me\/status" className="avail-line"/.test(page), 'and Today links there instead of repeating it (16 Sept 2026)');
   /* THE SESSION LIST. The redesign's argument was that "the to-do list is the
      page's only actionable list now" — but the to-do list holds what an athlete
      owes the club, not what the club has asked of them today, and without this
@@ -124,7 +130,9 @@ console.log('\nthe clinical block and the session list are BACK; only the report
 console.log('\nthe to-do list is still the page\'s actionable list');
 {
   assert(/todo-title/.test(page), 'the to-do section survives');
-  assert(/todoItems/.test(page), 'and its items');
+  /* Three status cards since 16 Sept 2026 (1.1) — check-in, gym, nutrition,
+     in place whatever their state — plus a rating row per session. */
+  assert(/todoCards/.test(page) && /<TodoStatusCard/.test(page), 'and its items: the three status cards');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

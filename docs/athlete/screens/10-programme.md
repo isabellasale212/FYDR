@@ -37,7 +37,7 @@ Nothing on this screen. Logging happens on `/gym/[sessionId]`.
 | Metric ID | Label | Meaning | Window | When missing |
 |---|---|---|---|---|
 | MET-030 | Prescribed load | What to lift | Per session | says so plainly |
-| MET-031 to MET-035 | Nutrition targets | Read on this screen from `protein_g`, `energy_kcal`, `fluid_ml`; under them a provenance line — "The club default target, the same for everyone on it." / "Your group's target." / "Set for you." — with "Not scaled to your weight — no weigh-in on record." when there is none (PATTERN-S5 C7, Isabella, 13 September 2026) | Current | empty |
+| MET-031 to MET-035 | Nutrition targets | Read on this screen from `protein_g`, `energy_kcal`, `fluid_ml`, drawn as four figures at `--fs-28` in two columns with the unit beside and the label under (16 September 2026, bigger numbers and less wording — the same card Today draws); under them a provenance line — "The club default target, the same for everyone on it." / "Your group's target." / "Set for you." — with "Not scaled to your weight — no weigh-in on record." when there is none (PATTERN-S5 C7, Isabella, 13 September 2026) | Current | empty |
 
 ## 6. Every thing you can act on
 

@@ -131,8 +131,10 @@ console.log('\nthe subtitles and the session line, in club time');
 
 console.log('\nB-f. the durations, and where each comes from');
 {
-  assert(/'45 sec'/.test(page), '"45 sec" — 00-product-overview §198 and 08-notifications name the 45-second wellness entry');
-  assert(/'about 10 sec'/.test(page), '"about 10 sec" — 08-notifications: "three answers, under 10 seconds"');
+  /* On the status cards' sub lines since 16 Sept 2026 (1.1), with the
+     window beside them. */
+  assert(/45 sec/.test(page), '"45 sec" — 00-product-overview §198 and 08-notifications name the 45-second wellness entry');
+  assert(/about 10 sec/.test(page), '"about 10 sec" — 08-notifications: "three answers, under 10 seconds"');
   assert(!/20 sec/.test(page) && !/20 sec/.test(compliance) && !/20 sec/.test(strip(read('src/lib/todayRows.ts'))), '"20 sec" is NOT shipped: its only source is docs/screens/legacy/training-entry.md, which is not binding — Isabella decides');
   assert(!/45 seconds|20 seconds|10 seconds/.test(page), 'and no long-form duration claim remains');
   assert(!/Did you hit your protein target/.test(page), 'the nutrition row carries no question text');
@@ -142,21 +144,27 @@ console.log('\nB-f. the durations, and where each comes from');
 console.log('\nthe page: order (S1, S2, S3), the rows, the empty state');
 {
   const at = (needle: string): number => page.indexOf(needle);
-  const todo = at('id="todo-title"'), today = at('id="today-title"'), week = at('className="card wk-card"'), avail = at('<AvailabilityBanner'), diag = at('<InjuryClinical'), team = at('Team this week'), bannerLine = at('href="#availability"');
+  const todo = at('id="todo-title"'), today = at('id="today-title"'), week = at('className="card wk-card"'), team = at('Team this week'), bannerLine = at('href="/me/status" className="avail-line"');
   assert(todo > 0 && today > todo, 'To do comes before Today');
   /* S1 as amended by the follow-up (Isabella, 2026-09-11): the seven-day
      strip is compact and sits ABOVE To do; the card below Today keeps
      "Working towards". test-ath-adult-02-followup.ts pins the strip. */
   assert(at('className="wk-strip wk-compact"') > 0 && at('className="wk-strip wk-compact"') < todo, 'S1 (amended): the week strip is kept, compact, above To do');
   assert(week > today && /wk-towards/.test(page), 'and the card below Today keeps "Working towards"');
-  assert(avail > week, 'S2: the availability card sits below the week');
-  assert(bannerLine > 0 && bannerLine < todo, 'and the one-line banner sits above To do, linking down');
-  assert(/availability\.current\.status !== 'available'[\s\S]*?availabilityLine\(/.test(page) && /\{availSummary \? \([\s\S]{0,200}href="#availability"/.test(page), 'the banner renders only when the athlete is not fully available');
-  assert(diag > avail && /<InjuryClinical/.test(page), 'S3: the diagnosis is a separate component, after the card');
-  assert(team > diag, 'team this week last');
+  /* S2 and S3 AS AMENDED on 16 Sept 2026 (Isabella's overnight queue, 1.1):
+     ONE availability card, the line above To do, and it opens /me/status —
+     the card below the week and the diagnosis card are gone from Today
+     ("it is already on the modified page"). */
+  assert(!/<AvailabilityBanner/.test(page) && !/<InjuryClinical/.test(page), 'S2/S3 amended: no second availability card and no diagnosis card on Today (16 Sept 2026)');
+  assert(bannerLine > 0 && bannerLine < todo, 'the one-line banner sits above To do and opens the status page');
+  assert(/availability\.current\.status !== 'available'[\s\S]*?availabilityLine\(/.test(page) && /\{availSummary \? \([\s\S]{0,300}href="\/me\/status"/.test(page), 'the banner renders only when the athlete is not fully available');
+  assert(team > week, 'team this week last');
   assert(!/'WEL'|'RPE'|'NUT'/.test(page), 'no glyph tiles');
   assert(!/className="gl"/.test(page), 'and no .gl spans');
-  assert(/None left/.test(page) && /You&rsquo;re up to date|You're up to date/.test(page), '"None left" and a "You\'re up to date" row in the same slot');
+  /* 16 Sept 2026 (1.1): the three status cards stay in place whatever
+     their state, so the slot is never empty and the "up to date" row went
+     with the empty state; "None left" still counts down. */
+  assert(/None left/.test(page) && /<TodoStatusCard/.test(page) && !/You're up to date|You&rsquo;re up to date/.test(page), '"None left", and the three status cards hold the slot — no "up to date" row (16 Sept 2026)');
   assert(!/done-card|done-check/.test(page), 'the old centred done card is gone');
   assert(!/you are not in this one|contact, not you/.test(page), 'S5: no row claims to know who is in a session');
   assert(/sessionMeta\(/.test(page) && /rpeWhen\(/.test(page), 'session lines and RPE subtitles come from the shared builders');

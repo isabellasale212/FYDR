@@ -1,13 +1,7 @@
 import Link from 'next/link';
 import { LeaveLeaderboardButton } from '@/components/LeaveLeaderboardButton/LeaveLeaderboardButton';
-import {
-  fetchBoard,
-  fetchBoardRanking,
-  fetchMetricCatalogue,
-  metricDecimals,
-  populationLabel,
-} from '@/lib/queries/leaderboards';
-import { formatNumber } from '@/lib/format';
+import { AthleteBoardTable } from '@/components/AthleteBoardTable/AthleteBoardTable';
+import { fetchBoard, fetchBoardRanking, fetchMetricCatalogue } from '@/lib/queries/leaderboards';
 import { requireAthlete } from '@/lib/session';
 import { gpsMetricBlocked } from '@/lib/tier';
 
@@ -118,13 +112,6 @@ export default async function MyBoardDetailPage({
   }
 
   const metric = catalogue.find((m) => m.key === board.metric_key);
-  // metricDecimals, not the old inline `unit === '' ? 0 : 1`: a GPS distance board
-  // would otherwise read "6260.0 m" and a max-speed board "9.3 m/s", which rounds away
-  // the gap the board exists to show. See its own comment in lib/queries/leaderboards.ts.
-  const decimals = metricDecimals(metric);
-  const topN = board.athlete_view === 'full' ? ranking.length : board.top_n;
-  const top = ranking.slice(0, topN);
-  const ownInTop = top.some((r) => r.athlete_id === athleteId);
 
   return (
     <>
@@ -132,106 +119,9 @@ export default async function MyBoardDetailPage({
         <h1 className="d">{board.name}</h1>
       </div>
 
-      <p className="tiny" style={{ marginBottom: 'var(--sp-10)' }}>
-        {/* No selectedNames arg here either — same RLS reasoning as the boards list
-            page; see fetchAthleteNames' own comment in leaderboards.ts. */}
-        {populationLabel(board)} ·{' '}
-        {board.window_type === 'days'
-          ? `last ${board.window_days} days`
-          : board.window_type === 'season'
-            ? 'this season'
-            : 'all time'}
-      </p>
-
-      <div className="card flush">
-        <div style={{ overflowX: 'auto' }}>
-          <table className="tbl lb-table">
-            <caption className="visually-hidden">{board.name} ranking</caption>
-            <thead>
-              <tr>
-                {/* "#" and "Value" said nothing. The position column is named,
-                    and the value column names the metric it actually holds —
-                    the board's own title does not always say it. */}
-                <th scope="col">Pos</th>
-                <th scope="col">Athlete</th>
-                <th scope="col" className="r">
-                  {metric?.label ?? 'Value'}
-                </th>
-              </tr>
-            </thead>
-            <tbody>
-              {top.map((row) => {
-                const isSelf = row.athlete_id === athleteId;
-                return (
-                  <tr
-                    key={row.athlete_id}
-                    aria-current={isSelf ? 'true' : undefined}
-                    style={
-                      isSelf
-                        ? { borderInlineStart: '3px solid var(--accent)', background: 'var(--surf2)' }
-                        : undefined
-                    }
-                  >
-                    <td className="num sub">
-                      {/* Top three carry a little weight so the head of the
-                          board reads as the head of the board. Deliberately
-                          restrained — no medals, no colour: this is a squad
-                          of teammates, not a podium. */}
-                      <span className="lb-pos" data-top={row.position <= 3 ? 'true' : undefined}>
-                        {row.is_tied ? '=' : ''}
-                        {row.position}
-                      </span>
-                    </td>
-                    <td className="nm">
-                      {isSelf ? (
-                        <>
-                          <span className="pill pill-accent" style={{ marginInlineEnd: 'var(--s-4)' }}>
-                            YOU
-                          </span>
-                          {row.first_name} {row.last_name}
-                        </>
-                      ) : (
-                        `${row.first_name} ${row.last_name}`
-                      )}
-                    </td>
-                    <td className="r num">
-                      {formatNumber(row.value, decimals)}
-                      {metric?.unit ?? ''}
-                    </td>
-                  </tr>
-                );
-              })}
-              {!ownInTop ? (
-                <tr
-                  aria-current="true"
-                  style={{ borderInlineStart: '3px solid var(--accent)', background: 'var(--surf2)' }}
-                >
-                  <td className="num sub">
-                    {own.is_tied ? '=' : ''}
-                    {own.position}
-                  </td>
-                  <td className="nm">
-                    <span className="pill pill-accent" style={{ marginInlineEnd: 'var(--s-4)' }}>
-                      YOU
-                    </span>
-                    {own.first_name} {own.last_name}
-                  </td>
-                  <td className="r num">
-                    {formatNumber(own.value, decimals)}
-                    {metric?.unit ?? ''}
-                  </td>
-                </tr>
-              ) : null}
-            </tbody>
-          </table>
-        </div>
-      </div>
-
-      <p className="cap">
-        {ranking.length} athlete{ranking.length === 1 ? '' : 's'} ranked. Athletes who
-        are not shown either opted out or have no qualifying result &mdash; which one is
-        never shown here.
-      </p>
+      {/* The table is AthleteBoardTable since 16 Sept 2026 (1.3), shared with
+          the boards page, which draws the chosen board in place. */}
+      <AthleteBoardTable board={board} ranking={ranking} metric={metric} athleteId={athleteId} own={own} />
 
       <div style={{ marginTop: 'var(--sp-14)' }}>
         <LeaveLeaderboardButton

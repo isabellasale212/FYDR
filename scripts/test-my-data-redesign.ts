@@ -45,16 +45,15 @@ const page = strip(readFileSync('src/app/(athlete)/my-data/page.tsx', 'utf8'));
 const css = readFileSync('src/styles/base.css', 'utf8');
 const nutritionForm = readFileSync('src/components/NutritionCheckinForm/NutritionCheckinForm.tsx', 'utf8');
 
-console.log('the tab bar: five segments — ATH-ADULT-12 D1, reversed by Isabella 2026-09-12');
+console.log('the tab bar: three segments — Wellness, Gym, Tests (Isabella, 16 Sept 2026, overnight queue 1.2)');
 {
-  /* Three from 2026-09-08 (Wellness, Gym, Tests, with Sessions and Nutrition
-     behind a footer card) became five: the objection that drove the footer
-     card — three destinations orphaned — is answered by giving two of them
-     their tab back. Leaderboards keeps its footer row: it is a separate
-     screen, not a view of this one. */
+  /* Three (2026-09-08) became five (ATH-ADULT-12 D1, reversed 2026-09-12)
+     and are three again since 16 Sept 2026: "remove the sessions data,
+     remove the nutrition data" — the tabs, their routes and their code.
+     Leaderboards is a separate screen, reached from the title row. */
   const bar = /SEGMENTS[^=]*=\s*\[([^\]]*)\]/.exec(page)?.[1] ?? '';
-  assert(bar.replace(/\s+/g, '').replace(/,$/, '') === "'wellness','gym','training','nutrition','testing'", 'Wellness, Gym, Sessions, Nutrition, Tests — in that order');
-  assert(/training: 'Sessions'/.test(page) && /nutrition: 'Nutrition'/.test(page), 'labelled Sessions and Nutrition (the route keys stay training / nutrition)');
+  assert(bar.replace(/\s+/g, '').replace(/,$/, '') === "'wellness','gym','testing'", 'Wellness, Gym, Tests — in that order');
+  assert(!/training: 'Sessions'/.test(page) && !/nutrition: 'Nutrition'/.test(page), 'no Sessions or Nutrition label (16 Sept 2026)');
   assert(!/className="md-seg"[^>]*>\s*Leaderboards/.test(page),
     'and Leaderboards is not a segment');
   /* B3 + C9: five labels fit 343px at --fs-11; at Larger Text the row wraps to
@@ -66,14 +65,15 @@ console.log('the tab bar: five segments — ATH-ADULT-12 D1, reversed by Isabell
   assert(/flex-wrap:\s*wrap/.test(track), 'the track wraps, never scrolls or clips');
 }
 
-console.log('\n...but the two dropped tabs are still ROUTES, so their URLs keep working');
+console.log('\n...and the two removed tabs are gone as routes too: ?tab=training and ?tab=nutrition fall back to Wellness');
 {
   const tabs = /const TABS = \[([^\]]*)\]/.exec(page)?.[1] ?? '';
-  for (const t of ['wellness', 'training', 'nutrition', 'testing', 'gym']) {
-    assert(new RegExp(`'${t}'`).test(tabs), `?tab=${t} is still a legal route`);
+  for (const t of ['wellness', 'testing', 'gym']) {
+    assert(new RegExp(`'${t}'`).test(tabs), `?tab=${t} is a legal route`);
   }
-  assert(/tab === 'training'/.test(page), 'and the training tab still renders');
-  assert(/tab === 'nutrition'/.test(page), 'and the nutrition tab still renders');
+  assert(!/'training'/.test(tabs) && !/'nutrition'/.test(tabs), 'training and nutrition are not routes (16 Sept 2026) — an old link lands on Wellness');
+  assert(!/tab === 'training'/.test(page) && !/async function TrainingTab/.test(page), 'the training tab is gone');
+  assert(!/tab === 'nutrition'/.test(page) && !/async function NutritionTab/.test(page), 'the nutrition tab is gone');
   /* ATH-ADULT-08 C2 (2026-09-12): a saved correction stays on the check-in
      page (?saved=1, "Correction saved") rather than leaving for My data; the
      nutrition tab is where My data's own links and the saved copy point. */
@@ -91,22 +91,10 @@ console.log('\nand the title row\'s Leaderboards button is the route in to leade
   assert(!/href="\/my-data\?tab=nutrition" className="me-row"/.test(page), 'and so did Weekly check-ins');
 }
 
-console.log('\nflags with no segment fall through to "Also noted for you" (gps and compliance now; training and nutrition have their tabs back)');
+console.log('\n"Also noted for you" is gone (Isabella, 16 Sept 2026, 1.2); a flag reaches the athlete on its own tab');
 {
-  /* SEGMENT_DOMAINS decides which flags land inside a tab and which are shown
-     above the tab content as orphans. Leave training/nutrition in it and their
-     flags are routed into tabs that are no longer in the bar — a flag raised
-     about an athlete, addressed to them, that they are never shown. */
-  /* DERIVED FROM SEGMENTS, not re-listed. A second literal list would be a
-     second thing to remember: drop a tab from the bar, forget the set, and
-     that tab's flags are delivered to a tab nobody can open. Asserting the
-     derivation is stronger than asserting today's contents, because it holds
-     for the next tab that moves too. */
-  assert(/SEGMENT_DOMAINS = new Set\(SEGMENTS/.test(page),
-    'SEGMENT_DOMAINS is derived from SEGMENTS, so the bar and the flag routing cannot disagree');
-  assert(!/SEGMENT_DOMAINS = new Set\(\[/.test(page),
-    'and is not a second hand-maintained list');
-  assert(/orphanFlags/.test(page), 'and the orphan notice still renders');
+  assert(!/Also noted for you/.test(page) && !/orphanFlags/.test(page), 'no orphan notice on the page');
+  assert(/flagsByDomain\.get\('wellness'\)/.test(page) && /flagsByDomain\.get\('gym'\)/.test(page) && /flagsByDomain\.get\('testing'\)/.test(page), 'each remaining tab still receives its own flags');
 }
 
 console.log('\nthe period control is BACK — it was the only one on the athlete surface');

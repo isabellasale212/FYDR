@@ -73,7 +73,9 @@ console.log('\nA4. a history row is a target');
 console.log('\nwhat this flow did NOT change (recorded, not built)');
 {
   const bar = /SEGMENTS[^=]*=\s*\[([^\]]*)\]/.exec(page)?.[1] ?? '';
-  assert(/'training'/.test(bar) && /'nutrition'/.test(bar), 'five segments (D1 reversed 2026-09-12; pinned in test-my-data-redesign.ts)');
+  /* Three again since 16 Sept 2026 (Isabella's overnight queue, 1.2): the
+     Sessions and Nutrition data left My data. Pinned in test-my-data-redesign.ts. */
+  assert(!/'training'/.test(bar) && !/'nutrition'/.test(bar) && /'gym'/.test(bar), 'three segments — Wellness, Gym, Tests (16 Sept 2026; pinned in test-my-data-redesign.ts)');
   assert(rule(".rd-delta[data-dir='up']") === '', 'the delta is no longer coloured (D3 reversed 2026-09-12; pinned in test-my-data-redesign.ts)');
   assert(/BLANK/.test(page), "the training table keeps the app-wide table blank until its own rebuild (C2)");
   /* B1's chart tokens and the hero numeral size are still not tokens. B2's

@@ -16,18 +16,17 @@ Every athlete, any time. Base package.
 
 A page title with a **Leaderboards** button at its right (the only route in to
 `/my-data/boards` — moved up from a footer card on 15 September 2026, Isabella's
-mobile queue #5), a **five-segment pill track — Wellness, Gym, Sessions, Nutrition,
-Tests** (since 12 September 2026, ATH-ADULT-12 D1 reversed) — and that tab's
-content.
+mobile queue #5), a **three-segment pill track — Wellness, Gym, Tests** — and
+that tab's content.
 
-**TABS AND SEGMENTS ARE ONE LIST AGAIN** — in a different order. Five `?tab=`
-routes (`wellness`, `training`, `nutrition`, `testing`, `gym`); the bar draws all
-five, labelled Wellness · Gym · Sessions · Nutrition · Tests. The labels sit at
-`--fs-11` so five fit 343px on one row; at larger text the track wraps to two
-rows of 44px rather than scrolling or clipping. The live segment stays the
-accent-filled pill (D2 kept). `SEGMENT_DOMAINS` is derived from `SEGMENTS`, so
-training and nutrition flags now land in their tabs; `gps` and `compliance` still
-fall through to "Also noted for you".
+**THREE TABS SINCE 16 SEPTEMBER 2026** (Isabella's overnight queue, 1.2:
+"remove the sessions data, remove the nutrition data, remove 'Also noted for
+you'"). The Sessions and Nutrition tabs — five since 12 September (ATH-ADULT-12
+D1 reversed) — are gone with their routes: `?tab=training` and `?tab=nutrition`
+fall back to Wellness. Three `?tab=` routes (`wellness`, `testing`, `gym`); the
+live segment stays the accent-filled pill (D2 kept). A flag reaches the athlete
+on its own tab; a `gps` or `compliance` flag has no tab here and the "Also
+noted for you" notice that used to carry it is gone.
 
 Each tab is a headline card over a list card, and the day and session lists show
 a preview — four readiness days, three of everything else — under a **"See all N
@@ -51,12 +50,8 @@ The wellness region is a readiness line with a 14 day rolling mean, a plus or
 minus 1 SD band, and (new) a filled area beneath the line, drawn per segment so a
 missing day leaves a gap in the fill exactly as it leaves one in the line.
 
-**`gps` and `compliance` flags have no segment** (training and nutrition have
-theirs back since 12 September). They fall through to the "Also noted for you" notice
-above the tab content, which is shown whichever tab is open — so dropping two
-tabs from the bar did not hide any flag. This was the failure mode worth
-checking: leave a domain in `SEGMENT_DOMAINS` whose tab is no longer in the bar
-and its flags are delivered to a tab nobody can open.
+**`gps` and `compliance` flags have no segment and are not shown on this
+screen** since 16 September 2026 ("Also noted for you" removed, 1.2).
 
 ## 4. What the athlete enters here
 
@@ -233,16 +228,18 @@ Built from the "ATH-ADULT-12-13 · FINAL" board, A items only — the rest is in
 - **The hero figure is 48px** (`--fs-48`, a token that exists), from 38.
 - **A history row is at least 44px.**
 
-**The gym hero is the best lift** (ATH-ADULT-12 C5, 13 September 2026): "102.5
-kg" with "Back squat best · × 5 · Sat 5 Sept" and "up 5 kg on your best before
-Mon 17 Aug" — MET-040's best working set for the lift with the most working sets
-in the chosen period, against the best before the period (the board's "this
-block" read against the screen's own window, which is the comparison the tab
-already makes; the line says which). Down is said as down, the same load with
-more reps as more reps, an equal best as equal, and a lift with no earlier best
-is "the first Back squat logged" — never called a best. Over an empty period the
-headline is words — "Nothing logged · in this period" — never "0 sets logged";
-the four-week Sessions card keeps its own stated span beneath.
+**The gym headline is the week's kilograms** (16 September 2026, Isabella's
+overnight queue, 1.2: "simplify the gym data to how much was lifted this week
+compared with previous weeks"). "3,656 kg" with "down 5,782 kg on last week"
+and "1 session so far · weight × reps, every set" — MET-044, the calendar
+week's tonnage, the sum of each completed session's MET-041 — over four bars,
+one per calendar week, each labelled and its kilograms said beneath it ("None"
+for a week with nothing lifted). This week is drawn lighter, being unfinished.
+Up, down and the same are words, never a colour. Over an empty week the
+headline is "Nothing lifted yet" with last week's figure beside it. The
+best-lift hero of ATH-ADULT-12 C5 and the sessions-by-week count are gone from
+this tab; the session list beneath stays, being the way to a set that needs
+correcting.
 
 **Prior values in the wash, the latest in the accent** (ATH-ADULT-12 B2, 13
 September 2026, once D7 was accepted): on the gym weeks the completed prior

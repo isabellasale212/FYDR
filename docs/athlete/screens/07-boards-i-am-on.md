@@ -11,10 +11,18 @@ Any athlete who appears on at least one board.
 
 ## 3. What you see
 
-A list of boards, **ordered by the athlete's own position ascending**. The
-reasoning is recorded in the file: the board they are doing best on is first,
-because that is the ordering least likely to open the app on a discouraging
-number.
+**One board, and a dropdown to switch** (16 September 2026, Isabella's
+overnight queue, 1.3: "a simple board, with a dropdown to switch between
+leaderboards"). The dropdown names every board the athlete is on — the name,
+with its metric beside it when the two differ — and `?board=` holds the
+choice; the chosen board is drawn in place, the same top-N-plus-you table the
+board's own page draws (`AthleteBoardTable`, shared by both), with "Leave this
+leaderboard" beneath it. With no choice the first board is shown: the boards
+are **ordered by the athlete's own position ascending**, the reasoning
+recorded in the file — the board they are doing best on is first, because that
+is the ordering least likely to open the app on a discouraging number. Until
+16 September this was a list of cards, one per board, each opening its page;
+that page (`/my-data/boards/[id]`) still answers.
 
 **A board this athlete does not appear on never appears here at all.** Excluded,
 opted out, unqualified or simply not on it: there is no greyed or partial row.
@@ -33,7 +41,8 @@ Nothing.
 
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
-| A board | The list | Opens it | `/my-data/boards/[id]` | nothing | no | not on it |
+| The Board dropdown | Above the table | Shows that board in place | stays here, `?board=` in the address | nothing | no | not on it (a board the athlete is not on is not an option) |
+| Leave this leaderboard | Below the table | Leaves the shown board | stays here | the athlete's board opt-out | yes | — |
 
 ## 7. Offline and sync
 

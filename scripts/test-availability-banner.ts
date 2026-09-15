@@ -201,9 +201,15 @@ console.log('\nno clinical detail, which is Tier 2 and a separate decision');
 
 console.log('\nthe data actually reaches the component');
 {
+  /* 16 Sept 2026 (Isabella's overnight queue, 1.1): Today draws ONE
+     availability card — the line above the week, opening /me/status — and
+     the banner card is gone from it. The status page carries every line
+     the banner did (the word, the restrictions, the injury, the return,
+     the note) in its own cards. The banner component stays, guarded here,
+     for the screen that next needs it. */
   assert(
-    /<AvailabilityBanner[\s\S]{0,400}injury=\{/.test(today),
-    'today/page.tsx passes the injury it was already fetching and throwing away',
+    !/<AvailabilityBanner/.test(today) && /href="\/me\/status" className="avail-line"/.test(today),
+    'today/page.tsx no longer draws the banner card — the one availability line opens the status page (16 Sept 2026)',
   );
   assert(
     /\.select\(\s*'[^']*\bstatus\b[^']*'\s*\)/.test(

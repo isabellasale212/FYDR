@@ -8,28 +8,18 @@ import { PeriodSelector } from '@/components/PeriodSelector/PeriodSelector';
 import { WellnessChart, type FlagMarker } from '@/components/WellnessChart/WellnessChart';
 import { FlagNotice } from '@/components/FlagNotice/FlagNotice';
 import { fetchWellnessByAthlete, wellnessSeries } from '@/lib/queries/wellness';
-import { fetchAthleteRecentSessions, fetchCurrentSeason } from '@/lib/queries/schedule';
-import { fetchRecentCheckins } from '@/lib/queries/nutrition';
+import { fetchCurrentSeason } from '@/lib/queries/schedule';
 import {
   fetchHistory,
   fetchMyTestSummary,
   type HistoryRow,
   type MyTestSummary,
 } from '@/lib/queries/testing';
-import {
-  fetchBestSetsInPeriod,
-  fetchExerciseNames,
-  fetchMyAssignedSessionsByWeek,
-  fetchPersonalBestsBefore,
-  fetchRecentGymSessions,
-} from '@/lib/queries/programmes';
-import { gymHeroLine, pickMainLift } from '@/lib/gymHero';
+import { fetchRecentGymSessions } from '@/lib/queries/programmes';
+import { formatTonnage, tonnageDeltaLine, weeklyTonnage } from '@/lib/gymWeeks';
 import { fetchMyVisibleFlags, staffNoteLines, type VisibleFlag } from '@/lib/queries/flags';
-import {
-  fetchTrainingRevisionChains,
-  fetchWellnessWithRevisions,
-} from '@/lib/queries/entryRevisions';
-import { BLANK, addDays, dash, dayMonthShort, enumLabel, formatDate, formatNumber, formatTime, todayIso } from '@/lib/format';
+import { fetchWellnessWithRevisions } from '@/lib/queries/entryRevisions';
+import { BLANK, addDays, dash, dayMonthShort, formatDate, formatNumber, todayIso } from '@/lib/format';
 import {
   PERIOD_PARAM,
   clampPeriod,
@@ -41,7 +31,6 @@ import {
 import { resolvePeriod } from '@/lib/period.server';
 import { bandPosition } from '@/lib/stats';
 import { requireAthlete } from '@/lib/session';
-import { RPE_OFF_ATHLETE } from '@/lib/rpeSetting';
 
 export const metadata = { title: 'My data · Fydr' };
 
@@ -152,7 +141,12 @@ const SCREEN_DEFAULT_RANGE: RangeKey = 'month';
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-const TABS = ['wellness', 'training', 'nutrition', 'testing', 'gym'] as const;
+/* THREE since 16 Sept 2026 (Isabella's overnight queue, 1.2): the Sessions
+   and Nutrition data leave this screen — the tab bar, the routes and the
+   tabs' own code. `?tab=training` and `?tab=nutrition` fall back to
+   Wellness. The weekly nutrition check-in still returns to Today, whose
+   card says it is done. */
+const TABS = ['wellness', 'testing', 'gym'] as const;
 type Tab = (typeof TABS)[number];
 
 /** The three the redesign reference draws in the bar (screens 03-08).
@@ -176,16 +170,12 @@ type Tab = (typeof TABS)[number];
    keeps its footer row, being a separate screen rather than a view of this
    one. The labels sit at --fs-11 so five fit 343px, and the track wraps to
    two rows at larger text rather than scrolling or clipping (B3, C9). */
-const SEGMENTS = ['wellness', 'gym', 'training', 'nutrition', 'testing'] as const;
+/* And back to three on 16 Sept 2026 (1.2): Wellness, Gym, Tests. */
+const SEGMENTS = ['wellness', 'gym', 'testing'] as const;
 
 const SEGMENT_LABELS: Record<(typeof SEGMENTS)[number], string> = {
   wellness: 'Wellness',
   gym: 'Gym',
-  /* "Sessions", the board's word: what you trained and how hard it felt. The
-     route key stays `training` — a URL an athlete has already been sent must
-     keep working. */
-  training: 'Sessions',
-  nutrition: 'Nutrition',
   /* "Tests", per 23m, not "Testing". The route key stays `testing`, and this
      is the label CLAUDE.md §6 defines. */
   testing: 'Tests',
@@ -384,7 +374,7 @@ export default async function MyDataPage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, orgId, athleteId, timezone, collectsRpe } = await requireAthlete();
+  const { db, orgId, athleteId, timezone } = await requireAthlete();
   const params = await searchParams;
   const tab: Tab = isTab(params.tab) ? params.tab : 'wellness';
 
@@ -461,8 +451,6 @@ export default async function MyDataPage({
      and their flags are delivered to two tabs that are no longer in the bar —
      a flag raised about an athlete, addressed to them, that they would never
      be shown. Out of the set, they surface on whichever tab is open. */
-  const SEGMENT_DOMAINS = new Set(SEGMENTS as readonly string[]);
-  const orphanFlags = visibleFlags.filter((f) => !SEGMENT_DOMAINS.has(f.domain));
 
   /* CARRYING THE PERIOD AGAIN. The chips must, or choosing "This season" and
      then tapping Gym silently puts the athlete back on 28 days — the bug this
@@ -557,11 +545,10 @@ export default async function MyDataPage({
         )}
       </div>
 
-      {/* gps and compliance domain flags have no matching segment (see the comment on
-       * orphanFlags above) — shown here, above the tab content, so they stay visible no
-       * matter which tab the athlete has open rather than living behind a tab that
-       * doesn't describe them. */}
-      <FlagNotice flags={orphanFlags} heading="Also noted for you" timezone={timezone} />
+      {/* "Also noted for you" — the notice for flags with no segment of their
+          own — is gone (Isabella, 16 Sept 2026, 1.2). A flag still reaches
+          the athlete on its own tab (Wellness, Gym, Tests); a gps or
+          compliance flag has no tab here and is not shown on this screen. */}
 
       {tab === 'wellness' ? (
         <WellnessTab
@@ -578,31 +565,6 @@ export default async function MyDataPage({
           seasonStart={season?.starts_on ?? null}
           showAll={showAll}
         />
-      ) : tab === 'training' ? (
-        <TrainingTab
-          db={db}
-          orgId={orgId}
-          athleteId={athleteId}
-          from={from}
-          today={today}
-          range={range}
-          timezone={timezone}
-          flags={flagsByDomain.get('training') ?? []}
-          periodKey={periodKey}
-          seasonStart={season?.starts_on ?? null}
-          collectsRpe={collectsRpe}
-        />
-      ) : tab === 'nutrition' ? (
-        <NutritionTab
-          db={db}
-          athleteId={athleteId}
-          from={from}
-          today={today}
-          timezone={timezone}
-          flags={flagsByDomain.get('nutrition') ?? []}
-          periodKey={periodKey}
-          seasonStart={season?.starts_on ?? null}
-        />
       ) : tab === 'testing' ? (
         <TestingTab
           db={db}
@@ -614,7 +576,6 @@ export default async function MyDataPage({
       ) : (
         <GymTab
           db={db}
-          orgId={orgId}
           athleteId={athleteId}
           from={from}
           today={today}
@@ -1031,297 +992,9 @@ async function WellnessTab({
   );
 }
 
-async function TrainingTab({
-  db,
-  orgId,
-  athleteId,
-  from,
-  today,
-  range,
-  timezone,
-  flags,
-  periodKey,
-  seasonStart,
-  collectsRpe,
-}: {
-  db: Awaited<ReturnType<typeof requireAthlete>>['db'];
-  orgId: string;
-  athleteId: string;
-  from: string;
-  today: string;
-  range: ResolvedRange;
-  timezone: string;
-  flags: VisibleFlag[];
-  periodKey: RangeKey;
-  seasonStart: string | null;
-  collectsRpe: boolean;
-}) {
-  /* LIST_LIMIT + 1, so a full page is the signal that there is more rather than
-   * a second count query. This call used to pass no limit at all and therefore
-   * took fetchAthleteRecentSessions's default of EIGHT — which is why the
-   * footer below, which reads "n of m sessions rated in this window", was
-   * counting out of 8 while naming a 42-day window. It now counts out of what
-   * the window really holds, up to the cap, and says when the cap bit. */
-  const fetched = await fetchAthleteRecentSessions(
-    db,
-    orgId,
-    athleteId,
-    from,
-    today,
-    timezone,
-    LIST_LIMIT + 1,
-  );
-  const sessions = fetched.slice(0, LIST_LIMIT);
-  const more = fetched.length > LIST_LIMIT;
-  const rated = sessions.filter((s) => s.rpe !== null).length;
-
-  /* Same read, same reason, as the wellness table's — see its comment. Keyed by
-   * session_id because that is what this table's rows are; an RPE entry always names
-   * the session it rates (0046). Paged: training_entries is bounded per SESSION rather
-   * than per day, so an athlete training twice a day is several rows a day before any
-   * correction is counted. */
-  const correctedBySession = new Map(
-    (await fetchTrainingRevisionChains(db, orgId, athleteId, { from, to: today }))
-      .filter((c) => c.current.revision_of !== null && c.current.session_id !== null)
-      .map((c) => [c.current.session_id as string, c] as const),
-  );
-
-  return (
-    <div className="stack">
-      <section className="card" aria-labelledby="training-title">
-        <h2 className="card-title" id="training-title">
-          Sessions
-        </h2>
-        <p className="import-sub">
-          A blank RPE means no rating was submitted, which is not the same as an
-          easy session.
-        </p>
-        {/* Migration 0118: the club setting, in the athlete's own words. */}
-        {collectsRpe ? null : (
-          <p className="import-sub" data-rpe-off>{RPE_OFF_ATHLETE}</p>
-        )}
-
-        <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
-
-        {sessions.length === 0 ? (
-          <EmptyPeriod db={db} athleteId={athleteId} domain="training" tab="training" periodKey={periodKey} seasonStart={seasonStart} today={today} timezone={timezone} />
-        ) : (
-          <>
-            <div style={{ overflowX: 'auto' }}>
-              <table className="tbl">
-                <caption className="visually-hidden">Recent sessions with reported RPE</caption>
-                <thead>
-                  <tr>
-                    <th scope="col">Date</th>
-                    <th scope="col">Session</th>
-                    <th scope="col">Type</th>
-                    <th scope="col" className="r">
-                      Minutes
-                    </th>
-                    <th scope="col" className="r">
-                      RPE
-                    </th>
-                    <th scope="col" className="r">
-                      Load
-                    </th>
-                  </tr>
-                </thead>
-                <tbody>
-                  {sessions.map((session) => {
-                    const corrected = correctedBySession.get(session.id);
-                    return (
-                      <Fragment key={session.id}>
-                        <tr style={{ opacity: session.status === 'cancelled' ? 0.55 : 1 }}>
-                          <td className="num sub">
-                            {formatDate(session.starts_at, timezone)} {formatTime(session.starts_at, timezone)}
-                          </td>
-                          <td className="nm">{session.title}</td>
-                          <td className="sub">
-                            {enumLabel(session.session_type)}
-                            {session.status === 'cancelled' ? (
-                              <span className="pill pill-bad" style={{ marginInlineStart: 'var(--s-3)' }}>
-                                Cancelled
-                              </span>
-                            ) : null}
-                            {corrected ? (
-                              <span className="pill pill-neutral" style={{ marginInlineStart: 'var(--s-3)' }}>
-                                Corrected
-                              </span>
-                            ) : null}
-                          </td>
-                          <td className="r num">{session.duration_min ?? BLANK}</td>
-                          <td className="r num">{formatNumber(session.rpe, 1)}</td>
-                          <td className="r num">{formatNumber(session.session_load, 0)}</td>
-                        </tr>
-                        {corrected ? (
-                          <tr>
-                            <td colSpan={6} style={{ background: 'var(--surf2)' }}>
-                              <p className="cap" style={{ margin: 0 }}>
-                                Corrected by {corrected.correctedBy ?? 'a member of staff'}
-                                {corrected.correctedAt
-                                  ? ` on ${formatDate(corrected.correctedAt, timezone)}`
-                                  : ''}
-                                .{' '}
-                                {corrected.priorRevisions.length === 0
-                                  ? 'What you first reported is older than the window shown here.'
-                                  : 'What you reported:'}
-                              </p>
-                              {corrected.priorRevisions.length > 0 ? (
-                                <ol
-                                  className="cap"
-                                  style={{ margin: 'var(--s-2) 0 0', paddingInlineStart: 'var(--s-9)' }}
-                                >
-                                  {corrected.priorRevisions.map((rev) => (
-                                    <li key={rev.id} className="num">
-                                      {`RPE ${dash(rev.rpe)} · ${dash(rev.duration_min)} min · load ${dash(
-                                        rev.session_load,
-                                      )}`}
-                                    </li>
-                                  ))}
-                                </ol>
-                              ) : null}
-                            </td>
-                          </tr>
-                        ) : null}
-                      </Fragment>
-                    );
-                  })}
-                </tbody>
-              </table>
-            </div>
-            <p className="cap">
-              <b>{rated}</b> of <b>{sessions.length}</b> sessions rated between{' '}
-              {formatDate(range.from, timezone)} and {formatDate(range.to, timezone)}.
-            </p>
-            <ListCapNote shown={sessions.length} more={more} noun="sessions" />
-            {/* Same removal, same reason, and same "Corrected" row, as the
-              * wellness table above. */}
-            <p className="cap">
-              Ratings can&rsquo;t be edited once sent. If one is wrong, tell your
-              coach &mdash; they can record a correction from your profile. If they
-              do, this table says <b>Corrected</b> on that session and shows you
-              what you originally rated it.
-            </p>
-          </>
-        )}
-      </section>
-    </div>
-  );
-}
-
-const ANSWER_LABEL: Record<string, string> = { yes: 'Yes', roughly: 'Roughly', no: 'No' };
-
-async function NutritionTab({
-  db,
-  athleteId,
-  from,
-  today,
-  timezone,
-  flags,
-  periodKey,
-  seasonStart,
-}: {
-  db: Awaited<ReturnType<typeof requireAthlete>>['db'];
-  athleteId: string;
-  from: string;
-  today: string;
-  timezone: string;
-  flags: VisibleFlag[];
-  periodKey: RangeKey;
-  seasonStart: string | null;
-}) {
-  /* NOT PAGED, provably: `nutrition_checkins_one_live_per_week` (migration 0004)
-   * bounds nutrition_checkins_current to one row per athlete per week, so the
-   * widest window this control offers (730 days) is at most ~105 rows. See
-   * fetchRecentCheckins's own note. */
-  const checkins = await fetchRecentCheckins(db, athleteId, from, today);
-  const shown = checkins.slice(0, LIST_LIMIT);
-
-  return (
-    <div className="stack">
-      <section className="card" aria-labelledby="nutrition-title">
-        <h2 className="card-title" id="nutrition-title">
-          Weekly check-in
-        </h2>
-        <p className="import-sub">
-          No score, no streak, no comparison to anyone else.
-        </p>
-
-        <FlagNotice flags={flags} heading="Noted by staff" timezone={timezone} />
-
-        {checkins.length === 0 ? (
-          <EmptyPeriod db={db} athleteId={athleteId} domain="nutrition" tab="nutrition" periodKey={periodKey} seasonStart={seasonStart} today={today} timezone={timezone} />
-        ) : (
-          <div style={{ overflowX: 'auto' }}>
-            <table className="tbl">
-              <caption className="visually-hidden">Weekly nutrition check-ins, most recent first</caption>
-              <thead>
-                <tr>
-                  <th scope="col">Week of</th>
-                  <th scope="col">Answer</th>
-                  <th scope="col">
-                    <span className="visually-hidden">Actions</span>
-                  </th>
-                </tr>
-              </thead>
-              <tbody>
-                {shown.map((c) => (
-                  <tr key={c.id}>
-                    <td className="num sub">{formatDate(c.week_start, timezone)}</td>
-                    <td className="nm">
-                      {ANSWER_LABEL[c.answer] ?? c.answer}
-                      {/* ATH-ADULT-08 C1 (2026-09-12): the one correction, marked
-                          the way every other corrected entry here is — the
-                          neutral pill and what it was. */}
-                      {c.prior ? (
-                        <>
-                          <span className="pill pill-neutral" style={{ marginInlineStart: 'var(--s-4)', verticalAlign: 'middle' }}>
-                            Corrected
-                          </span>
-                          <span className="sub" style={{ display: 'block', marginTop: 'var(--sp-2)' }}>
-                            was {ANSWER_LABEL[c.prior.answer] ?? c.prior.answer}
-                          </span>
-                        </>
-                      ) : null}
-                    </td>
-                    <td className="sub">
-                      {/* A corrected week offers no second correction: 0107
-                          refuses it, and the check-in page shows the spent
-                          state, so the link would only lead to a refusal. */}
-                      {c.prior ? null : (
-                        <Link href={`/nutrition-check-in?week=${c.week_start}&correct=1`}>
-                          Correct
-                        </Link>
-                      )}
-                    </td>
-                  </tr>
-                ))}
-              </tbody>
-            </table>
-          </div>
-        )}
-        <ListCapNote shown={shown.length} more={checkins.length > shown.length} noun="weeks" />
-        {/* This Correct link SURVIVED the change that removed the wellness and
-          * training ones, and the asymmetry is deliberate rather than an
-          * oversight. `revise_nutrition_checkin` is athlete-only by design and
-          * always has been: `nutrition_checkins` has no staff insert policy at
-          * all (migration 0012 §11 — "a coach guessing whether a player hit
-          * their protein target is not a self report"), so there is no coach
-          * path to move this to. Closing the athlete's path here would leave the
-          * weekly check-in correctable by nobody, which is worse than the
-          * inconsistency. Recorded in adr-005-immutable-entries.md's
-          * "Who may correct what" table. */}
-        {checkins.length > 0 ? (
-          <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
-            This one you can still change yourself, once &mdash; only you know the
-            answer, so no coach can correct it for you. Changing it keeps the old
-            answer on record.
-          </p>
-        ) : null}
-      </section>
-    </div>
-  );
-}
+/* TrainingTab (Sessions) and NutritionTab stood here until 16 Sept 2026
+   (Isabella's overnight queue, 1.2: "remove the sessions data, remove the
+   nutrition data"). The queries they read are untouched in lib/queries. */
 
 /** Gameplan 4.2 / audit S8: test names like "IMTP peak force" are standard
  *  S&C field-test vocabulary a coach or physio knows, not a 16-year-old
@@ -1339,40 +1012,6 @@ const TEST_NAME_EXPLAINER: Record<string, string> = {
   'bronco test': 'A repeated shuttle-run test of aerobic endurance, timed in seconds. Lower (faster) is better.',
 };
 
-/** screens/testing.md's own role table: "Athlete: Own results only: history,
- *  personal bests." RLS already scopes test_results to the caller's own
- *  rows; fetchMyTestSummary just shapes it per test, latest result plus PB.
- *
- *  THE ONE TAB THE PERIOD CONTROL DOES NOT DRIVE, and it stays that way.
- *
- *  This was a real inconsistency before the control existed — four tabs on a
- *  fixed 42 days and this one silently all-time, with nothing on screen saying
- *  so — and there were two ways to close it. Bounding it to the window is the
- *  wrong one, and not marginally:
- *
- *   - A PERSONAL BEST IS ALL-TIME OR IT IS NOT A PERSONAL BEST. Bounding
- *     `test_date` would relabel "best you have ever done" as "best in the last
- *     28 days", which for almost every athlete is a LOWER number than the truth.
- *     That is the identical failure fetchMyTestSummary's own header records
- *     being fixed once already — the "phantom PB regression", an athlete with a
- *     41.6 all-time best shown 31.0 because that was their latest session — and
- *     re-introducing it through the front door because the sibling tabs have a
- *     control would be worse than the original bug, which at least was an
- *     accident.
- *   - It is what the spec asks for. my-data.md O-296, "how much history should
- *     an athlete be able to see", answers itself with "full history", and the
- *     role table scopes this tab as "history, personal bests".
- *
- *  So the fix is the label, not the query: the control is replaced on this tab
- *  by the words "Period: all time" (see the page body), and the copy below says
- *  what that covers. The difference is now stated where it is visible rather
- *  than discovered by an athlete wondering why a number did not move.
- *
- *  fetchMyTestSummary is nonetheless PAGED now. It has no window to widen and
- *  never had one, which is exactly what made it unbounded by construction and
- *  the most dangerous read on the page: descending on test_date, a silent 1000
- *  row cut drops the OLDEST results, which is where an athlete's real all-time
- *  best usually lives. */
 /** Fydr Athlete App.dc.html 23k/23m share one shape with 23e's readiness card:
  *  an eyebrow, the number at display size, what it stands against on the right,
  *  then the chart. These two helpers are what the Gym and Tests tabs need that
@@ -1742,7 +1381,6 @@ const GYM_HEADLINE_CAP = 200;
  *  and paging is not. */
 async function GymTab({
   db,
-  orgId,
   athleteId,
   from,
   today,
@@ -1753,7 +1391,6 @@ async function GymTab({
   seasonStart,
 }: {
   db: Awaited<ReturnType<typeof requireAthlete>>['db'];
-  orgId: string;
   athleteId: string;
   from: string;
   today: string;
@@ -1766,156 +1403,63 @@ async function GymTab({
   const weekStarts = Array.from({ length: GYM_HEADLINE_WEEKS }, (_, i) =>
     addDays(mondayOf(today), -7 * (GYM_HEADLINE_WEEKS - 1 - i)),
   );
-
   const headlineFrom = weekStarts[0] ?? mondayOf(today);
 
-  const [fetched, recent, assignedWeeks, bestsInPeriod] = await Promise.all([
+  /* SIMPLIFIED (Isabella, 16 Sept 2026, 1.2): how much was lifted this week
+     against the weeks before — one card, MET-044 (lib/gymWeeks.ts), the
+     tonnage of each of the last four calendar weeks from the sessions'
+     own MET-041. The best-lift hero (ATH-ADULT-12 C5) and the sessions-
+     by-week count are gone from this tab; the session list below stays,
+     being the way to a set that needs correcting. */
+  const [fetched, recent] = await Promise.all([
     fetchRecentGymSessions(db, athleteId, from, today, LIST_LIMIT + 1),
     fetchRecentGymSessions(db, athleteId, headlineFrom, today, GYM_HEADLINE_CAP),
-    fetchMyAssignedSessionsByWeek(db, athleteId, headlineFrom, today),
-    /* ATH-ADULT-12 C5 (2026-09-13): the hero is the athlete's best lift in
-       the period and how it moved — MET-040 twice, inside the period and
-       before it. */
-    fetchBestSetsInPeriod(db, orgId, athleteId, from, today),
   ]);
-  const mainLift = pickMainLift(bestsInPeriod);
-  const [priorBests, liftNames] = mainLift
-    ? await Promise.all([fetchPersonalBestsBefore(db, orgId, athleteId, [mainLift], from), fetchExerciseNames(db, orgId, [mainLift])])
-    : [new Map(), new Map()];
-  const hero = mainLift
-    ? gymHeroLine(
-        {
-          name: liftNames.get(mainLift) ?? 'Best lift',
-          best: bestsInPeriod.get(mainLift)!.best,
-          prior: priorBests.get(mainLift) ?? null,
-          from,
-        },
-        timezone,
-      )
-    : null;
-  const periodSets = [...bestsInPeriod.values()].reduce((n, r) => n + r.sets, 0);
   const sessions = fetched.slice(0, LIST_LIMIT);
   const more = fetched.length > LIST_LIMIT;
   const shownSessions = showAll ? sessions : sessions.slice(0, LIST_PREVIEW_ROWS);
 
-  const countByWeek = new Map<string, number>();
-  let headlineSets = 0;
-  for (const s of recent) {
-    const wk = mondayOf(s.entry_date);
-    countByWeek.set(wk, (countByWeek.get(wk) ?? 0) + 1);
-    headlineSets += s.set_count;
-  }
-  const assignedByWeek = new Map(assignedWeeks.map((w) => [w.week_start, w.assigned]));
-  const weeks = weekStarts.map((start, i) => ({
-    start,
-    count: countByWeek.get(start) ?? 0,
-    assigned: assignedByWeek.get(start) ?? null,
-    /* The last bucket runs to today, not to Sunday. A part-week drawn like a
-       whole one reads as a bad week rather than an unfinished one. */
-    partial: i === GYM_HEADLINE_WEEKS - 1,
-    label: i === GYM_HEADLINE_WEEKS - 1 ? 'This week' : `w/c ${dayMonth(start, timezone)}`,
+  const weeks = weeklyTonnage(recent, weekStarts, mondayOf).map((w, i) => ({
+    ...w,
+    label: i === GYM_HEADLINE_WEEKS - 1 ? 'This week' : `w/c ${dayMonth(w.start, timezone)}`,
   }));
-  const done = weeks.reduce((a, w) => a + w.count, 0);
-  /* Null, not 0, when the RPC returned no row for a week — "we do not know" and
-     "nothing was set" are different facts, and only the second is a
-     denominator. If ANY week is unknown the total is withheld rather than
-     quietly under-reported, because a denominator smaller than the truth makes
-     an athlete look more compliant than they are. */
-  const assignedTotal = weeks.every((w) => w.assigned !== null)
-    ? weeks.reduce((a, w) => a + (w.assigned ?? 0), 0)
-    : null;
-  /* Scaled to the tallest COMPLETED week, not to what was assigned. 23k's bars
-     are a volume trend — "3, 4, 2, 1 sessions" — and scaling them against the
-     denominator would quietly turn the same chart into a compliance ratio,
-     which is a different statement than the one the card is making. The
-     denominator has its own line above. */
-  const peak = Math.max(1, ...weeks.map((w) => w.count));
+  const thisWeek = weeks[weeks.length - 1];
+  const lastWeek = weeks[weeks.length - 2];
+  const peakKg = Math.max(1, ...weeks.map((w) => w.kg));
 
   return (
     <div className="stack">
       <section className="card" aria-labelledby="gym-headline">
         <h2 className="eyebrow" id="gym-headline">
-          Best lift
+          Lifted this week
         </h2>
-        {/* ATH-ADULT-12 C5: "102.5 kg · Back squat best · × 5 · Sat 5 Sept ·
-            up 5 kg on your best before Mon 17 Aug" — the period's own window
-            is the comparison, said in the line. Over an empty period the
-            headline is words, never "0 sets logged" (found building 12 C6). */}
         <div className="rd-head">
-          {hero ? (
+          {thisWeek && thisWeek.kg > 0 ? (
             <>
-              <p className="rd-value num">{hero.value}</p>
+              <p className="rd-value num">{formatTonnage(thisWeek.kg)}</p>
               <div className="rd-meta">
-                <p className="rd-delta">{hero.label}</p>
-                <p className="rd-mean">{hero.delta}</p>
+                <p className="rd-delta">{tonnageDeltaLine(thisWeek.kg, lastWeek?.kg ?? 0)}</p>
+                <p className="rd-mean">
+                  <span className="num">{thisWeek.sessions}</span> session{thisWeek.sessions === 1 ? '' : 's'} so far &middot; weight &times; reps, every set
+                </p>
               </div>
             </>
           ) : (
             <>
-              <p className="rd-value rd-value-words">Nothing logged</p>
+              <p className="rd-value rd-value-words">Nothing lifted yet</p>
               <div className="rd-meta">
-                <p className="rd-delta">in this period</p>
-                <p className="rd-mean">a finished session with load and reps logged counts</p>
+                <p className="rd-delta">this week</p>
+                <p className="rd-mean">{lastWeek && lastWeek.kg > 0 ? `last week ${formatTonnage(lastWeek.kg)}` : 'a finished session with load and reps logged counts'}</p>
               </div>
             </>
           )}
-        </div>
-        <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
-          {periodSets > 0 ? `${periodSets} working set${periodSets === 1 ? '' : 's'} in this period across ${bestsInPeriod.size} exercise${bestsInPeriod.size === 1 ? '' : 's'}.` : null}
-        </p>
-      </section>
-
-      <section className="card" aria-labelledby="gym-sessions-headline">
-        <h2 className="eyebrow" id="gym-sessions-headline">
-          Sessions
-        </h2>
-        <div className="rd-head">
-          <p className="rd-value num">{done}</p>
-          <div className="rd-meta">
-            {/* 23k's denominator, and §9 rule 2's: every aggregate states what
-                it is out of. Backed by migration 0062, which maps each calendar
-                week to its programme week through the assignment's start date
-                and the blocks' durations.
-
-                When it cannot be known — no programme assigned, or a week the
-                RPC returned nothing for — the line says what IS true (the sets)
-                rather than printing a denominator nobody can stand behind. */}
-            {/* > 0, not just non-null. A zero denominator beside a non-zero
-                count reads "3 of 0 assigned", which cannot be true of
-                anything — and it is what this club's data produces, because
-                only week 1 of each block has sessions authored while the
-                blocks run 4 to 12 weeks. Zero assigned does not mean the
-                athlete failed; it means nothing was scheduled, and the work
-                they did was off-programme. The sets line is the true statement
-                in that case. */}
-            {assignedTotal !== null && assignedTotal > 0 ? (
-              <p className="rd-delta">
-                of <span className="num">{assignedTotal}</span> assigned
-              </p>
-            ) : (
-              <p className="rd-delta">
-                <span className="num">{headlineSets}</span> set{headlineSets === 1 ? '' : 's'} logged
-              </p>
-            )}
-            <p className="rd-mean">
-              last {GYM_HEADLINE_WEEKS} weeks &middot; from {dayMonth(headlineFrom, timezone)}
-            </p>
-          </div>
         </div>
 
         <div
           className="gb-chart"
           role="img"
-          /* The same > 0 rule as the visible line. A label that reads "2 of 0
-             sessions" is the identical nonsense, only audible — and a screen
-             reader is the one place nobody can see it is wrong. */
-          aria-label={`Completed gym sessions by week: ${weeks
-            .map(
-              (w) =>
-                `${w.label}, ${w.count}${
-                  w.assigned !== null && w.assigned > 0 ? ` of ${w.assigned}` : ''
-                } session${w.count === 1 ? '' : 's'}${w.partial ? ', still running' : ''}`,
-            )
+          aria-label={`Kilograms lifted by week: ${weeks
+            .map((w) => `${w.label}, ${formatTonnage(w.kg)} over ${w.sessions} session${w.sessions === 1 ? '' : 's'}${w.partial ? ', still running' : ''}`)
             .join('; ')}`}
         >
           {weeks.map((w, i) => (
@@ -1928,28 +1472,20 @@ async function GymTab({
                      lighter mix — it means "not finished", a different fact. */
                   data-prior={i < weeks.length - 1 && !w.partial ? '' : undefined}
                   data-partial={w.partial ? '' : undefined}
-                  data-zero={w.count === 0 ? '' : undefined}
-                  style={w.count === 0 ? undefined : { height: `${Math.round((w.count / peak) * 100)}%` }}
+                  data-zero={w.kg === 0 ? '' : undefined}
+                  style={w.kg === 0 ? undefined : { height: `${Math.round((w.kg / peakKg) * 100)}%` }}
                 />
               </div>
               <div className="gb-label">{w.label}</div>
+              {/* ATH-ADULT-12 A1: an absent value is a word, never a dash. */}
+              <div className="gb-value num">{w.kg === 0 ? 'None' : formatTonnage(w.kg).replace(' kg', '')}</div>
             </div>
           ))}
         </div>
 
         <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
-          {/* "whatever period you pick" went with the period control. The
-              sentence still earns its place: the list below this card runs over
-              a different span from the bars, and saying so is the only thing
-              stopping the two being read as one number. */}
-          Completed sessions, four calendar weeks.
-          {/* Only when there IS a lighter bar to explain. With nothing logged this
-              week the last column is a zero rule like any other empty week, and a
-              sentence pointing at a tint that is not on screen sends the reader
-              looking for something that is not there. */}
-          {weeks[GYM_HEADLINE_WEEKS - 1] && (weeks[GYM_HEADLINE_WEEKS - 1]?.count ?? 0) > 0
-            ? ' This week is still running, so its bar is drawn lighter.'
-            : ''}
+          Kilograms lifted, four calendar weeks.
+          {thisWeek && thisWeek.kg > 0 ? ' This week is still running, so its bar is drawn lighter.' : ''}
         </p>
       </section>
 

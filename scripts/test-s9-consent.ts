@@ -148,7 +148,10 @@ console.log('\n6. artboard 3 — the decision, and what declining does');
     assert(/if \(!entryFormsOpen\(consent\.state\)\) return <EntryLocked/.test(strip(read(f))), `${f.split('/').slice(-2).join('/')}: locked while out of data (all four forms, finding 3)`);
   }
   const today = strip(read('src/app/(athlete)/today/page.tsx'));
-  assert(/const todoItems = !formsOpen \? \[\] :/.test(today) && /lockedFormLine\(consent\.state\)/.test(today), 'Today lists no entry rows and says the state once');
+  /* Since 16 Sept 2026 (1.1) the list is three status cards plus the rating
+     rows; while out of data the locked card takes the slot and none of them
+     render (`!formsOpen ?` on the slot, the rows emptied). */
+  assert(/const rpeItems = !formsOpen\s*\? \[\]/.test(today) && /\{!formsOpen \? \(/.test(today) && /lockedFormLine\(consent\.state\)/.test(today), 'Today lists no entry rows and says the state once');
   const roster = strip(read('src/components/RosterTable/RosterTable.tsx'));
   assert(/row\.consent_state !== 'in_data'/.test(roster) && /consentStateLabel\(row\.consent_state\)\.toLowerCase\(\)/.test(roster), 'the squad list shows the state and its date beside the name');
   const reports = strip(read('src/lib/queries/reports.ts'));

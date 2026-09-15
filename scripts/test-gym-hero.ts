@@ -43,18 +43,24 @@ console.log('\n3. the read and the tab');
   const q = strip(read('src/lib/queries/programmes.ts'));
   assert(/export async function fetchBestSetsInPeriod\(/.test(q) && /if \(o\.fromDate\) q = q\.gte\('entry_date', o\.fromDate\);/.test(q) && /if \(o\.toDate\) q = q\.lte\('entry_date', o\.toDate\);/.test(q), 'the best working set per exercise inside the period, with its set count');
   assert(/const perChunk = await fetchWorkingSets\(/.test(q) || /function fetchWorkingSets\(/.test(q), 'one working-set read shared with fetchPersonalBestsBefore (MET-040\'s rule once)');
+  /* THE HERO LEFT MY DATA on 16 Sept 2026 (Isabella's overnight queue, 1.2:
+     "simplify the gym data to how much was lifted this week compared with
+     previous weeks") — the tab's headline is MET-044, weekly tonnage
+     (lib/gymWeeks.ts), and the empty headline is still words. The line and
+     the read stay, guarded above, for the screen that next needs a best. */
   const page = strip(read('src/app/(athlete)/my-data/page.tsx'));
-  assert(/fetchBestSetsInPeriod\(db, orgId, athleteId, from, today\)/.test(page), 'the gym tab reads the period\'s bests');
-  assert(/fetchPersonalBestsBefore\(db, orgId, athleteId, \[mainLift\], from\)/.test(page), 'and the best before the period for the main lift');
-  assert(/gymHeroLine\(/.test(page) && /className="rd-value num">\{hero\.value\}/.test(page), 'the hero value is the best load');
-  assert(/Nothing logged/.test(page) && /in this period/.test(page), 'and over an empty period the headline is words, never "0 sets logged"');
+  assert(!/gymHeroLine\(/.test(page) && !/fetchBestSetsInPeriod\(/.test(page), 'the gym tab no longer draws the best-lift hero (16 Sept 2026)');
+  assert(/weeklyTonnage\(recent, weekStarts, mondayOf\)/.test(page) && /className="rd-value num">\{formatTonnage\(thisWeek\.kg\)\}/.test(page), 'its headline is the week\'s tonnage against the weeks before (MET-044)');
+  assert(/tonnageDeltaLine\(thisWeek\.kg, lastWeek\?\.kg \?\? 0\)/.test(page), 'the comparison is said as a word — up, down, the same');
+  assert(/Nothing lifted yet/.test(page), 'and over an empty week the headline is words, never "0 kg"');
   assert(!/\{headlineSets\}<\/span> set\{headlineSets === 1 \? '' : 's'\} logged/.test(page) || /Nothing logged/.test(page), 'the zero headline is gone');
 }
 
 console.log('\n4. the registry and the spec');
 {
-  assert(/My data's gym hero/.test(read('docs/metrics.md')), 'MET-040 lists the hero as a surface');
-  assert(/best lift/i.test(read('docs/athlete/screens/06-my-data.md')) && /best before/.test(read('docs/athlete/screens/06-my-data.md')), '06-my-data.md describes the hero');
+  assert(/until 16 September 2026, My data's gym hero/.test(read('docs/metrics.md')), 'MET-040 records the hero as a surface it had until 16 Sept 2026');
+  assert(/MET-044\. Weekly tonnage/.test(read('docs/metrics.md')), 'and MET-044, the week\'s tonnage, is in the registry');
+  assert(/week's kilograms/.test(read('docs/athlete/screens/06-my-data.md')) && /MET-044/.test(read('docs/athlete/screens/06-my-data.md')), '06-my-data.md describes the weekly tonnage headline');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

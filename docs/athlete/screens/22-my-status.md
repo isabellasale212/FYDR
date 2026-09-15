@@ -16,8 +16,11 @@ for you ›** whenever the athlete is not fully available.
 
 ## 2. Who reaches it and when
 
-Any signed-in athlete, any time. **Opening it is the one act the screen
-performs**: if the availability row in force has not been read
+Any signed-in athlete, any time — from Me, from the "Your status changed"
+card, and since 16 September 2026 from Today's availability line ("Modified ·
+…"), which is the one availability control Today keeps: the availability card
+and the diagnosis card left Today for this screen that day (Isabella's
+overnight queue, 1.1). **Opening it is the one act the screen performs**: if the availability row in force has not been read
 (`availability.athlete_seen_at` is null) the page calls
 `mark_availability_seen()` (migration 0122; the athlete's own open row, once,
 idempotent) and the told card on Today goes and does not return for that row.

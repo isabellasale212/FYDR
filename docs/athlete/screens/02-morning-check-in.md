@@ -23,9 +23,12 @@ above them, which **starts empty** (`–`) and counts as a question. Below the
 scales, a collapsed disclosure, **Add heart rate or weight**, holding the two
 optional numbers, then an optional comment.
 
-**The footer is pinned to the bottom of the screen** while the page scrolls
-(ATH-ADULT-03, 2026-09-11), so the count and the action are on screen from the
-first question. It reads, on its own line, `0 of 6 answered · 6 to go`, counting
+**The footer is docked on the tab bar** — one fixed block at the foot of the
+screen, the action directly on the tabs with the bar's hairline between them
+(Isabella, 15 September 2026, superseding the sticky footer of ATH-ADULT-03,
+2026-09-11), so the count and the action are on screen from the first
+question. The page scrolls clear of the whole block — footer, bar and inset,
+the footer's height measured (`AthleteFooterDock`) — never under it. It reads, on its own line, `0 of 6 answered · 6 to go`, counting
 down to `All six answered`, which is shown as a green chip. Under the count,
 one line — *You can't change this after you submit.* — with **Why can't I edit
 it?** beside it, a disclosure that opens the explanation (tell your coach; they

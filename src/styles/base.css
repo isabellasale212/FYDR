@@ -1510,9 +1510,18 @@ body:has(.phone) {
   background-color: var(--phone-bg);
   /* The pinned tab bar's height without its inset — see .athlete-tabbar. */
   --athlete-tabbar-h: 80px;
-  /* No double-tap zoom (mobile queue #1, 15 Sept 2026): manipulation keeps
-     pan and pinch and drops only the double-tap gesture; the pinch is capped
-     at 2× by the athlete layout's viewport, never blocked. */
+  /* No double-tap zoom (15 Sept 2026): manipulation keeps pan and pinch and
+     drops only the double-tap gesture — independent of the viewport meta,
+     which is the other half: in the installed app the pinch is blocked too
+     (StandaloneViewport; Isabella's ruling over the 2× cap built earlier
+     that day, 06-design-system.md §11.7). Both halves are needed; blocking
+     one and not the other is why such a change looks as if it did nothing. */
+  touch-action: manipulation;
+}
+/* …and the whole document when the athlete shell is on it: a touch-action
+   is read from the touched element up, so a double-tap on the ground beside
+   the 480px frame (a tablet, a wide window) is outside .phone's rule. */
+:root:has(.phone) {
   touch-action: manipulation;
 }
 /* Spec §1: horizontal page padding 22px on every athlete screen, body bottom
@@ -1747,33 +1756,56 @@ body:has(.phone) {
 .phone-body > :not(.hd):not(.gym-head):not(.back-btn) {
   order: 2;
 }
-/* A sticky footer's container fills the body (mobile queue #10, 15 Sept
-   2026). On a page shorter than the viewport the footer's natural place was
-   the end of its own form or .gym-body — above the bottom — and `position:
-   sticky; bottom: <bar>` then pushed it UP over the last content (the gym
-   logger's session-RPE field sat 66px under it). Stretching the container to
-   the body's height puts the natural place at the bottom, so the content
-   scrolls clear of the footer and never under it. A flex column keeps every
-   child's own margins; the footer's margin-top: auto is the same rule the
-   body already applies to a direct-child footer. */
-.phone-body > form:has(> .subm),
-.gym-logger > .gym-body {
-  display: flex;
-  flex-direction: column;
-  flex: 1 0 auto;
-}
-.phone-body > form:has(> .subm) > .subm,
-.gym-logger > .gym-body > .subm {
-  margin-top: auto;
-}
+/* THE ACTION DOCKS TO THE TAB BAR — Isabella, 15 Sept 2026 (the second
+   mobile queue, superseding #10's sticky footer the same day): the log or
+   save action and the tab bar are ONE FIXED BLOCK at the foot of the
+   screen, the action sitting directly on the tabs, on every athlete page
+   with a footer of that shape (the wellness check-in, the gym logger, the
+   session rating, the nutrition check-in, the gym history detail, data
+   consent, report a problem, the locked-entry screens). Three rules:
+
+   1. CLEARANCE IS AGAINST THE COMBINED BLOCK: the body's foot pads by the
+      footer's measured height (--subm-h, written by AthleteFooterDock —
+      the footer is not one height: a count line, a disclosure that opens,
+      two stacked exits) plus the bar plus the bottom inset, so the last
+      content scrolls clear of the block and never under it (#10's defect,
+      not reintroduced taller). 100px is the fallback until the measurement
+      lands and for a footer of the common shape (caption + button).
+   2. TWO THINGS, ATTACHED: the bar keeps its own hairline (border-top,
+      --border) between the action and the tabs, and the footer's foot pads
+      --sp-12 above it — a thumb aiming for Save lands on Save; the tabs
+      keep their full height (the bar is untouched).
+   3. The block's top edge keeps the footer's hairline and --shadow, so the
+      content is seen to pass beneath it.
+
+   Fixed, not sticky: sticky sat in flow at the end of a short page and
+   pinned mid-scroll, 8px apart, and floated over the content with a gap
+   above the bar (--athlete-tabbar-h is 80 over a 78.4 measured bar). Held
+   to the frame's 480px column as the bar is. Only when the bar is there:
+   the consent screens render none and keep the sticky footer below. */
+/* The bar's total height — measured by AthleteFooterDock as
+   --athlete-tabbar-total (its type scale plus the inset: 78.4 with none,
+   more at a larger text size); the 80px constant plus the inset until then,
+   which left a 1.6px seam of page between the action and the bar. */
 .phone:has(> .athlete-tabbar) > .phone-body {
-  padding-bottom: calc(var(--sp-8) + var(--athlete-tabbar-h) + env(safe-area-inset-bottom, 0px));
+  padding-bottom: calc(var(--sp-8) + var(--athlete-tabbar-total, calc(var(--athlete-tabbar-h) + env(safe-area-inset-bottom, 0px))));
+}
+.phone:has(> .athlete-tabbar):has(.phone-body .subm) > .phone-body {
+  padding-bottom: calc(var(--sp-8) + var(--subm-h, 100px) + var(--athlete-tabbar-total, calc(var(--athlete-tabbar-h) + env(safe-area-inset-bottom, 0px))));
 }
 .phone:has(> .athlete-tabbar) .subm {
-  bottom: calc(var(--athlete-tabbar-h) + env(safe-area-inset-bottom, 0px));
-  /* Above the bar the footer no longer meets the home indicator; the bar
-     carries that inset now. */
-  padding-bottom: var(--sp-8);
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: var(--athlete-tabbar-total, calc(var(--athlete-tabbar-h) + env(safe-area-inset-bottom, 0px)));
+  z-index: 30;
+  max-width: 480px;
+  margin: 0 auto;
+  padding: var(--sp-14) calc(var(--sp-20) + env(safe-area-inset-right, 0px)) var(--sp-12) calc(var(--sp-20) + env(safe-area-inset-left, 0px));
+  border-radius: 0;
+  /* The card-band variant (.card > .subm: no shadow, the card's corners)
+     docks like every other; the block's top edge is the same everywhere. */
+  box-shadow: var(--shadow);
 }
 .athlete-tab {
   display: flex;

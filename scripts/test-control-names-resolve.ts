@@ -57,7 +57,7 @@ while (queue.length) {
     }
   }
 }
-const athleteFiles = expectCount('athlete surface files (routes and every component they import, transitively)', [...seen], 66); // +2 on 15 Sept 2026: me/profile and NutritionTargetsCard
+const athleteFiles = expectCount('athlete surface files (routes and every component they import, transitively)', [...seen], 68); // +2 on 15 Sept 2026: me/profile and NutritionTargetsCard; +2 later that day: StandaloneViewport and AthleteFooterDock (the layout mounts both; neither renders)
 const corpus = athleteFiles.map((f) => blank(readFileSync(f, 'utf8'))).join('\n');
 
 const tidy = (t: string): string =>

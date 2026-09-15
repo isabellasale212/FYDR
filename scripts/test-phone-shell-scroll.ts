@@ -20,6 +20,7 @@
  * pins to the viewport carries its own (ATH-ADULT-03, commit 2).
  */
 import { readFileSync } from 'node:fs';
+import { standaloneViewportContent } from '@/lib/viewportMeta';
 
 let passed = 0, failed = 0;
 const assert = (cond: boolean, label: string): void => {
@@ -61,13 +62,54 @@ console.log('\nthe tab bar is pinned (P5, 15 Sept 2026), and the body and a pinn
   assert(/padding:\s*9px calc\(var\(--s-3\) \+ env\(safe-area-inset-right, 0px\)\) calc\(var\(--s-5\) \+ env\(safe-area-inset-bottom, 0px\)\) calc\(var\(--s-3\) \+ env\(safe-area-inset-left, 0px\)\)/.test(tab), 'its content is padded by the bottom and side insets, on the bar itself');
   assert(!/border-radius/.test(tab), 'no corner radius — the device mask rounds it');
   assert(/--athlete-tabbar-h:\s*80px/.test(rule('.phone')), '.phone names the bar\'s height without the inset');
+  /* DOCKED, later on 15 Sept 2026 (Isabella, the second mobile queue): the
+     action and the bar are one fixed block. The bar's total height is
+     measured (--athlete-tabbar-total, AthleteFooterDock) with the 80px
+     constant plus the inset as the fallback; the footer's height is
+     measured too (--subm-h, 100px fallback) and the body's clearance is
+     the COMBINED block — footer, bar, inset — so nothing is hidden under
+     it in its taller form (#10's defect). */
+  const TOTAL = 'var\\(--athlete-tabbar-total, calc\\(var\\(--athlete-tabbar-h\\) \\+ env\\(safe-area-inset-bottom, 0px\\)\\)\\)';
   const body = rule('.phone:has(> .athlete-tabbar) > .phone-body');
-  assert(/padding-bottom:\s*calc\(var\(--sp-8\) \+ var\(--athlete-tabbar-h\) \+ env\(safe-area-inset-bottom, 0px\)\)/.test(body), 'with the bar present the body pads its foot by the bar and the inset');
+  assert(new RegExp(`padding-bottom:\\s*calc\\(var\\(--sp-8\\) \\+ ${TOTAL}\\)`).test(body), 'with the bar present the body pads its foot by the bar\'s measured total (the constant plus the inset until measured)');
+  const bodyDocked = rule('.phone:has(> .athlete-tabbar):has(.phone-body .subm) > .phone-body');
+  assert(new RegExp(`padding-bottom:\\s*calc\\(var\\(--sp-8\\) \\+ var\\(--subm-h, 100px\\) \\+ ${TOTAL}\\)`).test(bodyDocked), 'and with a footer on the page, by the footer\'s measured height as well — clearance against the combined block');
   assert(!/safe-area/.test(rule('.phone-body')), 'and without it (the consent screens) the body still ends at the document, no inset of its own');
   const subm = rule('.phone:has(> .athlete-tabbar) .subm');
-  assert(/bottom:\s*calc\(var\(--athlete-tabbar-h\) \+ env\(safe-area-inset-bottom, 0px\)\)/.test(subm), 'a pinned footer sits on top of the bar');
-  assert(/padding-bottom:\s*var\(--sp-8\)/.test(subm), 'and drops its own inset there — the bar carries it');
+  assert(/position:\s*fixed/.test(subm) && new RegExp(`bottom:\\s*${TOTAL}`).test(subm), 'the footer is fixed, its foot on the bar\'s measured top — one block, docked');
+  assert(/z-index:\s*30/.test(subm) && /max-width:\s*480px/.test(subm) && /margin:\s*0 auto/.test(subm), 'at the bar\'s layer and held to the same 480px frame');
+  assert(/padding:\s*var\(--sp-14\) calc\(var\(--sp-20\) \+ env\(safe-area-inset-right, 0px\)\) var\(--sp-12\)/.test(subm), 'its foot pads --sp-12 above the bar\'s hairline, and the side insets are its own — a thumb aiming for Save does not catch a tab');
+  assert(/border-top:\s*1px solid var\(--border\)/.test(tab), 'the bar keeps its hairline: two things, attached');
+  const dock = readFileSync('src/components/AthleteFooterDock/AthleteFooterDock.tsx', 'utf8');
+  assert(/ResizeObserver/.test(dock) && /--subm-h/.test(dock) && /--athlete-tabbar-total/.test(dock) && /Math\.floor/.test(dock), 'AthleteFooterDock measures both heights (the bar floored, so a fraction is overlap under the bar and never a seam)');
+  assert(/<AthleteFooterDock \/>/.test(readFileSync('src/app/(athlete)/layout.tsx', 'utf8')), 'and the athlete layout mounts it');
   assert(/viewportFit:\s*'cover'/.test(readFileSync('src/app/layout.tsx', 'utf8')), 'the viewport meta carries viewport-fit=cover, or every inset reports zero');
+}
+
+/* THE INSTALLED APP DOES NOT ZOOM — Isabella, 15 Sept 2026, tested in the
+   standalone app, her call over the builder's 2× cap (recorded either way,
+   06-design-system.md §11.7). Two gestures, two mechanisms: the pinch by the
+   viewport meta rewritten in standalone only (a Safari tab ignores it by
+   design), the double-tap by touch-action: manipulation regardless. */
+console.log('\nthe installed app does not zoom (15 Sept 2026), and the record says whose call it was');
+{
+  const layout = readFileSync('src/app/(athlete)/layout.tsx', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const vp = /export const viewport: Viewport = \{([\s\S]*?)\};/.exec(layout)?.[1] ?? '';
+  assert(vp !== '' && /viewportFit:\s*'cover'/.test(vp), 'the athlete viewport keeps viewport-fit=cover');
+  assert(!/maximumScale|userScalable/.test(vp), 'and carries no cap of its own — the 2× cap is gone; the block is standalone-only');
+  assert(/<StandaloneViewport \/>/.test(layout), 'the layout mounts StandaloneViewport');
+  const sv = readFileSync('src/components/StandaloneViewport/StandaloneViewport.tsx', 'utf8');
+  assert(/displayModeFrom\(/.test(sv) && /display-mode: standalone/.test(sv) && /standalone\?: boolean/.test(sv), 'which decides by display mode — the manifest\'s or navigator.standalone — never by platform');
+  assert(/meta\[name="viewport"\]/.test(sv) && /standaloneViewportContent\(meta\.content\)/.test(sv), 'and rewrites the viewport meta in place');
+  assert(standaloneViewportContent('width=device-width, initial-scale=1, viewport-fit=cover') === 'width=device-width, initial-scale=1, viewport-fit=cover, maximum-scale=1, user-scalable=no', 'the rewritten meta carries maximum-scale=1 and user-scalable=no and loses nothing — viewport-fit=cover stays');
+  assert(standaloneViewportContent('width=device-width, maximum-scale=2, viewport-fit=cover') === 'width=device-width, viewport-fit=cover, maximum-scale=1, user-scalable=no', 'an earlier cap is replaced, not doubled');
+  assert(/touch-action:\s*manipulation/.test(rule('.phone')), 'double-tap zoom is dead by touch-action: manipulation on the shell, independent of the viewport');
+  assert(/touch-action:\s*manipulation/.test(rule(':root:has(.phone)')), 'and on the document when the shell is on it (the ground beside the 480px frame)');
+  const ds = readFileSync('docs/06-design-system.md', 'utf8');
+  const record = /### 11\.7 Deliberate divergences([\s\S]*?)\n## 12\./.exec(ds)?.[1] ?? '';
+  assert(/Isabella, 15 September 2026/.test(record) && /like an app,\s+not a web page/.test(record), '06-design-system.md §11.7 records it with Isabella\'s name, the date and the reason');
+  assert(/Safari tabs ignore this entirely, by design/.test(record) && /not a bug/.test(record), 'and that Safari tabs ignore it by design — the installed app and the browser differ, and that is not a bug');
+  assert(/2× cap/.test(record) && /Her call over that recommendation/.test(record), 'and that it is her call over the builder\'s 2× recommendation');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

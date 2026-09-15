@@ -56,7 +56,7 @@ a computed metric.**
 
 | Element | Where | What happens | Takes you to | Writes | Confirm | Hidden when |
 |---|---|---|---|---|---|---|
-| Back to gym history | Footer, full width, sticky | Returns to the gym tab | `/my-data?tab=gym` | nothing | no | never |
+| Back to gym history | Footer, full width, docked on the tab bar (15 September 2026) | Returns to the gym tab | `/my-data?tab=gym` | nothing | no | never |
 | Correct | Each set row | Opens the inline correction (reps, load; Save / Cancel) | stays | `revise_gym_set_log` | no | while another row is being corrected |
 
 **One way back.** The shell's own Back button stands down on this route
@@ -104,7 +104,7 @@ None found.
 Built from the "ATH-ADULT-12-13 · FINAL" board, A items only; the record with a
 recommendation per item is `docs/overnight-records-2026-09-12.md`:
 
-- **One way back** (§6): a full-width "Back to gym history" in a sticky footer
+- **One way back** (§6): a full-width "Back to gym history" in a docked footer
   replaces the 15px text link, and the shell's Back stands down here.
 - **The summary line is the hero** (§3): tonnage and session RPE at the My data
   hero size (`.rd-value`, 48px), each over its derivation; the original line

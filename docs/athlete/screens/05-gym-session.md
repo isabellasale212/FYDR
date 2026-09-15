@@ -48,8 +48,15 @@ Beneath the card, **what is next**: "THEN Romanian deadlift · 3 × 8 @ 80 kg" a
 one line when one exercise remains, rows with the prescription and "0 of 3"
 otherwise — never behind a disclosure. Then the optional session RPE field.
 
-The **footer** is pinned and holds the one primary, labelled with what it
-writes: **"Log set 2 · 100 kg × 8"** at 56px, over "Sets save as you log them."
+The **footer** is docked on the tab bar — one fixed block, the action on the
+tabs with the bar's hairline between (Isabella, 15 September 2026) — and holds
+the one primary, labelled with what it writes: **"Log set 2 · 100 kg × 8"** at
+56px, over "Sets save as you log them." Measured at 390×844: the docked action
+is 110px (caption, the 56px primary, its padding), the bar 78px, so the block
+is 189px before the home-indicator inset and about 223px with it; with the
+sticky header above, the set card has roughly 435px of the screen on an
+iPhone — enough for the card and the stepper. The caption is the fat if that
+ever has to shrink (see the 15 September queue's report).
 Once every set is logged the footer reads **"Finish session"**. After a set
 lands, a strip above the card reads "Back squat set 2 logged · 102.5 kg × 8 ·
 Correct it". Tapping a logged chip (or Correct it) opens the correction in

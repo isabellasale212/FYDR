@@ -2447,9 +2447,18 @@ landscape, the notch's side: `env(safe-area-inset-bottom)` added to the bar's ow
 padding and the side insets added to its horizontal padding — on the bar itself, never on a
 wrapper. The staff title bar grows by the top inset and pads its content under the notch the
 same way, and `.main` starts below it. The athlete body pads its foot by the bar's height
-(`--athlete-tabbar-h`, 80px) plus the inset so the last card clears the bar, and a pinned form
-footer (`.subm`) sits on top of the bar — both only when the bar is present (the consent
-screens render none). Verified on dev at 390 by probe and screenshot; a real iPhone with the
+(`--athlete-tabbar-h`, 80px) plus the inset so the last card clears the bar — both only when
+the bar is present (the consent screens render none). **The log and save actions dock to the
+bar (Isabella, 15 September 2026):** every athlete footer (`.subm` — the wellness check-in,
+the gym logger, the session rating, the nutrition check-in, the gym history detail, report a
+problem, the locked-entry screens) is `position: fixed` with its foot on the bar's top, so
+the action and the tabs are one fixed block; the bar's own hairline (`border-top`, `--border`)
+and the footer's `--sp-12` foot keep them two things a thumb can tell apart, and the tabs
+keep their full height. Clearance is against the combined block: `AthleteFooterDock` measures
+the footer (`--subm-h`) and the bar's total including the inset (`--athlete-tabbar-total`,
+floored so a fraction is overlap under the bar and never a seam), and the body pads its foot
+by footer + bar + inset. Measured at 390×844: the check-in's block is 163 + 78 (+ inset), the
+gym logger's 110 + 78, the rating's 82 + 78. Verified on dev at 390 by probe and screenshot; a real iPhone with the
 app on the home screen is the only place the home indicator itself can be seen — to be
 checked from Thursday's deploy.
 
@@ -2661,6 +2670,40 @@ proportionate reading of it for club-issued pod data, matching 09-security-and-c
 client from a date of birth, and it is never a prop a parent component can override for
 convenience in a story or a test. A component that renders a photograph slot without checking
 it is a defect, and the check belongs in the component, not in the screen that uses it.
+
+### 11.7 Deliberate divergences
+
+Recorded so that nobody removes them later as a mistake. Each carries who decided, when, and
+why; each stays until the person named reverses it.
+
+**The installed athlete app does not zoom — Isabella, 15 September 2026.** Tested in the
+installed (standalone) app: "wants pinch zoom gone entirely. It should behave like an app,
+not a web page." Two gestures, two mechanisms, and both are needed — blocking one and not the
+other is why this kind of change so often appears not to have worked:
+
+- **Pinch zoom.** The athlete layout's viewport meta carries no cap
+  (`src/app/(athlete)/layout.tsx`: `width=device-width, initial-scale=1, viewport-fit=cover`).
+  When the app is standalone — the manifest's display mode honoured, or Safari's
+  `navigator.standalone` — `StandaloneViewport` rewrites it on the client to carry
+  `maximum-scale=1` and `user-scalable=no` as well (`lib/viewportMeta.ts`, a pure builder the
+  guard holds), keeping everything already there: `viewport-fit=cover` above all, or every
+  safe-area inset reports zero (§10.3).
+- **Double-tap zoom.** `touch-action: manipulation` on the shell (`.phone`) and on the document
+  when the shell is on it (`:root:has(.phone)`) — independent of the viewport meta, so the
+  double-tap is dead in a browser tab too. It keeps pan and pinch and drops only the gesture.
+
+This is a WCAG 1.4.4 (Resize text) divergence in the installed app, and it is deliberate. The
+builder's recommendation was a 2× cap rather than a block, built earlier the same day; Isabella
+tested the installed app and ruled for the block. Her call over that recommendation, recorded
+either way.
+
+**Safari tabs ignore this entirely, by design.** Since iOS 10 Safari disregards
+`maximum-scale` and `user-scalable=no` in a browser tab, so the same page zooms in Safari and
+does not once installed to the Home Screen. That difference between the installed app and the
+browser is the platform's and is **not a bug**; do not file it as one, and do not try to close
+it. Android Chrome in a browser tab is not rewritten either — the switch fires on the display
+mode, not the platform — so a browser tab zooms everywhere and only the installed app is an
+app.
 
 ---
 

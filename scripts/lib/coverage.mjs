@@ -29,18 +29,20 @@ export class CoverageError extends Error {}
    component (NutritionTargetsCard) — twelve counts moved by one or two.
    Later that day, the staff phone items: +1 staff page (/print), +1 layout
    (reports/layout.tsx), +1 component (DesktopOnlyNotice), +1 lib
-   (printableDoc.ts) — fourteen counts moved. */
+   (printableDoc.ts) — fourteen counts moved. Then the athlete zoom and
+   docked-footer pass: +2 components (StandaloneViewport, AthleteFooterDock),
+   +1 lib (viewportMeta.ts) — six counts. */
 export const COUNTS = {
   /** supabase/migrations/*.sql */
   migrations: 133,
   /** supabase/tests/*.sql (pgTAP) */
   pgtapTests: 94,
   /** every file under src, of any kind */
-  srcFiles: 551,
+  srcFiles: 554,
   /** .ts and .tsx under src */
-  srcTs: 546,
+  srcTs: 549,
   /** .tsx under src */
-  srcTsx: 301,
+  srcTsx: 303,
   /** .css under src (src/styles) */
   srcCss: 2,
   /** page.tsx under src/app/(staff) */
@@ -52,9 +54,9 @@ export const COUNTS = {
   /** .tsx under src/app/(athlete) */
   athleteTsx: 27,
   /** .tsx under src/components */
-  componentTsx: 166,
+  componentTsx: 168,
   /** .ts and .tsx under src/components */
-  componentTs: 172,
+  componentTs: 174,
   /** .tsx under src/app */
   appTsx: 134,
   /** .ts and .tsx under src/app */
@@ -66,7 +68,7 @@ export const COUNTS = {
   /** route.ts under src/app */
   appRoutes: 41,
   /** .ts and .tsx under src/lib */
-  libTs: 192,
+  libTs: 193,
   /** page.tsx under src/app */
   appPages: 108,
   /** layout.tsx under src/app */

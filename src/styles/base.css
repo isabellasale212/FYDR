@@ -3860,7 +3860,7 @@ a.hist-row:focus-visible {
   border-radius: var(--r);
   border: none;
   background: var(--surf2);
-  color: var(--faint-on-tint); /* context ink, 15 Sept 2026 */
+  color: var(--muted); /* a11y sweep C21, 15 Sept 2026: --faint-on-tint = dark --faint 3.89:1 on --surf2 → 5.50 / 5.69 */
   font-family: inherit;
   font-size: var(--fs-16);
   font-weight: var(--w-bold);
@@ -11093,7 +11093,10 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .mute-switch-sub {
   font-size: var(--fs-12);
-  color: var(--muted);
+  /* --muted-on-tint since 15 Sept 2026 (a11y sweep C38, Isabella's ruling:
+     measure it, do not assume): --muted was 4.09:1 on the mute card's
+     accent wash over --phone-bg; the context ink is 4.55 / 6.88. */
+  color: var(--muted-on-tint);
 }
 .mute-switch-track {
   width: 40px;
@@ -11123,6 +11126,7 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
 }
 .mute-note {
   margin-top: var(--sp-8);
+  color: var(--muted-on-tint); /* a11y sweep C39, 15 Sept 2026: .tiny's --muted was 4.09:1 on the mute card's wash → 4.55 / 6.88 */
 }
 /* Back, top-left of the content area on every screen that is a step inside a
    journey. Sits above the page's own header rather than inside it, so no page
@@ -14813,7 +14817,7 @@ a.hist-row:active { background: var(--surf-sunken); }
   font-size: var(--fs-10);
   font-weight: var(--w-bold);
   letter-spacing: 0.04em;
-  color: var(--faint);
+  color: var(--muted); /* a11y sweep C22, 15 Sept 2026: --faint 4.21 / 3.89 on --pending-fill (= --surf2) → 5.50 / 5.69 */
   text-transform: uppercase;
 }
 .legal-pending-cap {
@@ -14829,6 +14833,13 @@ a.hist-row:active { background: var(--surf-sunken); }
 .card[data-emphasis] {
   background: var(--wash-accent);
   border-color: var(--border-accent-soft);
+}
+/* Muted prose inside the emphasised card reads the context ink (a11y sweep
+   C40, 15 Sept 2026, Isabella's ruling — measured, not assumed): .import-sub's
+   --muted is 4.09:1 on this wash over --phone-bg, --muted-on-tint 4.55 / 6.88.
+   Scoped here because .import-sub on the page ground passes at 5.19. */
+.card[data-emphasis] .import-sub {
+  color: var(--muted-on-tint);
 }
 
 /* The two equal choices on a decision frame (3A, 4B, the withdrawal blocks):

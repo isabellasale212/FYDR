@@ -53,7 +53,7 @@ export default async function MyProgrammePage({
 }: {
   searchParams: SearchParams;
 }) {
-  const { db, athleteId, timezone, orgId } = await requireAthlete();
+  const { db, athleteId, timezone, orgId, firstName } = await requireAthlete();
   const params = await searchParams;
   const today = todayIso(timezone);
   /* The nutrition check-in and outstanding-count queries went with the header
@@ -81,17 +81,23 @@ export default async function MyProgrammePage({
   const live = sessions.filter((s) => !isFinished(s));
   const finishedBlocks = [...new Map(sessions.filter(isFinished).map((s) => [s.programme_id, s])).values()];
 
-  const programmeName = live[0]?.programme_name ?? null;
-  const programmeType = live[0]?.programme_type ?? null;
-  const blockName = live[0]?.block_name ?? null;
-  const weekNumber = live[0]?.week_number ?? null;
-  const startsOn = live[0]?.assignment_starts_on ?? null;
-  const endsOn = live[0]?.assignment_ends_on ?? null;
+  /* Each live block is its own titled section (Isabella, the pre-deploy
+     fixes, 15 Sept 2026, #3): overlap is allowed by rule, so the header
+     names the athlete and a rehab block beside a lifting block reads as two
+     blocks, not as one programme's sessions under another's name. Grouped
+     in the resolver's order: block sequence within a programme, programmes
+     as they arrive. */
+  const blocks = [...live.reduce((m, s) => {
+    const list = m.get(s.programme_id) ?? [];
+    list.push(s);
+    m.set(s.programme_id, list);
+    return m;
+  }, new Map<string, typeof live>()).values()];
 
   return (
     <>
       <div className="hd">
-        <h1 className="d">My programme</h1>
+        <h1 className="d">{firstName}&rsquo;s programme</h1>
       </div>
 
       {typeof params.submitted === 'string' ? (
@@ -118,72 +124,75 @@ export default async function MyProgrammePage({
           />
         ) : null
       ) : (
-        <>
-          <div className="prog-header">
-            <p className="eyebrow">
-              {/* enumLabel(), not a rehab/else ternary — the real programme_type
-                  enum also has conditioning/nutrition values (unreachable with
-                  real data today per migration 0021's own comment, since this
-                  build only ever writes gym or rehab, but a ternary would
-                  silently mislabel either as "Gym" if that ever changed). */}
-              {enumLabel(programmeType ?? 'gym')}
-              {blockName ? (
-                <>
+        blocks.map((block) => {
+          const first = block[0]!;
+          const startsOn = first.assignment_starts_on;
+          const endsOn = first.assignment_ends_on;
+          return (
+            <section key={first.programme_id} aria-labelledby={`prog-${first.programme_id}`} data-programme-block>
+              <div className="prog-header">
+                <p className="eyebrow">
+                  {/* enumLabel(), not a rehab/else ternary — the real programme_type
+                      enum also has conditioning/nutrition values (unreachable with
+                      real data today per migration 0021's own comment, since this
+                      build only ever writes gym or rehab, but a ternary would
+                      silently mislabel either as "Gym" if that ever changed). */}
+                  {enumLabel(first.programme_type)}
                   {' · '}
-                  <span title={BLOCK_PHASE_EXPLAINER[blockName.toLowerCase()]}>{blockName}</span>
-                </>
-              ) : null}
-              {weekNumber ? ` · Week ${weekNumber}` : ''}
-            </p>
-            <h1>{programmeName}</h1>
-            {/* The block's dates, from the assignment (0132): week 1 day 1 and
-                the last day. An unmapped assignment has none, and says nothing
-                rather than something invented. */}
-            {startsOn ? (
-              <p className="tiny num" style={{ margin: 'var(--sp-4) 0 0' }}>
-                {startsOn > today ? `Starts ${formatDate(startsOn, timezone)}` : `From ${formatDate(startsOn, timezone)}`}
-                {endsOn ? ` to ${formatDate(endsOn, timezone)}` : ''}
-              </p>
-            ) : null}
-          </div>
+                  <span title={BLOCK_PHASE_EXPLAINER[first.block_name.toLowerCase()]}>{first.block_name}</span>
+                  {` · Week ${first.week_number}`}
+                </p>
+                <h2 id={`prog-${first.programme_id}`}>{first.programme_name}</h2>
+                {/* The block's dates, from the assignment (0132): week 1 day 1 and
+                    the last day. An unmapped assignment has none, and says nothing
+                    rather than something invented. */}
+                {startsOn ? (
+                  <p className="tiny num" style={{ margin: 'var(--sp-4) 0 0' }}>
+                    {startsOn > today ? `Starts ${formatDate(startsOn, timezone)}` : `From ${formatDate(startsOn, timezone)}`}
+                    {endsOn ? ` to ${formatDate(endsOn, timezone)}` : ''}
+                  </p>
+                ) : null}
+              </div>
 
-          <div className="card">
-            <h2 className="card-title">Sessions</h2>
-            <div className="card flush" style={{ boxShadow: 'none', border: '1px solid var(--border)' }}>
-              {live.map((s, index) => (
-                <div key={s.session_id}>
-                  {index > 0 ? <div className="hair" /> : null}
-                  <Link
-                    href={`/gym/${s.session_id}`}
-                    className="load-row"
-                    style={{ gridTemplateColumns: '1fr auto', textDecoration: 'none', color: 'inherit' }}
-                  >
-                    <div>
-                      <span className="nm">{s.session_name}</span>
-                      <div className="tiny">
-                        <span title={BLOCK_PHASE_EXPLAINER[s.block_name.toLowerCase()]}>{s.block_name}</span> · Week {s.week_number}
-                        {s.day_number ? ` · Day ${s.day_number}` : ''}
-                        {/* Not the audit-B2 bug class: fetchMyProgrammeSessions resolves
-                            programme_sessions.md_offset, an authored template value with
-                            no fixture_id and no starts_at — see programmes/page.tsx's
-                            identical note. Nothing to re-anchor via anchorMdOffsetsToWeek. */}
-                        {mdLabel(s.md_offset) ? (
-                          <>
-                            {' · '}
-                            <span title={mdExplainer(s.md_offset) ?? undefined}>{mdLabel(s.md_offset)}</span>
-                          </>
-                        ) : null}
-                      </div>
+              <div className="card">
+                <h3 className="card-title">Sessions</h3>
+                <div className="card flush" style={{ boxShadow: 'none', border: '1px solid var(--border)' }}>
+                  {block.map((s, index) => (
+                    <div key={s.session_id}>
+                      {index > 0 ? <div className="hair" /> : null}
+                      <Link
+                        href={`/gym/${s.session_id}`}
+                        className="load-row"
+                        style={{ gridTemplateColumns: '1fr auto', textDecoration: 'none', color: 'inherit' }}
+                      >
+                        <div>
+                          <span className="nm">{s.session_name}</span>
+                          <div className="tiny">
+                            <span title={BLOCK_PHASE_EXPLAINER[s.block_name.toLowerCase()]}>{s.block_name}</span> · Week {s.week_number}
+                            {s.day_number ? ` · Day ${s.day_number}` : ''}
+                            {/* Not the audit-B2 bug class: fetchMyProgrammeSessions resolves
+                                programme_sessions.md_offset, an authored template value with
+                                no fixture_id and no starts_at — see programmes/page.tsx's
+                                identical note. Nothing to re-anchor via anchorMdOffsetsToWeek. */}
+                            {mdLabel(s.md_offset) ? (
+                              <>
+                                {' · '}
+                                <span title={mdExplainer(s.md_offset) ?? undefined}>{mdLabel(s.md_offset)}</span>
+                              </>
+                            ) : null}
+                          </div>
+                        </div>
+                        <span className="chev" aria-hidden="true">
+                          ›
+                        </span>
+                      </Link>
                     </div>
-                    <span className="chev" aria-hidden="true">
-                      ›
-                    </span>
-                  </Link>
+                  ))}
                 </div>
-              ))}
-            </div>
-          </div>
-        </>
+              </div>
+            </section>
+          );
+        })
       )}
 
       {target ? (

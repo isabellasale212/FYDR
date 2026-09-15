@@ -4198,7 +4198,10 @@ a.hist-row:focus-visible {
   border-inline-start: 1px dashed var(--border-strong);
 }
 /* ---------- Programme, §11 ---------- */
-.prog-header h1 {
+/* The programme name is an h2 since 15 Sept 2026 (each live block its own
+   titled section under the athlete's name); the same face, one level down. */
+.prog-header h1,
+.prog-header h2 {
   font-size: var(--fs-20);
   font-weight: var(--w-bold);
   letter-spacing: var(--t-section-tracking);

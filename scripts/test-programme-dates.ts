@@ -70,6 +70,11 @@ console.log('\nthe athlete\'s screen: the block finished, and when');
   assert(/Nothing new has been assigned yet\./.test(p), 'and says so when nothing else is live');
   assert(/`Starts \$\{formatDate\(startsOn, timezone\)\}` : `From \$\{formatDate\(startsOn, timezone\)\}`/.test(p), 'the live block shows its dates (Starts … before the start)');
   assert(!/due today|missed/i.test(p), 'nothing here says a session is due or was missed');
+  // The pre-deploy fix #3 (15 Sept): the header names the athlete; each live
+  // block is its own titled section, so overlap reads as two blocks.
+  assert(/<h1 className="d">\{firstName\}&rsquo;s programme<\/h1>/.test(p), 'the header names the athlete');
+  assert(/data-programme-block/.test(p) && /blocks\.map\(\(block\) => \{/.test(p) && /<h2 id=\{`prog-\$\{first\.programme_id\}`\}>\{first\.programme_name\}<\/h2>/.test(p), 'each live block is its own section, titled with its programme');
+  assert(!/const programmeName = live\[0\]/.test(p), 'and no single programme is named for all of them');
 }
 
 console.log('\nno reader selects the dropped column');

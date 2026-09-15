@@ -10,8 +10,15 @@ Any athlete with a programme assigned.
 
 ## 3. What you see
 
-The assigned programme, its blocks, and the sessions within them. Nutrition
-guidance is reached from here.
+The header names the athlete — "Dan's programme" — and **each live block is
+its own titled section beneath it** (Isabella, the pre-deploy fixes,
+15 September 2026, #3): the block's eyebrow (type · block · week), its name,
+its dates, and its own Sessions card. Overlap is allowed by rule
+(`decisions/programme-dates.md`), so a rehab block beside a lifting block
+reads as two blocks, never as one programme's sessions under another's name
+— which is what the screen did while it named one programme in its header
+and listed every live session beneath. Nutrition guidance is reached from
+here.
 
 **Block names are free text a coach types**, with no fixed list. The screen
 explains the well known periodisation phase names by exact, case insensitive

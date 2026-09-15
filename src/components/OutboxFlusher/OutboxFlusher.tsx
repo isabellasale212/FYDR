@@ -18,7 +18,7 @@ import { reviseGymSetLog } from '@/lib/queries/programmes';
 import { describeGymSet } from '@/lib/gymSetConflict';
 import { flushOutbox } from '@/lib/outboxFlush';
 import { createClient } from '@/lib/supabase/client';
-import { formatDate } from '@/lib/format';
+import { clockHM, formatDate } from '@/lib/format';
 
 type Props = { orgId: string; athleteId: string; userId: string; timezone: string };
 
@@ -161,7 +161,7 @@ export function OutboxFlusher({ orgId, athleteId, userId, timezone }: Props) {
       if (sent > 0) {
         setSentAt({
           count: sent,
-          at: new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: timezone }).format(new Date()),
+          at: clockHM(new Date(), timezone),
         });
         router.refresh();
       }

@@ -6,6 +6,115 @@
 
 const DATE_TZ = 'Europe/London';
 
+/* THE CALENDAR NAMES ARE PINNED, NOT ASKED FOR — 15 September 2026 (Isabella,
+ * the pre-deploy fixes). Every month and weekday name the product renders
+ * comes from the four tables below, never from Intl's locale data. Intl is
+ * used for the one thing it does identically everywhere — the arithmetic:
+ * which civil date and clock an instant falls on in a zone, as numbers
+ * (formatToParts with numeric options is the same on every ICU).
+ *
+ * Why: a server (Node, one ICU) and a browser (another) can spell a name
+ * differently — en-GB short September is "Sept" on CLDR 42+ and "Sep"
+ * before it — and a client component that formats a date during render
+ * then hydrates against HTML it disagrees with. The class, not an instance:
+ * the guard (scripts/test-date-format-pinned.ts) refuses an Intl date
+ * formatter anywhere but this file, and here refuses one that asks for a
+ * name. British spelling, the docs' own: "Tue 15 Sept". */
+const MONTH_SHORT = ['Jan', 'Feb', 'Mar', 'Apr', 'May', 'Jun', 'Jul', 'Aug', 'Sept', 'Oct', 'Nov', 'Dec'] as const;
+const MONTH_LONG = ['January', 'February', 'March', 'April', 'May', 'June', 'July', 'August', 'September', 'October', 'November', 'December'] as const;
+/* Sunday first: JavaScript's getUTCDay() order. */
+const WEEKDAY_SHORT = ['Sun', 'Mon', 'Tue', 'Wed', 'Thu', 'Fri', 'Sat'] as const;
+const WEEKDAY_LONG = ['Sunday', 'Monday', 'Tuesday', 'Wednesday', 'Thursday', 'Friday', 'Saturday'] as const;
+
+export type CivilParts = {
+  year: number;
+  /** 1–12 */
+  month: number;
+  day: number;
+  hour: number;
+  minute: number;
+  /** 0 = Sunday … 6 = Saturday */
+  weekday: number;
+};
+
+/** An instant, as the civil date and clock it falls on in `timeZone` —
+ *  numbers only. The one Intl call every name-bearing formatter below runs
+ *  on. Weekday from the civil date, not from Intl. */
+export function civilParts(instant: Date, timeZone: string): CivilParts {
+  const parts = new Intl.DateTimeFormat('en-CA', {
+    timeZone,
+    year: 'numeric',
+    month: '2-digit',
+    day: '2-digit',
+    hour: '2-digit',
+    minute: '2-digit',
+    hour12: false,
+  }).formatToParts(instant);
+  const get = (type: string) => Number(parts.find((p) => p.type === type)?.value ?? '0');
+  const year = get('year');
+  const month = get('month');
+  const day = get('day');
+  const hour = get('hour') === 24 ? 0 : get('hour');
+  return { year, month, day, hour, minute: get('minute'), weekday: new Date(Date.UTC(year, month - 1, day)).getUTCDay() };
+}
+
+/** A date (YYYY-MM-DD, read at noon UTC so no zone can move it) or an
+ *  instant, as civil parts in the zone. Null for nothing or garbage. */
+function civil(iso: string | Date | null | undefined, timeZone: string): CivilParts | null {
+  if (!iso) return null;
+  const d = iso instanceof Date ? iso : new Date(iso.length === 10 ? `${iso}T12:00:00Z` : iso);
+  if (Number.isNaN(d.getTime())) return null;
+  return civilParts(d, timeZone);
+}
+
+const pad2 = (n: number): string => String(n).padStart(2, '0');
+
+/** "Tuesday" */
+export function weekdayLong(iso: string | Date | null | undefined, timeZone: string): string {
+  const c = civil(iso, timeZone);
+  return c ? WEEKDAY_LONG[c.weekday]! : BLANK;
+}
+/** "Tue" */
+export function weekdayShort(iso: string | Date | null | undefined, timeZone: string): string {
+  const c = civil(iso, timeZone);
+  return c ? WEEKDAY_SHORT[c.weekday]! : BLANK;
+}
+/** "15" */
+export function dayOfMonth(iso: string | Date | null | undefined, timeZone: string): string {
+  const c = civil(iso, timeZone);
+  return c ? String(c.day) : BLANK;
+}
+/** "Sept" */
+export function monthShort(iso: string | Date | null | undefined, timeZone: string): string {
+  const c = civil(iso, timeZone);
+  return c ? MONTH_SHORT[c.month - 1]! : BLANK;
+}
+/** "15 Sept" */
+export function dayMonthShort(iso: string | Date | null | undefined, timeZone: string): string {
+  const c = civil(iso, timeZone);
+  return c ? `${c.day} ${MONTH_SHORT[c.month - 1]}` : BLANK;
+}
+/** "15 September" */
+export function dayMonthLong(iso: string | Date | null | undefined, timeZone: string): string {
+  const c = civil(iso, timeZone);
+  return c ? `${c.day} ${MONTH_LONG[c.month - 1]}` : BLANK;
+}
+/** "Tue 15" */
+export function weekdayShortDay(iso: string | Date | null | undefined, timeZone: string): string {
+  const c = civil(iso, timeZone);
+  return c ? `${WEEKDAY_SHORT[c.weekday]} ${c.day}` : BLANK;
+}
+/** "Tuesday 15 September" */
+export function weekdayLongDayMonthLong(iso: string | Date | null | undefined, timeZone: string): string {
+  const c = civil(iso, timeZone);
+  return c ? `${WEEKDAY_LONG[c.weekday]} ${c.day} ${MONTH_LONG[c.month - 1]}` : BLANK;
+}
+/** "09:14" — the clock in the zone. */
+export function clockHM(iso: string | Date | null | undefined, timeZone: string): string {
+  const c = civil(iso, timeZone);
+  return c ? `${pad2(c.hour)}:${pad2(c.minute)}` : BLANK;
+}
+
 /* The missing-data marker. A middle dot, as the athlete mockup uses for a day
  * with nothing on it. It is never a zero: CONTRACT.md rule 7. */
 export const BLANK = '·';
@@ -44,41 +153,25 @@ export function initials(a: { first_name: string; last_name: string }): string {
  *  fallback here would keep every non-UK org's displayed times wrong
  *  without TypeScript ever flagging it; making the parameter required means
  *  a missing timezone is a compile error, not a silent bug. */
+/** "Tue 15 Sept" */
 export function formatDate(iso: string | null | undefined, timezone: string): string {
-  if (!iso) return BLANK;
-  const d = new Date(iso.length === 10 ? `${iso}T12:00:00Z` : iso);
-  if (Number.isNaN(d.getTime())) return BLANK;
-  return new Intl.DateTimeFormat('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    timeZone: timezone,
-  }).format(d);
+  const c = civil(iso, timezone);
+  return c ? `${WEEKDAY_SHORT[c.weekday]} ${c.day} ${MONTH_SHORT[c.month - 1]}` : BLANK;
 }
 
+/** "Tue 15 Sept 2026" */
 export function formatLongDate(iso: string | null | undefined, timezone: string): string {
-  if (!iso) return BLANK;
-  const d = new Date(iso.length === 10 ? `${iso}T12:00:00Z` : iso);
-  if (Number.isNaN(d.getTime())) return BLANK;
-  return new Intl.DateTimeFormat('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    timeZone: timezone,
-  }).format(d);
+  const c = civil(iso, timezone);
+  return c ? `${WEEKDAY_SHORT[c.weekday]} ${c.day} ${MONTH_SHORT[c.month - 1]} ${c.year}` : BLANK;
 }
 
+/** "09:14" — an instant's clock in the zone (a bare date is not a time). */
 export function formatTime(iso: string | null | undefined, timezone: string): string {
   if (!iso) return BLANK;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return BLANK;
-  return new Intl.DateTimeFormat('en-GB', {
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: timezone,
-  }).format(d);
+  const c = civilParts(d, timezone);
+  return `${pad2(c.hour)}:${pad2(c.minute)}`;
 }
 
 /** "8 Aug 2026 09:14" — the audit-trail timestamp shape
@@ -90,15 +183,8 @@ export function formatDateTime(iso: string | null | undefined, timezone: string)
   if (!iso) return BLANK;
   const d = new Date(iso);
   if (Number.isNaN(d.getTime())) return BLANK;
-  return new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    year: 'numeric',
-    hour: '2-digit',
-    minute: '2-digit',
-    hour12: false,
-    timeZone: timezone,
-  }).format(d);
+  const c = civilParts(d, timezone);
+  return `${c.day} ${MONTH_SHORT[c.month - 1]} ${c.year} ${pad2(c.hour)}:${pad2(c.minute)}`;
 }
 
 export function formatNumber(
@@ -541,5 +627,5 @@ export function matchdayWeekday(kickoffAt: string | null | undefined, timeZone: 
   if (!kickoffAt) return null;
   const instant = new Date(kickoffAt);
   if (Number.isNaN(instant.getTime())) return null;
-  return new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone }).format(instant);
+  return WEEKDAY_LONG[civilParts(instant, timeZone).weekday]!;
 }

@@ -35,7 +35,7 @@ export function WeekLoadChart({ bars, title = 'Weekly load' }: Props) {
   return (
     <div>
       <p className="tiny" style={{ marginBottom: 'var(--sp-4)', fontWeight: 'var(--w-semi)' }}>
-        {title} <span className="num" style={{ fontWeight: 'var(--w-regular)', color: 'var(--muted)' }}>total {bars.reduce((s, b) => s + b.total, 0).toLocaleString()}</span>
+        {title} <span className="num" style={{ fontWeight: 'var(--w-regular)', color: 'var(--muted)' }}>total {bars.reduce((s, b) => s + b.total, 0).toLocaleString('en-GB')}</span>
       </p>
       <svg viewBox={`0 0 ${W} ${H}`} role="img" aria-label={`Column chart. Planned load by MD-n position, ranging 0 to ${max}.`}>
         <line x1={ML} y1={H - MB} x2={W - MR} y2={H - MB} stroke="var(--border)" strokeWidth={1} />

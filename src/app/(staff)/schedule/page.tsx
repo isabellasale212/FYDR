@@ -10,7 +10,7 @@ import {
 import { fetchTemplates } from '@/lib/queries/weekTemplates';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { addDays, dateInTz, decimalHourInTz, todayIso } from '@/lib/format';
+import { addDays, dateInTz, dayMonthLong, dayMonthShort, dayOfMonth, decimalHourInTz, todayIso, weekdayLong } from '@/lib/format';
 import { requireStaff } from '@/lib/session';
 import { SESSION_EDIT, hasAnyRole } from '@/lib/access';
 
@@ -18,33 +18,17 @@ export const metadata = { title: 'Schedule · Fydr' };
 
 type SearchParams = Promise<Record<string, string | string[] | undefined>>;
 
-// Built per call, from the org's real timezone (organisations.timezone),
-// not a hardcoded one — these used to construct once at module load with
-// a literal 'Europe/London', so a non-UK org's week header, fixture day
-// label and matchday line all rendered in UK local time regardless of the
-// org's own configured zone. Uncached, matching format.ts's own
-// formatDate/formatTime etc., which construct fresh per call rather than
-// memoise by timezone.
-function rangeFmt(timezone: string) {
-  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', timeZone: timezone });
-}
-function rangeMonthFmt(timezone: string) {
-  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: timezone });
-}
-function weekdayLongFmt(timezone: string) {
-  return new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: timezone });
-}
-function dayMonthFmt(timezone: string) {
-  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'long', timeZone: timezone });
-}
-
+// The date words come from lib/format.ts's pinned tables (15 Sept 2026:
+// no Intl name lookups outside that file), in the org's real timezone —
+// these used to be Intl formatters constructed here with a literal
+// 'Europe/London' once, then per call from organisations.timezone.
 function weekRangeLabel(weekStart: string, weekEnd: string, timezone: string): string {
   const start = new Date(`${weekStart}T12:00:00Z`);
   const end = new Date(`${weekEnd}T12:00:00Z`);
   const sameMonth = start.getUTCMonth() === end.getUTCMonth();
   return sameMonth
-    ? `${rangeFmt(timezone).format(start)} – ${rangeMonthFmt(timezone).format(end)}`
-    : `${rangeMonthFmt(timezone).format(start)} – ${rangeMonthFmt(timezone).format(end)}`;
+    ? `${dayOfMonth(start, timezone)} – ${dayMonthShort(end, timezone)}`
+    : `${dayMonthShort(start, timezone)} – ${dayMonthShort(end, timezone)}`;
 }
 
 /** SCHEDULE-SPEC.md, the grid rebuild of the week-plan half of what
@@ -105,7 +89,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
       : weekFixtures
           .map((f) => {
             const kickoff = new Date(f.kickoff_at);
-            return `MD ${weekdayLongFmt(timezone).format(kickoff).toUpperCase()} ${rangeFmt(timezone).format(kickoff)} · ${f.home_away === 'away' ? 'AT' : 'V'} ${f.opponent.toUpperCase()}`;
+            return `MD ${weekdayLong(kickoff, timezone).toUpperCase()} ${dayOfMonth(kickoff, timezone)} · ${f.home_away === 'away' ? 'AT' : 'V'} ${f.opponent.toUpperCase()}`;
           })
           .join(' · ');
   /* The same fixtures again, resolved into the grid's coordinates. Done here,
@@ -125,9 +109,7 @@ export default async function SchedulePage({ searchParams }: { searchParams: Sea
   });
 
   const eyebrow = [
-    `WEEK OF ${weekdayLongFmt(timezone).format(new Date(`${weekStart}T12:00:00Z`)).toUpperCase()} ${dayMonthFmt(timezone).format(
-      new Date(`${weekStart}T12:00:00Z`),
-    ).toUpperCase()}`,
+    `WEEK OF ${weekdayLong(weekStart, timezone).toUpperCase()} ${dayMonthLong(weekStart, timezone).toUpperCase()}`,
     matchDayLabel,
     // The active scope by name — audit S4: the filter re-scopes this whole
     // week view, so the header has to say so.

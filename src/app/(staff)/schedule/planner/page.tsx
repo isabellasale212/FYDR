@@ -77,7 +77,7 @@ export default async function WeekTemplatesPage() {
               <div className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
                 {t.structure.days.filter((d) => d.sessions.length > 0).length} days planned ·{' '}
                 {t.structure.days.reduce((s, d) => s + d.sessions.length, 0)} sessions · load{' '}
-                {weekTotalLoad(t.structure).toLocaleString()}
+                {weekTotalLoad(t.structure).toLocaleString('en-GB')}
               </div>
               <div className="chiprow" style={{ marginTop: 'var(--sp-8)' }}>
                 {t.structure.days

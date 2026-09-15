@@ -138,7 +138,7 @@ function DialView({ dial }: { dial: DialScore }) {
         {statusLabel}
       </div>
       <div className="tiny num" style={{ color: 'var(--faint)' }}>
-        {dial.raw === null ? NO_GPS : dial.raw < 100 ? dial.raw.toFixed(2) : Math.round(dial.raw).toLocaleString()}
+        {dial.raw === null ? NO_GPS : dial.raw < 100 ? dial.raw.toFixed(2) : Math.round(dial.raw).toLocaleString('en-GB')}
         {dial.raw === null ? '' : dial.unit}
       </div>
     </div>
@@ -409,7 +409,7 @@ async function GpsReportPageContent({ searchParams }: { searchParams: SearchPara
     const [overview, board, comparison, scopeIds, squadSize] = await Promise.all([
       fetchMatchOverview(db, orgId, groupIds, selected),
       fetchMatchBoard(db, orgId, groupIds, selected),
-      fetchComparableSessionsComparison(db, orgId, groupIds, 'match', selected.sessionId, null),
+      fetchComparableSessionsComparison(db, orgId, groupIds, 'match', selected.sessionId, null, timezone),
       fetchGroupAthleteIds(db, orgId, groupIds),
       fetchSquadSize(db, orgId),
       recordReportView(db, orgId, claims.userId, actorRole, 'gps', { session_id: selected.sessionId, date: selected.date, group_ids: groupIds, mode }),
@@ -578,8 +578,8 @@ async function GpsReportPageContent({ searchParams }: { searchParams: SearchPara
                               {row.last_name}, {row.first_name}
                             </Link>
                             <span className="r num">{row.mins ?? NO_GPS}</span>
-                            <span className="r num">{row.td !== null ? Math.round(row.td).toLocaleString() : NO_GPS}</span>
-                            <span className="r num">{row.hsr !== null ? Math.round(row.hsr).toLocaleString() : NO_GPS}</span>
+                            <span className="r num">{row.td !== null ? Math.round(row.td).toLocaleString('en-GB') : NO_GPS}</span>
+                            <span className="r num">{row.hsr !== null ? Math.round(row.hsr).toLocaleString('en-GB') : NO_GPS}</span>
                             <span className="r num">{row.hsr_per_min ?? NO_GPS}</span>
                             <span className="r num">{row.hie ?? NO_GPS}</span>
                           </div>
@@ -688,7 +688,7 @@ async function GpsReportPageContent({ searchParams }: { searchParams: SearchPara
     scope === 'restOfWeek'
       ? fetchRestOfWeekComparison(db, orgId, groupIds, selected.sessionId, selected.date, timezone)
       : scope === 'comparableSessions'
-        ? fetchComparableSessionsComparison(db, orgId, groupIds, 'training', selected.sessionId, selected.title)
+        ? fetchComparableSessionsComparison(db, orgId, groupIds, 'training', selected.sessionId, selected.title, timezone)
         : scope === 'position'
           ? fetchPositionComparison(db, orgId, groupIds, 'training', selected.sessionId, selected.title)
           : fetchAthleteComparison(db, orgId, groupIds, 'training', selected.sessionId, selected.title);
@@ -862,7 +862,7 @@ async function GpsReportPageContent({ searchParams }: { searchParams: SearchPara
                       <div className="tr-board-unit-header">
                         <span>{unit}</span>
                         {unitMean !== null ? (
-                          <span className="num tr-unit-mean">unit mean {unitMean.toLocaleString()} m</span>
+                          <span className="num tr-unit-mean">unit mean {unitMean.toLocaleString('en-GB')} m</span>
                         ) : null}
                       </div>
                       {inUnit.map((row) => (
@@ -889,9 +889,9 @@ async function GpsReportPageContent({ searchParams }: { searchParams: SearchPara
                           <span className="nm" style={{ fontSize: 'var(--fs-13)' }}>
                             {row.last_name}, {row.first_name}
                           </span>
-                          <span className="r num">{row.td !== null ? Math.round(row.td).toLocaleString() : NO_GPS}</span>
+                          <span className="r num">{row.td !== null ? Math.round(row.td).toLocaleString('en-GB') : NO_GPS}</span>
                           <span className="r num tr-heat" data-band={heatOn ? heatBand(row.hsr, hsrP95) : null} data-ramp="hsr">
-                            {row.hsr !== null ? Math.round(row.hsr).toLocaleString() : NO_GPS}
+                            {row.hsr !== null ? Math.round(row.hsr).toLocaleString('en-GB') : NO_GPS}
                           </span>
                           <span className="r num tr-heat" data-band={heatOn ? heatBand(row.hie, hieP95) : null} data-ramp="hie">
                             {row.hie ?? NO_GPS}

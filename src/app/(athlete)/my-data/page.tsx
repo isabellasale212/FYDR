@@ -29,16 +29,7 @@ import {
   fetchTrainingRevisionChains,
   fetchWellnessWithRevisions,
 } from '@/lib/queries/entryRevisions';
-import {
-  BLANK,
-  addDays,
-  dash,
-  enumLabel,
-  formatDate,
-  formatNumber,
-  formatTime,
-  todayIso,
-} from '@/lib/format';
+import { BLANK, addDays, dash, dayMonthShort, enumLabel, formatDate, formatNumber, formatTime, todayIso } from '@/lib/format';
 import {
   PERIOD_PARAM,
   clampPeriod,
@@ -1408,11 +1399,7 @@ function mondayOf(iso: string): string {
  *  date and wrong under a bar four columns wide — "w/c Mon 14 Jul" says Monday
  *  twice, and at 11px on a 78px column it is the part that gets ellipsed. */
 function dayMonth(iso: string, timezone: string): string {
-  return new Intl.DateTimeFormat('en-GB', {
-    day: 'numeric',
-    month: 'short',
-    timeZone: timezone,
-  }).format(new Date(`${iso}T12:00:00Z`));
+  return dayMonthShort(iso, timezone);
 }
 
 /** Tonnes once there are tonnes to speak of, kilograms below that.

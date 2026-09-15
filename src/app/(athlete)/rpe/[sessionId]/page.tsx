@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { RpeForm } from '@/components/RpeForm/RpeForm';
 import { fetchSessionForRpe, fetchTrainingEntryForSession } from '@/lib/queries/training';
 import { fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
-import { dateInTz, enumLabel, formatDate, formatTime, mdExplainer, mdLabel } from '@/lib/format';
+import { clockHM, dateInTz, enumLabel, formatDate, formatTime, mdExplainer, mdLabel } from '@/lib/format';
 import { DUE_DELAY_MIN, rpeDueAt, rpeIsClosed } from '@/lib/rpeDue';
 import { rpeRowName } from '@/lib/todayRows';
 import { requireAthlete } from '@/lib/session';
@@ -169,14 +169,7 @@ export default async function RpePage({
             <h2 className="after-heading">Already rated</h2>
             <p className="after-fact num">
               You rated this session {existing.rpe} of 10
-              {existing.submitted_at
-                ? ` at ${new Intl.DateTimeFormat('en-GB', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false,
-                    timeZone: timezone,
-                  }).format(new Date(existing.submitted_at))}`
-                : ''}
+              {existing.submitted_at ? ` at ${clockHM(existing.submitted_at, timezone)}` : ''}
               .
             </p>
             <p className="after-note">

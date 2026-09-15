@@ -24,6 +24,7 @@
  * Nothing here exports. A question worth keeping leaves as a report. */
 import type { MetricKey } from '@/lib/analyticsBuilder';
 import { belowSquadFloor, MIN_ATHLETES_WITH_DATA } from '@/lib/smallSample';
+import { dayMonthShort } from '@/lib/format';
 
 export type PanelKey = 'load' | 'wellness' | 'gym' | 'acwr';
 export type Measure = 'volume' | 'scored' | 'ratio';
@@ -168,7 +169,7 @@ export function mondayOf(iso: string): string {
 }
 
 function shortDate(iso: string): string {
-  return new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short', timeZone: 'UTC' });
+  return dayMonthShort(iso, 'UTC');
 }
 
 /** The periods a window splits into, oldest first. Day buckets are the days;

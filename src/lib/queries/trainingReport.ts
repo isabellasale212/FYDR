@@ -2,6 +2,7 @@ import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchWeekMdLabels, mondayOf, rangeBounds } from './schedule';
 import { addDays, dateInTz, mdLabel } from '../format';
 import { resolveTitleVariants } from './sessionTitles';
+import { formatDate } from '@/lib/format';
 
 /* TRAINING-REPORT-SPEC.md, a full rebuild of the previous heat-mapped
  * board (screens/training-report.md) into the two-mode scoring model the
@@ -329,7 +330,7 @@ export async function fetchTrainingOverview(
   const n = priorSessionIds.size;
   const referenceLine =
     n > 0
-      ? `${refTd !== null ? Math.round(refTd).toLocaleString() : NO_VALUE} m, ${refHsr !== null ? Math.round(refHsr).toLocaleString() : NO_VALUE} m HSR, ${refHiePerMin !== null ? refHiePerMin.toFixed(2) : NO_VALUE} HIE/min · n = ${n}`
+      ? `${refTd !== null ? Math.round(refTd).toLocaleString('en-GB') : NO_VALUE} m, ${refHsr !== null ? Math.round(refHsr).toLocaleString('en-GB') : NO_VALUE} m HSR, ${refHiePerMin !== null ? refHiePerMin.toFixed(2) : NO_VALUE} HIE/min · n = ${n}`
       : `No other ${session.title} session yet — this is the first on record.`;
 
   return {
@@ -441,7 +442,7 @@ export type ComparisonTable = { columns: ComparisonColumn[]; rows: ComparisonRow
    reference has nothing to show. */
 const NO_VALUE = 'No data';
 function fmtInt(n: number | null): string {
-  return n === null ? NO_VALUE : Math.round(n).toLocaleString();
+  return n === null ? NO_VALUE : Math.round(n).toLocaleString('en-GB');
 }
 function fmtRate(n: number | null, decimals = 2): string {
   return n === null ? NO_VALUE : n.toFixed(decimals);
@@ -516,7 +517,7 @@ export async function fetchRestOfWeekComparison(
     return {
       id: s.id,
       label,
-      sublabel: `${new Date(s.starts_at).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' })} · ${md} · ${s.starts_at ? '' : ''}`.trim(),
+      sublabel: `${formatDate(s.starts_at, timezone)} · ${md} · ${s.starts_at ? '' : ''}`.trim(),
       cells: [
         { value: fmtInt(td) + ' m', pct: null, isScore: false },
         { value: fmtInt(hsr) + ' m', pct: null, isScore: false },
@@ -614,7 +615,7 @@ export async function fetchRestOfWeekComparison(
     rows: [...rowsWithShare, totalRow],
     caption:
       typicalWeek !== null
-        ? `Typical week ${Math.round(typicalWeek).toLocaleString()} m · n = ${priorWeekIds.length}`
+        ? `Typical week ${Math.round(typicalWeek).toLocaleString('en-GB')} m · n = ${priorWeekIds.length}`
         : 'No other week on record yet to compare against',
   };
 }
@@ -626,6 +627,9 @@ export async function fetchComparableSessionsComparison(
   mode: ReportMode,
   currentSessionId: string,
   trainingTitle: string | null,
+  /** The organisation's zone, for the session date in each row — the row
+   *  used to read the server's clock (CLAUDE.md rule 5). */
+  timezone: string,
 ): Promise<ComparisonTable> {
   const scope = await fetchGroupAthleteIds(db, orgId, groupIds);
 
@@ -702,7 +706,7 @@ export async function fetchComparableSessionsComparison(
     const sEnd = curTd !== null && refTd !== null && refTd > 0 ? Math.round((curTd / refTd) * 100) : null;
 
     const label = mode === 'match' ? `v ${s.fixtures?.opponent ?? 'opponent'}` : s.title;
-    const sub = mode === 'match' ? (s.fixtures?.result ?? 'Result not entered') : new Date(s.starts_at).toLocaleDateString('en-GB', { weekday: 'short', day: 'numeric', month: 'short' });
+    const sub = mode === 'match' ? (s.fixtures?.result ?? 'Result not entered') : formatDate(s.starts_at, timezone);
 
     return {
       id: s.id,
@@ -1176,7 +1180,7 @@ export async function fetchSelectedAthletePanel(
     sparkline,
     footnote:
       sparkMean !== null && todayHsr !== null
-        ? `Mean ${Math.round(sparkMean).toLocaleString()} m · today ${Math.round(todayHsr).toLocaleString()} m · ${delta !== null ? (delta >= 0 ? `+${delta}` : delta) + '%' : NO_VALUE}`
+        ? `Mean ${Math.round(sparkMean).toLocaleString('en-GB')} m · today ${Math.round(todayHsr).toLocaleString('en-GB')} m · ${delta !== null ? (delta >= 0 ? `+${delta}` : delta) + '%' : NO_VALUE}`
         : 'Not enough history yet.',
   };
 }

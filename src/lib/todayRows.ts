@@ -5,7 +5,7 @@
  * built here rather than in the page, so the two lists cannot disagree
  * about what a session is called or when it was.
  */
-import { addDays, dateInTz, formatTime } from '@/lib/format';
+import { addDays, dateInTz, formatTime, weekdayShort } from '@/lib/format';
 import { rpeIsDue, sessionEndsAt, type RpeSession } from '@/lib/rpeDue';
 import { CR10_ANCHORS } from '@/lib/validation/training';
 
@@ -79,8 +79,7 @@ export function rpeWhen(session: RpeSession, today: string, timezone: string): s
   const day = dateInTz(ends, timezone);
   if (day === today) return `Today ${formatTime(ends.toISOString(), timezone)}`;
   if (day === addDays(today, -1)) return 'Yesterday';
-  const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: timezone }).format(ends);
-  return `${weekday} ${formatTime(ends.toISOString(), timezone)}`;
+  return `${weekdayShort(ends, timezone)} ${formatTime(ends.toISOString(), timezone)}`;
 }
 
 /** The day's session line: "10:00 · Main pitch · finished 11:15", "… ·

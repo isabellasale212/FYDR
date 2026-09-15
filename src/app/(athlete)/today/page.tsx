@@ -23,16 +23,7 @@ import {
 } from '@/lib/queries/schedule';
 import { fetchCheckinForWeek } from '@/lib/queries/nutrition';
 import { fetchMyAllocation } from '@/lib/queries/teamAllocation';
-import {
-  addDays,
-  dateInTz,
-  enumLabel,
-  formatDate,
-  formatTime,
-  mdExplainer,
-  mdLabel,
-  todayIso,
-} from '@/lib/format';
+import { addDays, civilParts, dateInTz, enumLabel, formatDate, formatTime, mdExplainer, mdLabel, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 import { entryFormsOpen, lockedFormLine } from '@/lib/consentState';
 
@@ -213,9 +204,7 @@ export default async function TodayPage({
   /* Time-of-day aware in the ORGANISATION's timezone, not the server's. A
      greeting that says "Morning" at nine at night is worse than no greeting,
      and this app is read on a phone in the club's own country. */
-  const hourNow = Number(
-    new Intl.DateTimeFormat('en-GB', { hour: '2-digit', hour12: false, timeZone: timezone }).format(new Date()),
-  );
+  const hourNow = civilParts(new Date(), timezone).hour;
   const greeting = hourNow < 12 ? 'Morning' : hourNow < 18 ? 'Afternoon' : 'Evening';
 
   const weekDays = Array.from({ length: 7 }, (_, i) => addDays(weekStart, i));

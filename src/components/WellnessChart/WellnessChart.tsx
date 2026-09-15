@@ -364,9 +364,17 @@ export function WellnessChart({
                   {/* Native tooltip. A hover-only affordance is never the only
                       surface for a fact here — the axis and the printed latest
                       value carry it too — so a touch device loses nothing. */}
-                  <title>
-                    {formatDate(b.date, timezone)}: {b.value.toFixed(decimals)}
-                  </title>
+                  {/* ONE STRING, NOT THREE CHILDREN. React's server renderer
+                      writes an EMPTY <title> for any title whose children are
+                      an array of more than one node (react-dom's pushTitleImpl:
+                      `Array.isArray(children) ? (children.length < 2 ?
+                      children[0] : null)`), SVG or not, while the client
+                      renders the nodes — a hydration mismatch on every bar,
+                      every render, live on production until 15 Sept 2026. A
+                      template literal is one child. The guard
+                      (scripts/test-date-format-pinned.ts) refuses a <title>
+                      with an expression beside text. */}
+                  <title>{`${formatDate(b.date, timezone)}: ${b.value.toFixed(decimals)}`}</title>
                 </rect>
               );
             })

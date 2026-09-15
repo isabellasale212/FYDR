@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { NutritionCheckinForm } from '@/components/NutritionCheckinForm/NutritionCheckinForm';
 import { fetchCheckinForWeek } from '@/lib/queries/nutrition';
 import { mondayOf } from '@/lib/queries/schedule';
-import { addDays, formatDate, todayIso } from '@/lib/format';
+import { addDays, clockHM, formatDate, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 import { entryFormsOpen } from '@/lib/consentState';
 import { EntryLocked } from '@/components/EntryLocked/EntryLocked';
@@ -58,7 +58,7 @@ export default async function NutritionCheckInPage({
   const weekLabel = `${formatDate(weekStart, timezone)} to ${formatDate(weekEnd, timezone)}`;
   const label = (answer: 'yes' | 'roughly' | 'no'): string => (answer === 'yes' ? 'Yes' : answer === 'roughly' ? 'Roughly' : 'No');
   const stamp = (iso: string): string =>
-    `${formatDate(iso.slice(0, 10), timezone)} at ${new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: timezone }).format(new Date(iso))}`;
+    `${formatDate(iso.slice(0, 10), timezone)} at ${clockHM(iso, timezone)}`;
   const answerLabel = existing ? label(existing.answer) : null;
   const priorLabel = existing?.prior ? label(existing.prior.answer) : null;
   const sentAt = existing?.submitted_at ? stamp(existing.submitted_at) : null;

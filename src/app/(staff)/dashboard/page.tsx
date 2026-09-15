@@ -11,7 +11,7 @@ import { attentionDomains, dashboardTiles, dashboardVersion, leadCardNames, need
 import { weekStripYields } from '@/lib/dashboardLead';
 import { fetchGroupAthleteIds, fetchGroups, fetchSquadSize } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
-import { addDays, formatDate, formatLongDate, matchdayWeekday, todayIso } from '@/lib/format';
+import { addDays, formatDate, formatLongDate, matchdayWeekday, monthShort, todayIso, weekdayLongDayMonthLong } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
@@ -84,8 +84,9 @@ function qs(params: Record<string, string | undefined>): string {
  *  name, never "Today" (audit S2). */
 function dayTitle(date: string, wallClockToday: string): string {
   if (date === wallClockToday) return 'Today';
-  const d = new Date(`${date}T12:00:00Z`);
-  return d.toLocaleDateString('en-GB', { weekday: 'long', day: 'numeric', month: 'long' });
+  /* A calendar date read at noon UTC: the zone cannot move it, so 'UTC' is
+     the honest zone here (lib/format.ts's pinned names, 15 Sept 2026). */
+  return weekdayLongDayMonthLong(date, 'UTC');
 }
 
 /* Returned through SkFloor: this route has a loading.tsx skeleton, and once
@@ -227,8 +228,7 @@ async function DashboardPageContent({ searchParams }: { searchParams: SearchPara
    * (31 Aug - 5 Sep). The month is appended once when the week sits inside one
    * month and on both ends when it does not. UTC noon to match dayLabelFor,
    * which builds the day numbers the same way. */
-  const monthOf = (iso: string) =>
-    new Date(`${iso}T12:00:00Z`).toLocaleDateString('en-GB', { month: 'short', timeZone: 'UTC' });
+  const monthOf = (iso: string) => monthShort(iso, 'UTC');
   const weekFirst = week[0]?.dayLabel ?? '';
   const weekLast = week[week.length - 1]?.dayLabel ?? '';
   const weekRangeLabel =

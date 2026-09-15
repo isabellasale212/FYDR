@@ -11,7 +11,7 @@
  *
  * Pure: no window, no fetch. Exercised by scripts/test-outbox-queue.ts. */
 
-import { formatDate, dateInTz } from '@/lib/format';
+import { clockHM, dateInTz, formatDate } from '@/lib/format';
 import type { PendingGymSetLog, PendingNutritionCheckin, PendingTraining, PendingWellness } from '@/lib/outbox';
 
 export type QueueRow = {
@@ -39,7 +39,7 @@ const SMALL = ['zero', 'one', 'two', 'three', 'four', 'five', 'six', 'seven', 'e
 const words = (n: number): string => SMALL[n] ?? String(n);
 
 function timeIn(iso: string, timezone: string): string {
-  return new Intl.DateTimeFormat('en-GB', { hour: '2-digit', minute: '2-digit', hour12: false, timeZone: timezone }).format(new Date(iso));
+  return clockHM(iso, timezone);
 }
 
 /** "07:42" for today, "Sat 12 Sept 20:05" for any other day. */

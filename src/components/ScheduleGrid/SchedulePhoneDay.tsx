@@ -5,7 +5,7 @@ import { useState } from 'react';
 import type { DayColumn } from './TimeGrid';
 import type { BaseSession } from './types';
 import { TYPE_STYLE, clockLabel } from '@/lib/scheduleGeometry';
-import { enumLabel, mdLabel } from '@/lib/format';
+import { dayMonthShort, enumLabel, mdLabel, weekdayLong } from '@/lib/format';
 import { dayHeadMeta, nextSessionLine, phoneDayDefault, rowMeta } from '@/lib/schedulePhoneDay';
 
 /* PATTERN-S4 C6 / B4 (2026-09-13): the phone schedule is day-first. The
@@ -31,10 +31,8 @@ type Props = {
   canEdit: boolean;
 };
 
-const weekdayLong = (date: string, timezone: string) =>
-  new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: timezone }).format(new Date(`${date}T12:00:00Z`));
-const dayMonth = (date: string, timezone: string) =>
-  new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: timezone }).format(new Date(`${date}T12:00:00Z`));
+// The date words from lib/format.ts's pinned tables (15 Sept 2026).
+const dayMonth = (date: string, timezone: string) => dayMonthShort(date, timezone);
 
 export function SchedulePhoneDay({ days, sessions, today, timezone, canEdit }: Props) {
   const [day, setDay] = useState(() => phoneDayDefault(days.map((d) => d.date), today));

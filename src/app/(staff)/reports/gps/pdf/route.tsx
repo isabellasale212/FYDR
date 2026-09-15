@@ -117,8 +117,8 @@ export async function GET(request: Request) {
             { key: 'unit', label: 'Unit', width: '18%', render: (r) => r.group_name },
             { key: 'name', label: 'Player', width: '24%', render: (r) => `${r.last_name}, ${r.first_name}` },
             { key: 'mins', label: 'Mins', width: '10%', align: 'right', render: (r) => (r.mins !== null ? String(r.mins) : '—') },
-            { key: 'td', label: 'TD (m)', width: '12%', align: 'right', render: (r) => (r.td !== null ? Math.round(r.td).toLocaleString() : '—') },
-            { key: 'hsr', label: 'HSR (m)', width: '12%', align: 'right', render: (r) => (r.hsr !== null ? Math.round(r.hsr).toLocaleString() : '—') },
+            { key: 'td', label: 'TD (m)', width: '12%', align: 'right', render: (r) => (r.td !== null ? Math.round(r.td).toLocaleString('en-GB') : '—') },
+            { key: 'hsr', label: 'HSR (m)', width: '12%', align: 'right', render: (r) => (r.hsr !== null ? Math.round(r.hsr).toLocaleString('en-GB') : '—') },
             { key: 'hie', label: 'HIE', width: '8%', align: 'right', render: (r) => (r.hie !== null ? String(r.hie) : '—') },
             { key: 'maxv', label: 'MaxV (km/h)', width: '16%', align: 'right', render: (r) => (r.maxv_kmh !== null ? String(r.maxv_kmh) : '—') },
           ]}
@@ -181,9 +181,9 @@ export async function GET(request: Request) {
         columns={[
           { key: 'unit', label: 'Unit', width: '16%', render: (r) => r.group_name },
           { key: 'name', label: 'Player', width: '22%', render: (r) => `${r.last_name}, ${r.first_name}` },
-          { key: 'td', label: 'TD (m)', width: '11%', align: 'right', render: (r) => (r.td !== null ? Math.round(r.td).toLocaleString() : '—') },
-          { key: 'run', label: 'RUN (m)', width: '11%', align: 'right', render: (r) => (r.run !== null ? Math.round(r.run).toLocaleString() : '—') },
-          { key: 'hsr', label: 'HSR (m)', width: '11%', align: 'right', render: (r) => (r.hsr !== null ? Math.round(r.hsr).toLocaleString() : '—') },
+          { key: 'td', label: 'TD (m)', width: '11%', align: 'right', render: (r) => (r.td !== null ? Math.round(r.td).toLocaleString('en-GB') : '—') },
+          { key: 'run', label: 'RUN (m)', width: '11%', align: 'right', render: (r) => (r.run !== null ? Math.round(r.run).toLocaleString('en-GB') : '—') },
+          { key: 'hsr', label: 'HSR (m)', width: '11%', align: 'right', render: (r) => (r.hsr !== null ? Math.round(r.hsr).toLocaleString('en-GB') : '—') },
           { key: 'hie', label: 'HIE', width: '7%', align: 'right', render: (r) => (r.hie !== null ? String(r.hie) : '—') },
           { key: 'maxv', label: 'MaxV', width: '11%', align: 'right', render: (r) => (r.maxv_kmh !== null ? String(r.maxv_kmh) : '—') },
           { key: 'vs_self', label: 'vs self', width: '11%', align: 'right', render: (r) => (r.vs_self !== null ? `${r.vs_self}%` : '—') },

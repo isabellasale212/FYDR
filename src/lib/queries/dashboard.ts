@@ -9,6 +9,7 @@ import { anchorMdOffsetsToWeek, availabilityLabel, dateInTz, daysBetween, format
 import { missingRuns, type MissingRun } from '@/lib/missingRuns';
 import { restrictionStatusLine, selectionReasonLine } from '@/lib/dashboardLead';
 import type { FlagDomain } from '@/lib/types/database';
+import { dayMonthShort, weekdayShortDay } from '@/lib/format';
 
 /* DASHBOARD-SPEC.md, the coach's 07:00 screen. Every section here composes
  * real, already-shipped query functions (schedule, availability,
@@ -104,8 +105,8 @@ export type DayStripCard = {
 };
 
 function dayLabelFor(date: string): string {
-  const d = new Date(`${date}T12:00:00Z`);
-  return `${d.toLocaleDateString('en-GB', { weekday: 'short' })} ${d.getUTCDate()}`;
+  // A calendar date read at noon UTC: no zone can move it (pinned names, 15 Sept 2026).
+  return weekdayShortDay(date, 'UTC');
 }
 
 export async function fetchWeekStrip(
@@ -1051,7 +1052,7 @@ async function fetchWeekLoad(
     weeksSeen.set(wk, list);
   }
   const priorWeekIds = [...weeksSeen.values()];
-  if (priorWeekIds.length === 0) return { pct: null, fillPct: Math.min(100, (weekTotal / 19_000) * 0.72), tickPct: 72, tone: 'accent', foot: `${Math.round(weekTotal).toLocaleString()} m so far · no prior week on record to compare against` };
+  if (priorWeekIds.length === 0) return { pct: null, fillPct: Math.min(100, (weekTotal / 19_000) * 0.72), tickPct: 72, tone: 'accent', foot: `${Math.round(weekTotal).toLocaleString('en-GB')} m so far · no prior week on record to compare against` };
 
   const priorRecords = await fetchGpsForSessions(db, orgId, priorWeekIds.flat());
   const scopedPrior = scope ? priorRecords.filter((r) => scope.includes(r.athlete_id)) : priorRecords;
@@ -1079,7 +1080,7 @@ async function fetchWeekLoad(
     fillPct,
     tickPct: 72,
     tone,
-    foot: `${Math.round(weekTotal).toLocaleString()} m of a typical ${Math.round(typical).toLocaleString()} m week so far · tick is 100%`,
+    foot: `${Math.round(weekTotal).toLocaleString('en-GB')} m of a typical ${Math.round(typical).toLocaleString('en-GB')} m week so far · tick is 100%`,
   };
 }
 
@@ -1196,7 +1197,7 @@ export async function fetchOutstandingTracks(
   if (squadSize > 0) {
     const pct = Math.round((100 * scopedNutrition.length) / squadSize);
     tracks.push({
-      label: `Nutrition check-in, week of ${new Date(`${nutritionWeekStart}T12:00:00Z`).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' })}`,
+      label: `Nutrition check-in, week of ${dayMonthShort(nutritionWeekStart, 'UTC')}`,
       valueLeft: squadSize - scopedNutrition.length,
       pct,
       tone: 'accent2',

@@ -28,7 +28,7 @@ const scripts = readdirSync('scripts').filter((f) => /\.(ts|mjs)$/.test(f)).map(
 const enumerating = scripts.filter((f) => /\breaddirSync\(/.test(strip(readFileSync(f, 'utf8'))));
 
 console.log('every script that enumerates the filesystem counts what it found');
-expectCount('scripts under scripts/ that call readdirSync', enumerating, 34);
+expectCount('scripts under scripts/ that call readdirSync', enumerating, 35);
 for (const f of enumerating) {
   const src = strip(readFileSync(f, 'utf8'));
   const imports = /import \{[^}]*\bexpectCount\b[^}]*\} from '\.\/lib\/coverage\.mjs'/.test(src);

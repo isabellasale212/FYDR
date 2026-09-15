@@ -1,5 +1,5 @@
 import type { AvailabilityStatus, FlagDomain, FlagSeverity } from '@/lib/types/database';
-import { daysBetween, formatNumber } from '@/lib/format';
+import { daysBetween, formatDate, formatNumber } from '@/lib/format';
 import { fetchCurrentAvailability } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
 import { fetchAllPaged } from './paged';
@@ -77,12 +77,7 @@ const SEVERITY_RANK: Record<FlagSeverity, number> = { low: 0, medium: 1, high: 2
  *  evidence line needs the day the reading was taken, which is a different
  *  fact and the one that lets a coach go and check it. */
 function flagDateLabel(dateIso: string): string {
-  return new Date(`${dateIso}T12:00:00Z`).toLocaleDateString('en-GB', {
-    weekday: 'short',
-    day: 'numeric',
-    month: 'short',
-    timeZone: 'UTC',
-  });
+  return formatDate(dateIso, 'UTC');
 }
 
 /* ---------------------------------------------------------------------------

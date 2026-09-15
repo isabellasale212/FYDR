@@ -2,7 +2,7 @@ import Link from 'next/link';
 import { CheckInForm } from '@/components/CheckInForm/CheckInForm';
 import { fetchWellnessByAthlete, fetchWellnessDay } from '@/lib/queries/wellness';
 import { fetchWellnessWithRevisions } from '@/lib/queries/entryRevisions';
-import { addDays, formatDate, todayIso } from '@/lib/format';
+import { addDays, clockHM, formatDate, todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 import { entryFormsOpen } from '@/lib/consentState';
 import { EntryLocked } from '@/components/EntryLocked/EntryLocked';
@@ -136,14 +136,7 @@ export default async function CheckInPage({
             <p className="after-fact num">
               {entryDate === today ? 'You sent today' : `You sent ${formatDate(entryDate, timezone)}`}
               &rsquo;s check-in at{' '}
-              {sentAt
-                ? new Intl.DateTimeFormat('en-GB', {
-                    hour: '2-digit',
-                    minute: '2-digit',
-                    hour12: false,
-                    timeZone: timezone,
-                  }).format(new Date(sentAt))
-                : '—'}
+              {sentAt ? clockHM(sentAt, timezone) : '—'}
               .
             </p>
             {/* The recourse is a person, not a control: a control that can

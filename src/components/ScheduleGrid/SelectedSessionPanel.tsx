@@ -2,7 +2,7 @@
 
 import { useEffect, useRef, useState } from 'react';
 import { TYPE_STYLE, clockLabel, expectsLabel, type DbSessionType } from '@/lib/scheduleGeometry';
-import { enumLabel, mdLabel } from '@/lib/format';
+import { dayMonthShort, enumLabel, mdLabel, weekdayLong, weekdayShortDay } from '@/lib/format';
 import { expectedAthletesLine } from '@/lib/scheduleExpected';
 import type { GroupOption } from './types';
 import { ratedSessionSentence } from '@/lib/ratedSession';
@@ -14,14 +14,11 @@ import { ratedSessionSentence } from '@/lib/ratedSession';
  *  session · Thu 10, 16:00, 60 min". A clause whose value is missing is
  *  dropped, never printed empty. */
 function addLabel(session: { dow: string; start: number; mins: number }): string {
-  const day = new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', timeZone: 'UTC' }).format(new Date(`${session.dow}T12:00:00Z`));
+  const day = weekdayShortDay(session.dow, 'UTC');
   const parts = [day, clockLabel(session.start), session.mins > 0 ? `${session.mins} min` : null].filter((p): p is string => p !== null);
   return `Add session · ${parts.join(', ')}`;
 }
 
-function domFmt(timezone: string) {
-  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: timezone });
-}
 
 /* The click-to-create card, as three steps.
  *
@@ -223,10 +220,8 @@ export function SelectedSessionPanel({
           {/* Same shape and the same two formatters the panel's own header
               uses below, so a removed session reads identically to a live one
               — it is the same session, and only its fate differs. */}
-          {new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: timezone }).format(
-            new Date(`${session.dow}T12:00:00Z`),
-          )}{' '}
-          {domFmt(timezone).format(new Date(`${session.dow}T12:00:00Z`))} · {clockLabel(session.start)} –{' '}
+          {weekdayLong(session.dow, timezone)}{' '}
+          {dayMonthShort(session.dow, timezone)} · {clockLabel(session.start)} –{' '}
           {clockLabel(session.start + session.mins / 60)}
           {session.location ? ` · ${session.location}` : ''}
         </p>
@@ -251,9 +246,7 @@ export function SelectedSessionPanel({
   const end = session.start + session.mins / 60;
   const groupLabel = session.groupNames.length > 0 ? session.groupNames.join(' + ') : 'Whole squad';
   const isStaffOnly = session.athleteIds.length === 0;
-  const weekday = new Intl.DateTimeFormat('en-GB', { weekday: 'long', timeZone: timezone }).format(
-    new Date(`${session.dow}T12:00:00Z`),
-  );
+  const weekday = weekdayLong(session.dow, timezone);
 
   /* Every field is defined ONCE and then placed — into the three-step flow for a
      brand-new draft, or into the single form for everything else. Defining them
@@ -447,7 +440,7 @@ export function SelectedSessionPanel({
             <div className="sg-panel-name">{session.title}</div>
           )}
           <div className="sg-panel-meta num">
-            {weekday} {domFmt(timezone).format(new Date(`${session.dow}T12:00:00Z`))} · {clockLabel(session.start)} –{' '}
+            {weekday} {dayMonthShort(session.dow, timezone)} · {clockLabel(session.start)} –{' '}
             {clockLabel(end)} · {session.location ?? 'Location not set'}
           </div>
         </div>
@@ -737,7 +730,7 @@ export function SelectedSessionPanel({
         <p className="sg-preview-foot">
           {isStaffOnly
             ? 'Staff only · this session is never published to the athlete app'
-            : `Publishes to ${groupLabel} · ${expectedAthletesLine({ expected: session.athleteIds.length, squad: squadSize })} · appears under Today on the morning of ${weekday} ${domFmt(timezone).format(new Date(`${session.dow}T12:00:00Z`))}`}
+            : `Publishes to ${groupLabel} · ${expectedAthletesLine({ expected: session.athleteIds.length, squad: squadSize })} · appears under Today on the morning of ${weekday} ${dayMonthShort(session.dow, timezone)}`}
         </p>
       </div>
     </div>

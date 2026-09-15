@@ -13,7 +13,7 @@ import {
   type GridSession,
   type NormalWeek,
 } from '@/lib/queries/schedule';
-import { anchorMdOffsetsToWeek, decimalHourInTz, zonedTimeToUtcIso } from '@/lib/format';
+import { anchorMdOffsetsToWeek, dayMonthShort, decimalHourInTz, weekdayShort, zonedTimeToUtcIso } from '@/lib/format';
 import {
   FIXTURE_NOMINAL_MINS,
   PXH,
@@ -75,15 +75,9 @@ function clamp(n: number, min: number, max: number): number {
   return Math.min(max, Math.max(min, n));
 }
 
-// Built per call from the org's real timezone, not a hardcoded one — see
-// schedule/page.tsx's own weekdayLongFmt/dayMonthFmt for the same fix and
-// its reasoning.
-function weekdayFmt(timezone: string) {
-  return new Intl.DateTimeFormat('en-GB', { weekday: 'short', timeZone: timezone });
-}
-function domFmt(timezone: string) {
-  return new Intl.DateTimeFormat('en-GB', { day: 'numeric', month: 'short', timeZone: timezone });
-}
+// The date words come from lib/format.ts's pinned tables (15 Sept 2026): a
+// client component that asked Intl for a name could hydrate against HTML
+// from a server whose ICU spells it differently.
 
 /** SCHEDULE-SPEC.md, the full grid rebuild. §9's editing model, ported for
  *  real: `edits`/`added`/`removed` are held as genuine client-only state —
@@ -474,8 +468,8 @@ export function ScheduleWorkspace({
 
     dayColumns.push({
       date,
-      weekday: weekdayFmt(timezone).format(dateObj),
-      domLabel: domFmt(timezone).format(dateObj),
+      weekday: weekdayShort(dateObj, timezone),
+      domLabel: dayMonthShort(dateObj, timezone),
       isToday: date === today,
       isPast: date < today,
       isMatch: isMatchDay(date, daySessions),
@@ -1008,8 +1002,8 @@ export function ScheduleWorkspace({
   const defaultDraftDay = days.includes(today) ? today : (days[0] ?? weekStart);
   const dayOptions = days.map((d) => ({
     date: d,
-    weekday: weekdayFmt(timezone).format(new Date(`${d}T12:00:00Z`)),
-    domLabel: domFmt(timezone).format(new Date(`${d}T12:00:00Z`)),
+    weekday: weekdayShort(d, timezone),
+    domLabel: dayMonthShort(d, timezone),
   }));
 
   /* ONE panel, two homes. For a brand-new draft it floats over the slot that

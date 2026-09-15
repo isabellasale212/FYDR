@@ -8,15 +8,12 @@
  * and "last week" alone would be wrong, the date range carries the meaning.
  */
 
-import { addDays } from '@/lib/format';
+import { addDays, dayMonthShort, dayOfMonth } from '@/lib/format';
 
 /** "24 to 30 Aug", or "31 Aug to 6 Sept" across a month end. */
 export function shortWeekRange(weekStart: string, timezone: string): string {
   const weekEnd = addDays(weekStart, 6);
-  const day = (iso: string, withMonth: boolean) =>
-    new Intl.DateTimeFormat('en-GB', { day: 'numeric', ...(withMonth ? { month: 'short' } : {}), timeZone: timezone }).format(
-      new Date(`${iso}T12:00:00Z`),
-    );
+  const day = (iso: string, withMonth: boolean) => (withMonth ? dayMonthShort(iso, timezone) : dayOfMonth(iso, timezone));
   const sameMonth = weekStart.slice(0, 7) === weekEnd.slice(0, 7);
   return sameMonth ? `${day(weekStart, false)} to ${day(weekEnd, true)}` : `${day(weekStart, true)} to ${day(weekEnd, true)}`;
 }

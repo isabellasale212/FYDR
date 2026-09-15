@@ -39,7 +39,7 @@ console.log('\nA1–A3. already rated');
 {
   const branch = page.slice(page.indexOf('{existing ? ('), page.indexOf(') : closed ? ('));
   assert(/className="after-card"/.test(branch) && /<h2 className="after-heading">Already rated<\/h2>/.test(branch), '"Already rated" as the emphasised card\'s heading');
-  assert(/className="after-fact num"/.test(branch) && /You rated this session \{existing\.rpe\} of 10/.test(branch) && /` at \$\{new Intl\.DateTimeFormat/.test(branch), 'the fact: "You rated this session N of 10 at HH:MM."');
+  assert(/className="after-fact num"/.test(branch) && /You rated this session \{existing\.rpe\} of 10/.test(branch) && /` at \$\{clockHM\(existing\.submitted_at, timezone\)\}`/.test(branch), 'the fact: "You rated this session N of 10 at HH:MM."');
   assert(/You can’t change a rating yourself\. Tell your coach and they can correct it for you\./.test(branch.replace(/\s+/g, ' ')), 'the board\'s recourse sentence');
   assert(/The original stays visible in My data, marked Corrected\./.test(branch), 'and what happens to the original');
   assert(!/A submitted rating can’t be edited, by you or by anyone/.test(branch), 'the 40-word paragraph is gone');

@@ -143,7 +143,7 @@ export function TrainingScatter({ points, selectedAthleteId, lens, hrefFor }: Pr
           </div>
           <div className="tr-scatter-xaxis">
             {xTicks.map((t) => (
-              <span key={t}>{Math.round(t).toLocaleString()}</span>
+              <span key={t}>{Math.round(t).toLocaleString('en-GB')}</span>
             ))}
           </div>
         </div>

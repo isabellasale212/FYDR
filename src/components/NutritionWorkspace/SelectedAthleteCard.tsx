@@ -3,7 +3,7 @@
 import Link from 'next/link';
 import { MASS_FLAG_PCT_7D, massState } from '@/lib/nutritionRules';
 import type { MacroRule } from '@/lib/nutritionRules';
-import { initials } from '@/lib/format';
+import { formatDate, initials } from '@/lib/format';
 import type { AthleteWithTargets } from './TargetsTable';
 
 type Props = {
@@ -330,7 +330,8 @@ function addDaysIso(iso: string, n: number): string {
   return d.toISOString().slice(0, 10);
 }
 
+/* A calendar date read at noon UTC: no zone can move it, so 'UTC' is the
+   honest zone (the words from lib/format.ts's pinned tables, 15 Sept 2026). */
 function formatShort(iso: string): string {
-  const d = new Date(`${iso}T12:00:00Z`);
-  return new Intl.DateTimeFormat('en-GB', { weekday: 'short', day: 'numeric', month: 'short' }).format(d);
+  return formatDate(iso, 'UTC');
 }

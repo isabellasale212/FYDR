@@ -36,6 +36,8 @@ strategy and a current-state page, and points here for everything else.
 | When does a gym programme session actually happen? | `decisions/programme-dates.md` |
 | What did Isabella decide on 15 September (afternoon)? | `decisions/decision-batch-2026-09-15-pm.md` |
 | What is in production, and how did it get there? | `runbook-deploy-2026-09-15.md` |
+| What is deferred until after 18 September? | `after-friday.md` |
+| What has to be true for the Friday demo? | `friday-demo-checklist.md` |
 | What is agreed but not yet sent to the builder? | `queue-pending.md` |
 | What changed in the design handover? | `design-programme-corrections-2026-09-13.md` |
 

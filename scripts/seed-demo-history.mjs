@@ -506,6 +506,54 @@ for (const a of athletes) {
 }
 
 /* ---------------------------------------------------------------------------
+ * How each athlete's app is running (athlete_devices, 0121) — the squad
+ * overview's "Has app on home screen · N of M" (16 Sept 2026, 3.4) and the
+ * reachability caption. Isabella, 16 Sept 2026: "most of the squad installed,
+ * a handful not, and the rare check-in athletes among those who have not."
+ *
+ * Reachable (lib/queries/reachability.ts) is a standalone row on a
+ * push-capable browser. So: the roster installs — an iPhone for most, an
+ * Android for some — with a standalone row (push true; iOS 16.4+ holds push
+ * from a Home Screen) and, for about half of them, the browser row of the
+ * first open before they installed (iPhone: push false; Android: push true
+ * but not standalone, so not reachable on its own). The three rare
+ * check-in athletes and two more by hash have NOT installed: a browser row
+ * only, and mostly on iPhone, so the caption's "of whom N are on iPhone"
+ * has something to say. An athlete with no group — the two scratch test
+ * athletes, and anyone not on the roster — has never opened the app: no
+ * row. first_seen is early in the window; last_seen is their last check-in
+ * (or yesterday for an athlete who has none).
+ * ------------------------------------------------------------------------- */
+const devices = []; // { athleteId, platform, mode, push, first, last }
+{
+  const inRoster = (a) => inGroup(a.id, 'Forwards') || inGroup(a.id, 'Backs') || inGroup(a.id, 'Academy');
+  const lastCheckin = new Map();
+  for (const w of wellness) if (!lastCheckin.has(w.athleteId) || w.date > lastCheckin.get(w.athleteId)) lastCheckin.set(w.athleteId, w.date);
+  let extraNotInstalled = 0;
+  for (const a of athletes) {
+    if (!inRoster(a)) continue; // never opened: no row
+    const k = `dev:${a.id}`;
+    const platform = is(a, 'demo') ? 'ios' : rand(k + 'os') < 0.72 ? 'ios' : 'android';
+    const notInstalled = isRare(a) || (!is(a, 'demo') && extraNotInstalled < 2 && rand(k + 'ni') < 0.09 && (extraNotInstalled += 1));
+    const first = addDays(W0, 1 + Math.floor(rand(k + 'first') * 9));
+    const last = lastCheckin.get(a.id) ?? addDays(today, -1);
+    if (notInstalled) {
+      devices.push({ athleteId: a.id, platform, mode: 'browser', push: platform === 'android', first, last });
+      continue;
+    }
+    devices.push({ athleteId: a.id, platform, mode: 'standalone', push: true, first: addDays(first, rand(k + 'lag') < 0.5 ? 0 : 2), last });
+    if (rand(k + 'br') < 0.5) devices.push({ athleteId: a.id, platform, mode: 'browser', push: platform === 'android', first, last: addDays(first, 1 + Math.floor(rand(k + 'brl') * 5)) });
+  }
+}
+const deviceSummary = () => {
+  const by = new Map();
+  for (const d of devices) { const cur = by.get(d.athleteId) ?? { reachable: false, ios: false }; if (d.mode === 'standalone' && d.push) cur.reachable = true; if (d.platform === 'ios') cur.ios = true; by.set(d.athleteId, cur); }
+  let reachable = 0, notInstalled = 0, notInstalledIos = 0, never = 0;
+  for (const a of athletes) { const x = by.get(a.id); if (!x) never += 1; else if (x.reachable) reachable += 1; else { notInstalled += 1; if (x.ios) notInstalledIos += 1; } }
+  return { reachable, notInstalled, notInstalledIos, never };
+};
+
+/* ---------------------------------------------------------------------------
  * The dry-run summary
  * ------------------------------------------------------------------------- */
 const totalSets = gymLogs.reduce((n, g) => n + g.sets.length, 0);
@@ -519,6 +567,7 @@ console.log(`  window ${W0} → ${lastDay} (this week from ${monday0}); ${sessio
 console.log(`  attendance ${attendance.length} · ratings ${entries.length} (${Math.round(ratedShare() * 100)}% of attended sessions rated; ${entries.filter((e) => e.rpe === 0).length} rated 0) · GPS ${gps.length}`);
 console.log(`  wellness ${wellness.length} (${Math.round(checkinRate() * 100)}% of athlete-days) · weigh-ins ${weighIns.length} · gym logs ${gymLogs.length} (${totalSets} sets) · test results ${testResults.length} · nutrition check-ins ${nutrition.length}`);
 console.log(`  injuries ${injuries.length} · availability spans ${availability.length} · match sheet rows ${participation.length}`);
+{ const d = deviceSummary(); console.log(`  athlete devices ${devices.length} rows → has app on home screen ${d.reachable} of ${athletes.length} · ${d.notInstalled} not installed (${d.notInstalledIos} on iPhone) · ${d.never} never opened`); }
 console.log(`  then: compliance expectations for every day, waived where unavailable; the threshold engine over every day from ${addDays(W0, 14)}; older flags acknowledged by staff`);
 console.log('\nTHE NARRATIVES');
 console.log(`  load spike        ${name(cast.spike)} — rated ${daysRated(cast.spike.id)} of the last 28 days; open /reports/squad (the ACWR column), /squad/${cast.spike.id} (the ACWR dial), /flags`);
@@ -547,6 +596,7 @@ for (const [label, sql] of Object.entries({
   'compliance expectations': `select count(*)::int n from public.compliance_expectations where org_id = $1`,
   'programme assignments': `select count(*)::int n from public.programme_assignments where org_id = $1`,
   'match sheet rows': `select count(*)::int n from public.match_participation where org_id = $1`,
+  'athlete devices': `select count(*)::int n from public.athlete_devices where org_id = $1`,
 })) existing[label] = (await one(sql, [ORG])).n;
 console.log('\nWILL REMOVE FIRST (the organisation\'s existing history, all synthetic)');
 console.log('  ' + Object.entries(existing).map(([k, v]) => `${k} ${v}`).join(' · '));
@@ -621,6 +671,11 @@ try {
   await del('wellness', `delete from public.wellness_entries where org_id = $1`);
   await del('nutrition check-ins', `delete from public.nutrition_checkins where org_id = $1`);
   await del('weigh-ins', `delete from public.body_composition where org_id = $1`);
+  /* Every device row, real or synthetic: on scratch the probes' desktop rows,
+     on the demo org anything a walkthrough phone recorded. The roster's rows
+     below replace them; a phone that opens the app again writes its own row
+     back the next time (record_athlete_device upserts). */
+  await del('athlete devices', `delete from public.athlete_devices where org_id = $1`);
   await del('session participants', `delete from public.session_participants where org_id = $1`);
   await del('sessions', `delete from public.sessions where org_id = $1`);
   await del('team allocations', `delete from public.team_allocations where org_id = $1`);
@@ -741,6 +796,8 @@ try {
   /* Wellness, weigh-ins, nutrition, tests. */
   note('wellness entries', await bulk('wellness_entries', ['id', 'org_id', 'athlete_id', 'entry_date', 'sleep_hours', 'sleep_quality', 'fatigue', 'soreness', 'soreness_areas', 'stress', 'mood', 'resting_hr', 'comment', 'submitted_at', 'created_by', 'created_at'], ['uuid', 'uuid', 'uuid', 'date', 'numeric', 'int', 'int', 'int', 'text[]', 'int', 'int', 'int', 'text', 'timestamp', 'uuid', 'timestamp'], wellness.map((w) => [uuid(`we:${w.athleteId}:${w.date}`), ORG, w.athleteId, w.date, w.sleepHours, w.sleepQuality, w.fatigue, w.soreness, w.areas, w.stress, w.mood, w.restingHr, w.comment, w.submittedAt, w.createdBy, w.submittedAt])));
   note('weigh-ins', await bulk('body_composition', ['id', 'org_id', 'athlete_id', 'measured_on', 'body_mass_kg', 'body_fat_pct', 'sum_skinfolds_mm', 'method', 'recorded_by', 'created_at'], ['uuid', 'uuid', 'uuid', 'date', 'numeric', 'numeric', 'numeric', 'text', 'uuid', 'timestamp'], weighIns.map((b) => [uuid(`bc:${b.athleteId}:${b.date}`), ORG, b.athleteId, b.date, b.mass, b.fat, b.skin, b.method, b.recordedBy, ts(b.date, '07:20')])));
+  note('athlete devices', await bulk('athlete_devices', ['id', 'org_id', 'athlete_id', 'platform', 'display_mode', 'push_supported', 'first_seen_at', 'last_seen_at'], ['uuid', 'uuid', 'uuid', 'text', 'text', 'boolean', 'timestamp', 'timestamp'],
+    devices.map((d) => [uuid(`dev:${d.athleteId}:${d.platform}:${d.mode}`), ORG, d.athleteId, d.platform, d.mode, d.push, ts(d.first, '07:40'), ts(d.last, '07:55')])));
   note('nutrition check-ins', await bulk('nutrition_checkins', ['id', 'org_id', 'athlete_id', 'week_start', 'iso_year', 'iso_week', 'answer', 'note', 'submitted_at', 'created_by', 'created_at'], ['uuid', 'uuid', 'uuid', 'date', 'int', 'int', 'nutrition_checkin_answer', 'text', 'timestamp', 'uuid', 'timestamp'], nutrition.map((n) => { const d = toDate(n.weekStart); const thu = new Date(d.getTime() + 3 * dayMs); const y = thu.getUTCFullYear(); const wk = Math.ceil(((thu - Date.UTC(y, 0, 1)) / dayMs + 1) / 7); return [uuid(`nc:${n.athleteId}:${n.weekStart}`), ORG, n.athleteId, n.weekStart, y, wk, n.answer, n.note, n.submittedAt, n.createdBy, n.submittedAt]; })));
   note('test results', await bulk('test_results', ['id', 'org_id', 'athlete_id', 'test_definition_id', 'session_id', 'test_date', 'value', 'attempt_number', 'recorded_by', 'created_at'], ['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'date', 'numeric', 'int', 'uuid', 'timestamp'], testResults.map((t) => [uuid(`tr:${t.sessionId}:${t.athleteId}:${t.test}:${t.attempt}`), ORG, t.athleteId, testId[t.test], t.sessionId, t.date, t.value, t.attempt, t.recordedBy, ts(t.date, '11:30')])));
 

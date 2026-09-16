@@ -59,10 +59,19 @@ function loadLabel(ex: ResolvedExercise, athleteName: string, timezone: string):
  *  tailoring exists for them, with a real remove path. */
 export default async function ProgrammeAthletePage({
   params,
+  searchParams,
 }: {
   params: Promise<{ programmeId: string; athleteId: string }>;
+  searchParams: Promise<Record<string, string | string[] | undefined>>;
 }) {
   const { programmeId, athleteId } = await params;
+  /* 2.4 (Isabella, 16 Sept 2026, the evening queue): the player's Gym
+     button at phone width opens this page on ONE session — ?session=<id>,
+     today's. At phone width that session is the only one drawn; the desktop
+     still draws the whole programme, that session first. A value that names
+     no session in this programme is ignored. */
+  const sp = await searchParams;
+  const focusRaw = typeof sp.session === 'string' ? sp.session : null;
   const { db, orgId, orgName, claims, timezone } = await requireStaff();
   /* Shape-check the route param before it reaches a query. Authenticated
      first, so this never becomes a probe; then 404 rather than 500, because a
@@ -98,7 +107,9 @@ export default async function ProgrammeAthletePage({
   // after Friday (docs/after-friday.md).
   const canEdit = mayEdit && (detail.programme.programme_type === 'rehab' || claims.roles.includes('strength_conditioning'));
 
-  const sessionsFlat = detail.blocks.flatMap((b) => b.sessions.map((s) => ({ ...s, blockName: b.name })));
+  const allSessions = detail.blocks.flatMap((b) => b.sessions.map((s) => ({ ...s, blockName: b.name })));
+  const focusId = focusRaw && isUuid(focusRaw) && allSessions.some((s) => s.id === focusRaw) ? focusRaw : null;
+  const sessionsFlat = focusId ? [...allSessions.filter((s) => s.id === focusId), ...allSessions.filter((s) => s.id !== focusId)] : allSessions;
   const sessionIds = sessionsFlat.map((s) => s.id);
 
   const [exercisesBySession, exerciseIndex, exerciseLibrary] = await Promise.all([
@@ -120,9 +131,17 @@ export default async function ProgrammeAthletePage({
     <>
       <div className="topbar">
         <div className="page-head">
+          {/* 2.2 (16 Sept 2026): at phone width the programme list is the
+              S&C's and the programme page hangs off it, so the two crumbs
+              are words, not links — a coach reaches this page from the
+              player's profile and goes back the same way. */}
           <p className="eyebrow">
-            <Link href="/programmes">Gym programme</Link> ·{' '}
-            <Link href={`/programmes/${programmeId}`}>{detail.programme.name}</Link> · {athleteName}
+            <span data-desktop-only="">
+              <Link href="/programmes">Gym programme</Link> ·{' '}
+              <Link href={`/programmes/${programmeId}`}>{detail.programme.name}</Link>
+            </span>
+            <span data-phone-only="">Gym programme · {detail.programme.name}</span>
+            {' '}· {athleteName}
           </p>
           <h1>{athleteName}’s programme</h1>
         </div>
@@ -140,8 +159,10 @@ export default async function ProgrammeAthletePage({
       <div className="card" style={{ marginBottom: 'var(--sp-16)' }}>
         <h2 className="card-title">Tailoring for {athleteName}</h2>
         <OverrideList orgId={orgId} overrides={overrides} canEdit={canEdit} timezone={timezone} />
+        {/* 2.8 (16 Sept 2026): adding an override is the desktop's — the S&C
+            views at phone width. */}
         {canEdit ? (
-          <div style={{ marginTop: 'var(--sp-14)', borderTop: '1px solid var(--border)', paddingTop: 'var(--sp-14)' }}>
+          <div style={{ marginTop: 'var(--sp-14)', borderTop: '1px solid var(--border)', paddingTop: 'var(--sp-14)' }} data-desktop-only="">
             <p className="label" style={{ marginBottom: 'var(--sp-8)' }}>
               Add an override
             </p>
@@ -164,7 +185,7 @@ export default async function ProgrammeAthletePage({
           // no calendar date, nothing to re-anchor via anchorMdOffsetsToWeek.
           const md = mdLabel(s.md_offset);
           return (
-            <div key={s.id} className="card">
+            <div key={s.id} className="card" data-desktop-only={focusId && s.id !== focusId ? '' : undefined}>
               <div className="prog-day-head">
                 <span className="nm">
                   {s.blockName} — {s.name}
@@ -177,7 +198,29 @@ export default async function ProgrammeAthletePage({
                   exempt for them (see Tailoring above).
                 </p>
               ) : (
-                <div style={{ overflowX: 'auto', marginTop: 'var(--sp-8)' }}>
+                <>
+                {/* 2.4 (16 Sept 2026): at phone width the five columns are a
+                    list — the exercise, then sets × reps @ load, then its
+                    tailoring — with nothing to scroll sideways. */}
+                <div className="prog-ex-list" data-phone-only="">
+                  {exercises.map((ex) => (
+                    <div key={ex.programme_exercise_id} className="prog-ex-item">
+                      <span className="nm" style={{ display: 'block', fontSize: 'var(--fs-14)' }}>
+                        {ex.exercise_name}
+                      </span>
+                      <span className="tiny num" style={{ display: 'block' }}>
+                        {ex.sets} × {repsLabel(ex)} @ {loadLabel(ex, athleteName, timezone)}
+                        {ex.is_overridden ? ` · ${ex.override_types.map((t) => t.replace('_', ' ')).join(', ')}` : ''}
+                      </span>
+                      {ex.notes ? (
+                        <span className="tiny" style={{ display: 'block' }}>
+                          {ex.notes}
+                        </span>
+                      ) : null}
+                    </div>
+                  ))}
+                </div>
+                <div style={{ overflowX: 'auto', marginTop: 'var(--sp-8)' }} data-desktop-only="">
                   <div style={{ minWidth: 480 }}>
                     <div className="prog-ex-row prog-ex-head tiny">
                       <span>Exercise</span>
@@ -208,6 +251,7 @@ export default async function ProgrammeAthletePage({
                     ))}
                   </div>
                 </div>
+                </>
               )}
             </div>
           );

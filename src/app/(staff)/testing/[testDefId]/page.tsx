@@ -55,6 +55,9 @@ export default async function TestLogPage({
         <div className="page-head">
           <p className="eyebrow">
             <Link href="/testing">Testing</Link> · {definition.name}
+            {/* At phone width the date the sheet logs to, since the stepper
+                is the desktop's (2.7). */}
+            <span data-phone-only=""> · {testDate === today ? 'today' : testDate}</span>
           </p>
           <h1>{definition.name}</h1>
         </div>
@@ -64,12 +67,16 @@ export default async function TestLogPage({
         </div>
       </div>
 
-      <p className="eyebrow" style={{ marginBottom: 'var(--sp-10)' }}>
+      {/* 2.7 (Isabella, 16 Sept 2026, the evening queue): at phone width this
+          page is the logging sheet — the grid with a name filter — and
+          nothing else: the scope line, the assign control and the date
+          stepper are the desktop's. Presentation, not permission. */}
+      <p className="eyebrow" style={{ marginBottom: 'var(--sp-10)' }} data-desktop-only="">
         {groupScopeLabel(groups, groupIds)} · {orgName}
       </p>
 
 
-      <div style={{ marginBottom: 'var(--sp-14)' }}>
+      <div style={{ marginBottom: 'var(--sp-14)' }} data-desktop-only="">
         <TestAssignmentPanel
           orgId={orgId}
           userId={claims.userId}
@@ -83,7 +90,9 @@ export default async function TestLogPage({
         />
       </div>
 
-      <TestDateNav testDefinitionId={testDefId} testDate={testDate} groupIds={groupIds} dates={testDates} timezone={timezone} />
+      <div data-desktop-only="">
+        <TestDateNav testDefinitionId={testDefId} testDate={testDate} groupIds={groupIds} dates={testDates} timezone={timezone} />
+      </div>
 
       {athletes.length === 0 && assignedIds.size === 0 ? (
         <EmptyState

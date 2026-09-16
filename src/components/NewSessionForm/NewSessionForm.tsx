@@ -193,8 +193,8 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
         </div>
       </fieldset>
 
-      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
-        <div style={{ flex: 1 }}>
+      <div className="form-pair">
+        <div>
           <label className="label" htmlFor="s-date">
             Date
           </label>
@@ -207,7 +207,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
             onChange={(event) => setDate(event.target.value)}
           />
         </div>
-        <div style={{ flex: 1 }}>
+        <div>
           <label className="label" htmlFor="s-time">
             Time
           </label>
@@ -221,8 +221,8 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
-        <div style={{ flex: 1 }}>
+      <div className="form-pair">
+        <div>
           <label className="label" htmlFor="s-duration">
             Duration (min)
           </label>
@@ -239,7 +239,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
             onChange={(event) => setDuration(event.target.value)}
           />
         </div>
-        <div style={{ flex: 1 }}>
+        <div>
           <label className="label" htmlFor="s-md">
             MD offset (optional)
           </label>
@@ -281,7 +281,8 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
             </button>
           ))}
         </div>
-        <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
+        {/* 2.3 (16 Sept 2026): helper prose — the desktop's at phone width. */}
+        <p className="cap" style={{ marginTop: 'var(--sp-6)' }} data-desktop-only="">
           Pick every group that should see this, for example Forwards and Backs
           together for a full-squad session. At least one group is needed
           &mdash; a session nobody is named in cannot be counted or rated.
@@ -293,7 +294,7 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
           squad sees it. There isn't one — the row is the visibility. Said here,
           at the moment of committing, rather than as a toast afterwards, so it
           answers the question before it is asked. */}
-      <p className="cap" style={{ marginTop: 'var(--sp-14)' }}>
+      <p className="cap" style={{ marginTop: 'var(--sp-14)' }} data-desktop-only="">
         Athletes named in it see this in their athlete app as soon as you create
         it. There is no separate publish step.
       </p>

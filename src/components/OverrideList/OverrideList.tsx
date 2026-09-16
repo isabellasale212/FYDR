@@ -55,7 +55,12 @@ export function OverrideList({
   });
 
   if (overrides.length === 0) {
-    return <p className="tiny">No tailoring on this programme for this athlete. They follow the parent prescription exactly.</p>;
+    /* 2.3 (16 Sept 2026): the state stays; the explanation is the desktop's. */
+    return (
+      <p className="tiny">
+        No tailoring on this programme for this athlete.<span data-desktop-only=""> They follow the parent prescription exactly.</span>
+      </p>
+    );
   }
 
   return (
@@ -77,8 +82,10 @@ export function OverrideList({
               {o.expires_at ? ` · expires ${formatDate(o.expires_at, timezone)}` : ''}
             </div>
           </div>
+          {/* 2.8 (16 Sept 2026): removing is the desktop's. */}
           {canEdit ? (
-            removingId === o.id ? (
+            <span data-desktop-only="">
+            {removingId === o.id ? (
               <span style={{ display: 'flex', gap: 'var(--sp-6)' }}>
                 <button
                   type="button"
@@ -96,7 +103,8 @@ export function OverrideList({
               <button type="button" className="btn-ghost" onClick={() => setRemovingId(o.id)}>
                 Remove
               </button>
-            )
+            )}
+            </span>
           ) : null}
         </div>
       ))}

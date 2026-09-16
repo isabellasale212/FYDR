@@ -1,5 +1,6 @@
 import Link from 'next/link';
 import { TestDefinitionForm } from '@/components/TestDefinitionForm/TestDefinitionForm';
+import { TestLogPicker } from '@/components/TestLogPicker/TestLogPicker';
 import { fetchNextTestingSession, fetchTestDefinitions } from '@/lib/queries/testing';
 import { fetchWeekMdLabels, mondayOf } from '@/lib/queries/schedule';
 import { dateInTz, enumLabel, formatDateTime, mdLabel } from '@/lib/format';
@@ -39,6 +40,14 @@ export default async function TestingPage() {
         </div>
       </div>
 
+      {/* 2.7 (Isabella, 16 Sept 2026, the evening queue): at phone width
+          Testing is logging — one Log test button with the test type as a
+          dropdown, and nothing else. The next-session card, the definitions
+          list and the add-a-test form below are the desktop's. */}
+      <div className="card" data-phone-only="">
+        <TestLogPicker tests={definitions.map((d) => ({ id: d.id, name: d.name }))} />
+      </div>
+
       {/* Audit finding 36: nothing here connected Testing to the Schedule's
        * own `session_type = 'testing'` sessions — a coach could have a
        * testing session booked for tomorrow and have no way to see that
@@ -52,6 +61,7 @@ export default async function TestingPage() {
           href={`/schedule/${nextSession.id}`}
           className="card"
           style={{ display: 'flex', alignItems: 'center', justifyContent: 'space-between', marginBottom: 'var(--sp-14)', textDecoration: 'none', color: 'inherit' }}
+          data-desktop-only=""
         >
           <div>
             <p className="tiny" style={{ color: 'var(--muted)' }}>
@@ -68,7 +78,7 @@ export default async function TestingPage() {
         </Link>
       ) : null}
 
-      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 'var(--sp-16)', alignItems: 'start' }}>
+      <div style={{ display: 'grid', gridTemplateColumns: '1fr 340px', gap: 'var(--sp-16)', alignItems: 'start' }} data-desktop-only="">
         <div className="card flush">
           {definitions.length === 0 ? (
             <p className="tiny" style={{ padding: 'var(--sp-16)' }}>

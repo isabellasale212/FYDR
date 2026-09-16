@@ -32,6 +32,13 @@ A header with the group filter. Then the programmes, each with its name, its
 blocks, and how many athletes are assigned. Where an exercise has been overridden
 for an individual, the override is named rather than silently applied.
 
+**Phone width, 16 September 2026 (the evening queue, 2.8).** The S&C sees the
+programmes THEY made (`programmes.created_by`, a presentation filter — another
+author's row carries `data-desktop-only`), reads a session as a list (exercise,
+then sets × reps @ load; the five-column grid is the desktop's), and the
+selected programme's link reads "View full detail →". Hidden by role at phone
+width; enforcement after Friday.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means | Time window | When missing |

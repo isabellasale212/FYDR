@@ -308,8 +308,10 @@ export default async function AthleteNutritionPage({
           </p>
           <h1>Nutrition</h1>
         </div>
+        {/* 2.8 (16 Sept 2026): the two edit ways are the desktop's — at phone
+            width the nutritionist views, and does not edit or create. */}
         {isNutritionist ? (
-          <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
+          <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }} data-desktop-only="">
             <Link href="/nutrition/new" className="btn-ghost">
               Set a manual target
             </Link>
@@ -331,7 +333,39 @@ export default async function AthleteNutritionPage({
         </p>
       ) : null}
 
-      <div className="pp-col">
+      {/* 2.4 (Isabella, 16 Sept 2026, the evening queue): at phone width the
+          Nutrition button shows the day's calories only — every plan that
+          reaches them, the weekly check-in card, body mass and the
+          positional comparison are the desktop's. Presentation, not
+          permission: the page answers the same at every width. */}
+      <div className="pp-col" data-phone-only="">
+        <section className="card pp-card" aria-labelledby="n-kcal-title">
+          <div className="pp-card-head">
+            <h2 className="card-title" id="n-kcal-title" style={{ margin: 0 }}>
+              Today
+            </h2>
+            <span className="num s">{formatDate(today, timezone)}</span>
+          </div>
+          {resolved ? (
+            <div className="pp-macro-tiles" style={{ marginTop: 'var(--sp-12)' }}>
+              <div className="pp-macro-tile">
+                <p className="num pp-macro-value" style={{ margin: 0 }}>
+                  {macro(resolved.energy_kcal)}
+                </p>
+                <p className="pp-macro-label" style={{ margin: 0 }}>
+                  kcal
+                </p>
+              </div>
+            </div>
+          ) : (
+            <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
+              No plan resolves for today.
+            </p>
+          )}
+        </section>
+      </div>
+
+      <div className="pp-col" data-desktop-only="">
 
         <section className="card pp-card" aria-labelledby="n-today-title">
           <div className="pp-card-head">

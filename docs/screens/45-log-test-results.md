@@ -43,6 +43,13 @@ assigned it says so and points up.
 The test's name, unit and direction. The squad, with a field per athlete for the
 day's result, and their previous best beside it for context.
 
+**Phone width, 16 September 2026 (the evening queue, 2.7).** Below 768px the
+page is the logging sheet: a **Player** name filter (start of a first or last
+name; "12 of 30" beneath it) above the grid, the date in the crumb ("· today"),
+and nothing else — the scope line, the assign control, the date stepper and
+the autosave footer prose are the desktop's. The grid's cells, + Attempt and
+the per-cell saved state are unchanged.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means | Time window | When missing |

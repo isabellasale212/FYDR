@@ -301,7 +301,17 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
             </table>
           </div>
         ) : null}
-        {excludedLine ? <p className="cap">{excludedLine}</p> : null}
+        {/* 2.3 (16 Sept 2026): at phone width the figure, not the sentence. */}
+        {excludedLine ? (
+          <>
+            <p className="cap" data-desktop-only="">
+              {excludedLine}
+            </p>
+            <p className="cap num" data-phone-only="">
+              {data.excludedMinors} under-18 not ranked
+            </p>
+          </>
+        ) : null}
       </div>
 
       <div className="lbw-desktop" data-desktop-only="">

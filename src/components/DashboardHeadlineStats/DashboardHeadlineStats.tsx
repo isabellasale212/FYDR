@@ -21,6 +21,10 @@ type Props = {
   weighIns: WeighInsToday | null;
   gymTodayHref: string;
   weighInsHref: string;
+  /** 2.2 (16 Sept 2026): whether the tile is a link at phone width too.
+   *  /nutrition is the nutritionist's on a phone; for the S&C the tile is a
+   *  figure there, not a way to a desktop-only notice. */
+  weighInsPhoneLink: boolean;
   isAnchoredToPast: boolean;
   timezone: string;
   needYouHref: string;
@@ -97,6 +101,7 @@ export function DashboardHeadlineStats({
   weighIns,
   gymTodayHref,
   weighInsHref,
+  weighInsPhoneLink,
   isAnchoredToPast,
   timezone,
   needYouHref,
@@ -111,6 +116,27 @@ export function DashboardHeadlineStats({
 
   const modifiedNamed = namedWithReason(squadModified);
   const unavailableNamed = namedWithReason(squadUnavailable);
+
+  const weighInsBody = weighIns ? (
+    <>
+      <div className="dash-stat-label">
+        {/* No nutrition domain token exists; the accent is the product's
+            own data colour and claims no domain. */}
+        <span className="dash-stat-dot" style={{ background: 'var(--accent)' }} aria-hidden="true" />
+        Weigh-ins
+      </div>
+      <div className="dash-stat-value">
+        {weighIns.submitted} <span className="unit">of {weighIns.total}</span>
+      </div>
+      <div className="dash-stat-sub">
+        {weighIns.total === 0
+          ? 'no athletes in this filter'
+          : weighIns.submitted === weighIns.total
+            ? `everyone weighed in${isAnchoredToPast ? ' that day' : ' this morning'}`
+            : `${weighIns.total - weighIns.submitted} not submitted${isAnchoredToPast ? ' that day' : ' this morning'}`}
+      </div>
+    </>
+  ) : null;
 
   return (
     <>
@@ -172,25 +198,19 @@ export function DashboardHeadlineStats({
             rows measured today over the squad in scope. The missing count is
             said as "not submitted", never 0 or 0% (data rule 1). */}
         {tiles.includes('weighIns') && weighIns ? (
-        <Link href={weighInsHref} className="dash-stat">
-          <div className="dash-stat-label">
-            {/* No nutrition domain token exists; the accent is the product's
-                own data colour and claims no domain. */}
-            <span className="dash-stat-dot" style={{ background: 'var(--accent)' }} aria-hidden="true" />
-            Weigh-ins
-          </div>
-          <div className="dash-stat-value">
-            {weighIns.submitted} <span className="unit">of {weighIns.total}</span>
-          </div>
-          <div className="dash-stat-sub">
-            {weighIns.total === 0
-              ? 'no athletes in this filter'
-              : weighIns.submitted === weighIns.total
-                ? `everyone weighed in${isAnchoredToPast ? ' that day' : ' this morning'}`
-                : `${weighIns.total - weighIns.submitted} not submitted${isAnchoredToPast ? ' that day' : ' this morning'}`}
-          </div>
-          <div className="dash-stat-foot">Body mass on Nutrition ›</div>
-        </Link>
+          <>
+            <Link href={weighInsHref} className="dash-stat" data-desktop-only={weighInsPhoneLink ? undefined : ''}>
+              {weighInsBody}
+              <div className="dash-stat-foot">Body mass on Nutrition ›</div>
+            </Link>
+            {/* 2.2 (16 Sept 2026): the same figure as a tile, not a link, at
+                phone width for a role whose /nutrition is a notice there. */}
+            {!weighInsPhoneLink ? (
+              <div className="dash-stat" data-phone-only="">
+                {weighInsBody}
+              </div>
+            ) : null}
+          </>
         ) : null}
 
         {tiles.includes('wellness') ? (
@@ -261,7 +281,8 @@ export function DashboardHeadlineStats({
           <div className="dash-stat-sub">
             {stats.modifiedCount} modified, {stats.unavailableCount} out
           </div>
-          <div className="dash-stat-foot">
+          {/* 2.3 (16 Sept 2026): a definition line — the desktop's. */}
+          <div className="dash-stat-foot" data-desktop-only="">
             injury status set by medical, other absences by coach
           </div>
           <StatState open={expanded === 'available'} />

@@ -60,8 +60,16 @@ console.log('\n2. the hub, the two levels down, and the links');
   /* 15 Sept 2026: the "Previewing Basic" links keep pointing at the plan card
      (the switch lives there); the PlanGate pages send discovery to the plan
      page, the one place. */
-  for (const f of ['src/components/Sidebar/Sidebar.tsx', 'src/components/StaffPhoneShell/StaffPhoneShell.tsx']) {
+  /* REPINNED 16 Sept 2026 (the evening queue, 2.2): the PHONE shell's
+     preview row goes to the settings hub — /settings/club is desktop-only
+     there and nothing at phone width may lead to a desktop-only notice.
+     The sidebar (desktop) keeps the plan card. */
+  for (const f of ['src/components/Sidebar/Sidebar.tsx']) {
     assert(/\/settings\/club#plan/.test(read(f)) && !/"\/settings#plan"/.test(read(f)), `${f.split('/').slice(-1)[0]} links the preview at the plan card`);
+  }
+  {
+    const shell = read('src/components/StaffPhoneShell/StaffPhoneShell.tsx');
+    assert(/href="\/settings" className="ph-sheet-row ph-sheet-preview"/.test(shell) && !/\/settings\/club#plan/.test(shell), 'StaffPhoneShell.tsx sends the preview row to the settings hub, never to the desktop-only club page (2.2, 16 Sept 2026)');
   }
   assert(/href="\/settings\/plan"/.test(read('src/components/PlanGate/PlanGate.tsx')), 'PlanGate links the plan page');
   const css = strip(read('src/styles/base.css'));

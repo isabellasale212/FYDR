@@ -139,7 +139,8 @@ export default async function InjuryDetailPage({
         </>
       ) : (
         <>
-          <div className="note" style={{ marginTop: 'var(--sp-14)' }}>
+          {/* 2.3 (16 Sept 2026): a definition note — the desktop's. */}
+          <div className="note" style={{ marginTop: 'var(--sp-14)' }} data-desktop-only="">
             <div className="note-glyph" aria-hidden="true">i</div>
             <p className="note-text">
               <b>This is what coaching staff see.</b> Diagnosis, clinical notes and

@@ -349,8 +349,9 @@ export default async function NutritionPage({ searchParams }: { searchParams: Se
         <div style={{ display: 'flex', gap: 'var(--sp-10)', alignItems: 'center' }}>
           {/* 3.5 (16 Sept 2026): the group filter, a dropdown in the top right. */}
           <GroupFilter groups={groups} selected={groupIds} />
+          {/* 2.8 (16 Sept 2026): no creating at phone width — the desktop's. */}
           {canManualTarget ? (
-            <Link href="/nutrition/new" className="btn-ghost" title="Set one absolute target by hand, outside the rule engine">
+            <Link href="/nutrition/new" className="btn-ghost" title="Set one absolute target by hand, outside the rule engine" data-desktop-only="">
               Manual target
             </Link>
           ) : null}

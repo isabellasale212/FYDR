@@ -57,6 +57,14 @@ Overlap is allowed: nothing here refuses an athlete a second live block.
 **Where an exercise is prescribed as a percentage**, the basis is shown rather
 than a single weight, because the real weight differs per athlete.
 
+**Phone width, 16 September 2026 (the evening queue, 2.8).** The builder is
+read-only below 768px: every control in it is an edit control, so `base.css`
+hides them all through `.prog-builder[data-edit-desktop-only]` (the add-forms
+open only from those buttons); Publish / Archive / Reactivate are the desktop's.
+The "Gym programme" crumb is a word, not a link, at phone width (2.2: the list
+is the S&C's there). Hidden, not withheld — `canEdit` and the RPCs are
+unchanged; enforcement after Friday.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means | Time window | When missing |

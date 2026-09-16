@@ -154,8 +154,8 @@ export function SessionEditForm({ orgId, session, groups, timezone, titleSuggest
         </div>
       </fieldset>
 
-      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
-        <div style={{ flex: 1 }}>
+      <div className="form-pair">
+        <div>
           <label className="label" htmlFor="e-date">
             Date
           </label>
@@ -167,7 +167,7 @@ export function SessionEditForm({ orgId, session, groups, timezone, titleSuggest
             onChange={(event) => setDate(event.target.value)}
           />
         </div>
-        <div style={{ flex: 1 }}>
+        <div>
           <label className="label" htmlFor="e-time">
             Time
           </label>
@@ -181,8 +181,8 @@ export function SessionEditForm({ orgId, session, groups, timezone, titleSuggest
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
-        <div style={{ flex: 1 }}>
+      <div className="form-pair">
+        <div>
           <label className="label" htmlFor="e-duration">
             Duration (min)
           </label>
@@ -198,7 +198,7 @@ export function SessionEditForm({ orgId, session, groups, timezone, titleSuggest
             onChange={(event) => setDuration(event.target.value)}
           />
         </div>
-        <div style={{ flex: 1 }}>
+        <div>
           <label className="label" htmlFor="e-md">
             MD offset (optional)
           </label>
@@ -246,7 +246,8 @@ export function SessionEditForm({ orgId, session, groups, timezone, titleSuggest
           create. An edit is the case where a second step feels most
           plausible — the session is already out there — so leaving it
           unsaid here would undo the sentence on the create form. */}
-      <p className="cap" style={{ marginTop: 'var(--sp-14)' }}>
+      {/* 2.3 (16 Sept 2026): helper prose — the desktop's at phone width. */}
+      <p className="cap" style={{ marginTop: 'var(--sp-14)' }} data-desktop-only="">
         Athletes named in this session see the change in their athlete app as
         soon as you save. There is no separate publish step.
       </p>

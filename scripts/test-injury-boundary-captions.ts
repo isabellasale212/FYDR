@@ -39,7 +39,9 @@ const blank = (s: string): string =>
 /** The boundary caption: the `.cap` paragraph that carries the no-diagnosis promise. */
 function caption(file: string): string {
   const src = blank(readFileSync(file, 'utf8'));
-  for (const m of src.matchAll(/<p className="cap">([\s\S]*?)<\/p>/g)) {
+  /* The caption may carry data-desktop-only since 16 Sept 2026 (the evening
+     queue, 2.3: a definition card is the desktop's at phone width). */
+  for (const m of src.matchAll(/<p className="cap"(?: data-desktop-only="")?>([\s\S]*?)<\/p>/g)) {
     const t = (m[1] ?? '').replace(/&mdash;/g, '—').replace(/&rsquo;/g, "'").replace(/\s+/g, ' ').trim();
     if (/No diagnosis/i.test(t)) return t;
   }

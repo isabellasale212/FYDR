@@ -320,8 +320,10 @@ export function NutritionWorkspace({
             ))}
             {plans.length === 0 ? <p className="tiny">No plans yet.</p> : null}
           </div>
+          {/* 2.8 (16 Sept 2026): no creating at phone width — the nutritionist
+              views plans there. The desktop's. */}
           {canEdit && groupsWithoutPlan.length > 0 ? (
-            <>
+            <span data-desktop-only="">
               <button type="button" className="btn-primary nutr-new-plan-btn" onClick={() => setShowNewPlan((s) => !s)}>
                 New plan
               </button>
@@ -348,7 +350,7 @@ export function NutritionWorkspace({
                   </button>
                 </div>
               ) : null}
-            </>
+            </span>
           ) : null}
         </div>
 
@@ -448,7 +450,9 @@ export function NutritionWorkspace({
                   : 'Create a plan to begin'}
               </div>
             </div>
-            <div style={{ display: 'flex', gap: 'var(--sp-8)' }}>
+            {/* 2.8 (16 Sept 2026): Duplicate and Assign are the desktop's —
+                no editing at phone width. */}
+            <div style={{ display: 'flex', gap: 'var(--sp-8)' }} data-desktop-only="">
               <button type="button" className="btn-ghost" disabled title="Not available yet">
                 Duplicate
               </button>

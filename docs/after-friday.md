@@ -120,3 +120,26 @@ list with the routes.
   RPC (`/injuries/team-allocation` still offers them the controls). To
   enforce: narrow the team-allocation writes to the coach, or rule that the
   sport scientist keeps them.
+
+The evening queue, 16 September (Section 2, staff at phone width):
+
+- **2.8 The nutritionist views plans at phone width and does not edit or
+  create.** New plan, Duplicate, Assign, the four rate steppers, Manual
+  target, Set a manual target and Edit plans are hidden below 768px
+  (`data-desktop-only`); `assignPlan` / `versionRule` and the manual-target
+  write still answer the nutritionist at every width. To enforce: decide
+  whether the rule is "no writes from a phone" (a device rule the database
+  cannot see) or "no writes at all for this role" (which would also take the
+  desktop's controls).
+- **2.8 The S&C views the programmes they made at phone width and does not
+  edit, add or create.** Another author's programme rows, every builder
+  control, Publish/Archive, the override editor and Remove are hidden below
+  768px; `PROGRAMME_EDIT`'s RPCs still answer. The "they made" filter is
+  `programmes.created_by = auth.uid()` in presentation only; to enforce it
+  would be a new policy on programmes for the S&C, and a ruling on whether
+  the sport scientist (who also writes) is bound by it.
+- **2.4 The player's Gym, Nutrition and Wellness at phone width.** Only the
+  day's session, the day's calories and today-against-usual are drawn; the
+  rest of each page is in the DOM under `data-desktop-only`. Nothing to
+  enforce — the same role reads the same rows at every width — recorded so
+  nobody reads the phone view as a narrower permission.

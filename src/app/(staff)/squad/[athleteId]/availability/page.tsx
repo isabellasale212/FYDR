@@ -68,9 +68,13 @@ export default async function AvailabilityHistoryPage({
         </div>
       </div>
 
+      {/* 2.3 (16 Sept 2026): the definition is the desktop's; the figure
+          — N changes on record — stays at every width. */}
       <p className="cap" style={{ margin: '0 0 var(--sp-12)' }}>
-        Every change since the record began, one row per change, newest first. A row is never edited and never
-        removed &mdash; a correction adds a row.{' '}
+        <span data-desktop-only="">
+          Every change since the record began, one row per change, newest first. A row is never edited and never
+          removed &mdash; a correction adds a row.{' '}
+        </span>
         {history.length > 0 ? `${history.length} ${history.length === 1 ? 'change' : 'changes'} on record.` : ''}
       </p>
 
@@ -109,7 +113,8 @@ export default async function AvailabilityHistoryPage({
         </div>
       )}
 
-      <div className="card" style={{ marginTop: 'var(--sp-14)' }}>
+      {/* 2.3 (16 Sept 2026): a definition card — the desktop's. */}
+      <div className="card" style={{ marginTop: 'var(--sp-14)' }} data-desktop-only="">
         <p className="label">What a row holds</p>
         <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
           The moment the change took effect, the status word, the restriction line as it read then, what changed

@@ -14,6 +14,7 @@ import {
   fetchEarliestGymSessionDate,
   fetchExerciseNames,
   fetchGymSessionStatsForAthletes,
+  fetchMyProgrammeSessions,
   fetchProgrammeDetail,
   fetchProgrammeExerciseIndex,
   fetchRecentGymSessions,
@@ -357,6 +358,23 @@ export default async function AthleteGymPage({
    * absence and where the missing data is entered instead. */
   const anyMassOnFile = relativeBands.some((b) => b.n > 0);
 
+  /* 2.4 (Isabella, 16 Sept 2026, the evening queue): at phone width the Gym
+     button shows only the programme session scheduled for this player
+     TODAY — the same resolver the athlete's own Programme tab reads
+     (resolve_my_programme_sessions answers staff for any athlete of their
+     organisation; scheduled_on from the assignment's start, migration
+     0132), the finished blocks left out. Tapping a session opens what it
+     resolves to for them — exercises, loads, tailoring — on that one
+     session. Everything else on this page is the desktop's there. */
+  const scheduled = await fetchMyProgrammeSessions(db, athleteId);
+  const todaySessions = scheduled.filter(
+    (s) => s.scheduled_on === today && (s.assignment_ends_on === null || s.assignment_ends_on >= today),
+  );
+  const nextSession =
+    scheduled
+      .filter((s) => s.scheduled_on !== null && s.scheduled_on > today)
+      .sort((a, b) => a.scheduled_on!.localeCompare(b.scheduled_on!))[0] ?? null;
+
   return (
     <>
       <div className="topbar">
@@ -380,7 +398,46 @@ export default async function AthleteGymPage({
         </p>
       ) : null}
 
-      <div className="pp-col">
+      <div className="pp-col" data-phone-only="">
+        <section className="card pp-card" aria-labelledby="g-today-title">
+          <div className="pp-card-head">
+            <h2 className="card-title" id="g-today-title" style={{ margin: 0 }}>
+              Today
+            </h2>
+            <span className="num s">{formatDate(today, timezone)}</span>
+          </div>
+          {todaySessions.length === 0 ? (
+            <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
+              No gym session scheduled today.
+              {nextSession ? ` Next: ${nextSession.session_name}, ${formatDate(nextSession.scheduled_on, timezone)}.` : ''}
+            </p>
+          ) : (
+            todaySessions.map((s) => (
+              <Link
+                key={s.session_id}
+                href={`/programmes/${s.programme_id}/athlete/${athleteId}?session=${s.session_id}`}
+                className="load-row"
+                style={{ gridTemplateColumns: '1fr auto', textDecoration: 'none', color: 'inherit' }}
+              >
+                <span>
+                  <span className="nm" style={{ display: 'block' }}>
+                    {s.session_name}
+                  </span>
+                  <span className="tiny" style={{ display: 'block' }}>
+                    {s.programme_name} · {s.block_name} · Week {s.week_number}
+                    {s.day_number ? ` · Day ${s.day_number}` : ''}
+                  </span>
+                </span>
+                <span className="chev" aria-hidden="true">
+                  ›
+                </span>
+              </Link>
+            ))
+          )}
+        </section>
+      </div>
+
+      <div className="pp-col" data-desktop-only="">
 
 
         <section className="card pp-card" aria-labelledby="g-prog-title">

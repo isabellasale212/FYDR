@@ -28,6 +28,17 @@ The club's boards. Who is top of what, over what period.
 A header with the group filter. Then the club's boards, each named, with its
 measure and period, and the current standings.
 
+**Phone width, 16 September 2026 (the evening queue, 2.5).** The column labels
+sit in the filled band the athlete app's board carries — one rule,
+`table.tbl.lb-table th` — with equal padding all round at `--fs-13`. **The
+overlap bug:** the Leaderboard and Ranked-in dropdowns ran into each other by
+8px at 390 (a stacked `.rsel` is 128px wide but its `.rsel-wrap` carried a
+148px floor); each now takes half the row and the floor is lifted. The 390
+sweep had measured the selects' heights, values and option counts, never their
+boxes — which is why it passed; a bounding-box check is in the sweep now. The
+under-18 exclusion sentence is a figure at phone width ("2 under-18 not
+ranked"); the manage page's definition captions are the desktop's (2.3).
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means | Time window | When missing |

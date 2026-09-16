@@ -34,6 +34,15 @@ rather than silently applied, and what they have actually logged against it.
 Exempt exercises are removed from their view; substitutes appear in place of the
 original.
 
+**Phone width, 16 September 2026 (the evening queue, 2.4 and 2.8).**
+`?session=<id>` — the way the player's Gym button opens this page — draws that
+session first and, below 768px, that session only (the others carry
+`data-desktop-only`); a value naming no session in the programme is ignored.
+Each session's exercises are a list at phone width (the exercise, then sets ×
+reps @ load and its tailoring), the five-column grid the desktop's. Add an
+override and Remove are the desktop's (2.8). The two crumbs are words at phone
+width (2.2).
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means | Time window | When missing |

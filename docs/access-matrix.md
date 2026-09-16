@@ -594,6 +594,26 @@ Class 3 holds throughout: no state on these screens is carried by colour alone
 (the dropdowns say their value, the notice says what it is, the flags line
 names the athlete).
 
+**16 September 2026 — the evening queue, Section 2 (staff at phone width).**
+Cosmetic-first: appearance now, behaviour after Friday. The same rule —
+presentation, "hidden at phone width" — and where a hide is by role, the
+database enforcement follows after Friday (`docs/after-friday.md`).
+
+| # | Where | Hidden at phone width | Shown at phone width instead | Permission |
+|---|---|---|---|---|
+| 2.1 | The staff shell | pinch zoom (the layout's viewport export, `maximum-scale=1, user-scalable=no`, relaxed in a browser tab only by `ViewportZoom`) and double-tap zoom (`touch-action: manipulation` on `.app`) | — | unchanged |
+| 2.2 | Every way to a desktop-only notice | the dashboard's Compliance › and Open athlete report, the thresholds Change › (dashboard and profile), the fixture pages' match-report button, Squad's Manage groups, PlanGate's "See what Premium contains", the weigh-ins tile as a link (for a role whose `/nutrition` is a notice — a figure instead), the programme crumbs on `/programmes/[id]` and `/programmes/[id]/athlete/[id]` (words instead); the phone shell's preview row goes to `/settings`, not `/settings/club` | — | unchanged: the routes keep the notice as the fallback for a typed address |
+| 2.3 | Every staff page | definition cards, exclusion and helper prose — the figure stays where a sentence carried one ("28 athletes ranked · all time", "3 changes on record", "2 under-18 not ranked"); capability notices and disabled-option reasons stay | titles, section headers, figures | unchanged |
+| 2.4 | Player profile · Gym | the Programme, Tailoring and Sessions logged cards, the workload / strength / relative-strength comparisons, the S&C log | a Today card: the session scheduled for this player today (`resolve_my_programme_sessions`, `scheduled_on`), or "No gym session scheduled today. Next: …"; tapping opens `/programmes/[id]/athlete/[id]?session=` on that one session — exercises, loads, tailoring as a list | unchanged |
+| 2.4 | Player profile · Nutrition | every plan that reaches them, the weekly check-in card, body mass, the positional comparison | a Today card: the day's calories | unchanged |
+| 2.4 | Player profile · Wellness | the readiness chart, the scales' means, the positional comparison, the corrections panel | a Today card: each scale today against their usual (the 14-day mean, null under half the window) | unchanged |
+| 2.5 | Leaderboard | — | the column labels in the filled band (the athlete app's treatment, one rule); the two dropdowns share the row (the 8px overlap fixed) | unchanged |
+| 2.6 | Schedule | the + Session / + Fixture / Week templates chip row (the day's + stays); in every two-field form row the pair stacks (`.form-pair`) | — | unchanged |
+| 2.7 | Testing | the next-session card, the definitions list, Add a test; on a test's page the scope line, the assign control, the date stepper, the footer prose | one "Log test" button with the test type as a dropdown; the test's page as the logging sheet with a Player name filter and the date in its crumb | unchanged: `TEST_DEFINE` and the log write are as §3 says |
+| 2.8 | Nutrition (the nutritionist) | New plan, Duplicate, Assign, the rate steppers, Manual target; on `/squad/[id]/nutrition` Set a manual target and Edit plans | the plans, read | unchanged: `NUTRITION_EDIT` still writes — **hidden by role at phone width; enforcement after Friday** |
+| 2.8 | Gym programme (the S&C) | programmes another author made (the row), every control in the builder (`.prog-builder[data-edit-desktop-only]`), Publish/Archive, the override editor and Remove | the programmes they made, read; "View full detail →" | unchanged: `PROGRAMME_EDIT` still writes — **hidden by role at phone width; enforcement after Friday** |
+| 2.8 | Dashboard (the medic) | — | a **Current injuries** card directly below the day's timetable: every athlete with an open injury who is expected at one of the day's sessions (`fetchInjuredInDay`), the site as the medic reads it, when, and the session — additive, the medic's alone (`CLINICAL_ONLY`) | unchanged |
+
 **16 September 2026 — the overnight queue, Section 3 (staff desktop).** Not a
 width rule: these are hidden BY ROLE, at every width, and Isabella has ruled
 the database enforcement follows after Friday (`docs/after-friday.md`).

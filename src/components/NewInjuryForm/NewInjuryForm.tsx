@@ -273,8 +273,8 @@ export function NewInjuryForm({ orgId, userId, timezone, athletes, initialAthlet
           <input id="new-inj-onset" className="field" type="date" value={onsetDate} onChange={(event) => setOnsetDate(event.target.value)} />
 
           {siteVisible ? (
-            <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
-              <div style={{ flex: 1, minWidth: 0 }}>
+            <div className="form-pair">
+              <div>
                 <label className="label" htmlFor="new-inj-area">
                   Body area
                 </label>
@@ -291,7 +291,7 @@ export function NewInjuryForm({ orgId, userId, timezone, athletes, initialAthlet
                   ))}
                 </select>
               </div>
-              <div style={{ flex: 1, minWidth: 0 }}>
+              <div>
                 <label className="label" htmlFor="new-inj-side">
                   Side
                 </label>

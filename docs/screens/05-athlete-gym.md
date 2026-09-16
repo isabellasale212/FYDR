@@ -62,6 +62,17 @@ unit.
 
 ---
 
+**Phone width, 16 September 2026 (the evening queue, 2.4).** Below 768px the
+page is one card, **Today**: the programme session scheduled for this player
+today — the athlete's own resolver, `resolve_my_programme_sessions`, which
+answers staff for any athlete of their organisation; `scheduled_on` from the
+assignment's start (0132) — with its programme, block, week and day, or "No gym
+session scheduled today. Next: Upper B, Thu 17 Sept." Tapping a session opens
+`/programmes/[id]/athlete/[id]?session=<id>` on that one session: exercises,
+loads and tailoring as a list. The Programme, Tailoring and Sessions logged
+cards, the workload, strength and relative-strength comparisons and the S&C log
+are the desktop's (`data-desktop-only`). Presentation, not permission.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means in plain English | Time window | What shows when data is missing |

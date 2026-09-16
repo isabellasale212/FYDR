@@ -48,7 +48,9 @@ console.log('\nA3. corrections state the rules once');
 console.log('\nA4–A6. the injury card');
 {
   const f = flat(read('src/components/InjuryCard/InjuryCard.tsx'));
-  assert(/No current restrictions\. This is not the same as being cleared\./.test(f), 'the empty panel says it is not a clearance');
+  /* Since 16 Sept 2026 (the evening queue, 2.3) the clarification is in a
+     span the phone hides — the sentence is still the desktop's. */
+  assert(/No current restrictions\.[\s\S]{0,160}This is not the same as being cleared\./.test(f) && /<span data-desktop-only=""> This is not the same as being cleared\.<\/span>/.test(f), 'the empty panel says it is not a clearance (the clarification is the desktop\'s at phone width, 16 Sept 2026)');
   assert(/\{value \?\? 'Not recorded'\}/.test(f), 'a missing clinical value is "Not recorded"');
   assert(!/\{value \?\? '—'\}/.test(f), 'and not a dash');
   assert(/Expected return not known/.test(f), 'an unset expected return is said');

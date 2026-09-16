@@ -117,6 +117,11 @@ reads 0m, because a day is a real container that is genuinely empty.
 
 ---
 
+**Phone width, 16 September 2026 (the evening queue, 2.6).** The + Session /
++ Fixture / Week templates chip row is the desktop's; a session is added from
+the day's own + (the new-session page). The ScheduleWorkspace chip row carries
+`data-desktop-only`.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means in plain English | Time window | What shows when data is missing |

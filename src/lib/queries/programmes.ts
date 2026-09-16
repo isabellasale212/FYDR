@@ -106,13 +106,16 @@ export type ProgrammeSummary = {
   goal: string | null;
   duration_weeks: number | null;
   assignment_count: number;
+  /** Who made it (2.8, 16 Sept 2026): at phone width the S&C sees the
+   *  programmes they made. */
+  created_by: string | null;
 };
 
 export async function fetchProgrammes(db: Db, orgId: string): Promise<ProgrammeSummary[]> {
   const [programmesRes, assignmentsRes] = await Promise.all([
     db
       .from('programmes')
-      .select('id, name, programme_type, status, goal, duration_weeks')
+      .select('id, name, programme_type, status, goal, duration_weeks, created_by')
       .eq('org_id', orgId)
       .is('deleted_at', null)
       .order('created_at', { ascending: false }),

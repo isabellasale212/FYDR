@@ -176,6 +176,10 @@ export default async function ProgrammesPage({
                   href={`/programmes?p=${p.id}`}
                   className="prog-item"
                   data-selected={p.id === selected?.id}
+                  /* 2.8 (16 Sept 2026): at phone width the S&C sees the
+                     programmes THEY made; another author's row is the
+                     desktop's. Hidden, not withheld. */
+                  data-desktop-only={p.created_by !== claims.userId ? '' : undefined}
                   /* Marked in the list, not only once opened: rehab is
                      medical's to author and everything else is coach's (see
                      this page's own footer), so which entries are not yours to
@@ -248,7 +252,17 @@ export default async function ProgrammesPage({
                 ) : null}
                 <p className="tiny" style={{ marginTop: 'var(--sp-4)' }}>
                   <Link href={`/programmes/${selected.id}`}>
-                    {canEditSelected ? 'Edit this programme →' : 'View full detail →'}
+                    {/* 2.8 (16 Sept 2026): at phone width the S&C views — the
+                        link says so there. */}
+                    {canEditSelected ? (
+                      <>
+                        <span data-desktop-only="">Edit this programme</span>
+                        <span data-phone-only="">View full detail</span>
+                        {' →'}
+                      </>
+                    ) : (
+                      'View full detail →'
+                    )}
                   </Link>
                 </p>
 
@@ -291,7 +305,29 @@ export default async function ProgrammesPage({
                               No exercises prescribed yet.
                             </p>
                           ) : (
-                            <div style={{ overflowX: 'auto' }}>
+                            <>
+                            {/* 2.8 (16 Sept 2026): at phone width the S&C reads the
+                                session as a list — the exercise, then sets × reps @
+                                load — with nothing to scroll sideways; the five-column
+                                grid (430px wide) is the desktop's. */}
+                            <div className="prog-ex-list" data-phone-only="" style={{ padding: '0 var(--s-6)' }}>
+                              {exercises.map((ex) => (
+                                <div key={ex.programme_exercise_id} className="prog-ex-item">
+                                  <span className="nm" style={{ display: 'block', fontSize: 'var(--fs-14)' }}>
+                                    {ex.exercise_name}
+                                  </span>
+                                  <span className="tiny num" style={{ display: 'block' }}>
+                                    {ex.sets} × {repsLabel(ex)} @ {loadLabel(ex)}
+                                  </span>
+                                  {ex.notes ? (
+                                    <span className="tiny" style={{ display: 'block' }}>
+                                      {ex.notes}
+                                    </span>
+                                  ) : null}
+                                </div>
+                              ))}
+                            </div>
+                            <div style={{ overflowX: 'auto' }} data-desktop-only="">
                               <div style={{ minWidth: 430 }}>
                                 <div className="prog-ex-row prog-ex-head tiny">
                                   <span>Exercise</span>
@@ -322,6 +358,7 @@ export default async function ProgrammesPage({
                                 ))}
                               </div>
                             </div>
+                            </>
                           )}
                         </div>
                       );

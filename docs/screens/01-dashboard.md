@@ -182,6 +182,20 @@ show. A sport scientist can switch it on in Settings › Club." — never "0 of 
 
 ---
 
+**Phone width, 16 September 2026 (the evening queue).** The Compliance › link
+on Outstanding entries and the Open athlete report button on a flag are not
+drawn below 768px (2.2: nothing at phone width leads to a desktop-only notice);
+the thresholds provenance line, the availability tile's "injury status set by
+medical…" foot and the nutrition track's "missing it is not non-compliance"
+are the desktop's (2.3: the figure stays, the sentence goes); the Weigh-ins
+tile is a figure, not a link, for a role whose `/nutrition` is a notice there.
+**The medic's Current injuries card (2.8)** sits directly below the day's
+timetable at phone width: every athlete with an open injury who is expected at
+one of the day's sessions (`fetchInjuredInDay` — the day's participants crossed
+with the open injuries), the site as the medic reads it, since when, expected
+return, and the first session they are in; "No injured player in today's
+sessions." otherwise. Additive, the medic's alone (`CLINICAL_ONLY`).
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means in plain English | Time window | What shows when data is missing |

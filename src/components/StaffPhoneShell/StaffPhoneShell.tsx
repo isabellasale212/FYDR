@@ -292,8 +292,12 @@ export function StaffPhoneShell({ roles, fullName, orgName, premium, previewingT
           );
         })}
         <div className="hair" />
+        {/* 2.2 (16 Sept 2026): /settings/club is desktop-only, so the preview
+            row goes to the settings hub — the one settings screen a phone
+            draws — rather than to a notice. Ending the preview is a desktop
+            action (the plan page); the row names the state. */}
         {previewingTier ? (
-          <Link href="/settings/club#plan" className="ph-sheet-row ph-sheet-preview">
+          <Link href="/settings" className="ph-sheet-row ph-sheet-preview">
             Previewing Basic
           </Link>
         ) : null}

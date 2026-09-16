@@ -116,6 +116,16 @@ console.log('\nthe installed app does not zoom (15–16 Sept 2026), and the reco
   assert(/Safari tabs ignore this entirely, by design/.test(record) && /not a bug/.test(record), 'and that Safari tabs ignore it by design — the installed app and the browser differ, and that is not a bug');
   assert(/2× cap/.test(record) && /Her call over that recommendation/.test(record), 'and that it is her call over the builder\'s 2× recommendation');
   assert(/server-rendered/.test(record) && /16 September 2026/.test(record), 'and, since 16 September, that the cap is server-rendered and why');
+  /* THE STAFF SHELL TOO (16 Sept 2026, the evening queue, 2.1: "the staff
+     shell still pinch-zooms" — replicate the athlete fix in the staff
+     layout). The same export, the same client relaxation, the same
+     touch-action, and the record names it. */
+  const staff = readFileSync('src/app/(staff)/layout.tsx', 'utf8').replace(/\/\*[\s\S]*?\*\//g, '');
+  const svp = /export const viewport: Viewport = \{([\s\S]*?)\};/.exec(staff)?.[1] ?? '';
+  assert(svp !== '' && /maximumScale:\s*1/.test(svp) && /userScalable:\s*false/.test(svp) && /viewportFit:\s*'cover'/.test(svp), 'the STAFF layout carries the same server-rendered cap, viewport-fit=cover kept (16 Sept 2026, 2.1)');
+  assert(/<ViewportZoom \/>/.test(staff), 'and mounts ViewportZoom — relaxed in a browser tab only, never the reverse');
+  assert(/touch-action:\s*manipulation/.test(rule('.app')) && /touch-action:\s*manipulation/.test(rule(':root:has(.app)')), 'double-tap is dead on the staff shell and its document too');
+  assert(/installed staff app does not zoom either/.test(record) && /16 September 2026/.test(record), '§11.7 records the staff shell with the date');
 }
 
 console.log(`\n${passed} passed, ${failed} failed`);

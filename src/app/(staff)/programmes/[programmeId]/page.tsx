@@ -92,8 +92,13 @@ export default async function ProgrammeBuilderPage({
     <>
       <div className="topbar">
         <div className="page-head">
+          {/* 2.2 (16 Sept 2026): the programme list is the S&C's at phone
+              width, so the crumb is a word there, not a link. */}
           <p className="eyebrow">
-            <Link href="/programmes">Gym programme</Link> · {detail.programme.name}
+            <Link href="/programmes" data-desktop-only="">
+              Gym programme
+            </Link>
+            <span data-phone-only="">Gym programme</span> · {detail.programme.name}
           </p>
           <h1>{detail.programme.name}</h1>
         </div>

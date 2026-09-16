@@ -162,7 +162,7 @@ export default async function SettingsPage() {
                 <button type="submit" className="btn-ghost set-logout">
                   Log out
                 </button>
-                <span className="tiny set-logout-note">Ends this session on this browser only</span>
+                <span className="tiny set-logout-note" data-desktop-only="">Ends this session on this browser only</span>
               </form>
             ) : null}
           </section>

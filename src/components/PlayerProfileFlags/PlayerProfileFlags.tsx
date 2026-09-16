@@ -142,7 +142,9 @@ export function PlayerProfileFlags({
             {unacknowledged.length > 0 ? ` · ${unacknowledged.length} awaiting acknowledgement` : ''}
           </span>
         </div>
-        <Link href="/settings/thresholds" className="pp-link">
+        {/* 2.2 (16 Sept 2026): thresholds are desktop-only; the link is not
+            drawn at phone width — removed, not disabled. */}
+        <Link href="/settings/thresholds" className="pp-link" data-desktop-only="">
           Thresholds ›
         </Link>
       </div>

@@ -2710,6 +2710,13 @@ other is why this kind of change so often appears not to have worked:
   when the shell is on it (`:root:has(.phone)`) — independent of the viewport meta, so the
   double-tap is dead in a browser tab too. It keeps pan and pinch and drops only the gesture.
 
+**The installed staff app does not zoom either — Isabella, 16 September 2026 (the evening
+queue, 2.1: "the staff shell still pinch-zooms").** The athlete fix replicated, both halves:
+the staff layout (`src/app/(staff)/layout.tsx`) carries the same server-rendered viewport
+export with the cap and mounts `ViewportZoom`, which relaxes it in a browser tab only — never
+the reverse; and `.app` / `:root:has(.app)` carry `touch-action: manipulation`. The same
+WCAG 1.4.4 divergence, the same call.
+
 This is a WCAG 1.4.4 (Resize text) divergence in the installed app, and it is deliberate. The
 builder's recommendation was a 2× cap rather than a block, built earlier the same day; Isabella
 tested the installed app and ruled for the block. Her call over that recommendation, recorded

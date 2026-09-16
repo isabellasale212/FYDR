@@ -58,12 +58,15 @@ export function DashboardFlagsPanel({ rows, openTotal, allClearLine, athleteTota
      for a role that may change them, and stating them for one that may not. */
   const thresholdsLine =
     provenance && changedAtLabel ? (
-      <p className="dash-flags-thresholds">
+      <p className="dash-flags-thresholds" data-desktop-only="">
         Thresholds set by {provenance.setBy ?? 'the club defaults'} · <span className="num">{changedAtLabel}</span>
+        {/* 2.2 (16 Sept 2026): thresholds are a desktop-only setting, so the
+            way to them — the separator with the link — is not drawn at phone
+            width. Removed, not disabled. */}
         {canEditThresholds ? (
-          <>
+          <span data-desktop-only="">
             {' '}· <Link href="/settings/thresholds">Change &rsaquo;</Link>
-          </>
+          </span>
         ) : null}
       </p>
     ) : null;
@@ -227,7 +230,9 @@ export function DashboardFlagsPanel({ rows, openTotal, allClearLine, athleteTota
                     <Link href={`/squad/${r.athlete_id}`} className="btn-primary">
                       View player profile
                     </Link>
-                    <Link href={`/reports/athlete/${r.athlete_id}`} className="btn-ghost">
+                    {/* 2.2 (16 Sept 2026): the report is desktop-only; its
+                        button is not drawn at phone width. */}
+                    <Link href={`/reports/athlete/${r.athlete_id}`} className="btn-ghost" data-desktop-only="">
                       Open athlete report
                     </Link>
                   </div>

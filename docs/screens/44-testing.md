@@ -34,6 +34,12 @@ better**. Then a way in to logging results for each.
 
 A club with none sees an **Add a test** prompt.
 
+**Phone width, 16 September 2026 (the evening queue, 2.7).** Below 768px
+Testing is logging: one card with the test type as a dropdown and a **Log
+test** button (`TestLogPicker`), which opens the test's own page — forms stay
+pages. The next-session card, the definitions list and Add a test are the
+desktop's (`data-desktop-only`). Presentation, not permission.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means | Time window | When missing |

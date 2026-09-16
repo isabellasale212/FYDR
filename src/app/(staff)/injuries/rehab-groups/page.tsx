@@ -66,8 +66,9 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
       <p className="eyebrow">{groupScopeLabel(squadGroups, groupIds)} · {orgName}</p>
 
 
+      {/* 2.3 (16 Sept 2026): a definition note — the desktop's. */}
       {!isMedical ? (
-        <div className="note" style={{ marginTop: 'var(--sp-10)' }}>
+        <div className="note" style={{ marginTop: 'var(--sp-10)' }} data-desktop-only="">
           <div className="note-glyph" aria-hidden="true">i</div>
           <p className="note-text">
             <b>Rehab groups are managed by medical staff.</b> You see who is in which
@@ -130,7 +131,8 @@ export default async function RehabGroupsPage({ searchParams }: { searchParams: 
           returns no commits, so nothing ever decided to leave them off. Isabella
           decided on 2026-09-09 to render them, and the row now does, so this
           caption names them again. */}
-      <p className="cap">
+      {/* 2.3 (16 Sept 2026): a definition card — the desktop's. */}
+      <p className="cap" data-desktop-only="">
         Availability, body area and side (withheld from a coach while the club&rsquo;s
         injury-site setting is off), restrictions, expected return, and rehab phase
         &mdash; the limited injury view a shared phase cannot be managed without. No

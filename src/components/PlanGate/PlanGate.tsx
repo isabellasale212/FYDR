@@ -68,8 +68,10 @@ export function PlanGateCard({
       </p>
 
       <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-18)' }}>
-        {/* One place: the plan page (14 Sept 2026). */}
-        <Link href="/settings/plan" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+        {/* One place: the plan page (14 Sept 2026). Desktop-only, so the
+            button is not drawn at phone width (2.2, 16 Sept 2026); the
+            Back to Settings way stays. */}
+        <Link href="/settings/plan" className="btn-primary" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }} data-desktop-only="">
           See what Premium contains
         </Link>
         <Link href="/settings" className="btn-ghost" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>

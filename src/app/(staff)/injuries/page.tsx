@@ -158,7 +158,8 @@ export default async function InjuriesPage({
         </div>
       )}
 
-      <p className="cap">
+      {/* 2.3 (16 Sept 2026): a definition card — the desktop's. */}
+      <p className="cap" data-desktop-only="">
         {isMedical
           ? `Full clinical detail opens from each record. Nothing here is shown to coaching staff except availability status, restrictions${coachSeesSite ? ', body area' : ''} and expected return${coachSeesSite ? '' : ' — the body area and side stay with you, the sport scientist and the S&C while the club\'s setting is off'}.`
           : isCoachOnly && !coachSeesSite

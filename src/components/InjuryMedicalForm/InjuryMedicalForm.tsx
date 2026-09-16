@@ -97,8 +97,8 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
   return (
     <form onSubmit={onSubmit} className="card">
       <p className="label">The facts &mdash; coach visible</p>
-      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-10)' }}>
-        <div style={{ flex: 1 }}>
+      <div className="form-pair" style={{ marginTop: 'var(--sp-10)' }}>
+        <div>
           <label className="label" htmlFor="inj-area">
             Body area
           </label>
@@ -110,7 +110,7 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
             ))}
           </select>
         </div>
-        <div style={{ flex: 1 }}>
+        <div>
           <label className="label" htmlFor="inj-side">
             Side
           </label>
@@ -125,8 +125,8 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
-        <div style={{ flex: 1 }}>
+      <div className="form-pair">
+        <div>
           <label className="label" htmlFor="inj-status">
             Status
           </label>
@@ -138,7 +138,7 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
             ))}
           </select>
         </div>
-        <div style={{ flex: 1 }}>
+        <div>
           <label className="label" htmlFor="inj-occurred">
             Occurred in
           </label>
@@ -158,8 +158,8 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
         </div>
       </div>
 
-      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
-        <div style={{ flex: 1 }}>
+      <div className="form-pair">
+        <div>
           <label className="label" htmlFor="inj-expected">
             Expected return
           </label>
@@ -171,7 +171,7 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
             onChange={(e) => setExpectedReturn(e.target.value)}
           />
         </div>
-        <div style={{ flex: 1 }}>
+        <div>
           <label className="label" htmlFor="inj-actual">
             Actual return
           </label>
@@ -201,8 +201,8 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
       </label>
       <input id="inj-mechanism" className="field" value={mechanism} onChange={(e) => setMechanism(e.target.value)} />
 
-      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
-        <div style={{ flex: 1 }}>
+      <div className="form-pair">
+        <div>
           <label className="label" htmlFor="inj-severity">
             Severity
           </label>
@@ -215,7 +215,7 @@ export function InjuryMedicalForm({ orgId, userId, injury, clinical }: Props) {
             ))}
           </select>
         </div>
-        <div style={{ flex: 1 }}>
+        <div>
           <label className="label" htmlFor="inj-tissue">
             Tissue type
           </label>

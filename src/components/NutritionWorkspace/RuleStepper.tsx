@@ -32,9 +32,13 @@ export function RuleStepper({ macro, label, value, displayValue, unit, footnote,
     <div className="nutr-rule-tile" data-macro={macro}>
       <div className="nutr-rule-label">{label}</div>
       <div className="nutr-rule-stepper">
+        {/* 2.8 (16 Sept 2026): the nutritionist views plans at phone width and
+            does not edit them — the two steppers are the desktop's, the value
+            stays as a figure. Hidden, not withheld (docs/after-friday.md). */}
         <button
           type="button"
           className="nutr-stepper-btn"
+          data-desktop-only=""
           disabled={disabled || value <= min}
           onClick={() => onChange(Math.max(min, dec(value)))}
           aria-label={`Decrease ${label.toLowerCase()}`}
@@ -48,6 +52,7 @@ export function RuleStepper({ macro, label, value, displayValue, unit, footnote,
         <button
           type="button"
           className="nutr-stepper-btn"
+          data-desktop-only=""
           disabled={disabled || value >= max}
           onClick={() => onChange(Math.min(max, inc(value)))}
           aria-label={`Increase ${label.toLowerCase()}`}

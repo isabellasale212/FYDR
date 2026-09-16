@@ -123,7 +123,9 @@ export default async function FixtureDetailPage({
               {sheetCount === 0 ? 'Fill in the sheet' : 'Edit the sheet'}
             </Link>
           ) : null}
-          <Link href={`/reports/match?fixture=${fixtureId}`} className="btn-ghost" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }}>
+          {/* 2.2 (16 Sept 2026): the match report is desktop-only; its way in
+              is not drawn at phone width. */}
+          <Link href={`/reports/match?fixture=${fixtureId}`} className="btn-ghost" style={{ textDecoration: 'none', display: 'inline-flex', alignItems: 'center' }} data-desktop-only="">
             Match report
           </Link>
         </div>

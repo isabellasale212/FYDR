@@ -536,7 +536,8 @@ async function AthletePageContent({
             <p className="pp-athleticism-band" style={{ color: TONE_TEXT_VAR[athleticism.band.tone], margin: 0 }}>
               {athleticism.band.label}
             </p>
-            <p className="pp-athleticism-desc">
+            {/* 2.3 (16 Sept 2026): a definition line — the desktop's. */}
+            <p className="pp-athleticism-desc" data-desktop-only="">
               Composite of the position-relative percentiles below.
               {athleticism.positionGroupName ? ` 50 ≈ average for a ${athlete.position ?? athleticism.positionGroupName} player.` : ''}
             </p>
@@ -683,10 +684,14 @@ async function AthletePageContent({
             <p className="num pp-dial-meta">
               {wellnessRating.submittedN} of {wellnessRating.windowDays} days submitted ·{' '}
               {wellnessRating.windowLabel.toLowerCase()}
-              {wellnessRating.meanWindowDays < wellnessRating.windowDays
-                ? ' — the count follows the period, the mean above does not'
-                : ''}
-              {' · '}status vs their own 14-day baseline
+              {/* 2.3 (16 Sept 2026): the figure stays at phone width; the
+                  two explanations after it are the desktop's. */}
+              <span data-desktop-only="">
+                {wellnessRating.meanWindowDays < wellnessRating.windowDays
+                  ? ' — the count follows the period, the mean above does not'
+                  : ''}
+                {' · '}status vs their own 14-day baseline
+              </span>
             </p>
           </div>
         </div>
@@ -944,8 +949,9 @@ async function AthletePageContent({
           <span className="pp-goal-label">Goal:</span> {programme?.goal ?? 'No active programme goal on record.'}
         </p>
         <p className="pp-goal-note">
-          No coaching note on record — only the programme&apos;s own stated goal is shown
-          here.
+          No coaching note on record
+          {/* 2.3 (16 Sept 2026): the explanation is the desktop's. */}
+          <span data-desktop-only=""> — only the programme&apos;s own stated goal is shown here</span>.
         </p>
       </section>
       </>
@@ -957,7 +963,8 @@ async function AthletePageContent({
           <h2 className="card-title" id="sar-title">
             Subject access request
           </h2>
-          <p className="cap" style={{ marginBottom: 'var(--sp-10)' }}>
+          {/* 2.3 (16 Sept 2026): a definition card — the desktop's. */}
+          <p className="cap" style={{ marginBottom: 'var(--sp-10)' }} data-desktop-only="">
             Article 15, UK GDPR. Generates every row referencing {athlete.first_name} across every
             table, once medical has reviewed any clinical detail. Not part of the visual spec above —
             kept here because it is real, working compliance functionality with no other home on this

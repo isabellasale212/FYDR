@@ -97,7 +97,8 @@ export default async function DashboardMatchPage({ searchParams }: { searchParam
         <TeamAllocationBoard orgId={orgId} userId={claims.userId} weekStart={weekStart} teams={teams} board={filteredBoard} canAllocate={isCoach} timezone={timezone} />
       </div>
 
-      <p className="cap">
+      {/* 2.3 (16 Sept 2026): a definition card — the desktop's. */}
+      <p className="cap" data-desktop-only="">
         Availability, body area and side, restrictions, and expected return &mdash; the same limited injury view every other screen shows
         a coach. No diagnosis, no clinical notes, not even for medical, on this screen. Teams are standing squads (1st XV, 2nd XV, Colts),
         never a group: an athlete is in many groups and plays for one team on a weekend.

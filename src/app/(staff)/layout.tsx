@@ -1,5 +1,7 @@
+import type { Viewport } from 'next';
 import { BackButton } from '@/components/BackButton/BackButton';
 import { Sidebar } from '@/components/Sidebar/Sidebar';
+import { ViewportZoom } from '@/components/ViewportZoom/ViewportZoom';
 import { StaffPhoneShell } from '@/components/StaffPhoneShell/StaffPhoneShell';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilterDetailed } from '@/lib/groupFilter.server';
@@ -11,6 +13,23 @@ import { requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 import { DraftHousekeeping } from '@/components/DraftHousekeeping/DraftHousekeeping';
 import { addDays, todayIso, zonedTimeToUtcIso } from '@/lib/format';
+
+/** THE ZOOM CAP, the athlete app's fix replicated (Isabella, 16 Sept 2026,
+ *  the evening queue, 2.1: "the staff shell still pinch-zooms"). Served in
+ *  the HTML — maximum-scale=1, user-scalable=no — where an installed app
+ *  reads it at parse, and relaxed in a BROWSER TAB only by ViewportZoom
+ *  (lib/viewportMeta.ts), never the reverse. Double-tap zoom is dead by
+ *  touch-action: manipulation on .app (base.css), the other half. The
+ *  athlete layout carries the same export and the reasoning in full;
+ *  06-design-system.md §11.7 records the divergence from WCAG 1.4.4 as
+ *  Isabella's call. viewport-fit=cover stays. */
+export const viewport: Viewport = {
+  width: 'device-width',
+  initialScale: 1,
+  maximumScale: 1,
+  userScalable: false,
+  viewportFit: 'cover',
+};
 
 /** The staff web shell. Staff only, so there is no /staff prefix on any route:
  *  20-route-map.md §2.1 rule 1. */
@@ -51,6 +70,7 @@ export default async function StaffLayout({
 
   return (
     <div className="app">
+      <ViewportZoom />
       <DraftHousekeeping today={today} msToMidnight={msToMidnight} />
       <Sidebar
         roles={claims.roles}

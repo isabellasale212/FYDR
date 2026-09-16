@@ -105,7 +105,9 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
         /* One line, nothing else. No empty-state graphic and no disabled fields:
            both would imply there is something here to reveal. */
         <p className="import-sub" style={{ margin: 'var(--s-2) 0 0' }}>
-          No current restrictions. This is not the same as being cleared.
+          No current restrictions.
+          {/* 2.3 (16 Sept 2026): the clarification is the desktop's. */}
+          <span data-desktop-only=""> This is not the same as being cleared.</span>
         </p>
       ) : (
         <>

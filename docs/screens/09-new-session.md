@@ -69,6 +69,13 @@ Today." The type always has a value; the chips are single-select from the
 
 ---
 
+**Phone width, 16 September 2026 (the evening queue, 2.6).** The two-field rows
+— Date and Time, Duration and MD offset — stack one under the other below 768px
+(`.form-pair`, `base.css`): on an iPhone the date input's intrinsic width pushed
+the time box out of the card. The same class now carries every such pair
+(fixture, injury and session forms). The "Pick every group…" and "no separate
+publish step" sentences are the desktop's (2.3).
+
 ## 5. Every number on this page
 
 None. This screen creates a session; it displays no calculated figures.

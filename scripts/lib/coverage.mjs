@@ -38,17 +38,20 @@ export class CoverageError extends Error {}
    component (SettingsPhoneNotice), +1 layout (settings/layout.tsx) — eleven
    counts. Then the desktop section: +3 components (GroupSelect,
    GroupRowActions, DashboardTabs), +1 page (dashboard/match) — twelve. */
+/* 16 Sept 2026 (the evening queue, 2.7): + src/components/TestLogPicker/
+   TestLogPicker.tsx — srcFiles, srcTs, srcTsx, componentTsx, componentTs
+   each one up. */
 export const COUNTS = {
   /** supabase/migrations/*.sql */
   migrations: 133,
   /** supabase/tests/*.sql (pgTAP) */
   pgtapTests: 94,
   /** every file under src, of any kind */
-  srcFiles: 563,
+  srcFiles: 564,
   /** .ts and .tsx under src */
-  srcTs: 558,
+  srcTs: 559,
   /** .tsx under src */
-  srcTsx: 310,
+  srcTsx: 311,
   /** .css under src (src/styles) */
   srcCss: 2,
   /** page.tsx under src/app/(staff) */
@@ -60,9 +63,9 @@ export const COUNTS = {
   /** .tsx under src/app/(athlete) */
   athleteTsx: 27,
   /** .tsx under src/components */
-  componentTsx: 173,
+  componentTsx: 174,
   /** .ts and .tsx under src/components */
-  componentTs: 179,
+  componentTs: 180,
   /** .tsx under src/app */
   appTsx: 136,
   /** .ts and .tsx under src/app */

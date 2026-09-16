@@ -77,8 +77,8 @@ export function FixtureEditForm({ orgId, fixture, timezone }: Props) {
         maxLength={120}
       />
 
-      <div style={{ display: 'flex', gap: 'var(--sp-10)', marginTop: 'var(--sp-14)' }}>
-        <div style={{ flex: 1 }}>
+      <div className="form-pair">
+        <div>
           <label className="label" htmlFor="f-date">
             Date
           </label>
@@ -90,7 +90,7 @@ export function FixtureEditForm({ orgId, fixture, timezone }: Props) {
             onChange={(event) => setDate(event.target.value)}
           />
         </div>
-        <div style={{ flex: 1 }}>
+        <div>
           <label className="label" htmlFor="f-time">
             Kick off
           </label>

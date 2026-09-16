@@ -230,7 +230,8 @@ export function MfaEnrollment({ timezone, roleRequiresMfa, initialFactors }: Pro
               <span className="sub">Status</span>
               <span className="sub">Not enrolled</span>
             </div>
-            <p className="cap" style={{ marginTop: 'var(--sp-4)' }}>
+            {/* 2.3 (16 Sept 2026): helper prose — the desktop's at phone width. */}
+            <p className="cap" style={{ marginTop: 'var(--sp-4)' }} data-desktop-only="">
               Add an authenticator app (Google Authenticator, 1Password, Authy or similar) as
               a second sign-in step.
             </p>

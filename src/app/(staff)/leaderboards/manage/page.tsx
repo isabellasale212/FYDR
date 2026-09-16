@@ -70,7 +70,8 @@ export default async function ManageLeaderboardsPage() {
         </div>
       </div>
 
-      <p className="cap" style={{ marginTop: -6, marginBottom: 'var(--sp-14)' }}>
+      {/* 2.3 (16 Sept 2026): definition sentences — the desktop's. */}
+      <p className="cap" style={{ marginTop: -6, marginBottom: 'var(--sp-14)' }} data-desktop-only="">
         The published, consent-gated boards real athletes can see and leave. For
         internal-only results, go back to the <Link href="/leaderboards">testing wall</Link>.
       </p>
@@ -125,7 +126,7 @@ export default async function ManageLeaderboardsPage() {
         </div>
       )}
 
-      <p className="cap">
+      <p className="cap" data-desktop-only="">
         Wellness and body composition can never be ranked here, by design &mdash; see any
         ineligible metric in the builder for the reason. Boards render only once at least
         three athletes qualify. Athletes under 18 are never named on a board (migration

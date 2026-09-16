@@ -12,11 +12,12 @@ import { attentionDomains, dashboardTiles, dashboardVersion, leadCardNames, need
 import { weekStripYields } from '@/lib/dashboardLead';
 import { fetchGroupAthleteIds, fetchGroups, fetchSquadSize } from '@/lib/queries/groups';
 import { mondayOf } from '@/lib/queries/schedule';
-import { addDays, enumLabel, formatDate, formatLongDate, matchdayWeekday, monthShort, todayIso, weekdayLongDayMonthLong } from '@/lib/format';
+import { addDays, bodyAreaPhrase, enumLabel, formatDate, formatLongDate, matchdayWeekday, monthShort, todayIso, weekdayLongDayMonthLong } from '@/lib/format';
 import { groupScopeLabel } from '@/lib/groupFilter';
 import { resolveGroupFilter } from '@/lib/groupFilter.server';
 import { requireStaff } from '@/lib/session';
 import { fetchThresholdProvenance } from '@/lib/queries/thresholds';
+import { fetchInjuredInDay } from '@/lib/queries/injuries';
 import { CLINICAL_ONLY, SETTINGS_ADMIN, THRESHOLD_EDIT, hasAnyRole } from '@/lib/access';
 import { fetchSetupCounts } from '@/lib/queries/setupChecklist';
 import { setupDashboardLine, setupSteps, setupSummary } from '@/lib/setupChecklist';
@@ -274,6 +275,13 @@ async function DashboardPageContent({ searchParams }: { searchParams: SearchPara
   const canSeeReasons = hasAnyRole(claims.roles, CLINICAL_ONLY);
   const reasons =
     matchday && canSeeReasons ? await fetchSelectionReasons(db, orgId, [...readiness.modifiedNames, ...readiness.unavailableNames]) : null;
+  /* 2.8 (Isabella, 16 Sept 2026, the evening queue): the medic's "Current
+     injuries" card — every injured player in the selected day's sessions,
+     directly below the day's timetable, at phone width. A real read
+     (fetchInjuredInDay), the medic's alone (CLINICAL_ONLY); additive. */
+  // access-exempt: a hide, not a gate — the card is drawn for the medic and
+  // the read behind it is the injuries list every staff role already has.
+  const injuredInDay = canSeeReasons ? await fetchInjuredInDay(db, orgId, groupIds, selectedDay, timezone) : null;
 
   return (
     <>
@@ -483,6 +491,7 @@ async function DashboardPageContent({ searchParams }: { searchParams: SearchPara
         weighIns={weighIns}
         gymTodayHref="/schedule"
         weighInsHref="/nutrition"
+        weighInsPhoneLink={claims.roles.includes('nutritionist')}
         isAnchoredToPast={isAnchoredToPast}
         timezone={timezone}
         needYouHref={`/flags${qs({ groups: groupsQs, date: effectiveToday })}`}
@@ -594,6 +603,46 @@ async function DashboardPageContent({ searchParams }: { searchParams: SearchPara
               ))}
             </div>
           )}
+
+          {injuredInDay ? (
+            <section className="card" aria-labelledby="dash-injured-title" data-phone-only="" style={{ marginTop: 'var(--sp-14)' }}>
+              <div className="pp-card-head">
+                <h2 className="card-title" id="dash-injured-title" style={{ margin: 0 }}>
+                  Current injuries
+                </h2>
+                <span className="num s">{injuredInDay.length} in today&rsquo;s sessions</span>
+              </div>
+              {injuredInDay.length === 0 ? (
+                <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
+                  {timeline.length === 0 ? 'No sessions today.' : 'No injured player in today’s sessions.'}
+                </p>
+              ) : (
+                injuredInDay.map((i) => (
+                  <Link
+                    key={i.id}
+                    href={`/injuries/${i.id}`}
+                    className="load-row"
+                    style={{ gridTemplateColumns: '1fr auto', textDecoration: 'none', color: 'inherit' }}
+                  >
+                    <span>
+                      <span className="nm" style={{ display: 'block' }}>
+                        {i.first_name} {i.last_name}
+                      </span>
+                      <span className="tiny" style={{ display: 'block' }}>
+                        {bodyAreaPhrase(i)} · since {formatDate(i.onset_date, timezone)}
+                        {i.expected_return ? ` · back ${formatDate(i.expected_return, timezone)}` : ''}
+                        {' · '}
+                        {i.session_time} {i.session_title}
+                      </span>
+                    </span>
+                    <span className="chev" aria-hidden="true">
+                      ›
+                    </span>
+                  </Link>
+                ))
+              )}
+            </section>
+          ) : null}
         </div>
 
         <div className="stack">
@@ -618,7 +667,9 @@ async function DashboardPageContent({ searchParams }: { searchParams: SearchPara
                 <h2 className="card-title" style={{ margin: 0 }}>
                   Outstanding entries
                 </h2>
-                <Link href="/reports/compliance" className="tiny" style={{ color: 'var(--accent-text)', fontWeight: 'var(--w-semi)' }}>
+                {/* 2.2 (16 Sept 2026): a report is desktop-only, so the way
+                    to it is not drawn at phone width — removed, not disabled. */}
+                <Link href="/reports/compliance" className="tiny" style={{ color: 'var(--accent-text)', fontWeight: 'var(--w-semi)' }} data-desktop-only="">
                   Compliance ›
                 </Link>
               </div>
@@ -646,6 +697,9 @@ async function DashboardPageContent({ searchParams }: { searchParams: SearchPara
                       </div>
                       <p className="tiny" style={{ color: 'var(--faint)', marginTop: 'var(--sp-4)' }}>
                         {t.foot}
+                        {/* 2.3 (16 Sept 2026): the figure stays at phone width;
+                            the sentence after it is the desktop's. */}
+                        {t.footNote ? <span data-desktop-only=""> · {t.footNote}</span> : null}
                       </p>
                     </div>
                   ),

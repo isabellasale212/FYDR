@@ -215,7 +215,14 @@ export function ProgrammeBuilder({
   const lengthWeeks = programmeLengthWeeks(blocks, null);
 
   return (
-    <div className="stack">
+    /* 2.8 (Isabella, 16 Sept 2026, the evening queue): at phone width the S&C
+       views the programmes they made and does not edit, add or create —
+       every control in this builder is an edit control, so base.css hides
+       them all below 768px through the attribute (the add-forms open only
+       from those buttons, so none is reachable). Hidden, not withheld: the
+       RPCs are unchanged and canEdit still decides on a desktop
+       (docs/after-friday.md). */
+    <div className="stack prog-builder" data-edit-desktop-only="">
       {error ? (
         <p className="form-error" role="alert">
           {error}

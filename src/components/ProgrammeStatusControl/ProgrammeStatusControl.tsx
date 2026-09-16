@@ -44,8 +44,10 @@ export function ProgrammeStatusControl({ orgId, programmeId, status, canEdit }: 
         {enumLabel(status)}
       </span>
       <span className="tiny">{CAPTION[status]}</span>
+      {/* 2.8 (16 Sept 2026): publish/archive are the desktop's. */}
       {canEdit ? (
-        status === 'draft' ? (
+        <span data-desktop-only="">
+        {status === 'draft' ? (
           <button type="button" className="btn-ghost" disabled={mutation.isPending} onClick={() => mutation.mutate('active')}>
             {mutation.isPending ? 'Publishing…' : 'Publish'}
           </button>
@@ -57,7 +59,8 @@ export function ProgrammeStatusControl({ orgId, programmeId, status, canEdit }: 
           <button type="button" className="btn-ghost" disabled={mutation.isPending} onClick={() => mutation.mutate('active')}>
             {mutation.isPending ? 'Reactivating…' : 'Reactivate'}
           </button>
-        )
+        )}
+        </span>
       ) : null}
       {error ? (
         <p className="form-error" role="alert" style={{ margin: 0 }}>

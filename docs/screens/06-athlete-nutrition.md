@@ -62,6 +62,14 @@ wants rather than a whole squad average.
 
 ---
 
+**Phone width, 16 September 2026 (the evening queue, 2.4).** Below 768px the
+page is one card, **Today**: the day's calories (the resolved target's
+`energy_kcal`, "—" when the plan in force carries none). Every plan that reaches
+them, the weekly check-in card, body mass and the positional comparison are the
+desktop's (`data-desktop-only`); so are the nutritionist's Set a manual target
+and Edit plans (2.8: the nutritionist views at phone width — hidden by role
+there, enforcement after Friday, `docs/after-friday.md`).
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means in plain English | Time window | What shows when data is missing |

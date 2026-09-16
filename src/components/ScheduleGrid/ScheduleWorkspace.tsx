@@ -1125,8 +1125,12 @@ export function ScheduleWorkspace({
         }
       />
 
+      {/* 2.6 (Isabella, 16 Sept 2026, the evening queue): the whole chip row
+          is the desktop's — at phone width a session is added from the day's
+          own + (SchedulePhoneDay), and a fixture from a desktop. Removed,
+          not disabled. */}
       {canEdit ? (
-      <div className="chiprow" style={{ marginBottom: 'var(--sp-14)' }}>
+      <div className="chiprow" style={{ marginBottom: 'var(--sp-14)' }} data-desktop-only="">
           {/* Both creation routes existed and neither was linked from anywhere —
           /schedule/new could only be reached by typing it, and fixtures had
           no create route at all until now. The two sit together because they

@@ -206,6 +206,23 @@ export default async function AthleteWellnessPage({
 
   const submitted = visible.length;
   const latest = visible[visible.length - 1] ?? null;
+
+  /* 2.4 (Isabella, 16 Sept 2026, the evening queue): at phone width the
+     Wellness button shows today's check-in against their usual numbers and
+     nothing else — today's entry beside the mean of the ROLLING_WINDOW days
+     before it, the same window the readiness band on the desktop's chart
+     is drawn against. Read from the entries already fetched for the chart's
+     runway, so no second query. "Usual" is null where fewer than half the
+     window's days were submitted, the same bar the band sets itself. */
+  const todayEntry = ownEntries.find((e) => e.entry_date === today) ?? null;
+  const usualFrom = addDays(today, -ROLLING_WINDOW);
+  const usualEntries = ownEntries.filter((e) => e.entry_date !== null && e.entry_date >= usualFrom && e.entry_date < today);
+  const usualOf = (metric: 'readiness' | (typeof SCALES)[number]['key']) =>
+    usualEntries.length * 2 >= ROLLING_WINDOW ? meanOf(usualEntries, metric) : null;
+  const todayRows = [
+    { key: 'readiness', label: 'Readiness', unit: ' of 100', decimals: 0, today: todayEntry ? (todayEntry.readiness_score ?? readiness(todayEntry)) : null, usual: usualOf('readiness') },
+    ...SCALES.map((s) => ({ key: s.key, label: s.label, unit: s.unit, decimals: s.decimals, today: todayEntry ? todayEntry[s.key] : null, usual: usualOf(s.key) })),
+  ];
   const latestReadiness = latest ? (latest.readiness_score ?? readiness(latest)) : null;
 
   // Per-athlete means over the window, keyed by athlete — the only shape the
@@ -273,7 +290,36 @@ export default async function AthleteWellnessPage({
         </p>
       ) : null}
 
-      <div className="pp-col">
+      <div className="pp-col" data-phone-only="">
+        <section className="card pp-card" aria-labelledby="w-today-title">
+          <div className="pp-card-head">
+            <h2 className="card-title" id="w-today-title" style={{ margin: 0 }}>
+              Today
+            </h2>
+            <span className="num s">{todayEntry ? 'submitted' : 'not submitted'}</span>
+          </div>
+          <div className="pc-row" style={{ paddingBottom: 0 }}>
+            <div className="pc-row-top">
+              <span className="pc-row-name tiny" style={{ color: 'var(--muted)' }}>Scale</span>
+              <span className="num pc-row-value tiny" style={{ color: 'var(--muted)' }}>today · usual</span>
+            </div>
+          </div>
+          {todayRows.map((r) => (
+            <div className="pc-row" key={r.key}>
+              <div className="pc-row-top">
+                <span className="pc-row-name">{r.label}</span>
+                <span className="num pc-row-value">
+                  {typeof r.today === 'number' ? formatNumber(r.today, r.decimals) : '—'}
+                  {' · '}
+                  <span style={{ color: 'var(--muted)' }}>{r.usual !== null ? `${formatNumber(r.usual, r.decimals)}${r.unit}` : 'no usual yet'}</span>
+                </span>
+              </div>
+            </div>
+          ))}
+        </section>
+      </div>
+
+      <div className="pp-col" data-desktop-only="">
 
 
         <section className="card pp-card" aria-labelledby="w-summary-title">

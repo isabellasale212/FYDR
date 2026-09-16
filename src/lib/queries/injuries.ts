@@ -8,6 +8,8 @@ import type {
 } from '@/lib/types/database';
 import { fetchCurrentAvailability, fetchOpenInjuries } from './availability';
 import { fetchGroupAthleteIds, type Db } from './groups';
+import { fetchTimetableDay } from './timetable';
+import { formatTime } from '@/lib/format';
 import { mustAffect } from '@/lib/write';
 import { restrictionLine } from '@/lib/restrictions';
 
@@ -413,3 +415,42 @@ export async function setAvailability(
   });
   return { error: error?.message ?? null };
 }
+
+/** THE MEDIC'S "CURRENT INJURIES" CARD (Isabella, 16 Sept 2026, the evening
+ *  queue, 2.8): every injured player in the day — an athlete with an open
+ *  injury who is expected at one of the day's sessions — so the medic
+ *  opening the dashboard between sessions sees who in the room may have
+ *  something for them. Real: the day's sessions' participants
+ *  (fetchTimetableDay's resolution of named athletes and groups) crossed
+ *  with the open injuries (fetchInjuriesList, which never touches
+ *  injury_clinical). Additive; the medic's read of the site is the view's
+ *  own (0122). One row per injured player, the earliest session they are in
+ *  named, newest injury first. */
+export type InjuredInDay = InjurySummary & { session_title: string; session_time: string };
+
+export async function fetchInjuredInDay(
+  db: Db,
+  orgId: string,
+  groupIds: readonly string[],
+  date: string,
+  timezone: string,
+): Promise<InjuredInDay[]> {
+  const [sessions, injuries] = await Promise.all([fetchTimetableDay(db, orgId, date, groupIds, timezone), fetchInjuriesList(db, orgId, groupIds)]);
+  const firstSession = new Map<string, { title: string; time: string }>();
+  for (const s of [...sessions].sort((a, b) => a.starts_at.localeCompare(b.starts_at))) {
+    if (s.status === 'cancelled') continue;
+    for (const p of s.participants) {
+      if (!firstSession.has(p.athlete_id)) firstSession.set(p.athlete_id, { title: s.title, time: formatTime(s.starts_at, timezone) });
+    }
+  }
+  const seen = new Set<string>();
+  const out: InjuredInDay[] = [];
+  for (const i of injuries) {
+    const at = firstSession.get(i.athlete_id);
+    if (!at || seen.has(i.athlete_id)) continue;
+    seen.add(i.athlete_id);
+    out.push({ ...i, session_title: at.title, session_time: at.time });
+  }
+  return out;
+}
+

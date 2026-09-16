@@ -75,7 +75,9 @@ export default async function SquadPage({
               Add athlete
             </Link>
           ) : null}
-          <Link href="/settings/groups" className="btn-ghost">
+          {/* 2.2 (16 Sept 2026): groups are a desktop-only setting; the
+              button is not drawn at phone width — removed, not disabled. */}
+          <Link href="/settings/groups" className="btn-ghost" data-desktop-only="">
             Manage groups
           </Link>
           {/* 3.4 (Isabella, 16 Sept 2026): "Can receive reminders" — the report
@@ -102,7 +104,8 @@ export default async function SquadPage({
             (see the handoff changelog's "Squad overview (reverted)"), it was
             removed again in 87ee155 as part of matching the design, and the
             client asked for it back a second time. It stays. */}
-        <p className="import-sub">
+        {/* 2.3 (16 Sept 2026): a definition sentence — the desktop's. */}
+        <p className="import-sub" data-desktop-only="">
           Injury-linked availability is set by medical staff. A coach can also record a
           non-injury absence directly — illness, personal, academic, representative, or
           other — from an athlete&rsquo;s profile.

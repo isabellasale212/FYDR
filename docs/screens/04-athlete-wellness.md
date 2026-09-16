@@ -66,6 +66,15 @@ Each chart carries the athlete's own normal range behind it.
 
 ---
 
+**Phone width, 16 September 2026 (the evening queue, 2.4).** Below 768px the
+page is one card, **Today**: each scale — readiness, sleep, sleep quality,
+fatigue, soreness, stress, mood — today's value beside their usual (the mean of
+the 14 days before today, the same window the readiness band is drawn against;
+"no usual yet" under half the window submitted), and "not submitted" in the
+heading when there is no entry. The readiness chart, the scales' means, the
+positional comparison and the corrections panel are the desktop's
+(`data-desktop-only`). Presentation, not permission (`access-matrix.md` §8).
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means in plain English | Time window | What shows when data is missing |

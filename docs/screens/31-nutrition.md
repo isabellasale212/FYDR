@@ -33,6 +33,13 @@ A header with the group filter. Then the plans, each a rule expressed per kilogr
 of body weight and scoped to the club, a group, or one athlete. Then the squad's
 weights against their target ranges, with a flag on anyone drifting.
 
+**Phone width, 16 September 2026 (the evening queue, 2.8).** The nutritionist
+views plans below 768px and does not edit or create: New plan (and its form),
+Duplicate, Assign, the four rate steppers' − / + and the Manual target link are
+the desktop's (`data-desktop-only`); the rates read as figures. Hidden by role
+at phone width, not withheld — `assignPlan` and `versionRule` still answer;
+enforcement after Friday (`docs/after-friday.md`).
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means | Time window | When missing |

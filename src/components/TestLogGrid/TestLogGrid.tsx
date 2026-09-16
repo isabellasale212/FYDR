@@ -140,6 +140,14 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
     error: { text: 'failed — retry', color: 'var(--bad-text)' },
   };
 
+  /* 2.7 (16 Sept 2026): the name filter, at phone width — one field above
+     the sheet, matching the start of a first or last name. Screen state. */
+  const [nameFilter, setNameFilter] = useState('');
+  const q = nameFilter.trim().toLowerCase();
+  const shown = q
+    ? athletes.filter((a) => a.first_name.toLowerCase().startsWith(q) || a.last_name.toLowerCase().startsWith(q) || `${a.first_name} ${a.last_name}`.toLowerCase().includes(q))
+    : athletes;
+
   return (
     <div className="stack">
       {error ? (
@@ -147,8 +155,25 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
           {error}
         </p>
       ) : null}
+      <div className="card" data-phone-only="">
+        <label className="label" htmlFor="test-name-filter">
+          Player
+        </label>
+        <input
+          id="test-name-filter"
+          className="field"
+          type="search"
+          placeholder="Name"
+          autoComplete="off"
+          value={nameFilter}
+          onChange={(e) => setNameFilter(e.target.value)}
+        />
+        <p className="tiny num" style={{ margin: 'var(--sp-6) 0 0' }}>
+          {shown.length} of {athletes.length}
+        </p>
+      </div>
       <div className="card flush">
-        {athletes.map((a, index) => {
+        {shown.map((a, index) => {
           const slots = attemptSlotsFor(a);
           const nextAttemptNumber = slots.length === 0 ? 1 : Math.max(...slots.map((s) => s.attempt)) + 1;
           return (
@@ -277,7 +302,8 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
         * saved already-saved rows. The honest fix for the underlying worry —
         * "did that land?" — is visible per-cell state plus the leave-page
         * warning, and both are already here. */}
-      <p className="tiny">
+      {/* 2.3 (16 Sept 2026): helper prose — the desktop's at phone width. */}
+      <p className="tiny" data-desktop-only="">
         Values save on their own when you press Enter or move to the next box &mdash; there is
         no save button, and each box shows its own saved state. Use <strong>+ Attempt</strong> on
         an athlete&rsquo;s row if they need an extra go beyond the {defaultAttempts} this test

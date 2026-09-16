@@ -236,6 +236,11 @@ a {
   grid-template-columns: 236px minmax(0, 1fr);
   min-height: 100vh;
   background-color: var(--bg);
+  /* No double-tap zoom on the staff shell either (16 Sept 2026, the evening
+     queue, 2.1 — the athlete fix replicated): manipulation keeps pan and
+     pinch and drops the double-tap gesture; the pinch is capped by the
+     staff layout's viewport export. Touch only; a mouse never sees it. */
+  touch-action: manipulation;
   /* Two ambient washes over the ground, plus the sidebar strip as layer one.
      0.30 cyan top-right and 0.20 blue bottom-left are the light-theme
      handoff's own §1 figures, quoted exactly. They are already a deliberate
@@ -1530,6 +1535,10 @@ body:has(.phone) {
    is read from the touched element up, so a double-tap on the ground beside
    the 480px frame (a tablet, a wide window) is outside .phone's rule. */
 :root:has(.phone) {
+  touch-action: manipulation;
+}
+/* The staff shell's document too (16 Sept 2026, 2.1). */
+:root:has(.app) {
   touch-action: manipulation;
 }
 /* Spec §1: horizontal page padding 22px on every athlete screen, body bottom
@@ -3959,6 +3968,35 @@ a.hist-row:focus-visible {
 .form-row {
   margin-bottom: var(--sp-14);
 }
+/* TWO FIELDS ON ONE ROW — date and time, duration and MD offset, opponent
+   and venue — on desktop; ONE UNDER THE OTHER at phone width (Isabella,
+   16 Sept 2026, the evening queue, 2.6: in the Add flow the date and time
+   boxes overlapped and ran past the card). The pair used to be an inline
+   flex row whose children were `flex: 1` with the flex default of
+   min-width: auto, so a native date input's intrinsic width — wider on an
+   iPhone than in the headless Chrome the sweep ran, which is why the 390
+   pass missed it — could not shrink and pushed its sibling. Stacked, each
+   field has the card's full width and nothing to collide with. */
+.form-pair {
+  display: flex;
+  gap: var(--sp-10);
+  margin-top: var(--sp-14);
+}
+.form-pair > * {
+  flex: 1 1 0;
+  min-width: 0;
+}
+@media (max-width: 767px) {
+  .form-pair {
+    flex-direction: column;
+    gap: var(--sp-14);
+  }
+  /* 2.8 (16 Sept 2026): the programme builder is read-only at phone width —
+     every control in it is an edit control (ProgrammeBuilder's own note). */
+  .prog-builder[data-edit-desktop-only] :is(button, select, input, textarea) {
+    display: none !important;
+  }
+}
 .form-error {
   border-radius: var(--r);
   background: rgb(var(--bad-rgb) / var(--pill-fill-alpha-bad));
@@ -6338,6 +6376,20 @@ img.me-avatar {
 }
 /* The design's own column widths. The old set was tight enough that "Bodyweight"
    and a three-digit load sat almost against the next column. */
+/* 2.4 (16 Sept 2026): the per-athlete programme at phone width — one row
+   an exercise, the prescription beneath its name; the five-column grid is
+   the desktop's. */
+.prog-ex-list {
+  margin-top: var(--sp-8);
+}
+.prog-ex-item {
+  padding: var(--sp-10) 0;
+  border-top: 1px solid var(--hair);
+}
+.prog-ex-item:first-child {
+  border-top: none;
+  padding-top: var(--sp-4);
+}
 .prog-ex-row {
   display: grid;
   grid-template-columns: minmax(0, 1fr) 80px 80px 120px 110px;
@@ -14974,15 +15026,33 @@ a.hist-row:active { background: var(--surf-sunken); }
     display: none;
   }
   /* 2.5 (16 Sept 2026): the leaderboard's phone view — two stacked
-     dropdowns, then the one board's list. */
+     dropdowns, then the one board's list.
+
+     THE OVERLAP (the evening queue, 2.5): the two dropdowns ran into each
+     other by 8px at 390. A stacked .rsel is a fixed 128px, but .rsel-wrap
+     carries min-width: 148px, so each control was 20px wider than the box
+     that held it and the first ran under the second — measured 16→164
+     against 156→304. The 390 sweep read the selects' heights, values and
+     option counts, never their boxes, which is why it passed. Now each
+     control takes half the row and the wrap's floor is lifted, so the two
+     share the width they have and nothing overhangs. */
   .lbw-phone-controls {
     display: flex;
     flex-wrap: wrap;
     gap: var(--sp-12);
     margin-bottom: var(--sp-12);
   }
+  .lbw-phone-controls .rsel[data-stacked='true'] {
+    flex: 1 1 0;
+    width: auto;
+    min-width: 0;
+  }
   .lbw-phone-controls .rsel-wrap {
+    min-width: 0;
     max-width: none;
+  }
+  .lbw-phone-controls .rsel-wrap select {
+    min-height: var(--tap-min);
   }
   .lbw-phone-group th {
     text-align: left;

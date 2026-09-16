@@ -64,10 +64,11 @@ of birth counts as a minor, `athlete_is_minor`); a group name is a club
 convention. The published boards hold this at the database; **the staff wall**
 (`fetchLeaderboardWall`) holds the same rule in the app on every board including
 the wellness streak and compliance, computes nothing for an excluded athlete, and
-says what it left out, counted and never named: "1 under-18 athlete is not ranked.
-An athlete under 18 is never named on a ranked board; nothing on this screen
-changes that." Its Boards stat reads "club wide · 1 under-18 not ranked". The rule
-is `src/lib/rankedBoardEligibility.ts`.
+says what it left out, counted and never named — as the figure "1 under-18
+athlete not ranked" since 16 September 2026 (the text rule, category 4: the
+sentence "An athlete under 18 is never named on a ranked board; nothing on this
+screen changes that" is gone). Its Boards stat reads "club wide · 1 under-18 not
+ranked". The rule is `src/lib/rankedBoardEligibility.ts`.
 
 ## 6. Every thing you can act on
 

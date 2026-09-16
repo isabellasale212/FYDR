@@ -60,8 +60,12 @@ password." and links to
 `/settings/profile#password`. The You card's count reads "Two-factor required".
 
 **Log out is a button** (PATTERN-S8 A1): a bordered 44px `btn-ghost` (48px on a
-phone) at the foot of the You card with "Ends this session on this browser
-only" beside it.
+phone) at the foot of the You card. The "Ends this session on this browser
+only" line beside it went under the text rule on 16 September 2026 (category
+1), as did the profile page's "Add an authenticator app (…) as a second
+sign-in step." and the notifications page's "Preferences save instantly."
+("In-app notifications are always on and can't be turned off here" stays: the
+reason there is no toggle.)
 
 **One level down.**
 

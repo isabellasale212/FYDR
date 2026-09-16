@@ -99,10 +99,9 @@ export function ExerciseForm({ orgId, strengthTests }: Props) {
       }}
     >
       <h2 className="exlib-form-title">Add an exercise</h2>
-      <p className="exlib-form-help">
-        Name and category are required. Everything else can be filled in later from the exercise
-        itself.
-      </p>
+      {/* "Name and category are required. Everything else can be filled in
+          later…" went under the text rule (16 Sept 2026, category 1); the
+          two fields carry required. */}
 
       {error ? (
         <p className="form-error exlib-form-error" role="alert">

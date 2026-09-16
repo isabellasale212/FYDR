@@ -104,11 +104,12 @@ export default async function SquadPage({
             (see the handoff changelog's "Squad overview (reverted)"), it was
             removed again in 87ee155 as part of matching the design, and the
             client asked for it back a second time. It stays. */}
-        {/* 2.3 (16 Sept 2026): a definition sentence — the desktop's. */}
+        {/* 2.3 / 3.1 (16 Sept 2026): the definition sentence is the
+            desktop's; "A coach can also record a non-injury absence directly…
+            from an athlete's profile" was helper prose (category 1) and is
+            gone at every width. */}
         <p className="import-sub" data-desktop-only="">
-          Injury-linked availability is set by medical staff. A coach can also record a
-          non-injury absence directly — illness, personal, academic, representative, or
-          other — from an athlete&rsquo;s profile.
+          Injury-linked availability is set by medical staff.
         </p>
         <RosterTable orgId={orgId} groupIds={groupIds} timezone={timezone} initialRows={rows} />
       </section>

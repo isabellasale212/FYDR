@@ -317,15 +317,11 @@ export default async function LeaderboardDetailPage({
           </div>
         )}
         <p className="cap">
-          {/* Bars do not start at zero, so this has to say so — a scaled bar
-              that stays quiet about its baseline overstates the spread.
-              2.3 (16 Sept 2026): at phone width the figure stays — "28
-              athletes ranked · all time" — and the sentences around it are
-              the desktop's. */}
-          <span data-desktop-only="">
-            Bars are scaled to the leader, not to zero, so the spread across the squad stays
-            readable.{' '}
-          </span>
+          {/* "Bars are scaled to the leader, not to zero…" (orientation) and
+              "Athletes who opted out or did not qualify are not shown…" (an
+              exclusion sentence) went under the text rule (Isabella, 16 Sept
+              2026, categories 2 and 4); the figure — "28 athletes ranked · all
+              time" — stays at every width. */}
           {isFiltered
             ? `Showing ${ranking.length} of ${fullRanking.length} ranked athletes. Positions are squad-wide.`
             : `${ranking.length} athlete${ranking.length === 1 ? '' : 's'} ranked`}
@@ -335,15 +331,9 @@ export default async function LeaderboardDetailPage({
             : board.window_type === 'season'
               ? 'this season'
               : 'all time'}
-          <span data-desktop-only="">
-            . Athletes who opted out or did not qualify are not shown, and are not
-            distinguished from each other here.
-          </span>
         </p>
-        <p className="cap" data-desktop-only="">
-          Athletes under 18 are never shown on a published board (migration 0116) &mdash;
-          if one is missing here, that is why, not a fault with the board.
-        </p>
+        {/* "Athletes under 18 are never shown on a published board…" went
+            under the text rule (16 Sept 2026, category 4). */}
       </section>
     </>
   );

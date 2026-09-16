@@ -426,10 +426,9 @@ export default async function AthleteNutritionPage({
               {applicable.length} live row{applicable.length === 1 ? '' : 's'}
             </span>
           </div>
-          <p className="pc-intro">
-            The three scopes, in the order the resolver reads them. Seeing all three is the point &mdash;
-            it is the only way to tell whether they are on a plan written for them or on the club default.
-          </p>
+          {/* "Seeing all three is the point — it is the only way to tell…"
+              went under the text rule (16 Sept 2026, category 2). */}
+          <p className="pc-intro">The three scopes, in the order the resolver reads them.</p>
           {applicable.length === 0 ? (
             <EmptyState
               headingLevel={3}

@@ -162,7 +162,8 @@ export default async function SettingsPage() {
                 <button type="submit" className="btn-ghost set-logout">
                   Log out
                 </button>
-                <span className="tiny set-logout-note" data-desktop-only="">Ends this session on this browser only</span>
+                {/* "Ends this session on this browser only" went under the
+                    text rule (16 Sept 2026, category 1). */}
               </form>
             ) : null}
           </section>

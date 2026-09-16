@@ -18,8 +18,13 @@ const strip = (s: string) => s.replace(/\/\*[\s\S]*?\*\//g, '').replace(/^\s*\/\
 console.log('1. the component and its rule');
 {
   const comp = strip(read('src/components/ReportFigure/ReportFigure.tsx'));
-  assert(/className="card rfig"/.test(comp) && /className="rfig-count num"/.test(comp) && /className="rfig-value num"/.test(comp) && /className="rfig-sample"/.test(comp) && /className="rfig-exclusions"/.test(comp), 'label, the count with its denominator, the value, the sample, the exclusions — in that order');
-  const order = ['rfig-label', 'rfig-count', 'rfig-value', 'rfig-sample', 'rfig-exclusions'].map((c) => comp.indexOf(c));
+  /* REPINNED 16 Sept 2026 (Isabella's evening queue, the text rule,
+     category 4: keep the figure, remove the sentence): the exclusions
+     sentence is no longer drawn. The copy is still built and passed (the
+     builders below are guarded as before); the component draws the label,
+     the count, the value and the sample. */
+  assert(/className="card rfig"/.test(comp) && /className="rfig-count num"/.test(comp) && /className="rfig-value num"/.test(comp) && /className="rfig-sample"/.test(comp) && !/className="rfig-exclusions"/.test(comp), 'label, the count with its denominator, the value, the sample — the exclusions sentence not drawn (16 Sept 2026)');
+  const order = ['rfig-label', 'rfig-count', 'rfig-value', 'rfig-sample'].map((c) => comp.indexOf(c));
   assert(order.every((i, n) => i >= 0 && (n === 0 || i > order[n - 1]!)), 'and that order is the markup order');
   const css = strip(read('src/styles/base.css'));
   assert(/\.rfig\s*\{[^}]*background:\s*var\(--wash-accent\);[^}]*border:\s*1px solid var\(--border-accent-soft\);/.test(css), 'the emphasised surface is the wash family (.pp-hero\'s), not a new colour');

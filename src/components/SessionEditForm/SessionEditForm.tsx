@@ -246,11 +246,9 @@ export function SessionEditForm({ orgId, session, groups, timezone, titleSuggest
           create. An edit is the case where a second step feels most
           plausible — the session is already out there — so leaving it
           unsaid here would undo the sentence on the create form. */}
-      {/* 2.3 (16 Sept 2026): helper prose — the desktop's at phone width. */}
-      <p className="cap" style={{ marginTop: 'var(--sp-14)' }} data-desktop-only="">
-        Athletes named in this session see the change in their athlete app as
-        soon as you save. There is no separate publish step.
-      </p>
+      {/* "Athletes named in this session see the change… There is no
+          separate publish step." went under the text rule (16 Sept 2026,
+          category 1). */}
 
       {error ? (
         <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>

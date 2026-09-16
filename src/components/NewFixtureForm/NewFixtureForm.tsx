@@ -182,9 +182,11 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
             </button>
           ))}
         </div>
+        {/* "Leave it on Normal unless this one is treated differently" went
+            under the text rule (16 Sept 2026, category 1); what the field
+            means stays. */}
         <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
-          Used to weight the match in load planning. Leave it on Normal unless
-          this one is treated differently.
+          Used to weight the match in load planning.
         </p>
       </fieldset>
 
@@ -197,12 +199,12 @@ export function NewFixtureForm({ orgId, userId, defaultDate, timezone }: Props) 
           halves have to be said: the first stops somebody assuming a further
           publish step, the second stops them assuming the squad has been told
           to turn up. */}
-      <p className="cap" style={{ marginTop: 'var(--sp-14)' }}>
-        Every athlete sees the club&rsquo;s next fixture on their Today screen as soon
-        as you create it, with the opponent, kick-off and venue. There is no
-        separate publish step. Nobody is named in a fixture, though — create a
-        session for anything athletes have to turn up to.
-      </p>
+      {/* The paragraph that stood here ("Every athlete sees the club's next
+          fixture on their Today screen as soon as you create it… There is no
+          separate publish step. Nobody is named in a fixture…") went under the
+          text rule (Isabella, 16 Sept 2026, category 1: helper prose). The
+          reasoning above is kept for whoever asks why a fixture has no
+          roster. */}
 
       {error ? (
         <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>

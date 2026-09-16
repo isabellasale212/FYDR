@@ -398,14 +398,10 @@ export default async function AthleteWellnessPage({
                   title={`Readiness for ${athlete.first_name} ${athlete.last_name}, ${range.label.toLowerCase()}`}
                 />
               </div>
-              {/* Inside the branch, not below it: a legend for a chart that was
-                * not drawn describes something the reader cannot see and reads
-                * as a rendering failure. */}
-              <p className="cap" style={{ marginTop: 'var(--sp-6)' }}>
-                A day with no entry is a gap, never a zero. The shaded area and dashed line are their
-                own {ROLLING_WINDOW}-day mean &plusmn; 1 SD &mdash; what is normal for them &mdash;
-                drawn only where there are enough observations to have one.
-              </p>
+              {/* The legend that stood here — "A day with no entry is a gap,
+                  never a zero. The shaded area and dashed line are their own
+                  14-day mean ± 1 SD…" — went under the text rule (Isabella,
+                  16 Sept 2026, category 2: orientation explaining a chart). */}
             </>
           )}
         </section>
@@ -417,10 +413,12 @@ export default async function AthleteWellnessPage({
             </h2>
             <span className="num s">means over {range.label.toLowerCase()}</span>
           </div>
+          {/* The scale's definition stays (category 3); "Same convention as
+              the athlete's own form and as wellness_compute_readiness" went
+              under the text rule (16 Sept 2026, category 2). */}
           <p className="pc-intro">
             Every scale runs <b>5 is the best</b>, soreness included &mdash; a high soreness score means
-            less sore, not more. Same convention as the athlete&apos;s own form and as
-            wellness_compute_readiness.
+            less sore, not more.
           </p>
           {submitted === 0 ? (
             <EmptyState
@@ -465,10 +463,14 @@ export default async function AthleteWellnessPage({
           </section>
         )}
 
+        {/* "…and do not follow the period control — it is a bound on how much
+            of the entry base table this card reads, not a view window. An
+            older entry is still correctable, just not from here." went under
+            the text rule (16 Sept 2026, category 2); the window's figure
+            stays. */}
         <p className="cap" style={{ margin: '0 0 -6px' }} data-desktop-only="">
           Entry corrections cover a fixed {CORRECTION_WINDOW_DAYS} days ({formatDate(correctionRange.from, timezone)} to{' '}
-          {formatDate(correctionRange.to, timezone)}) and do not follow the period control &mdash; it is a bound on how much of
-          the entry base table this card reads, not a view window. An older entry is still correctable, just not from here.
+          {formatDate(correctionRange.to, timezone)}).
         </p>
         <EntryCorrectionPanel
           athleteId={athlete.id}

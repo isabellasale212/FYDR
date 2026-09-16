@@ -65,6 +65,17 @@ export type ProfilePanelSegment =
   | { kind: 'grid'; left: ProfilePanelKey[]; right: ProfilePanelKey[] }
   | { kind: 'full'; key: ProfilePanelKey };
 
+/** The panel that HEADS THE RIGHT COLUMN (Isabella, 16 September 2026, the
+ *  evening queue, 3.2: "move the ACWR and wellness card to the top right,
+ *  above the body weight card in the right column"). A run splits at this
+ *  panel rather than at its half, so the ACWR card is the first thing in the
+ *  right column on a desktop and Body weight follows it. The sequence is
+ *  unchanged — a phone, one column, still reads flags, athleticism, ACWR,
+ *  body weight… straight through — only where the desktop's second column
+ *  starts moved. When the panel is absent, or first in its run, the split
+ *  is the half it always was. */
+export const RIGHT_COLUMN_HEAD: ProfilePanelKey = 'acwr';
+
 /** The sequence as the page lays it out: runs of column panels become a grid
  *  filled column-first, each full-width panel its own segment. Only the panels
  *  `present` says this viewer has. */
@@ -76,8 +87,9 @@ export function profilePanelSegments(
   let run: ProfilePanelKey[] = [];
   const flush = () => {
     if (run.length === 0) return;
-    const half = Math.ceil(run.length / 2);
-    segments.push({ kind: 'grid', left: run.slice(0, half), right: run.slice(half) });
+    const head = run.indexOf(RIGHT_COLUMN_HEAD);
+    const split = head > 0 ? head : Math.ceil(run.length / 2);
+    segments.push({ kind: 'grid', left: run.slice(0, split), right: run.slice(split) });
     run = [];
   };
   for (const key of ordered) {

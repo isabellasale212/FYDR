@@ -22,8 +22,11 @@ console.log('1. the rule: age, and only age');
   assert(rankedBoardEligible({ age: 34 }), 'an adult is ranked');
   assert(!('consented' in ({ age: 16 } as Record<string, unknown>)) && !/consented/.test(read('src/lib/rankedBoardEligibility.ts')), 'no consent input exists — there is no opt-in path for an under-18');
   assert(excludedMinorsLine(0) === null, 'nothing excluded, nothing said');
-  assert(excludedMinorsLine(1) === '1 under-18 athlete is not ranked. An athlete under 18 is never named on a ranked board; nothing on this screen changes that.', 'one excluded, said in a sentence');
-  assert(/^2 under-18 athletes are not ranked\./.test(excludedMinorsLine(2)!), 'plural');
+  /* REPINNED 16 Sept 2026 (Isabella's evening queue, the text rule, category
+     4): the figure, not the sentence — the rule itself is 0116's and
+     visibility.md's, no longer restated on the wall. */
+  assert(excludedMinorsLine(1) === '1 under-18 athlete not ranked', 'one excluded, as a figure (16 Sept 2026)');
+  assert(excludedMinorsLine(2) === '2 under-18 athletes not ranked', 'plural');
 }
 
 console.log('\n2. the wall, the database, the athlete app');

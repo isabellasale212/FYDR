@@ -194,7 +194,7 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
         title="No athletes in this filter"
         body={
           data.excludedMinors > 0
-            ? `${excludedLine} Nobody else falls inside the selected group. Clear the filter to see the whole squad.`
+            ? `${excludedLine}. Nobody else falls inside the selected group. Clear the filter to see the whole squad.`
             : 'No athletes fall inside the selected group. Clear the filter to see the whole squad.'
         }
       />
@@ -301,17 +301,9 @@ export function LeaderboardWall({ data, activeGroupLabel }: Props) {
             </table>
           </div>
         ) : null}
-        {/* 2.3 (16 Sept 2026): at phone width the figure, not the sentence. */}
-        {excludedLine ? (
-          <>
-            <p className="cap" data-desktop-only="">
-              {excludedLine}
-            </p>
-            <p className="cap num" data-phone-only="">
-              {data.excludedMinors} under-18 not ranked
-            </p>
-          </>
-        ) : null}
+        {/* The text rule (16 Sept 2026, category 4): the figure, not the
+            sentence — excludedMinorsLine is the figure now, at every width. */}
+        {excludedLine ? <p className="cap num">{excludedLine}</p> : null}
       </div>
 
       <div className="lbw-desktop" data-desktop-only="">

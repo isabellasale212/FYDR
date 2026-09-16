@@ -79,7 +79,10 @@ console.log('\nthe replacements read as English, not as find-and-replace');
 
   const wellness = read('src/app/(staff)/squad/[athleteId]/wellness/page.tsx');
   assert(/What they reported/.test(wellness), 'wellness: "What they reported"');
-  assert(/what is normal for them/.test(wellness), '  and "what is normal for them"');
+  /* REPINNED 16 Sept 2026: the chart legend that carried "what is normal for
+     them" went under the text rule (category 2); the page's other lines
+     still say "their usual" and "their own". */
+  assert(/their usual|their own/.test(wellness) && !/what is normal for him/.test(wellness), '  and "their usual" / "their own" — never "him"');
 
   const triage = read('src/components/ProblemReportsTriage/ProblemReportsTriage.tsx');
   assert(/Called them Wednesday/.test(triage), 'the triage placeholder says "Called them Wednesday"');

@@ -30,6 +30,12 @@ The exercises, each with its name, category, primary muscle, equipment, coaching
 cues, and **the test that measures its one repetition maximum** where one is
 linked.
 
+**The text rule, 16 September 2026.** The add form's "Name and category are
+required. Everything else can be filled in later from the exercise itself." is
+gone (category 1); the two fields carry `required`. The weight-step hint and the
+1RM-link note stay (what a field means, and the reason a prescription is
+unavailable).
+
 ## 5. Every number on this page
 
 None directly. **The link recorded here is what makes MET-030 possible**: without

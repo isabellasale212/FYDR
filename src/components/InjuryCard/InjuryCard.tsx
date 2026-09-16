@@ -103,11 +103,11 @@ export function InjuryCard({ injuries, clinical, restrictions, canEditClinical, 
 
       {!active ? (
         /* One line, nothing else. No empty-state graphic and no disabled fields:
-           both would imply there is something here to reveal. */
+           both would imply there is something here to reveal. "This is not the
+           same as being cleared." went under the text rule (16 Sept 2026,
+           category 2: orientation). */
         <p className="import-sub" style={{ margin: 'var(--s-2) 0 0' }}>
           No current restrictions.
-          {/* 2.3 (16 Sept 2026): the clarification is the desktop's. */}
-          <span data-desktop-only=""> This is not the same as being cleared.</span>
         </p>
       ) : (
         <>

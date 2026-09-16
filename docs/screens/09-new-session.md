@@ -74,7 +74,10 @@ Today." The type always has a value; the chips are single-select from the
 (`.form-pair`, `base.css`): on an iPhone the date input's intrinsic width pushed
 the time box out of the card. The same class now carries every such pair
 (fixture, injury and session forms). The "Pick every group…" and "no separate
-publish step" sentences are the desktop's (2.3).
+publish step" sentences — and the edit form's "…as soon as you save. There is
+no separate publish step." — are gone at every width since the evening of 16
+September (the text rule, category 1: helper prose); the refusal "Choose at
+least one group." still carries the rule at the moment it matters.
 
 ## 5. Every number on this page
 

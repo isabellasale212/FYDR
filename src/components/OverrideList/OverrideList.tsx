@@ -55,12 +55,9 @@ export function OverrideList({
   });
 
   if (overrides.length === 0) {
-    /* 2.3 (16 Sept 2026): the state stays; the explanation is the desktop's. */
-    return (
-      <p className="tiny">
-        No tailoring on this programme for this athlete.<span data-desktop-only=""> They follow the parent prescription exactly.</span>
-      </p>
-    );
+    /* "They follow the parent prescription exactly." went under the text
+       rule (16 Sept 2026, category 2). */
+    return <p className="tiny">No tailoring on this programme for this athlete.</p>;
   }
 
   return (

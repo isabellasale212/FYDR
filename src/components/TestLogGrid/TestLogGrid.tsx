@@ -302,16 +302,10 @@ export function TestLogGrid({ orgId, userId, testDefinitionId, testDate, default
         * saved already-saved rows. The honest fix for the underlying worry —
         * "did that land?" — is visible per-cell state plus the leave-page
         * warning, and both are already here. */}
-      {/* 2.3 (16 Sept 2026): helper prose — the desktop's at phone width. */}
-      <p className="tiny" data-desktop-only="">
-        Values save on their own when you press Enter or move to the next box &mdash; there is
-        no save button, and each box shows its own saved state. Use <strong>+ Attempt</strong> on
-        an athlete&rsquo;s row if they need an extra go beyond the {defaultAttempts} this test
-        expects. Best attempt per athlete, per side, is marked automatically (green outline)
-        &mdash; highest or lowest depending on the test&rsquo;s own direction, and it is
-        recalculated when an extra attempt is added. Tap a name for history, personal bests,
-        and to mark a different attempt best by hand.
-      </p>
+      {/* The footer paragraph — "Values save on their own when you press
+          Enter or move to the next box… Tap a name for history…" — went under
+          the text rule (Isabella, 16 Sept 2026, category 1: helper prose).
+          Each box still shows its own saved state; that is the fact. */}
     </div>
   );
 }

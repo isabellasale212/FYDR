@@ -697,9 +697,9 @@ async function DashboardPageContent({ searchParams }: { searchParams: SearchPara
                       </div>
                       <p className="tiny" style={{ color: 'var(--faint)', marginTop: 'var(--sp-4)' }}>
                         {t.foot}
-                        {/* 2.3 (16 Sept 2026): the figure stays at phone width;
-                            the sentence after it is the desktop's. */}
-                        {t.footNote ? <span data-desktop-only=""> · {t.footNote}</span> : null}
+                        {/* "· missing it is not non-compliance" went under the
+                            text rule (16 Sept 2026, category 4: the figure
+                            stays, the sentence goes). */}
                       </p>
                     </div>
                   ),

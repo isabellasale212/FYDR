@@ -281,12 +281,10 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
             </button>
           ))}
         </div>
-        {/* 2.3 (16 Sept 2026): helper prose — the desktop's at phone width. */}
-        <p className="cap" style={{ marginTop: 'var(--sp-6)' }} data-desktop-only="">
-          Pick every group that should see this, for example Forwards and Backs
-          together for a full-squad session. At least one group is needed
-          &mdash; a session nobody is named in cannot be counted or rated.
-        </p>
+        {/* "Pick every group that should see this… At least one group is
+            needed" went under the text rule (Isabella, 16 Sept 2026, category
+            1: helper prose). The form still refuses a session with nobody in
+            it, and says so as its error. */}
       </fieldset>
 
       {/* The reported gap: somebody adds a session, is returned to the
@@ -294,10 +292,9 @@ export function NewSessionForm({ orgId, userId, groups, defaultDate, timezone, t
           squad sees it. There isn't one — the row is the visibility. Said here,
           at the moment of committing, rather than as a toast afterwards, so it
           answers the question before it is asked. */}
-      <p className="cap" style={{ marginTop: 'var(--sp-14)' }} data-desktop-only="">
-        Athletes named in it see this in their athlete app as soon as you create
-        it. There is no separate publish step.
-      </p>
+      {/* "Athletes named in it see this in their athlete app as soon as you
+          create it. There is no separate publish step." went under the text
+          rule (16 Sept 2026, category 1). */}
 
       {error ? (
         <p className="form-error" role="alert" style={{ marginTop: 'var(--sp-14)' }}>

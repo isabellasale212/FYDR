@@ -56,8 +56,11 @@ other half of the same job.
 **Competition**, for example League or Cup.
 
 **Importance**, as four buttons: friendly, normal, key, cup final. This weights
-the match in load planning, and the guidance beneath says to leave it on normal
-unless this one is treated differently.
+the match in load planning — the caption says so; "leave it on Normal unless
+this one is treated differently" and the "Every athlete sees the club's next
+fixture on their Today screen… no separate publish step… nobody is named in a
+fixture" paragraph went under the text rule on 16 September 2026 (category 1).
+The behaviour is unchanged and the reasoning stays in the form's source.
 
 **Create and Cancel.**
 

@@ -20,7 +20,11 @@ export function rankedBoardEligible(a: RankedEligibilityInput): boolean {
 }
 
 /** The wall's sentence for what it left out — the denominator, in words. */
+/** THE FIGURE, NOT THE SENTENCE since 16 Sept 2026 (Isabella, the evening
+ *  queue, the text rule, category 4): "2 under-18 athletes not ranked". The
+ *  rule that puts them off the board is `docs/athlete/visibility.md`'s and
+ *  migration 0116's; it is no longer restated beneath every wall. */
 export function excludedMinorsLine(excluded: number): string | null {
   if (excluded === 0) return null;
-  return `${excluded} under-18 athlete${excluded === 1 ? ' is' : 's are'} not ranked. An athlete under 18 is never named on a ranked board; nothing on this screen changes that.`;
+  return `${excluded} under-18 athlete${excluded === 1 ? '' : 's'} not ranked`;
 }

@@ -103,9 +103,13 @@ the same, sees no note.
 `components/ReportFigure`, `lib/reportFigureCards.ts`): "Submitted of expected", the
 count with its denominator before the percentage ("8 of 380" then "2%"), summed over
 the domains that expect anything, then the sample ("30 athletes · last 28 days · 2 of
-3 domains expected"), then the exclusions in a full sentence — "Nobody is excluded."
-when nothing is. The per-domain breakdown follows it; the PDF leads with the same
-figure.
+3 domains expected"). **The exclusions sentence — "Nobody is excluded." when nothing
+is — is built (`lib/reportFigureCards.ts`) but no longer drawn since 16 September
+2026** (Isabella's evening queue, the text rule, category 4: keep the figure, remove
+the sentence; the waived counts stay on the domain tiles). The same evening the
+"Waivers are excluded from both the numerator and the denominator…" line under the
+cut-off note went. The per-domain breakdown follows the figure; the PDF leads with
+the same figure.
 
 **The figure states which entry types it counted** (the catalogue addendum, 13
 September 2026; `lib/rpeSetting.ts` `complianceCountedLine`): before the exclusions

@@ -684,14 +684,9 @@ async function AthletePageContent({
             <p className="num pp-dial-meta">
               {wellnessRating.submittedN} of {wellnessRating.windowDays} days submitted ·{' '}
               {wellnessRating.windowLabel.toLowerCase()}
-              {/* 2.3 (16 Sept 2026): the figure stays at phone width; the
-                  two explanations after it are the desktop's. */}
-              <span data-desktop-only="">
-                {wellnessRating.meanWindowDays < wellnessRating.windowDays
-                  ? ' — the count follows the period, the mean above does not'
-                  : ''}
-                {' · '}status vs their own 14-day baseline
-              </span>
+              {/* "— the count follows the period, the mean above does not ·
+                  status vs their own 14-day baseline" went under the text
+                  rule (16 Sept 2026, category 2: orientation). */}
             </p>
           </div>
         </div>
@@ -948,11 +943,9 @@ async function AthletePageContent({
         <p className="pp-goal-line">
           <span className="pp-goal-label">Goal:</span> {programme?.goal ?? 'No active programme goal on record.'}
         </p>
-        <p className="pp-goal-note">
-          No coaching note on record
-          {/* 2.3 (16 Sept 2026): the explanation is the desktop's. */}
-          <span data-desktop-only=""> — only the programme&apos;s own stated goal is shown here</span>.
-        </p>
+        {/* "— only the programme's own stated goal is shown here" went under
+            the text rule (16 Sept 2026, category 2). */}
+        <p className="pp-goal-note">No coaching note on record.</p>
       </section>
       </>
     ),
@@ -966,9 +959,9 @@ async function AthletePageContent({
           {/* 2.3 (16 Sept 2026): a definition card — the desktop's. */}
           <p className="cap" style={{ marginBottom: 'var(--sp-10)' }} data-desktop-only="">
             Article 15, UK GDPR. Generates every row referencing {athlete.first_name} across every
-            table, once medical has reviewed any clinical detail. Not part of the visual spec above —
-            kept here because it is real, working compliance functionality with no other home on this
-            page.
+            table, once medical has reviewed any clinical detail.
+            {/* "Not part of the visual spec above — kept here because…" went
+                under the text rule (16 Sept 2026, category 2). */}
           </p>
           <form action={`/squad/${athleteId}/subject-access`} method="post">
             <button type="submit" className="btn-ghost">

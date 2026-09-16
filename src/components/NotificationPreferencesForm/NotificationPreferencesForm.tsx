@@ -190,15 +190,14 @@ export function NotificationPreferencesForm({ orgId, userId, entries, initialPre
         })}
       </section>
 
-      {/* 2.3 (16 Sept 2026): the capability notice stays at every width
-          (category 6); the two helper sentences are the desktop's. */}
+      {/* The text rule (16 Sept 2026): "In-app notifications are always on
+          and can't be turned off here" is the reason there is no toggle for
+          them (category 5) and stays; "Preferences save instantly" was helper
+          prose (category 1) and is gone; the delivery line is a capability
+          notice (category 6). */}
       <p className="cap">
-        <span data-desktop-only="">
-          In-app notifications are always on and can&apos;t be turned off here. Preferences save
-          instantly.{' '}
-        </span>
-        Push and email delivery aren&apos;t live yet &mdash; these settings will
-        apply as soon as they are.
+        In-app notifications are always on and can&apos;t be turned off here. Push and email
+        delivery aren&apos;t live yet &mdash; these settings will apply as soon as they are.
       </p>
     </div>
   );

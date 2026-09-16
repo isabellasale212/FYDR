@@ -230,11 +230,9 @@ export function MfaEnrollment({ timezone, roleRequiresMfa, initialFactors }: Pro
               <span className="sub">Status</span>
               <span className="sub">Not enrolled</span>
             </div>
-            {/* 2.3 (16 Sept 2026): helper prose — the desktop's at phone width. */}
-            <p className="cap" style={{ marginTop: 'var(--sp-4)' }} data-desktop-only="">
-              Add an authenticator app (Google Authenticator, 1Password, Authy or similar) as
-              a second sign-in step.
-            </p>
+            {/* "Add an authenticator app (…) as a second sign-in step." went
+                under the text rule (16 Sept 2026, category 1); the button
+                says what it does. */}
             <button type="button" className="btn-primary" style={{ marginTop: 'var(--sp-10)' }} disabled={busy} onClick={startEnroll}>
               {busy ? 'Starting…' : 'Set up two-factor authentication'}
             </button>

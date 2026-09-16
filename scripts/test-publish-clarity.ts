@@ -90,33 +90,32 @@ console.log('\nthe behaviour: every athlete sees the next fixture, club-wide');
   assert(!/publish/i.test(body), 'with no publish state involved, so "as soon as you create it" holds');
 }
 
-console.log('\ncreating a session says so');
+/* REPINNED 16 Sept 2026 (Isabella's evening queue, the text rule, category
+   1: helper prose): the three "no separate publish step" paragraphs are gone
+   from the session, session-edit and fixture forms. The BEHAVIOUR this file
+   guards above — the row is the visibility, no publish state — is unchanged
+   and still asserted; what is pinned now is that the forms do not say it in
+   prose, and do not say the opposite either. */
+console.log('\ncreating a session no longer says so in prose (the text rule, 16 Sept 2026)');
 {
   const p = prose(read('src/components/NewSessionForm/NewSessionForm.tsx'));
-  assert(/athlete app/i.test(p), 'the form names the athlete app');
-  assert(/as soon as you create it/i.test(p), 'and says when it gets there');
-  assert(/no separate publish step/i.test(p), 'and rules out the step the reporter went looking for');
+  assert(!/no separate publish step/i.test(p) && !/as soon as you create it/i.test(p), 'the sentence is gone from the form');
+  assert(!/publish/i.test(p), 'and nothing on the form mentions publishing at all');
 }
 
-console.log('\nediting one says the same thing about saving');
+console.log('\nediting one is the same');
 {
   const p = prose(read('src/components/SessionEditForm/SessionEditForm.tsx'));
-  assert(/athlete app/i.test(p), 'the edit form names the athlete app too');
-  assert(/as soon as you save/i.test(p), 'and ties it to saving, not to creating');
-  assert(/no separate publish step/i.test(p), 'with the same closing sentence, so the two read as one rule');
+  assert(!/no separate publish step/i.test(p) && !/as soon as you save/i.test(p), 'the sentence is gone from the edit form');
+  assert(!/publish/i.test(p), 'and nothing on the edit form mentions publishing');
 }
 
-console.log('\ncreating a fixture says both halves, because a fixture is not a roster');
+console.log('\ncreating a fixture is the same, and still names no athlete');
 {
-  const p = prose(read('src/components/NewFixtureForm/NewFixtureForm.tsx'));
-  assert(/Today screen/i.test(p), 'it says where the athlete sees it');
-  assert(/every athlete/i.test(p), 'and that it is club-wide, not a selection');
-  assert(/as soon as you create it/i.test(p), 'and that it gets there immediately');
-  assert(/no separate publish step/i.test(p), 'ruling out the same step the session form rules out');
-  assert(
-    /nobody is named in a fixture/i.test(p) && /create a\s+session/i.test(p),
-    'while still saying nobody is named in it, and pointing at the thing that does name people',
-  );
+  const src = read('src/components/NewFixtureForm/NewFixtureForm.tsx');
+  const p = prose(src);
+  assert(!/no separate publish step/i.test(p) && !/Today screen/i.test(p), 'the paragraph is gone from the fixture form');
+  assert(/Nobody is named in a fixture/.test(src), 'the reasoning stays in the source for whoever asks why a fixture has no roster');
 }
 
 console.log('\napplying a week template writes real sessions, and says so');

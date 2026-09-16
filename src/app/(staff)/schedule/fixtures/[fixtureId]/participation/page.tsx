@@ -44,13 +44,9 @@ export default async function PostMatchSheetPage({ params, searchParams }: { par
 
       <p className="import-sub" style={{ marginTop: -6, marginBottom: 'var(--sp-14)' }}>
         v {sheet.fixture.opponent} · {formatLongDate(sheet.fixture.kickoff_at, timezone)} · kick off {formatTime(sheet.fixture.kickoff_at, timezone)}.
-        {/* 2.3 (16 Sept 2026): the instructions are the desktop's; the
-            fixture line stays at every width. */}
-        <span data-desktop-only="">
-          {' '}Mark who was selected,
-          who started and who came on, and the minutes each played. Leave minutes empty where they are not known — the report says
-          &ldquo;not recorded&rdquo;, never zero. Availability is as it stood at kick-off, from the record; it is not edited here.
-        </span>
+        {/* "Mark who was selected, who started and who came on… it is not
+            edited here." went under the text rule (16 Sept 2026, category 1:
+            helper prose); the fixture line stays. */}
       </p>
       {notice ? (
         <p className={/^Not saved/.test(notice) ? 'form-error' : 'tiny'} role={/^Not saved/.test(notice) ? 'alert' : 'status'} style={{ marginBottom: 'var(--sp-14)' }} data-sheet-notice>
@@ -131,7 +127,8 @@ export default async function PostMatchSheetPage({ params, searchParams }: { par
           <Link href={`/reports/match?fixture=${fixtureId}`} className="btn-ghost" style={{ minHeight: 'var(--tap-min)', display: 'inline-flex', alignItems: 'center', textDecoration: 'none' }} data-desktop-only="">
             Open the match report
           </Link>
-          <span className="tiny" data-desktop-only="">Saving writes every row: an athlete set back to &ldquo;Not selected&rdquo; is removed from the sheet, and each change is in the audit log.</span>
+          {/* "Saving writes every row…" went under the text rule (16 Sept
+              2026, category 1). */}
         </div>
       </form>
     </>

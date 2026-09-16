@@ -28,6 +28,13 @@ One board in full: the standings, the measure, the period.
 The board's name, its measure and period, and the standings. Athletes who have
 opted out are simply absent.
 
+**The text rule, 16 September 2026.** "Ranking Total session load, total." is
+the desktop's (a definition, hidden at phone width); "Bars are scaled to the
+leader, not to zero…", "Athletes who opted out or did not qualify are not shown,
+and are not distinguished from each other here" and "Athletes under 18 are never
+shown on a published board (migration 0116)…" are gone at every width
+(categories 2 and 4). The figure — "28 athletes ranked · all time" — stays.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means | Time window | When missing |

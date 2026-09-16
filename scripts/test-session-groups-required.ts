@@ -55,7 +55,10 @@ console.log('\nthe form cannot submit without a group');
   assert(/groupsRef\.current/.test(onSubmit), 'and moves focus to the group chips, as a missing name moves it to the name');
   assert(/const groupsRef = useRef<HTMLFieldSetElement>\(null\)/.test(form) && /ref=\{groupsRef\}/.test(form) && /tabIndex=\{-1\}/.test(form), 'the fieldset is focusable for that');
   assert(!/Nobody selected means nobody is named in it yet/.test(form), 'the caption no longer says an empty selection is allowed');
-  assert(/At least one group is needed/.test(form), 'it says one is needed');
+  /* REPINNED 16 Sept 2026 (the text rule, category 1): the caption that
+     said "At least one group is needed" is gone; the refusal above is what
+     says it, at the moment it matters. */
+  assert(!/At least one group is needed/.test(form), 'the caption is gone (the text rule, 16 Sept 2026) — the refusal carries the rule');
   assert(/useState<\(typeof SESSION_TYPES\)\[number\]>\('training'\)/.test(form), 'the type still starts on training and the single-select chips cannot clear it');
 }
 

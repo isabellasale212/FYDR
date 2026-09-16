@@ -1143,10 +1143,6 @@ export type OutstandingTrack = {
   pct: number;
   tone: string;
   foot: string;
-  /** A sentence after the figure — "missing it is not non-compliance" —
-   *  kept apart from the figure so the page can drop it where the text rule
-   *  says to (16 Sept 2026): the figure stays, the sentence goes. */
-  footNote?: string;
   /** The RPE club setting is off: a line, not a bar (0118). */
   off?: string;
 };
@@ -1214,7 +1210,6 @@ export async function fetchOutstandingTracks(
       pct,
       tone: 'accent2',
       foot: `${scopedNutrition.length} of ${squadSize} in · weekly`,
-      footNote: 'missing it is not non-compliance',
     });
   }
   return tracks;

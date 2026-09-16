@@ -326,11 +326,10 @@ export default async function ComplianceReportPage({
                   app stops accepting one. A wellness check-in has no cutoff: it counts on the day it was expected,
                   whenever it was sent.
                 </p>
-                <p className="tiny" style={{ marginTop: 'var(--sp-8)' }}>
-                  Waivers are excluded from both the numerator and the denominator, and reported
-                  separately — the difference between &ldquo;did not submit&rdquo; and &ldquo;was
-                  not asked&rdquo;.
-                </p>
+                {/* "Waivers are excluded from both the numerator and the
+                    denominator…" went under the text rule (Isabella, 16 Sept
+                    2026, category 4: the figures above keep their waived
+                    counts; the sentence beneath goes). */}
               </div>
               </>
             ),

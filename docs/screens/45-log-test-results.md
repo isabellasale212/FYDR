@@ -50,6 +50,11 @@ and nothing else — the scope line, the assign control, the date stepper and
 the autosave footer prose are the desktop's. The grid's cells, + Attempt and
 the per-cell saved state are unchanged.
 
+**The text rule, 16 September 2026.** The footer paragraph — "Values save on
+their own when you press Enter or move to the next box — there is no save
+button… Tap a name for history…" — is gone at every width (category 1: helper
+prose). Each cell's own saved state is the fact, and stays.
+
 ## 5. Every number on this page
 
 | Metric ID | Label on screen | What it means | Time window | When missing |

@@ -95,6 +95,23 @@ straight through. The two wide panels (the medical record, the subject access
 request) stand full-width where the sequence puts them. The ACWR and wellness card is not on the board (its dial is in
 the header there) and sits directly after Athleticism, as its own card.
 
+**16 September 2026, the evening queue (3.2): the ACWR and wellness card
+heads the right column.** The sequence is unchanged — flags, athleticism, ACWR,
+body weight, injury, goals — but a run of column panels now splits at the ACWR
+card rather than at its half (`RIGHT_COLUMN_HEAD` in `lib/profilePanels.ts`), so
+on a desktop the right column reads ACWR, then Body weight, then Injury and
+Goals, and the left holds Flags and Athleticism. A phone, one column, reads the
+same list as before. The left column is the shorter; that is the ruling.
+
+**The text rule, 16 September 2026 (3.1):** "— the count follows the period,
+the mean above does not · status vs their own 14-day baseline" under the
+wellness dial, "This is not the same as being cleared." on the injury card,
+"— only the programme's own stated goal is shown here" under the goal and the
+"Not part of the visual spec above…" half of the subject-access caption are
+gone (orientation, category 2). The athleticism definition, the Article 15
+sentence and the thresholds line stay on a desktop and are hidden at phone
+width (category 3).
+
 **Ruled 15 September 2026** (Isabella, `decisions/decision-batch-2026-09-15-pm.md`
 #1): column-first stands, the ACWR card stays, and **Entries and corrections
 returns to the foot of the page** — built fourth and full-width it broke the

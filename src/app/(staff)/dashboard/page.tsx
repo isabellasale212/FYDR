@@ -475,6 +475,52 @@ async function DashboardPageContent({ searchParams }: { searchParams: SearchPara
       </div>
       ) : null}
 
+      {/* 2.8 (Isabella, 16 Sept 2026, the evening queue; placed by Isabella's note
+          after it): the medic's Current injuries card at the TOP of the
+          dashboard at phone width — above the tiles, below the lead card —
+          not below the day's timetable, which sits mid-page there. Every
+          athlete with an open injury who is expected at one of the day's
+          sessions (fetchInjuredInDay), the medic's alone. */}
+      {injuredInDay ? (
+        <section className="card" aria-labelledby="dash-injured-title" data-phone-only="" style={{ marginBottom: 'var(--sp-14)' }}>
+          <div className="pp-card-head">
+            <h2 className="card-title" id="dash-injured-title" style={{ margin: 0 }}>
+              Current injuries
+            </h2>
+            <span className="num s">{injuredInDay.length} in today&rsquo;s sessions</span>
+          </div>
+          {injuredInDay.length === 0 ? (
+            <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
+              {timeline.length === 0 ? 'No sessions today.' : 'No injured player in today’s sessions.'}
+            </p>
+          ) : (
+            injuredInDay.map((i) => (
+              <Link
+                key={i.id}
+                href={`/injuries/${i.id}`}
+                className="load-row"
+                style={{ gridTemplateColumns: '1fr auto', textDecoration: 'none', color: 'inherit' }}
+              >
+                <span>
+                  <span className="nm" style={{ display: 'block' }}>
+                    {i.first_name} {i.last_name}
+                  </span>
+                  <span className="tiny" style={{ display: 'block' }}>
+                    {bodyAreaPhrase(i)} · since {formatDate(i.onset_date, timezone)}
+                    {i.expected_return ? ` · back ${formatDate(i.expected_return, timezone)}` : ''}
+                    {' · '}
+                    {i.session_time} {i.session_title}
+                  </span>
+                </span>
+                <span className="chev" aria-hidden="true">
+                  ›
+                </span>
+              </Link>
+            ))
+          )}
+        </section>
+      ) : null}
+
       {/* The summary cards, after the week (the board's order: the matchday
        * question, the week, the cards, then the attention panel).
        * Used to be five static info cards — nothing here read as clickable
@@ -604,45 +650,6 @@ async function DashboardPageContent({ searchParams }: { searchParams: SearchPara
             </div>
           )}
 
-          {injuredInDay ? (
-            <section className="card" aria-labelledby="dash-injured-title" data-phone-only="" style={{ marginTop: 'var(--sp-14)' }}>
-              <div className="pp-card-head">
-                <h2 className="card-title" id="dash-injured-title" style={{ margin: 0 }}>
-                  Current injuries
-                </h2>
-                <span className="num s">{injuredInDay.length} in today&rsquo;s sessions</span>
-              </div>
-              {injuredInDay.length === 0 ? (
-                <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
-                  {timeline.length === 0 ? 'No sessions today.' : 'No injured player in today’s sessions.'}
-                </p>
-              ) : (
-                injuredInDay.map((i) => (
-                  <Link
-                    key={i.id}
-                    href={`/injuries/${i.id}`}
-                    className="load-row"
-                    style={{ gridTemplateColumns: '1fr auto', textDecoration: 'none', color: 'inherit' }}
-                  >
-                    <span>
-                      <span className="nm" style={{ display: 'block' }}>
-                        {i.first_name} {i.last_name}
-                      </span>
-                      <span className="tiny" style={{ display: 'block' }}>
-                        {bodyAreaPhrase(i)} · since {formatDate(i.onset_date, timezone)}
-                        {i.expected_return ? ` · back ${formatDate(i.expected_return, timezone)}` : ''}
-                        {' · '}
-                        {i.session_time} {i.session_title}
-                      </span>
-                    </span>
-                    <span className="chev" aria-hidden="true">
-                      ›
-                    </span>
-                  </Link>
-                ))
-              )}
-            </section>
-          ) : null}
         </div>
 
         <div className="stack">

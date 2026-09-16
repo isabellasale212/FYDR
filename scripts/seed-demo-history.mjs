@@ -55,7 +55,10 @@
  * runbook of 15 Sept: all production accounts are synthetic, no club is on
  * it). Kept: the organisation, users and roles, athletes, groups, teams, the
  * season, thresholds, week templates, programmes and exercises (it adds its
- * own if missing), test definitions (same), nutrition targets (same), meal
+ * own if missing — since 16 Sept the demo athlete's one-week match-week
+ * primer too), test definitions (same), nutrition targets (kept, but any
+ * live row missing one of its five figures is completed in place — 16 Sept,
+ * the walkthrough found the demo athlete's plan carried no energy), meal
  * library, leaderboards, notification preferences, the audit log.
  *
  * HOW TO RUN.
@@ -203,6 +206,7 @@ for (const date of days) {
   if (d === 3) { if (TESTING_WEEKS[w]) S(date, 'testing', 'testing', TESTING_WEEKS[w] === 'full' ? 'Testing — full battery' : 'Testing — sprints and jumps', '10:00', 90, 'Main pitch', 6, false); else S(date, 'units', 'training', 'Unit skills', '10:30', 75, 'Main pitch', 6, !(w === 2 || w === 6)); }
   if (d === 4) { S(date, 'upper', 'gym', 'Upper B', '06:30', 55, 'Gym', deload ? 5 : 7, false); S(date, 'team', 'training', 'Team run', '10:30', 80, 'Main pitch', 7, true); }
   if (d === 5) { if (fx) S(date, 'captains', 'training', "Captain's run", '11:00', 45, 'Main pitch', 4, false); else S(date, 'speed', 'training', 'Speed and power', '10:30', 60, 'Main pitch', 6, true); }
+
   if (d === 6) { const f = fixtureOn(date); if (f) S(date, 'match', 'match', `v ${f.opponent}`, f.kickoff, 80, f.venue, 9, true, { fixtureId: f.id }); else if (preSeason) S(date, 'satcond', 'training', 'Conditioning', '09:00', 60, 'Main pitch', 8, true); else if (!deload) S(date, 'satcond', 'training', 'Skills and conditioning', '09:00', 60, 'Main pitch', 7, true); }
 }
 /* md_offset against the next fixture within the week, as the product stores it. */
@@ -228,6 +232,19 @@ const cast = {
 };
 const is = (a, who) => a.id === cast[who].id;
 const isRare = (a) => cast.rare.some((r) => r.id === a.id);
+
+/* THE DEMO ATHLETE'S FRIDAY (16 Sept 2026, after the second walkthrough): the
+   programme is Tuesday lower / Thursday upper, so the Friday of the run week
+   — the meeting's own day — had no gym session and nothing for the Programme
+   tab, the logger, View plan or the exercise switch to open. One gym session
+   on that Friday, the demo athlete alone, 07:00 before the captain's run:
+   the match-week primer (its own one-week programme, assigned to the athlete
+   — see PRIMER below), started at 07:05 and left open with two sets logged
+   so the day reads "Under way · 2 of 8 sets · continue". This week only;
+   never in the model's own gym-log loop (key 'primer' is skipped there). */
+const demoFriday = addDays(monday0, 4);
+const primerSession = S(demoFriday, 'primer', 'gym', 'Speed primer', '07:00', 45, 'Gym', 5, false, { participants: [cast.demo.id] });
+{ const next = FIXTURES.find((f) => f.date >= demoFriday && diffDays(f.date, demoFriday) <= 6); primerSession.mdOffset = next ? diffDays(demoFriday, next.date) : null; }
 
 /* Positional unit, from the athlete's position text. */
 const unitOf = (a) => { const p = (a.position ?? '').toLowerCase(); if (/prop|hooker/.test(p)) return 'front'; if (/lock|second/.test(p)) return 'second'; if (/flank|number 8|no\. ?8|back row/.test(p)) return 'backrow'; if (/scrum|fly|half/.test(p)) return 'halves'; if (/centre/.test(p)) return 'centres'; if (/wing|full/.test(p)) return 'backthree'; return inGroup(a.id, 'Forwards') ? 'backrow' : 'centres'; };
@@ -440,8 +457,12 @@ for (const a of athletes) {
 const PROGRAMME = { name: 'Glenbrae strength 2026/27', blocks: [['Foundation', 'General strength, 4–6 reps'], ['Strength', 'Heavy 3–5 reps'], ['Power', 'Speed-strength, 3 reps'], ['In-season', 'Maintain, 2 lifts a week']] };
 const EXERCISES = { 'Back squat': ['squat', 2.5], 'Romanian deadlift': ['hinge', 2.5], 'Split squat': ['squat', 2.5], 'Nordic curl': ['hinge', 2.5], 'Bench press': ['push', 2.5], 'Seated row': ['pull', 2.5], 'Overhead press': ['push', 2.5], 'Pull-up': ['pull', 1.0] };
 const PLAN = { lower: [['Back squat', 4, 5, 'percent_1rm', [72, 80, 85, 80]], ['Romanian deadlift', 3, 8, 'percent_1rm', [45, 50, 55, 50]], ['Split squat', 3, 8, 'absolute', [30, 34, 38, 36]], ['Nordic curl', 3, 6, 'none', [null, null, null, null]]], upper: [['Bench press', 4, 5, 'percent_1rm', [72, 80, 85, 80]], ['Seated row', 3, 8, 'absolute', [65, 72, 78, 75]], ['Overhead press', 3, 8, 'absolute', [40, 45, 50, 48]], ['Pull-up', 3, 8, 'percent_bw', [null, null, null, null]]] };
+/* The match-week primer: one block, one week, one session on day 5 (the
+   Friday), eight sets — three speed squats, two split squats a side, three
+   pull-ups — from the exercises the main programme already carries. */
+const PRIMER = { name: 'Match-week primer', block: ['Primer', 'Speed and readiness before Saturday'], session: 'Speed primer', plan: [['Back squat', 3, 3, 'percent_1rm', 60], ['Split squat', 2, 6, 'absolute', 30], ['Pull-up', 3, 6, 'percent_bw', null]] };
 const gymLogs = []; // { id, athleteId, programmeSessionKey, sessionId, date, startedAt, completedAt, rpe, sets: [...] }
-for (const s of sessions.filter((x) => x.status === 'completed' && x.type === 'gym')) {
+for (const s of sessions.filter((x) => x.status === 'completed' && x.type === 'gym' && x.key !== 'primer')) {
   const w = weekOf(s.date), block = w >= 12 ? 3 : Math.floor(w / 4), weekIn = (w % 4) + 1, kind = s.key; // lower | upper
   for (const a of athletes) {
     const p = profile.get(a.id), k = `gym:${s.id}:${a.id}`;
@@ -567,6 +588,8 @@ console.log(`  window ${W0} → ${lastDay} (this week from ${monday0}); ${sessio
 console.log(`  attendance ${attendance.length} · ratings ${entries.length} (${Math.round(ratedShare() * 100)}% of attended sessions rated; ${entries.filter((e) => e.rpe === 0).length} rated 0) · GPS ${gps.length}`);
 console.log(`  wellness ${wellness.length} (${Math.round(checkinRate() * 100)}% of athlete-days) · weigh-ins ${weighIns.length} · gym logs ${gymLogs.length} (${totalSets} sets) · test results ${testResults.length} · nutrition check-ins ${nutrition.length}`);
 console.log(`  injuries ${injuries.length} · availability spans ${availability.length} · match sheet rows ${participation.length}`);
+console.log(`  the demo athlete's Friday: ${name(cast.demo)} — Speed primer ${demoFriday} 07:00 (the match-week primer programme, assigned to them), under way from 07:05 with 2 of 8 sets logged`);
+console.log(`  nutrition targets: every live row completed to all five figures where a figure was missing (the count is in the write summary); every athlete's resolution checked`);
 { const d = deviceSummary(); console.log(`  athlete devices ${devices.length} rows → has app on home screen ${d.reachable} of ${athletes.length} · ${d.notInstalled} not installed (${d.notInstalledIos} on iPhone) · ${d.never} never opened`); }
 console.log(`  then: compliance expectations for every day, waived where unavailable; the threshold engine over every day from ${addDays(W0, 14)}; older flags acknowledged by staff`);
 console.log('\nTHE NARRATIVES');
@@ -711,6 +734,23 @@ try {
     const rows = await q(`select ps.id, b.sequence - 1 as block, ps.week_number, ps.day_number, pe.id as pe_id, e.name from public.programme_sessions ps join public.programme_blocks b on b.id = ps.block_id join public.programme_exercises pe on pe.programme_session_id = ps.id join public.exercises e on e.id = pe.exercise_id where b.programme_id = $1`, [programmeId]);
     for (const r of rows) { const kind = r.day_number === 2 ? 'lower' : 'upper'; const key = `${r.block}:${r.week_number}:${kind}`; programmeSession[key] ??= { id: r.id, exercises: {} }; programmeSession[key].exercises[r.name] = r.pe_id; }
   }
+  /* The match-week primer (PRIMER above): created if absent, its one session
+     and three exercises keyed so a re-run finds them; assigned to the demo
+     athlete below with this Monday as its start, so its day-5 session falls
+     on the Friday of the run week (0132's arithmetic). */
+  const primerProgrammeId = uuid('programme:primer');
+  const primerSessionId = uuid('psession:primer');
+  const primerExercise = {};
+  if (!(await one(`select 1 from public.programmes where id = $1`, [primerProgrammeId]))) {
+    await c.query(`insert into public.programmes (id, org_id, name, programme_type, description, goal, duration_weeks, status, created_by) values ($1, $2, $3, 'gym', $4, $5, 1, 'active', $6)`, [primerProgrammeId, ORG, PRIMER.name, 'One session, the Friday before a match: speed squats, split squats, pull-ups. Light, fast, done in forty minutes.', 'Sharp for Saturday', staff.sc]);
+    await c.query(`insert into public.programme_blocks (id, org_id, programme_id, name, sequence, duration_weeks, focus) values ($1, $2, $3, $4, 1, 1, $5)`, [uuid('block:primer'), ORG, primerProgrammeId, PRIMER.block[0], PRIMER.block[1]]);
+    await c.query(`insert into public.programme_sessions (id, org_id, block_id, name, week_number, day_number, sequence) values ($1, $2, $3, $4, 1, 5, 1)`, [primerSessionId, ORG, uuid('block:primer'), PRIMER.session]);
+    let i = 0;
+    for (const [ename, sets, reps, basis, value] of PRIMER.plan) { i += 1; const peId = uuid(`pexercise:primer:${ename}`); await c.query(`insert into public.programme_exercises (id, org_id, programme_session_id, exercise_id, sequence, sets, reps_min, reps_max, load_basis, load_value, rest_seconds) values ($1, $2, $3, $4, $5, $6, $7, $7, $8::load_basis, $9, $10)`, [peId, ORG, primerSessionId, exerciseId[ename], i, sets, reps, basis, value, basis === 'none' ? 90 : 120]); primerExercise[ename] = peId; }
+    note('primer programme created', 1);
+  } else {
+    for (const r of await q(`select pe.id, e.name from public.programme_exercises pe join public.exercises e on e.id = pe.exercise_id where pe.programme_session_id = $1`, [primerSessionId])) primerExercise[r.name] = r.id;
+  }
   let rehabProgrammeId = (await one(`select id from public.programmes where org_id = $1 and programme_type = 'rehab' and deleted_at is null order by created_at limit 1`, [ORG]))?.id;
   if (!rehabProgrammeId) { rehabProgrammeId = uuid('programme:rehab'); await c.query(`insert into public.programmes (id, org_id, name, programme_type, description, duration_weeks, status, created_by) values ($1, $2, 'Return to running', 'rehab', 'Hamstring return-to-run progression', 6, 'active', $3)`, [rehabProgrammeId, ORG, staff.medic]); await c.query(`insert into public.programme_blocks (id, org_id, programme_id, name, sequence, duration_weeks, focus) values ($1, $2, $3, 'Return to running', 1, 6, 'Progressive running load')`, [uuid('block:rehab'), ORG, rehabProgrammeId]); note('rehab programme created', 1); }
   const testId = {};
@@ -721,6 +761,55 @@ try {
     testId[nm] = row?.id ?? (await one(`insert into public.test_definitions (id, org_id, name, test_category, unit, higher_is_better, default_attempts, decimal_places, sort_order) values ($1, $2, $3, $4::test_category, $5, $6, $7, $8, $9) returning id`, [uuid(`test:${nm}`), ORG, nm, cat, unit, higher, attempts, dp, sort])).id;
   }
   if (!(await one(`select 1 from public.nutrition_targets where org_id = $1 and org_default and deleted_at is null and effective_to is null and md_offset is null`, [ORG]))) { await c.query(`insert into public.nutrition_targets (id, org_id, org_default, energy_kcal, protein_g, carbs_g, fat_g, fluid_ml, effective_from, created_by) values ($1, $2, true, 3200, 160, 400, 90, 3000, $3, $4)`, [uuid('nt:default'), ORG, W0, staff.nut]); note('nutrition default created', 1); }
+  /* EVERY LIVE TARGET CARRIES ALL FIVE FIGURES (16 Sept 2026, after the
+     second walkthrough): the demo athlete resolved to a Forwards plan with
+     protein and carbohydrate and no energy, so Fuelling today — a headline
+     card — read "—" kcal and drew two tiles of four; another athlete's own
+     target carried energy and protein only. Nutrition targets are kept, not
+     replaced, so the gaps are filled in place: protein, fat and fluid from
+     the club default where absent; carbohydrate from the row's own energy
+     where it has one (energy − 4·protein − 9·fat, over 4), else the
+     default's; energy from the macros where absent. Every athlete then
+     resolves — through their own row, a group's or the default — to a
+     target with all five, whichever wins. Reported as a count. */
+  {
+    const dflt = await one(`select energy_kcal, protein_g, carbs_g, fat_g, fluid_ml from public.nutrition_targets where org_id = $1 and org_default and deleted_at is null and effective_to is null and md_offset is null order by effective_from desc limit 1`, [ORG]);
+    const filled = await c.query(
+      `with fixed as (
+         select t.id,
+                coalesce(t.protein_g, $2::numeric) as p,
+                coalesce(t.fat_g, $3::numeric) as f,
+                coalesce(t.fluid_ml, $4::numeric) as fl,
+                coalesce(t.carbs_g, case when t.energy_kcal is not null then greatest(0, round((t.energy_kcal - 4 * coalesce(t.protein_g, $2::numeric) - 9 * coalesce(t.fat_g, $3::numeric)) / 4)) else $5::numeric end) as c,
+                t.energy_kcal as e
+         from public.nutrition_targets t
+         where t.org_id = $1 and t.deleted_at is null and t.effective_to is null
+           and (t.energy_kcal is null or t.protein_g is null or t.carbs_g is null or t.fat_g is null or t.fluid_ml is null))
+       update public.nutrition_targets t
+          set protein_g = x.p, fat_g = x.f, fluid_ml = x.fl, carbs_g = x.c,
+              energy_kcal = coalesce(x.e, 4 * x.p + 4 * x.c + 9 * x.f),
+              updated_at = now()
+         from fixed x where x.id = t.id`,
+      [ORG, dflt.protein_g, dflt.fat_g, dflt.fluid_ml, dflt.carbs_g]);
+    note('nutrition targets completed', filled.rowCount ?? 0);
+    /* The check, as the app resolves it: own row, else the athlete's group's
+       (lowest sort order), else the default — any athlete still short of a
+       figure is named, and the run refuses. */
+    const short = await q(
+      `select a.first_name || ' ' || a.last_name as who
+         from public.athletes a
+         cross join lateral (
+           select t.* from public.nutrition_targets t
+            where t.org_id = a.org_id and t.deleted_at is null and t.effective_to is null and t.md_offset is null
+              and (t.athlete_id = a.id
+                   or (t.group_id is not null and exists (select 1 from public.group_memberships gm where gm.athlete_id = a.id and gm.group_id = t.group_id and gm.removed_at is null))
+                   or t.org_default)
+            order by case when t.athlete_id is not null then 1 when t.group_id is not null then 2 else 3 end
+            limit 1) r
+        where a.org_id = $1 and a.deleted_at is null and a.status <> 'left_club'
+          and (r.energy_kcal is null or r.protein_g is null or r.carbs_g is null or r.fat_g is null or r.fluid_ml is null)`, [ORG]);
+    if (short.length > 0) throw new Error(`nutrition: ${short.length} athlete(s) still resolve to an incomplete target: ${short.map((s) => s.who).join(', ')}`);
+  }
 
   /* The club's name. */
   await c.query(`update public.organisations set name = $2 where id = $1 and name <> $2`, [ORG, CLUB]);
@@ -762,7 +851,8 @@ try {
      returning athlete on the rehab programme from his second week out. */
   await c.query(`insert into public.programme_assignments (id, org_id, programme_id, group_id, starts_on, status, assigned_by, created_at) values ($1, $2, $3, $4, $5, 'active', $6, ($7::timestamp at time zone $8)), ($9, $2, $3, $10, $5, 'active', $6, ($7::timestamp at time zone $8))`, [uuid('pa:forwards'), ORG, programmeId, groups.Forwards, W0, staff.sc, ts(addDays(W0, -3), '12:00'), TZ, uuid('pa:backs'), groups.Backs]);
   await c.query(`insert into public.programme_assignments (id, org_id, programme_id, athlete_id, starts_on, status, assigned_by, injury_id, created_at) values ($1, $2, $3, $4, $5, 'active', $6, $7, ($8::timestamp at time zone $9))`, [uuid('pa:rehab'), ORG, rehabProgrammeId, cast.injuryBack.id, addDays(W0, 5 * 7), staff.medic, injuries[0].id, ts(addDays(W0, 5 * 7 - 2), '10:00'), TZ]);
-  note('programme assignments', 3);
+  await c.query(`insert into public.programme_assignments (id, org_id, programme_id, athlete_id, starts_on, status, assigned_by, created_at) values ($1, $2, $3, $4, $5, 'active', $6, ($7::timestamp at time zone $8))`, [uuid('pa:primer'), ORG, primerProgrammeId, cast.demo.id, monday0, staff.sc, ts(addDays(monday0, -3), '16:00'), TZ]);
+  note('programme assignments', 4);
 
   /* Team allocation: the 23 of each of the last two matches (published), and
      this week's wider squad for Saturday — the available 23 published to the
@@ -807,6 +897,19 @@ try {
   for (const g of gymLogs) for (const s of g.sets) setRows.push([uuid(`set:${g.id}:${s.exercise}:${s.setNumber}`), ORG, g.id, programmeSession[`${g.block}:${g.weekIn}:${g.kind}`]?.exercises[s.exercise] ?? null, exerciseId[s.exercise], s.setNumber, s.reps, s.load, s.rpe, s.prescribedReps, s.prescribedLoad, s.step, ts(g.date, addHm(g.startedAt.slice(11), 4 * s.setNumber + (PLAN[g.kind].findIndex((p) => p[0] === s.exercise) * 12)))]);
   note('gym sets', await bulk('gym_set_logs', ['id', 'org_id', 'gym_session_log_id', 'programme_exercise_id', 'exercise_id', 'set_number', 'reps_completed', 'load_kg', 'rpe', 'prescribed_reps', 'prescribed_load_kg', 'prescribed_step_kg', 'logged_at'], ['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'int', 'int', 'numeric', 'numeric', 'int', 'numeric', 'numeric', 'timestamp'], setRows));
   await c.query(`update public.gym_session_logs set status = 'complete' where org_id = $1 and status = 'in_progress'`, [ORG]);
+  /* The demo athlete's Friday primer, under way: started 07:05, the first
+     two speed squats logged at the prescribed load, six sets to go. Written
+     after the close above so it is the one open log in the club. */
+  {
+    const p = profile.get(cast.demo.id);
+    const squatLoad = Math.round((p.squat * (1 + 0.006 * 11) * 0.6) / 2.5) * 2.5;
+    const logId = uuid('gymlog:primer');
+    await bulk('gym_session_logs', ['id', 'org_id', 'athlete_id', 'programme_session_id', 'session_id', 'entry_date', 'started_at', 'completed_at', 'session_rpe', 'total_volume_kg', 'status', 'created_at'], ['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'date', 'timestamp', 'timestamp', 'numeric', 'numeric', 'gym_log_status', 'timestamp'],
+      [[logId, ORG, cast.demo.id, primerSessionId, primerSession.id, demoFriday, ts(demoFriday, '07:05'), null, null, squatLoad * 6, 'in_progress', ts(demoFriday, '07:05')]]);
+    await bulk('gym_set_logs', ['id', 'org_id', 'gym_session_log_id', 'programme_exercise_id', 'exercise_id', 'set_number', 'reps_completed', 'load_kg', 'rpe', 'prescribed_reps', 'prescribed_load_kg', 'prescribed_step_kg', 'logged_at'], ['uuid', 'uuid', 'uuid', 'uuid', 'uuid', 'int', 'int', 'numeric', 'numeric', 'int', 'numeric', 'numeric', 'timestamp'],
+      [1, 2].map((n) => [uuid(`set:primer:${n}`), ORG, logId, primerExercise['Back squat'], exerciseId['Back squat'], n, 3, squatLoad, 6 + n * 0.5, 3, squatLoad, 2.5, ts(demoFriday, addHm('07:05', 4 * n))]));
+    note('gym logs', 1); note('gym sets', 2);
+  }
 
   /* Expectations from the schedule, then waived where the athlete was unavailable. */
   let exp = 0;

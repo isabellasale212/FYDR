@@ -7511,22 +7511,39 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   font-size: var(--fs-15);
   font-weight: var(--w-num);
 }
+/* A PASSED SESSION RECEDES IN INK, NOT IN A FADE — 16 Sept 2026, after the
+   second walkthrough. The card used to sit at opacity 0.72, which put every
+   word in it — the name, the count, "clean", the pills, the affected rows —
+   at 2.85–4.05:1 once a session had passed: a contrast failure on any
+   training afternoon, the meeting's included. Handled the way the
+   unavailable ink was (tokens.css, 15 Sept): the fade goes, and the state
+   is carried by the --tick border, the word "passed" beside the clock, and
+   the card's secondary inks stepping to --unavailable — the lightest ink
+   that clears 4.5 on every flat ground in both themes (4.61 on --bg, 5.63
+   on --surf light; 5.32 / 5.73 dark). The name steps to --muted. The clock
+   column's "planned" / "passed" words move off --faint (3.98 on --bg) for
+   the same reason, every entry. */
 .dash-timeline-clock[data-past='true'] {
-  color: var(--faint);
+  color: var(--unavailable);
 }
 .dash-timeline-rel {
   font-size: var(--fs-11);
-  color: var(--faint);
+  color: var(--unavailable);
   margin-top: var(--sp-2);
 }
 .dash-session-card {
   border-left: 3px solid var(--accent);
 }
 .dash-session-card[data-past='true'] {
-  opacity: 0.72;
   /* --tick, not the old raw rgba(16,18,23,0.14): same neutral weight, and it
    * flips with the theme instead of drawing dark ink on a dark ground. */
   border-left-color: var(--tick);
+}
+.dash-session-card[data-past='true'] .dash-session-name {
+  color: var(--muted);
+}
+.dash-session-card[data-past='true'] :is(.dash-session-meta, .dash-session-count, .dash-session-count-label, .dash-session-chevron, .dash-affected-why) {
+  color: var(--unavailable);
 }
 /* Urgency on a timeline row: the coloured border only, not the border-plus-
  * wash of .pp-flags-card. These rows already carry a 3px left border coding

@@ -189,12 +189,24 @@ the thresholds provenance line, the availability tile's "injury status set by
 medical…" foot and the nutrition track's "missing it is not non-compliance"
 are the desktop's (2.3: the figure stays, the sentence goes); the Weigh-ins
 tile is a figure, not a link, for a role whose `/nutrition` is a notice there.
-**The medic's Current injuries card (2.8)** sits directly below the day's
-timetable at phone width: every athlete with an open injury who is expected at
-one of the day's sessions (`fetchInjuredInDay` — the day's participants crossed
-with the open injuries), the site as the medic reads it, since when, expected
-return, and the first session they are in; "No injured player in today's
-sessions." otherwise. Additive, the medic's alone (`CLINICAL_ONLY`).
+**The medic's Current injuries card (2.8)** sits at the top of the dashboard
+at phone width — directly below the lead card, above the tiles (Isabella's
+note after the second walkthrough; it was first placed below the day's
+timetable, which is mid-page there): every athlete with an open injury who is
+expected at one of the day's sessions (`fetchInjuredInDay` — the day's
+participants crossed with the open injuries), the site as the medic reads it,
+since when, expected return, and the first session they are in; "No injured
+player in today's sessions." otherwise. Additive, the medic's alone
+(`CLINICAL_ONLY`).
+
+**A passed session recedes in ink, not in a fade (16 September 2026).** The
+timeline's passed card sat at opacity 0.72, which put every word in it at
+2.85–4.05:1 once a session had passed — a failure on any training afternoon.
+The fade is gone: the state is the `--tick` border, the word "passed" beside
+the clock, the name in `--muted` and the card's secondary inks in
+`--unavailable` (the ink that clears 4.5 on every flat ground in both themes,
+`tokens.css` 15 September). The clock column's "planned" / "passed" words moved
+off `--faint` (3.98 on `--bg`) for the same reason.
 
 ## 5. Every number on this page
 

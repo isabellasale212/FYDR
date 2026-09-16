@@ -34,10 +34,16 @@ const QUERIES = read('src/lib/queries/entryRevisions.ts');
 const DETAIL  = read('src/app/(athlete)/my-data/gym/[gymSessionLogId]/page.tsx');
 const LOGGER  = read('src/components/GymSessionLogger/GymSessionLogger.tsx');
 
-console.log('\nthe promise that started this is still in the product');
+console.log('\nthe promise that started this is kept by the display, not the sentence');
+/* REPINNED 16 Sept 2026 (Isabella's evening queue, the text rule): the
+   logger's "The original is kept. My data marks the session corrected and
+   shows what you first logged." was helper prose (category 1) and is gone.
+   The display it promised is what this file checks below — the corrected
+   strip on the logger and the session page's corrections list — so the
+   promise is still kept; it is just no longer said. */
 assert(
-  /My data marks the (day|session) corrected and shows what you\s*\n?\s*first (reported|logged)/.test(LOGGER),
-  'the logger panel still makes the promise (if this fails, check the display is not now orphaned)',
+  !/My data marks the (day|session) corrected and shows what you\s*\n?\s*first (reported|logged)/.test(LOGGER),
+  'the logger no longer says the promise in words (the text rule, 16 Sept 2026)',
 );
 
 console.log('\nthe chain read exists and reads the BASE table, not the _current view');

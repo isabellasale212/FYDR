@@ -1,6 +1,5 @@
 import Link from 'next/link';
 import type { ResolvedTarget } from '@/lib/queries/nutritionTargets';
-import { targetProvenanceLine } from '@/lib/nutritionNoWeighIn';
 import { mdExplainer, mdLabel } from '@/lib/format';
 
 /* The day's nutrition targets, as one card (Isabella, 15 Sept 2026, mobile
@@ -20,13 +19,12 @@ const TARGET_ROWS = [
 
 type Props = {
   target: ResolvedTarget | null;
-  hasWeighIn: boolean;
   /** "Nutrition targets" on Programme; "Fuelling today" on Today. */
   title: string;
   headingLevel?: 2 | 3;
 };
 
-export function NutritionTargetsCard({ target, hasWeighIn, title, headingLevel = 2 }: Props) {
+export function NutritionTargetsCard({ target, title, headingLevel = 2 }: Props) {
   const H = headingLevel === 3 ? 'h3' : 'h2';
   const mealIdeas = (
     <Link
@@ -89,9 +87,10 @@ export function NutritionTargetsCard({ target, hasWeighIn, title, headingLevel =
           );
         })}
       </div>
-      <p className="tiny fuel-prov">
-        {targetProvenanceLine({ sourceScope: target.source_scope, hasWeighIn, you: true })}
-      </p>
+      {/* The provenance line (PATTERN-S5 C7: "Set for you." / "Your group's
+          target." / the no-weigh-in clause) went under the text rule
+          (Isabella, 16 Sept 2026, category 3: a definition sentence, removed
+          from the athlete app). The figures are unchanged. */}
       {mealIdeas}
     </div>
   );

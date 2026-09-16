@@ -281,11 +281,14 @@ export function NutritionCheckinForm({ orgId, athleteId, userId, timezone, weekS
             Keep the original
           </Link>
         ) : null}
-        <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-8)' }}>
-          {correction
-            ? 'This is your one correction — you can’t change it again after you save. It sends straight away and needs signal; if it can’t get through, you’ll see an error here and your answer stays put.'
-            : 'Saved on this phone first — it sends even if your signal drops.'}
-        </p>
+        {/* The text rule (16 Sept 2026, category 1): "Saved on this phone
+            first — it sends even if your signal drops" and the correction's
+            signal sentence were helper prose; the correction's limit stays. */}
+        {correction ? (
+          <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-8)' }}>
+            This is your one correction — you can’t change it again after you save.
+          </p>
+        ) : null}
       </div>
     </form>
   );

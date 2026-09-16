@@ -50,8 +50,14 @@ console.log('\n3. the read and the tab');
      the read stay, guarded above, for the screen that next needs a best. */
   const page = strip(read('src/app/(athlete)/my-data/page.tsx'));
   assert(!/gymHeroLine\(/.test(page) && !/fetchBestSetsInPeriod\(/.test(page), 'the gym tab no longer draws the best-lift hero (16 Sept 2026)');
-  assert(/weeklyTonnage\(recent, weekStarts, mondayOf\)/.test(page) && /className="rd-value num">\{formatTonnage\(thisWeek\.kg\)\}/.test(page), 'its headline is the week\'s tonnage against the weeks before (MET-044)');
-  assert(/tonnageDeltaLine\(thisWeek\.kg, lastWeek\?\.kg \?\? 0\)/.test(page), 'the comparison is said as a word — up, down, the same');
+  /* REPINNED 16 Sept 2026 (the evening queue, 1.2: "strip to the number …
+     the comparison with last week as an increase or a decrease. No other
+     words"): the headline is the kilograms and, beside it, an arrow with the
+     figure of the change — tonnageDelta, a direction and a size — with the
+     word for a screen reader only. tonnageDeltaLine stays in lib/gymWeeks.ts
+     for the sentence form. */
+  assert(/weeklyTonnage\(recent, weekStarts, mondayOf\)/.test(page) && /className="rd-value num">\{formatTonnage\(thisWeek\.kg\)\}/.test(page), 'its headline is the week\'s tonnage (MET-044)');
+  assert(/tonnageDelta\(thisWeek\?\.kg \?\? 0, lastWeek\?\.kg \?\? 0\)/.test(page) && /delta\.dir === 'up' \? '↑' : '↓'/.test(page) && /className="visually-hidden">\{delta\.dir === 'up' \? 'up' : 'down'\}/.test(page), 'the comparison is an arrow and a figure, the word for a screen reader (16 Sept 2026)');
   assert(/Nothing lifted yet/.test(page), 'and over an empty week the headline is words, never "0 kg"');
   assert(!/\{headlineSets\}<\/span> set\{headlineSets === 1 \? '' : 's'\} logged/.test(page) || /Nothing logged/.test(page), 'the zero headline is gone');
 }

@@ -32,7 +32,10 @@ console.log('\nnutrition plan');
   /* The card is one component since 15 Sept 2026 (mobile queue #8), drawn on
      Programme and on Today; the provenance line lives in the component. */
   const targetsCard = flat('src/components/NutritionTargetsCard/NutritionTargetsCard.tsx');
-  assert(/targetProvenanceLine\(\{ sourceScope: target\.source_scope, hasWeighIn, you: true \}\)/.test(targetsCard), 'the athlete\'s own targets card says whose the numbers are');
+  /* REPINNED 16 Sept 2026 (Isabella's evening queue, the text rule): the
+     provenance line is a definition sentence (category 3) and is gone from
+     the athlete app; the staff surfaces above keep theirs. */
+  assert(!/targetProvenanceLine\(/.test(targetsCard), 'the athlete\'s own targets card no longer says whose the numbers are (the text rule, 16 Sept 2026)');
   assert(/<NutritionTargetsCard/.test(flat('src/app/(athlete)/programme/page.tsx')) && /<NutritionTargetsCard/.test(flat('src/app/(athlete)/today/page.tsx')), 'and Programme and Today both draw that card');
   const staffNutrition = flat('src/app/(staff)/squad/[athleteId]/nutrition/page.tsx');
   assert(/targetProvenanceLine\(\{ sourceScope: resolved\.source_scope, hasWeighIn: latestOwn !== null, you: false \}\)/.test(staffNutrition), 'and so does the staff athlete nutrition page');

@@ -200,18 +200,22 @@ console.log('\nthe contrast, measured from tokens.css in both themes');
   }
 }
 
-console.log('\nA4/C-d. irreversibility is one line, the reasoning is behind a disclosure — check-in only');
+console.log('\nA4/C-d. irreversibility is one line — the disclosure went under the text rule (16 Sept 2026)');
 {
+  /* REPINNED 16 Sept 2026 (Isabella's evening queue, the text rule): the
+     "Why can't I edit it?" disclosure and its explanation (who corrects a
+     wrong number, that My Data shows both) were helper prose, category 1,
+     and are gone from the check-in form. The limit line itself stays, as
+     the one thing the athlete must know before pressing. RpeForm's footer
+     is cut to its limit sentence for the same reason, and
+     NutritionCheckinForm's "Saved on this phone first…" line is gone. */
   assert(/You can’t change this after you submit\./.test(checkIn), 'the line: "You can’t change this after you submit."');
-  assert(/<details className="subm-why">/.test(checkIn) && /<summary>[\s\S]*?Why can’t I edit it\?[\s\S]*?<\/summary>/.test(checkIn), 'the link is the summary of a native <details>');
-  assert(/tell your coach[\s\S]*record a correction[\s\S]*what you first reported/.test(checkIn), 'and the existing explanation — who corrects it, and that My Data shows both — is what opens');
+  assert(!/<details className="subm-why">/.test(checkIn) && !/Why can’t I edit it\?/.test(checkIn), 'no disclosure beside it (the text rule, 16 Sept 2026)');
+  assert(!/tell your coach[\s\S]*record a correction[\s\S]*what you first reported/.test(checkIn), 'and no explanation of who corrects it');
   const note = rule('.subm-note');
   assert(/font-size:\s*var\(--fs-12\)/.test(note) && /color:\s*var\(--muted\)/.test(note), 'the line is --fs-12 --muted');
-  const why = rule('.subm-why-link');
-  assert(/font-size:\s*var\(--fs-13\)/.test(why) && /font-weight:\s*(?:600|var\(--w-semi\))/.test(why) && /color:\s*var\(--accent-text\)/.test(why), 'the link is --fs-13 / 600 / --accent-text');
-  assert(/min-height:\s*(?:44px|var\(--tap-min\))/.test(rule('.subm-why summary')), 'and its summary is a 44px target');
-  assert(/Once this is sent it can’t be edited\./.test(rpe) && !/subm-why/.test(rpe), 'RpeForm keeps its full sentence — A4 was approved for /check-in only');
-  assert(/Saved on this phone first — it sends even if your signal drops\./.test(nutrition) && !/change this after you submit/.test(nutrition), 'NutritionCheckinForm keeps its existing line — D7, the footer copy is blocked until the 3b board is final');
+  assert(/Once this is sent it can’t be edited\./.test(rpe) && !/subm-why/.test(rpe) && !/tell your coach/.test(rpe), 'RpeForm keeps its limit sentence only');
+  assert(!/Saved on this phone first — it sends even if your signal drops\./.test(nutrition) && !/change this after you submit/.test(nutrition), 'NutritionCheckinForm has no footer line outside a correction (the text rule)');
 }
 
 console.log('\nA5/A6/A9. the scales: numbered ends, neutral "Not answered", no second readout, filled options');

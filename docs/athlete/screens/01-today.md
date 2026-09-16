@@ -31,10 +31,14 @@ screen used to pass before the first actionable row):
    card surface, so it reads amber or red on the blue ground rather than
    grey.
 3. **This week**, the seven-day strip, compact: each day's initial, its
-   number (today filled) and its MD label, coloured by session type. On the
-   ground, not in a card, **inside a thick border** — 2px of
-   `--border-strong` on the control radius (16 September 2026, 1.1: "so it
-   stands out").
+   number (today filled) and its MD label, coloured by session type.
+   **Emphasised** (Isabella, 16 September 2026, the evening queue, 1.1):
+   a filled block with a 3px border, elevated by the card shadow — in
+   light the signature dark blue with white text (`--wk-strip-bg` /
+   `--wk-strip-ink`, the accent and white), in dark the inverse (a white
+   ground, the dark ink). Day tiles are the ink at low alpha over the fill,
+   today's number is the ink filled; both themes pass 4.5:1 on every word.
+   Replaces the 2px `--border-strong` border of the overnight queue.
 3a. **"Your status changed"** (`StatusToldCard`, PATTERN-S3 C1, migration
    0122, 13 September 2026) — the one emphasised card on this screen, only
    while the availability row in force was set by staff and the athlete has
@@ -48,10 +52,13 @@ screen used to pass before the first actionable row):
 4. **What you owe**, as **three status cards that stay in place** (16
    September 2026, 1.1) — Morning check-in, the gym session, the weekly
    nutrition check-in — each carrying its state as a tone family (edge and
-   wash) AND as a word in the family's pill: **Done** (the product's good
-   tone, cyan — the system's own reading of "green", by the decision in
-   `06-design-system.md` §3), **To do** (the accent), **Overdue** (bad), and a
-   neutral **Nothing today** / **Not expected today**. A card with something
+   wash) AND as a word in the family's pill: **Done** (GREEN — `--done`, a
+   token added on Isabella's ruling, 16 September 2026, the evening queue,
+   1.1: "add a green token"; until then the product's good tone, cyan),
+   **To do** (the signature dark blue, `--accent`), **Overdue** (red, bad),
+   and a neutral **Nothing today** / **Not expected today**. The card's name
+   is `--fs-20` and the pill `--fs-13` since the same ruling ("the to-do
+   words bigger"). A card with something
    to do is a link to its form; a done card is not a control and has no
    chevron. The states and their windows are `lib/todayStatus.ts`: the
    check-in is overdue after 09:00 club time (the window the staff
@@ -69,11 +76,16 @@ screen used to pass before the first actionable row):
 6. **What the club is working towards**, the next fixture
    (`fetchNextFixture`), in its own card — absent when no fixture is scheduled.
 7. **Fuelling today** (`NutritionTargetsCard`): the four figures at `--fs-28`
-   in two columns, the unit beside each, the label under; one line saying
-   whose numbers they are (PATTERN-S5 C7); a matchday-specific rule as a
-   pill beside the title; then the Meal ideas row. Bigger numbers, less
-   wording (16 September 2026, 1.1).
-8. **Team this week**, only when a rehab team allocation exists.
+   in two columns, the unit beside each, the label under; a matchday-specific
+   rule as a pill beside the title; then the Meal ideas row. Bigger numbers,
+   less wording (16 September 2026, 1.1). The provenance line (PATTERN-S5 C7,
+   "Set for you." and its kin) went under the text rule the same evening: a
+   definition sentence, removed from the athlete app. A supplements line
+   under the targets was dropped from the queue and is on
+   `docs/after-friday.md`.
+8. **Team this week**, only when a rehab team allocation exists — "Team this
+   week: Rehab." alone; "Set by your coach." went under the text rule
+   (16 September 2026, orientation).
 
 The availability card and the diagnosis card that closed this screen until
 16 September 2026 are gone from it: both live on `/me/status`, which item 2
@@ -86,7 +98,7 @@ Every card on this screen — and on every athlete screen — has 9px corners
 The "Something not right?" row is not on this screen; the report route is
 reached from Me.
 
-**The to-do rows.** The three status cards are a name at `--fs-18`, one line
+**The to-do rows.** The three status cards are a name at `--fs-20`, one line
 and the state pill, a chevron only while there is somewhere to go. The
 rating row keeps its shape: a name, one line and — instead of a chevron — which carries the CR-10 grid in place of a chevron and
 sends on one tap (§4). Its line reads "Today 20:39 · 45 min · change or add a
@@ -131,8 +143,9 @@ reached by an old link, says so in the athlete's own words (03-session-rating.md
 2026, mobile queue #8): the day's nutrition targets — energy, protein,
 carbohydrate, fluid — resolved for today through the same resolver and drawn by
 the same card (`NutritionTargetsCard`) as Programme's "Nutrition targets", with
-the provenance line saying whose numbers they are and a Meal ideas row. Guidance
-only; nothing to log (CLAUDE.md rule 8). One rendering, two places on screen.
+a Meal ideas row (the provenance line is gone since the evening of 16
+September 2026 — the text rule). Guidance only; nothing to log (CLAUDE.md rule
+8). One rendering, two places on screen.
 
 **The availability card, item 7, in detail**, because it is the part of this
 screen an athlete reads when something is wrong:

@@ -4,9 +4,10 @@ import { STATE_WORD, type TodoState } from '@/lib/todayStatus';
 /* One of Today's three status cards (Isabella, 16 September 2026, 1.1):
  * bigger than the row it replaces, in place whatever its state, the state
  * as a wash and an edge in its tone family AND as the word — colour is never
- * the only carrier. Done is the product's good tone (cyan, tokens.css —
- * the system's own reading of "green", by a recorded decision); to do is
- * the accent; overdue is bad. A card with somewhere to go is a Link; a done
+ * the only carrier. Done is GREEN — the --done family Isabella had added on
+ * 16 Sept 2026 (the evening queue; the cyan --good that shipped that morning
+ * was not what was meant); to do is the signature dark blue, the accent;
+ * overdue is bad. A card with somewhere to go is a Link; a done
  * card, or one with nothing today, is not a control. */
 type Props = {
   domain: 'checkin' | 'gym' | 'nutrition';
@@ -19,7 +20,8 @@ type Props = {
 };
 
 /** The state word as the product's own pill in its tone family. */
-const PILL: Record<TodoState, string> = { done: 'pill-good', todo: 'pill-accent', overdue: 'pill-bad', none: 'pill-neutral' };
+/* Done green (--done, added 16 Sept 2026), to do the accent, overdue bad. */
+const PILL: Record<TodoState, string> = { done: 'pill-done', todo: 'pill-accent', overdue: 'pill-bad', none: 'pill-neutral' };
 
 export function TodoStatusCard({ domain, name, state, sub, href }: Props) {
   const body = (

@@ -1261,17 +1261,25 @@ table.tbl tbody tr:hover {
 
 /* Leaderboard tables, athlete side. The club asked for bolder headings and a
  * table that looks less like a spreadsheet. Scoped to .lb-table rather than
- * changing table.tbl, which every report and settings screen also uses. */
+ * changing table.tbl, which every report and settings screen also uses.
+ *
+ * THE HEADER, 16 Sept 2026 (Isabella, the evening queue, 1.3 and 2.5): the
+ * column labels sit in a filled band — the accent wash, the accent ink that
+ * is tuned for it — with the same space above, below and beside each word,
+ * and a step bigger than the report tables' 11px. The staff phone
+ * leaderboard (LeaderboardWall's .lbw-phone) draws the same table and so
+ * carries the same band; 2.5 asked for exactly that. The cells' side
+ * padding matches the band's so the words and the figures stay in line. */
 table.tbl.lb-table th {
-  font-size: var(--fs-11);
-  color: var(--muted);
+  font-size: var(--fs-13);
+  color: var(--accent-on-wash);
+  background: var(--wash-accent);
   letter-spacing: 0.06em;
-  padding-bottom: var(--sp-10);
+  padding: var(--sp-10);
   border-bottom: 1px solid var(--border);
 }
 table.tbl.lb-table td {
-  padding-top: var(--sp-10);
-  padding-bottom: var(--sp-10);
+  padding: var(--sp-10);
 }
 table.tbl.lb-table .nm {
   font-size: var(--fs-14);
@@ -2045,6 +2053,15 @@ body:has(.phone) {
   font-size: var(--fs-13);
   color: var(--muted);
 }
+/* My data's Gym headline since 16 Sept 2026 (Isabella, the evening queue,
+   1.2): the kilograms and, beside them, the change on last week — an arrow
+   and a figure, no other words. The delta is the rule above's (an arrow that
+   never judges, the figure in --text bold), a step larger and lifted to sit
+   level with the number's baseline. */
+.gym-kg .rd-delta {
+  font-size: var(--fs-16);
+  padding-bottom: var(--sp-4);
+}
 
 /* A hero slot holding a word instead of a figure — "Not rated", "Not logged" on
    the session detail (ATH-ADULT-13). The detail line's size and the absent-
@@ -2440,13 +2457,48 @@ a.hist-row:focus-visible {
    a matchday as an outline. Measured at 375×812 with the availability line
    showing: the strip is 70px tall and To do's first row moved from 244px to
    367px — still inside the fold, with the whole row (to 443px) in view. */
-/* A THICK BORDER around the week (Isabella, 16 Sept 2026, 1.1: "so it
-   stands out") — 2px of --border-strong, the weight the Unavailable card
-   uses for its edge, on the control radius. */
+/* THE WEEK, EMPHASISED (Isabella, 16 Sept 2026 — the morning's thick border,
+   then the evening's 1.1: "bigger border, elevated off the background; light
+   theme filled with the signature dark blue, text white; dark theme the
+   inverse, white ground, dark text"). The four --wk-strip-* tokens carry the
+   inversion (tokens.css, both themes); the day cells wash themselves with
+   the ink's triplet, so training reads as a paler band and match as an
+   outline on either ground; today's circle is the ink with the fill as its
+   type. 3px of border, --shadow for the lift. Measured: white on the navy
+   8.62:1, the ink on white 17.9:1. */
 .wk-compact {
-  padding: var(--sp-6) var(--sp-4);
-  border: 2px solid var(--border-strong);
+  padding: var(--sp-8) var(--sp-6);
+  border: 3px solid var(--wk-strip-border);
   border-radius: var(--r-toggle);
+  background: var(--wk-strip-bg);
+  color: var(--wk-strip-ink);
+  box-shadow: var(--shadow);
+}
+.wk-compact .wk-day .wi,
+.wk-compact .wk-day .wn,
+.wk-compact .wk-day .wo,
+.wk-compact .wk-day .wo[data-tone='md'],
+.wk-compact .wk-day[data-kind='rest'] .wo {
+  color: var(--wk-strip-ink);
+}
+.wk-compact .wk-day .wo[data-tone='md'] {
+  font-weight: var(--w-bold);
+}
+.wk-compact .wk-day[data-kind='training'],
+.wk-compact .wk-day[data-today='true'] {
+  background: rgb(var(--wk-strip-ink-rgb) / 0.14);
+}
+.wk-compact .wk-day[data-kind='recovery'] {
+  background: rgb(var(--wk-strip-ink-rgb) / 0.07);
+}
+.wk-compact .wk-day[data-kind='match'] {
+  background: transparent;
+  border-color: rgb(var(--wk-strip-ink-rgb) / 0.7);
+}
+.wk-compact .wk-day[data-today='true'] .wn {
+  background: var(--wk-strip-ink);
+  color: var(--wk-strip-bg);
+  border-color: var(--wk-strip-ink);
 }
 .wk-compact .wk-day {
   gap: var(--sp-2);
@@ -2772,7 +2824,9 @@ a.hist-row:focus-visible {
 }
 .td-card-name {
   display: block;
-  font-size: var(--fs-18);
+  /* --fs-20 since the 16 Sept evening queue (1.1): "the to-do words get
+     bigger, so they read as urgent". */
+  font-size: var(--fs-20);
   font-weight: var(--w-bold);
   letter-spacing: -0.01em;
   line-height: var(--lh-tight);
@@ -2786,6 +2840,8 @@ a.hist-row:focus-visible {
 }
 .td-card-state {
   flex: none;
+  font-size: var(--fs-13);
+  padding: var(--sp-6) var(--sp-12);
 }
 /* On a toned wash the sub line takes the context ink (--muted-on-tint, 15
    Sept 2026): --muted on the bad wash measured 4.49:1 in light. */
@@ -2794,13 +2850,22 @@ a.hist-row:focus-visible {
 .td-card[data-state='overdue'] .td-card-sub {
   color: var(--muted-on-tint);
 }
+/* GREEN, DARK BLUE, RED (Isabella, 16 Sept 2026, the evening queue, 1.1):
+   done is the new --done family — the system's --good stays cyan for what
+   it already colours; to do is the signature dark blue, the accent, at the
+   wash and with the accent pill; overdue is --bad. The word on the pill
+   still carries the state. */
 .td-card[data-state='done'] {
-  border-left-color: var(--good);
-  background: var(--wash-good);
+  border-left-color: var(--done);
+  background: rgb(var(--done-rgb) / 0.14);
 }
 .td-card[data-state='todo'] {
   border-left-color: var(--accent);
-  background: var(--wash-accent-soft);
+  background: var(--wash-accent);
+}
+.pill-done {
+  --pill-rgb: var(--done-rgb);
+  --pill-text: var(--done-pill-text);
 }
 .td-card[data-state='overdue'] {
   border-left-color: var(--bad);
@@ -4274,6 +4339,68 @@ a.hist-row:focus-visible {
 .gl-then-count {
   flex: none;
   font-size: var(--fs-13);
+  color: var(--muted);
+}
+
+/* THE PLAN (16 Sept 2026, the evening queue, 1.6): the "View plan" pill
+   above the strip, and the whole session as rows built like the Then rows —
+   position, name and prescription, then the state in words: Now, Done, or
+   the count. A row is a button at the tap floor; a finished exercise is
+   disabled and greyed, the current one carries the accent wash and the
+   word, so the state is never colour alone. */
+.gl-plan-bar {
+  display: flex;
+  margin-bottom: var(--sp-10);
+}
+.gl-plan-btn {
+  min-height: var(--tap-min);
+}
+.gl-plan {
+  display: flex;
+  flex-direction: column;
+  gap: var(--sp-2);
+  margin-bottom: var(--sp-14);
+}
+.gl-plan-row {
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  align-items: center;
+  gap: var(--sp-10);
+  width: 100%;
+  min-height: var(--tap-min);
+  padding: var(--sp-10) var(--sp-14);
+  border: 1px solid var(--border);
+  border-radius: var(--r);
+  background: var(--surf);
+  color: var(--text);
+  font-family: inherit;
+  text-align: left;
+  cursor: pointer;
+}
+.gl-plan-row .nm {
+  font-size: var(--fs-14);
+}
+.gl-plan-row[data-now] {
+  background: var(--wash-accent);
+  border-color: var(--accent);
+}
+.gl-plan-row[data-done] {
+  color: var(--muted);
+  cursor: default;
+}
+.gl-plan-pos {
+  min-width: 22px;
+  font-size: var(--fs-13);
+  font-weight: var(--w-bold);
+  color: var(--muted);
+}
+.gl-plan-row[data-now] .gl-plan-pos,
+.gl-plan-row[data-now] .gl-plan-state {
+  color: var(--accent-on-wash);
+}
+.gl-plan-state {
+  font-size: var(--fs-13);
+  font-weight: var(--w-semi);
   color: var(--muted);
 }
 

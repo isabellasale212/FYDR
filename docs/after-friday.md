@@ -29,6 +29,33 @@ The Friday plan itself is in `docs/friday-demo-checklist.md`.
 - **The remaining open rows on `docs/design-decisions-outstanding.md`.**
 - **The reviewer session** has been idle since 14 September.
 
+### Deferred from the evening queue, 16 September (cosmetic-first: appearance now, behaviour after Friday)
+
+- **A supplements line under Fuelling today.** Dropped from 1.1; a possible
+  small feature: the day's supplement guidance beneath the four targets,
+  from the nutritionist's plan. Nothing in the schema carries it yet.
+- **The gym logger's timer pausing when the app is backgrounded.** Not built
+  (1.6 said not to). The clock counts from `started_at` and keeps counting
+  when the phone is put down; a pause would need a client-side "away since"
+  and a rule for what a paused minute means to the session's minutes.
+- **The gym logger's edit-restricted-to-current-day rule.** Not built (1.6
+  said not to). Today a set is correctable from the logger while the session
+  is open and from My data's session page afterwards, on any day. The rule
+  to decide: corrections only on the day the session was logged, with staff
+  the route after that — then enforced in `revise_gym_set_log`, not only in
+  the interface.
+- **The Programme tab on a day with no session.** 1.4 asked for today's
+  session only. On a rest day the block says "No session today" and names
+  the next session by its date — as words, not a row — so the athlete cannot
+  open a future session's plan from Programme. My recommendation: make the
+  next session a row (read-only plan, no logging until its day), which is
+  what a player wanting to see what is coming on Thursday would tap for.
+- **The supplement / anti-doping sentence on Meal ideas.** Removed under
+  "meals only" (1.5). It fitted none of the six text categories; it is a
+  responsibility statement, not helper prose. My recommendation: it belongs
+  on the consent or privacy pages under Me, once, not under every list of
+  meals.
+
 ## Data and infrastructure
 
 - **34 `healthkit_sync` consent rows on production**, recording consent for

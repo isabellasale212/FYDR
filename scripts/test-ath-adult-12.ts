@@ -94,8 +94,11 @@ console.log('\nwhat this flow did NOT change (recorded, not built)');
      the gym weeks — prior completed weeks in the wash (--wash-accent-strong),
      the latest in the accent. The readiness chart on this screen is a line
      with dots, not the board's bars; its mapping waits for 12 C2. */
-  assert(/data-prior=\{i < weeks\.length - 1 && !w\.partial \? '' : undefined\}/.test(read('src/app/(athlete)/my-data/page.tsx')), 'B2: the gym weeks mark prior completed weeks');
-  assert(/\.gb-bar\[data-prior\]\s*\{[^}]*background:\s*var\(--wash-accent-strong\)/.test(read('src/styles/base.css')), 'and draw them in the wash');
+  /* REPINNED 16 Sept 2026 (Isabella's evening queue, 1.2: "strip to the
+     number … no other words"): the gym weeks' bars are gone from My data,
+     and with them B2's prior-week wash on this screen. The .gb-bar rules
+     stay in base.css unused until a bar chart returns. */
+  assert(!/data-prior=/.test(read('src/app/(athlete)/my-data/page.tsx')) && !/gb-chart/.test(read('src/app/(athlete)/my-data/page.tsx')), 'B2: no gym-week bars on My data since 16 Sept 2026 (the evening queue, 1.2)');
 }
 
 console.log('\nD7 (decided 2026-09-12): accent and neutrals only on the athlete\'s chart, as a prop');

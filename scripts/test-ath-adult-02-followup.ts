@@ -49,9 +49,13 @@ console.log('1. the compact week strip sits above To do; "Working towards" stays
   assert(/mdLabel\(/.test(page) && /className="wo num"/.test(page), 'and each day still carries its MD label');
   const compact = rule('.wk-compact');
   /* 16 Sept 2026 (Isabella's overnight queue, 1.1): "a thick border around
-     the weekly timetable so it stands out" — 2px of --border-strong on the
-     control radius, the strip's own inset inside it. No card, still. */
-  assert(compact !== '' && /border:\s*2px solid var\(--border-strong\)/.test(compact) && /border-radius:\s*var\(--r-toggle\)/.test(compact), '.wk-compact carries the thick border (16 Sept 2026) on the control radius');
+     the weekly timetable so it stands out" — then, the same evening (the
+     evening queue, 1.1), EMPHASISED: a 3px border of --wk-strip-border, the
+     fill --wk-strip-bg with --wk-strip-ink over it (light: the accent and
+     white; dark: white and the dark ink), elevated by the card shadow, on
+     the control radius. Still not a card. */
+  assert(compact !== '' && /border:\s*3px solid var\(--wk-strip-border\)/.test(compact) && /border-radius:\s*var\(--r-toggle\)/.test(compact), '.wk-compact carries the 3px strip border (16 Sept 2026, evening) on the control radius');
+  assert(/background:\s*var\(--wk-strip-bg\)/.test(compact) && /color:\s*var\(--wk-strip-ink\)/.test(compact) && /box-shadow:\s*var\(--shadow\)/.test(compact), 'filled with the strip tokens and elevated');
   const day = rule('.wk-compact .wk-day');
   assert(/gap:\s*var\(--sp-2\)/.test(day) && /padding:\s*var\(--sp-4\) 0/.test(day), 'each day is tighter: gap --sp-2, padding --sp-4');
   const num = rule('.wk-compact .wk-day .wn');

@@ -20,8 +20,15 @@ overnight queue, 1.1: "meal ideas: shorter, and clickable to expand into the
 actual meal"): the name, its time and its energy on one 44px row (a native
 `<details>` — no JavaScript, the app's own chevron turning when open), and the
 actual meal beneath when tapped — the items with their scaled portions and the
-four macros. The page's own wording is one line: what the portions are scaled
-to, and that nothing here is logged.
+four macros. **Meals only since the evening of 16 September 2026** (Isabella's
+evening queue, 1.5): the scaling line ("Portions scaled to your last weigh-in,
+84.5 kg, on a training day. Nothing here is logged."), the library note ("The
+standard starting meals — your club has not added its own yet") and the
+supplement / anti-doping sentence that closed the page are gone under the text
+rule (a definition sentence and helper prose; orientation; and one that fits
+none of the six categories, on `docs/after-friday.md` with a recommendation).
+The portions are still scaled to the last weigh-in — the number, not the
+sentence.
 
 ## 4. What the athlete enters here
 

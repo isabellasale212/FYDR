@@ -53,6 +53,24 @@ missing day leaves a gap in the fill exactly as it leaves one in the line.
 **`gps` and `compliance` flags have no segment and are not shown on this
 screen** since 16 September 2026 ("Also noted for you" removed, 1.2).
 
+**THE TEXT RULE, 16 September 2026 (Isabella's evening queue, 1.2).** Helper
+and orientation prose is gone from every tab: "Days you missed are left blank,
+never counted as zero" and the outside-your-usual-range count under the
+readiness chart; "Period: all time" and "All-time, not the window on the other
+tabs … never a squad comparison" on Tests; "Showing the N most recent …" on
+any expanded list; "tonnage from logged sets" on the Sessions heading and the
+"Open a session to fix a set … Gym sets stay yours to correct" footer; the
+"Faster draws upward. The gold point is your latest, the blue your PB" caption
+under the test sparkline — the PB point is now a **ring** and the latest a
+filled point so colour is not the only carrier (Class 3), and the headline's
+words still say the PB's value and date. The wellness list's footer is
+Isabella's exact wording: **"Entered wrong, talk to staff."** The Gym tab's
+headline is **the number**: "Lifted this week" — the kilograms — and beside it
+the change on last week as an arrow and a figure ("↓ 5,782 kg"; ↑/↓
+uncoloured, the word for a screen reader), nothing else; the four-week bars,
+the sessions line and their captions are gone. The headline reads two calendar
+weeks (`GYM_HEADLINE_WEEKS`), still not the period control's window.
+
 ## 4. What the athlete enters here
 
 **Nothing.** My data is read only.

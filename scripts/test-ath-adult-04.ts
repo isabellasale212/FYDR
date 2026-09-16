@@ -45,8 +45,11 @@ console.log('\nA2–A5. the already-submitted card');
   assert(/className="after-card"/.test(card), 'the emphasised card');
   assert(/<h2 className="after-heading">\s*Already submitted/.test(card), '"Already submitted" as the heading');
   assert(/className="after-fact num"/.test(card) && /You sent today/.test(card) && /check-in at/.test(card), 'the fact line: "You sent today’s check-in at HH:MM."');
-  assert(/You can’t change an entry yourself\. Tell your coach or medical staff and they\s+can correct it for you\./.test(card), 'the board\'s recourse sentence');
-  assert(/The original stays visible in My data, marked Corrected\./.test(card), 'and what happens to the original');
+  /* REPINNED 16 Sept 2026 (Isabella's evening queue, the text rule): the
+     board's two recourse sentences were helper prose (category 1) and are
+     replaced by Isabella's exact line for a not-editable entry. */
+  assert(/Entered wrong, talk to staff\./.test(card), 'the not-editable line, Isabella\'s exact words (16 Sept 2026)');
+  assert(!/Tell your coach or medical staff/.test(card) && !/The original stays visible in My data/.test(card), 'and the recourse sentences are gone');
   assert(!/linklike/.test(card) && !/>Back<\/Link>/.test(card), 'no text link');
   assert(!/A submitted check-in can’t be edited, by you or by anyone/.test(card), 'the 40-word paragraph is gone');
   assert(!/Corrected<\/span>|pill-accent/.test(card), 'no Corrected pill — C1, not built (the fetch does not read revision_of)');

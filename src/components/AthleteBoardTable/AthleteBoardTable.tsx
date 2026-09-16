@@ -110,10 +110,11 @@ export function AthleteBoardTable({ board, ranking, metric, athleteId, own }: Pr
         </div>
       </div>
 
-      <p className="cap">
-        {ranking.length} athlete{ranking.length === 1 ? '' : 's'} ranked. Athletes who are not shown either opted out or have no
-        qualifying result &mdash; which one is never shown here.
-      </p>
+      {/* "N athletes ranked. Athletes who are not shown either opted out or
+          have no qualifying result …" went under the text rule (Isabella,
+          16 Sept 2026, the evening queue, 1.3 and category 4: on the athlete
+          app the figure goes with the sentence). The opt-out stays unsaid
+          here by design as well as by rule — see docs/athlete/visibility.md. */}
     </>
   );
 }

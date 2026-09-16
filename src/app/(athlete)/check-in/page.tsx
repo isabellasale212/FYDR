@@ -41,11 +41,9 @@ export default async function CheckInPage({
      removed that reference and this query with it; both are back, because
      "7.0" with nothing to compare it to gives an athlete no way to notice they
      have typed last night's number into tonight's field. */
-  /* PATTERN-S9 artboard 5: the first run ends on the form itself, with one
-     card saying there is no score and no streak. "First" is a fact about the
-     record — no check-in ever — not a query flag, so the card goes the moment
-     one is submitted and never returns. */
-  const [existing, recent, chains, everCount] = await Promise.all([
+  /* PATTERN-S9 artboard 5's first-run card ("no score and no streak") and
+     the ever-count that decided it went under the text rule (16 Sept 2026). */
+  const [existing, recent, chains] = await Promise.all([
     fetchWellnessDay(db, athleteId, entryDate),
     fetchWellnessByAthlete(db, athleteId, {
       from: addDays(entryDate, -7),
@@ -55,9 +53,7 @@ export default async function CheckInPage({
        read My data's history rows use — so a corrected day is told from an
        original. The _current view alone cannot say. */
     fetchWellnessWithRevisions(db, orgId, athleteId, { from: entryDate, to: entryDate }),
-    db.from('wellness_entries').select('id', { count: 'exact', head: true }).eq('athlete_id', athleteId).then((r) => r.count ?? 0),
   ]);
-  const firstEver = everCount === 0;
   /* Corrected: a chain with something behind the live row, the same test My
      data applies. C4: naming who corrected it is what My data already does,
      and docs/athlete/visibility.md withholds nothing about it. */
@@ -149,14 +145,15 @@ export default async function CheckInPage({
               <p className="after-note">
                 {`Corrected by ${corrected.correctedBy ?? 'a member of staff'}${
                   corrected.correctedAt ? ` on ${formatDate(corrected.correctedAt, timezone)}` : ''
-                }. What you first reported is in My data.`}
+                }.`}
               </p>
             ) : null}
-            <p className="after-note">
-              You can&rsquo;t change an entry yourself. Tell your coach or medical staff and they
-              can correct it for you.
-            </p>
-            <p className="after-note">The original stays visible in My data, marked Corrected.</p>
+            {/* THE TEXT RULE (Isabella, 16 Sept 2026, the evening queue): the
+                two sentences of recourse and "the original stays visible in
+                My data" were helper prose (category 1). What stands is Isabella's
+                exact wording for the not-editable check-in, the same line
+                My data carries. */}
+            <p className="after-note">Entered wrong, talk to staff.</p>
           </div>
           <div className="subm">
             <Link href={backHref} className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>
@@ -166,16 +163,9 @@ export default async function CheckInPage({
         </>
       ) : entryDate === today ? (
         <>
-          {firstEver ? (
-            <section className="card" aria-labelledby="first-run" data-emphasis data-first-run>
-              <h2 className="card-title" id="first-run">
-                Your first one
-              </h2>
-              <p className="import-sub" style={{ marginBottom: 0 }}>
-                There is no score and no streak. Answer it as it is — the numbers are only useful if they are true.
-              </p>
-            </section>
-          ) : null}
+          {/* The first-run card ("Your first one — there is no score and no
+              streak. Answer it as it is…") went under the text rule (16 Sept
+              2026, category 1: helper prose); it was the card's only line. */}
           <CheckInForm
             orgId={orgId}
             athleteId={athleteId}

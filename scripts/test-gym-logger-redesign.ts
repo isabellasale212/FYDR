@@ -85,7 +85,10 @@ console.log('\n3. the one primary, labelled with what it writes');
 {
   assert(/min-height:\s*var\(--hit-lg\)/.test(rule('.gl-primary')), '.gl-primary at --hit-lg');
   assert(/`Log set \$\{nextSetNumber\}\$\{setWords\(weightFor\(card\), repsFor\(card\)\)/.test(src), '"Log set 2 · 100 kg × 8" — the label is the write');
-  assert(/Sets save as you log them\./.test(src), 'the footer note');
+  /* REPINNED 16 Sept 2026 (Isabella's evening queue, the text rule): "Sets
+     save as you log them." was her cited example of helper prose and is gone
+     from the footer; the primary stands alone. */
+  assert(!/Sets save as you log them\./.test(src), 'no footer note — the text rule (16 Sept 2026)');
   assert(!/can’t change|cannot change|can't change/.test(src), 'no "can\'t change" line');
   assert(/return `\$\{formatKg\(weight\)\} kg × \$\{reps\}`/.test(src), 'setWords: "102.5 kg × 8"');
 }

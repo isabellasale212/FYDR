@@ -16,10 +16,10 @@ import {
   type MyTestSummary,
 } from '@/lib/queries/testing';
 import { fetchRecentGymSessions } from '@/lib/queries/programmes';
-import { formatTonnage, tonnageDeltaLine, weeklyTonnage } from '@/lib/gymWeeks';
+import { formatTonnage, tonnageDelta, weeklyTonnage } from '@/lib/gymWeeks';
 import { fetchMyVisibleFlags, staffNoteLines, type VisibleFlag } from '@/lib/queries/flags';
 import { fetchWellnessWithRevisions } from '@/lib/queries/entryRevisions';
-import { BLANK, addDays, dash, dayMonthShort, formatDate, formatNumber, todayIso } from '@/lib/format';
+import { BLANK, addDays, dash, formatDate, formatNumber, todayIso } from '@/lib/format';
 import {
   PERIOD_PARAM,
   clampPeriod,
@@ -29,7 +29,6 @@ import {
   type ResolvedRange,
 } from '@/lib/period';
 import { resolvePeriod } from '@/lib/period.server';
-import { bandPosition } from '@/lib/stats';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'My data · Fydr' };
@@ -516,11 +515,7 @@ export default async function MyDataPage({
        * and states the fact instead. Switching tabs preserves the period, so
        * nothing is lost by its absence here. */}
       <div>
-        {tab === 'testing' ? (
-          <p className="tiny" style={{ color: 'var(--muted)', margin: 0 }}>
-            Period: all time
-          </p>
-        ) : (
+        {tab === 'testing' ? null : (
           <>
             <PeriodSelector
               value={periodKey}
@@ -615,21 +610,10 @@ export default async function MyDataPage({
   );
 }
 
-/** "Showing the 60 most recent of N" — one sentence, one place, so the four
- *  tables cannot word the same fact differently. Renders nothing when nothing
- *  was cut, which is every window up to two months. */
-/** REWORDED WITH THE PERIOD CONTROL'S REMOVAL. This used to end "narrow the
- *  period to see a shorter stretch in full", which sent an athlete looking for
- *  a dropdown that is no longer on the screen. It now says what is true: the
- *  window is fixed, and this is what fits in it. */
-function ListCapNote({ shown, more, noun }: { shown: number; more: boolean; noun: string }) {
-  if (!more) return null;
-  return (
-    <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
-      Showing the <b>{shown}</b> most recent {noun}. There are more than this window holds.
-    </p>
-  );
-}
+/* ListCapNote ("Showing the N most recent … There are more than this window
+ * holds") went under the text rule (Isabella, 16 Sept 2026, category 2:
+ * orientation). The lists still stop at LIST_LIMIT rows; they just no longer
+ * say so. */
 
 /** The reference's "See all 14 days ->" / "See all sessions ->" / "See all 7
  *  tests ->" footer link, on every one of the three tabs.
@@ -753,10 +737,6 @@ async function WellnessTab({
       : [...logged].reverse().find((p) => p.date <= addDays(latest.date, -7)) ?? null;
   const readinessDelta =
     latest !== null && priorWeek !== null ? Math.round(latest.value!) - Math.round(priorWeek.value!) : null;
-  const outside = series.filter((s) => {
-    const p = bandPosition(s);
-    return p === 'above' || p === 'below';
-  }).length;
 
   /* The CHART spans the whole window; only the TABLE stops at LIST_LIMIT. That
    * asymmetry is deliberate: a line is legible at 730 points and a table is not,
@@ -846,26 +826,11 @@ async function WellnessTab({
 
         <FlagNotice flags={flags} timezone={timezone} />
 
-        {/* TRIMMED, NOT DELETED. The reference draws no caption under the
-          * readiness chart, and most of this one was period-control residue:
-          * the coverage count is now the History card's own "n = 2 of 14 days"
-          * on the right of its heading, and the date range dated a window that
-          * was choosable and no longer is.
-          *
-          * The last sentence stays. "Days you missed are left blank, never
-          * counted as zero" is not decoration — it is MET-001's defining
-          * property, and a reader who assumes a gap is a nought misreads every
-          * dip in the line. The "outside your usual range" count stays with it
-          * for the same reason: it explains marks that are on the chart. */}
-        <p className="cap">
-          Days you missed are left blank, never counted as zero.
-          {outside > 0 ? (
-            <>
-              {' '}
-              <span className="num">{outside}</span> sit outside your usual range.
-            </>
-          ) : null}
-        </p>
+        {/* No caption under the readiness chart. "Days you missed are left
+          * blank, never counted as zero" and the "outside your usual range"
+          * count went under the text rule (Isabella, 16 Sept 2026, category 2:
+          * orientation — the first was the cited example). MET-001's
+          * blank-not-zero property is still the chart's, just unsaid. */}
       </section>
 
       <section
@@ -967,13 +932,6 @@ async function WellnessTab({
           total={tableDates.length}
           noun="days"
         />
-        {showAll ? (
-          <ListCapNote
-            shown={shownDates.length}
-            more={tableDates.length > shownDates.length}
-            noun="days"
-          />
-        ) : null}
         {/* The Actions column that used to hold a per-row "Correct" link is gone
           * with the athlete's correction path (migration 0058, and the note at
           * the top of CheckInForm.tsx). The whole column went rather than the
@@ -981,11 +939,10 @@ async function WellnessTab({
           * One sentence carries what the links used to promise — and the
           * "Corrected" rows above are what make the second half of it true
           * rather than a promise (ADR-005 O-32). */}
+        {/* Isabella's exact words (16 Sept 2026, the evening queue, 1.2),
+            replacing the three-sentence version. */}
         <p className="cap" style={{ marginTop: 'var(--sp-8)' }}>
-          Check-ins can&rsquo;t be edited once sent. If a number here is wrong,
-          tell your coach &mdash; they can record a correction from your profile.
-          If they do, this table says <b>Corrected</b> on that day and shows you
-          what you originally reported.
+          Entered wrong, talk to staff.
         </p>
       </section>
     </div>
@@ -1024,13 +981,6 @@ const TEST_NAME_EXPLAINER: Record<string, string> = {
 function mondayOf(iso: string): string {
   const dow = new Date(`${iso}T12:00:00Z`).getUTCDay(); // 0 Sun … 6 Sat
   return addDays(iso, -((dow + 6) % 7));
-}
-
-/** "14 Jul". formatDate leads with the weekday, which is right for a single
- *  date and wrong under a bar four columns wide — "w/c Mon 14 Jul" says Monday
- *  twice, and at 11px on a 78px column it is the part that gets ellipsed. */
-function dayMonth(iso: string, timezone: string): string {
-  return dayMonthShort(iso, timezone);
 }
 
 /** Tonnes once there are tonnes to speak of, kilograms below that.
@@ -1149,8 +1099,13 @@ function TestSparkline({
       aria-label={label}
     >
       <path d={d} fill="none" stroke="var(--accent-text)" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round" />
+      {/* The PB is a RING, the latest a filled point (16 Sept 2026): the
+          caption that used to say which was which went under the text rule,
+          so the shape carries the difference and colour is not the only
+          carrier (Class 3). The words beside the headline still say the PB's
+          value and date. */}
       {pbPoint && !pbIsLatest ? (
-        <circle cx={x(pbIdx)} cy={y(pbPoint.value)} r="4.5" fill="var(--accent-text)" />
+        <circle cx={x(pbIdx)} cy={y(pbPoint.value)} r="4.5" fill="var(--surf)" stroke="var(--accent-text)" strokeWidth="2" />
       ) : null}
       {/* When the latest result IS the PB the two markers coincide, so the
           point is drawn once — gold, ringed in the PB's blue — rather than one
@@ -1200,7 +1155,6 @@ async function TestingTab({
   const history = featured ? await fetchHistory(db, orgId, athleteId, featured.test_definition_id) : [];
   const spark = featured ? sparkPoints(history, featured.higher_is_better) : [];
   const standing = featured ? pbStanding(featured) : ({ kind: 'none' } as PbStanding);
-  const upward = featured && !featured.higher_is_better && featured.unit.trim() === 's' ? 'Faster' : 'Better';
 
   const sparkFirst = spark[0];
   const sparkLast = spark[spark.length - 1];
@@ -1255,12 +1209,10 @@ async function TestingTab({
                 pbValue={featured.pbValue}
                 label={sparkLabel}
               />
-              <p className="spark-cap">
-                {upward} draws upward.{' '}
-                {standing.kind === 'at'
-                  ? 'The gold point is your latest, and it is your PB.'
-                  : 'The gold point is your latest, the blue your PB.'}
-              </p>
+              {/* "Faster draws upward. The gold point is your latest, the blue
+                  your PB." went under the text rule (Isabella, 16 Sept 2026,
+                  category 2: orientation). The chart still draws better as
+                  up; the PB is now a ring and the latest a filled point. */}
             </>
           ) : null}
         </section>
@@ -1342,31 +1294,26 @@ async function TestingTab({
             row carries the one fact the numbers above need instead. A link to a
             page that does not exist is a worse footer than no link. */}
         <div className="hist-foot">
-          <p className="cap" style={{ margin: 0 }}>
-            All-time, not the window on the other tabs: a personal best measured inside a window
-            is not a personal best. Your own results only &mdash; never a squad comparison.
-          </p>
+          {/* "All-time, not the window on the other tabs …" went under the
+              text rule (16 Sept 2026, category 2: orientation). */}
         </div>
       </section>
     </div>
   );
 }
 
-/** The headline card's span, Fydr Athlete App.dc.html 23k ("last 4 weeks").
- *
- *  FIXED, and deliberately not the period control's window. Four calendar weeks
- *  is what the four bars ARE — at `all` the same chart would be 105 bars three
- *  pixels wide, and at `week` it would be one. The card says "last 4 weeks" on
- *  its face so the two spans on this screen cannot be confused, and the list
- *  below still honours whatever period was chosen. The Testing tab already sets
- *  this precedent for the same kind of reason (see its own note on all-time
- *  PBs); the difference here is that the span is stated in the card. */
-const GYM_HEADLINE_WEEKS = 4;
+/** The headline's span: this calendar week and the one before it, the two
+ *  the number and its change need. Was four ("last 4 weeks", Fydr Athlete
+ *  App.dc.html 23k) while the card drew bars; the bars went under the
+ *  evening queue's "no other words" (Isabella, 16 Sept 2026, 1.2), and with
+ *  them the two weeks nothing on the screen used. Still deliberately not the
+ *  period control's window. */
+const GYM_HEADLINE_WEEKS = 2;
 
-/** Enough headroom that the four-week count is a count, not a cap.
+/** Enough headroom that the two-week sum is a sum, not a cap.
  *  fetchRecentGymSessions truncates most-recent-first at its limit, so a
- *  number below the real total would read low and silently. Four weeks of
- *  twice-daily gym is 56; 200 is well past anything a human body does. */
+ *  number below the real total would read low and silently. Two weeks of
+ *  twice-daily gym is 28; 200 is well past anything a human body does. */
 const GYM_HEADLINE_CAP = 200;
 
 /** Blocker B3 (integration audit): the one segment this page had no read for at all.
@@ -1416,77 +1363,40 @@ async function GymTab({
     fetchRecentGymSessions(db, athleteId, headlineFrom, today, GYM_HEADLINE_CAP),
   ]);
   const sessions = fetched.slice(0, LIST_LIMIT);
-  const more = fetched.length > LIST_LIMIT;
   const shownSessions = showAll ? sessions : sessions.slice(0, LIST_PREVIEW_ROWS);
 
-  const weeks = weeklyTonnage(recent, weekStarts, mondayOf).map((w, i) => ({
-    ...w,
-    label: i === GYM_HEADLINE_WEEKS - 1 ? 'This week' : `w/c ${dayMonth(w.start, timezone)}`,
-  }));
+  const weeks = weeklyTonnage(recent, weekStarts, mondayOf);
   const thisWeek = weeks[weeks.length - 1];
   const lastWeek = weeks[weeks.length - 2];
-  const peakKg = Math.max(1, ...weeks.map((w) => w.kg));
+  const delta = tonnageDelta(thisWeek?.kg ?? 0, lastWeek?.kg ?? 0);
 
   return (
     <div className="stack">
+      {/* STRIPPED TO THE NUMBER (Isabella, 16 Sept 2026, the evening queue,
+          1.2): the kilograms lifted this week and, beside it, the change on
+          last week as an increase or a decrease — the arrow is the shape
+          (↑ ↓, uncoloured: ATH-ADULT-12 D3), the word is for a screen reader
+          — and no other words. The four-week bars and their captions are
+          gone; MET-044 is still the sum. */}
       <section className="card" aria-labelledby="gym-headline">
         <h2 className="eyebrow" id="gym-headline">
           Lifted this week
         </h2>
-        <div className="rd-head">
+        <div className="rd-head gym-kg">
+          {/* An empty week is words in the number's slot, never "0 kg"
+              (ATH-ADULT-12 C5; 06-design-system §1.6: missing is not zero). */}
           {thisWeek && thisWeek.kg > 0 ? (
-            <>
-              <p className="rd-value num">{formatTonnage(thisWeek.kg)}</p>
-              <div className="rd-meta">
-                <p className="rd-delta">{tonnageDeltaLine(thisWeek.kg, lastWeek?.kg ?? 0)}</p>
-                <p className="rd-mean">
-                  <span className="num">{thisWeek.sessions}</span> session{thisWeek.sessions === 1 ? '' : 's'} so far &middot; weight &times; reps, every set
-                </p>
-              </div>
-            </>
+            <p className="rd-value num">{formatTonnage(thisWeek.kg)}</p>
           ) : (
-            <>
-              <p className="rd-value rd-value-words">Nothing lifted yet</p>
-              <div className="rd-meta">
-                <p className="rd-delta">this week</p>
-                <p className="rd-mean">{lastWeek && lastWeek.kg > 0 ? `last week ${formatTonnage(lastWeek.kg)}` : 'a finished session with load and reps logged counts'}</p>
-              </div>
-            </>
+            <p className="rd-value rd-value-words">Nothing lifted yet</p>
           )}
+          {delta ? (
+            <p className="rd-delta num">
+              <span aria-hidden="true">{delta.dir === 'up' ? '↑' : '↓'}</span>
+              <span className="visually-hidden">{delta.dir === 'up' ? 'up' : 'down'}</span> <b>{formatTonnage(delta.kg)}</b>
+            </p>
+          ) : null}
         </div>
-
-        <div
-          className="gb-chart"
-          role="img"
-          aria-label={`Kilograms lifted by week: ${weeks
-            .map((w) => `${w.label}, ${formatTonnage(w.kg)} over ${w.sessions} session${w.sessions === 1 ? '' : 's'}${w.partial ? ', still running' : ''}`)
-            .join('; ')}`}
-        >
-          {weeks.map((w, i) => (
-            <div className="gb-col" key={w.start}>
-              <div className="gb-track">
-                <div
-                  className="gb-bar"
-                  /* ATH-ADULT-12 B2 (2026-09-13): a prior week is the wash,
-                     the latest the accent; a partial week keeps its own
-                     lighter mix — it means "not finished", a different fact. */
-                  data-prior={i < weeks.length - 1 && !w.partial ? '' : undefined}
-                  data-partial={w.partial ? '' : undefined}
-                  data-zero={w.kg === 0 ? '' : undefined}
-                  style={w.kg === 0 ? undefined : { height: `${Math.round((w.kg / peakKg) * 100)}%` }}
-                />
-              </div>
-              <div className="gb-label">{w.label}</div>
-              {/* ATH-ADULT-12 A1: an absent value is a word, never a dash. */}
-              <div className="gb-value num">{w.kg === 0 ? 'None' : formatTonnage(w.kg).replace(' kg', '')}</div>
-            </div>
-          ))}
-        </div>
-
-        <p className="cap" style={{ marginTop: 'var(--sp-10)' }}>
-          Kilograms lifted, four calendar weeks.
-          {thisWeek && thisWeek.kg > 0 ? ' This week is still running, so its bar is drawn lighter.' : ''}
-        </p>
       </section>
 
       <section
@@ -1504,7 +1414,7 @@ async function GymTab({
           <h2 className="card-title" id="gym-title">
             Sessions
           </h2>
-          <span className="hist-n">tonnage from logged sets</span>
+
         </div>
         {/* Like the nutrition check-in and unlike wellness and RPE, gym set
           * logs stay the athlete's own to correct. `gym_set_logs` has no staff
@@ -1561,11 +1471,8 @@ async function GymTab({
           ))
         )}
         <div className="hist-foot">
-          <p className="cap" style={{ margin: 0 }}>
-            Open a session to fix a set you mis-logged &mdash; the original is kept, never
-            overwritten. Gym sets stay yours to correct; your check-ins and session ratings do
-            not.
-          </p>
+          {/* The correction prose that stood here went under the text rule
+              (16 Sept 2026, category 1: helper prose). */}
           <SeeAllLink
             tab="gym"
             periodKey={periodKey}
@@ -1573,7 +1480,6 @@ async function GymTab({
             total={sessions.length}
             noun="sessions"
           />
-          {showAll ? <ListCapNote shown={sessions.length} more={more} noun="sessions" /> : null}
         </div>
       </section>
     </div>

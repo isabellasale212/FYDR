@@ -106,9 +106,11 @@ export default async function NutritionCheckInPage({
               You answered <span className="num">{answerLabel}</span>.
             </p>
             <p className="after-note num">
-              Saved {correctedAt}. Your original answer, {priorLabel}, is kept.
+              Saved {correctedAt}. Originally {priorLabel}.
             </p>
-            <p className="after-note">My data shows the week marked Corrected, with both versions.</p>
+            {/* "My data shows the week marked Corrected, with both versions"
+                went under the text rule (16 Sept 2026, category 1). The
+                limit stays: it is the reason no control is offered. */}
             <p className="after-note">This answer can’t be changed again.</p>
           </div>
           <div className="subm subm-stack">
@@ -139,7 +141,7 @@ export default async function NutritionCheckInPage({
             <p className="after-note">
               You have used your one correction for this check-in, so it can’t be changed again.
             </p>
-            <p className="after-note">If it still looks wrong, tell your coach. Both versions stay visible in My data.</p>
+            <p className="after-note">Entered wrong, talk to staff.</p>
           </div>
           <div className="subm subm-stack">
             <Link href="/today" className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>
@@ -169,10 +171,10 @@ export default async function NutritionCheckInPage({
               You answered <span className="num">{answerLabel}</span>.
             </p>
             {sentAt ? <p className="after-note num">Sent {sentAt}.</p> : null}
-            <p className="after-note">
-              This is the one entry you can change yourself. A correction creates a new revision and
-              the original is kept.
-            </p>
+            {/* "This is the one entry you can change yourself. A correction
+                creates a new revision and the original is kept." went under
+                the text rule (16 Sept 2026, category 1). The footer's "once"
+                caption (C3) stays: it is the limit on the control beneath it. */}
           </div>
           <div className="subm subm-stack">
             <p className="cap subm-caption">You can correct this once after you submit.</p>

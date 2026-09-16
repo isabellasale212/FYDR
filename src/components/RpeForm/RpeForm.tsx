@@ -263,10 +263,11 @@ export function RpeForm({
         </button>
         {/* Same sentence as the check-in form's, for the same reason: the rule
          * is easier to accept before submitting than to discover afterwards. */}
+        {/* The recourse ("tell your coach — they can record a correction, and
+            My Data will show you both…") went under the text rule (16 Sept
+            2026, category 1); the limit stays. */}
         <p className="tiny" style={{ textAlign: 'center', marginTop: 'var(--sp-8)' }}>
-          Once this is sent it can&rsquo;t be edited. If the rating or the minutes
-          are wrong, tell your coach &mdash; they can record a correction, and My
-          Data will show you both what they changed it to and what you first sent.
+          Once this is sent it can&rsquo;t be edited.
         </p>
       </div>
     </form>

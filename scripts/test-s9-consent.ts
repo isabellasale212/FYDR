@@ -199,8 +199,11 @@ console.log('\n7. artboard 4 — under 18: the athlete, the guardian, the staff 
 console.log('\n8. artboard 5 — the first check-in');
 {
   const page = strip(read('src/app/(athlete)/check-in/page.tsx'));
-  assert(/const firstEver = everCount === 0;/.test(page) && /data-first-run/.test(page) && /There is no score and no streak\. Answer it as it is — the numbers are only useful if they are true\./.test(page), 'one first-run card, from the record not the query flag');
-  assert(/data-emphasis data-first-run/.test(page), 'it is the one emphasised card');
+  /* REPINNED 16 Sept 2026 (Isabella's evening queue, the text rule): the
+     first-run card ("no score and no streak …") was helper prose (category
+     1) and is gone with the ever-count that decided it; the first run lands
+     on the plain form. The landing itself (artboard 5's route) still holds. */
+  assert(!/data-first-run/.test(page) && !/There is no score and no streak/.test(page) && !/everCount/.test(page), 'no first-run card since 16 Sept 2026 (the text rule)');
   assert(!/first=1/.test(page.replace(/\/\*[\s\S]*?\*\//g, '')), 'the ?first=1 flag is a landing, not a condition');
   const form = strip(read('src/components/CheckInForm/CheckInForm.tsx'));
   assert(!/tap-commit|56px|minHeight: 56/.test(form), 'ATH-ADULT-03 unchanged: the submit is not raised here (finding 5, for the accessibility sweep)');

@@ -308,9 +308,23 @@ export function GymSessionLogger({
      because "most recent" would move the highlight backwards the moment
      somebody corrected an earlier set. Once every exercise is complete
      nothing is active: there is nothing to do, and the footer says so. */
-  const activeIndex = exercises.findIndex((ex) => (setsByExercise.get(ex.programme_exercise_id) ?? []).length < ex.sets);
-  const active = activeIndex >= 0 ? (exercises[activeIndex] ?? null) : null;
-  const nextExercises = activeIndex >= 0 ? exercises.slice(activeIndex + 1) : [];
+  const remainingFor = (ex: ResolvedExercise) => ex.sets - (setsByExercise.get(ex.programme_exercise_id) ?? []).length;
+  const firstOpen = exercises.find((ex) => remainingFor(ex) > 0) ?? null;
+  /* THE PLAN (Isabella, 16 Sept 2026, the evening queue, 1.6 — appearance
+     only): "View plan" opens the whole session in place, every exercise
+     with its prescription and count, and tapping one starts the logger at
+     it — the rack is busy, do the next thing. A jump is screen state, held
+     while it still has sets to log; nothing is written, and the order the
+     coach set is untouched. Once the chosen exercise is complete the
+     logger falls back to the first with sets left, as it always did. */
+  const [planOpen, setPlanOpen] = useState(false);
+  const [jumpTo, setJumpTo] = useState<string | null>(null);
+  const jumped = jumpTo ? (exercises.find((ex) => ex.programme_exercise_id === jumpTo) ?? null) : null;
+  const active = jumped && remainingFor(jumped) > 0 ? jumped : firstOpen;
+  /* What is still to do besides the active exercise, in the coach's order —
+     the same list as exercises.slice(activeIndex + 1) when nothing was
+     skipped, and the skipped ones too when something was. */
+  const nextExercises = active ? exercises.filter((ex) => ex !== active && remainingFor(ex) > 0) : [];
   /* A logged set of an exercise that is no longer active (the last set of
      the exercise before) is corrected from the strip; the card it belongs
      to is drawn for the correction so the numbers have somewhere to be. */
@@ -716,6 +730,57 @@ export function GymSessionLogger({
 
       <div className="phone-body" style={{ paddingTop: 0 }}>
         <div className="gym-body">
+          {!alreadyComplete ? (
+            <div className="gl-plan-bar">
+              <button
+                type="button"
+                className="btn-ghost-pill gl-plan-btn"
+                aria-expanded={planOpen}
+                aria-controls="gl-plan"
+                onClick={() => setPlanOpen((v) => !v)}
+              >
+                {planOpen ? 'Hide plan' : 'View plan'}
+                <span className="num"> · {exercises.length} exercises</span>
+              </button>
+            </div>
+          ) : null}
+          {!alreadyComplete && planOpen ? (
+            <div className="gl-plan" id="gl-plan">
+              {exercises.map((ex, i) => {
+                const left = remainingFor(ex);
+                const isNow = active?.programme_exercise_id === ex.programme_exercise_id;
+                return (
+                  <button
+                    key={ex.programme_exercise_id}
+                    type="button"
+                    className="gl-plan-row"
+                    data-now={isNow ? '' : undefined}
+                    data-done={left <= 0 ? '' : undefined}
+                    disabled={left <= 0}
+                    aria-current={isNow ? 'true' : undefined}
+                    onClick={() => {
+                      setJumpTo(ex.programme_exercise_id);
+                      setPlanOpen(false);
+                      closeCorrection();
+                    }}
+                  >
+                    <span className="gl-plan-pos num">{i + 1}</span>
+                    <span style={{ minWidth: 0 }}>
+                      <span className="nm" style={{ display: 'block' }}>
+                        {ex.exercise_name}
+                      </span>
+                      <span className="gl-then-sub num" style={{ display: 'block' }}>
+                        {schemeLine(ex, timezone)}
+                      </span>
+                    </span>
+                    <span className="gl-plan-state num">
+                      {left <= 0 ? 'Done' : isNow ? 'Now' : `${ex.sets - left} of ${ex.sets}`}
+                    </span>
+                  </button>
+                );
+              })}
+            </div>
+          ) : null}
           {error ? (
             <p className="form-error" role="alert">
               {error}
@@ -973,9 +1038,8 @@ export function GymSessionLogger({
             </div>
           ) : correcting && correctingRow ? (
             <div className="subm">
-              <p className="cap subm-caption">
-                The original is kept. My data marks the session corrected and shows what you first logged.
-              </p>
+              {/* "The original is kept. My data marks the session corrected…"
+                  went under the text rule (16 Sept 2026, category 1). */}
               <button
                 type="button"
                 className="btn-primary gl-primary"
@@ -1007,7 +1071,8 @@ export function GymSessionLogger({
             </div>
           ) : card ? (
             <div className="subm">
-              <p className="cap subm-caption">Sets save as you log them.</p>
+              {/* "Sets save as you log them." — Isabella's cited example of
+                  helper prose (16 Sept 2026, category 1) — is gone. */}
               <button
                 type="button"
                 className="btn-primary gl-primary"

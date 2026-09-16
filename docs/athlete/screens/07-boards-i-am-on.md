@@ -27,6 +27,19 @@ that page (`/my-data/boards/[id]`) still answers.
 **A board this athlete does not appear on never appears here at all.** Excluded,
 opted out, unqualified or simply not on it: there is no greyed or partial row.
 
+**The table's header, 16 September 2026 (Isabella's evening queue, 1.3):**
+the column labels — Pos, Athlete, the metric — sit in a filled band (the
+accent wash, `--accent-on-wash` ink) with the same padding above, below and
+beside each word, at `--fs-13` (a step bigger than the report tables); the
+cells match the band's side padding so words and figures stay in line.
+`table.tbl.lb-table th` in `base.css`, shared with the staff phone
+leaderboard. The caption beneath the table — "28 athletes ranked. Athletes who
+are not shown either opted out or have no qualifying result — which one is
+never shown here" — is gone under the text rule (the athlete app drops the
+figure with the sentence); the opt-out stays unsaid by design as well
+(`docs/athlete/visibility.md`). The scope line above the table ("Whole squad ·
+all time") stays.
+
 ## 4. What the athlete enters here
 
 Nothing.

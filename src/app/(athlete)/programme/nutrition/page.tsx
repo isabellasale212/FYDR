@@ -1,10 +1,7 @@
 import Link from 'next/link';
 import { fetchMealLibrary, libraryMealToMeal } from '@/lib/queries/mealLibrary';
 import { fetchBodyCompositionEntries } from '@/lib/queries/bodyComposition';
-import { resolveTargetForDate } from '@/lib/queries/nutritionTargets';
-import { DAY_TYPES, type DayTypeId } from '@/lib/nutritionRules';
 import { REFERENCE_MASS_KG, scaleDay, scaleMeal, type ScaledMeal } from '@/lib/nutritionMeals';
-import { todayIso } from '@/lib/format';
 import { requireAthlete } from '@/lib/session';
 
 export const metadata = { title: 'Meal ideas · Fydr' };
@@ -27,26 +24,18 @@ export const metadata = { title: 'Meal ideas · Fydr' };
  * staff /nutrition workspace (NutritionWorkspace.tsx) — this is a separate, net-new,
  * athlete-facing screen reading the same underlying table, not a rewire of that one. */
 export default async function MealIdeasPage() {
-  const { db, orgId, athleteId, timezone } = await requireAthlete();
-  const today = todayIso(timezone);
+  const { db, orgId, athleteId } = await requireAthlete();
 
-  const [mealLibrary, massHistory, target] = await Promise.all([
+  const [mealLibrary, massHistory] = await Promise.all([
     fetchMealLibrary(db, orgId),
     fetchBodyCompositionEntries(db, orgId, athleteId),
-    resolveTargetForDate(db, athleteId, today),
   ]);
 
   const latestMass = massHistory.find((h) => h.body_mass_kg !== null)?.body_mass_kg ?? null;
   const massKg = latestMass ?? REFERENCE_MASS_KG;
-
-  // Real signal, not invented: nutritionRules.ts's mdOffsetForDayType only ever
-  // writes a non-null md_offset (0) for a matchday-specific rule — training and rest
-  // both resolve to null and are not distinguishable from a resolved target alone.
-  // So: a resolved target that IS specifically the MD-0 rule means today is being
-  // treated as a matchday for nutrition purposes; anything else defaults to
-  // training, the same default the coach workspace itself opens on.
-  const dayType: DayTypeId = target?.md_specific && target.md_offset === 0 ? 'match' : 'training';
-  const dayTypeInfo = DAY_TYPES.find((d) => d.id === dayType) ?? DAY_TYPES[0]!;
+  /* The day-type read (resolveTargetForDate → training or matchday) went with
+     the scaling sentence it fed (16 Sept 2026, 1.5); the meals themselves
+     never varied by it. */
 
   const scaledMeals: ScaledMeal[] = [
     ...scaleDay(massKg),
@@ -62,36 +51,22 @@ export default async function MealIdeasPage() {
         <h1 className="d">Meal ideas</h1>
       </div>
 
-      {/* SHORTER (Isabella, 16 Sept 2026, 1.1): one line of context, then
-          each meal as a closed row — name, time, energy — that opens into the
-          actual meal. The scaling sentence is what it always said, cut to
-          the fact. */}
-      <p className="import-sub">
-        {latestMass !== null ? (
-          <>
-            Portions scaled to your last weigh-in, <span className="nutr-mono">{latestMass.toFixed(1)} kg</span>, on a{' '}
-            {dayTypeInfo.label.toLowerCase()}.
-          </>
-        ) : (
-          <>
-            No weigh-in on file — portions at a reference <span className="nutr-mono">{REFERENCE_MASS_KG} kg</span>.
-          </>
-        )}{' '}
-        Nothing here is logged.
-      </p>
-
-      {mealLibrary.length === 0 ? <p className="tiny">The standard starting meals — your club has not added its own yet.</p> : null}
-
+      {/* MEALS ONLY (Isabella, 16 Sept 2026, the evening queue, 1.5). The
+          scaling line ("Portions scaled to your last weigh-in, 84.5 kg, on a
+          training day. Nothing here is logged."), the library note ("The
+          standard starting meals — your club has not added its own yet") and
+          the supplement/anti-doping sentence that closed the page all went
+          under the text rule: the first is a definition sentence (category 3,
+          removed from the athlete app) with a helper line (category 1), the
+          second orientation (category 2); the third fits none of the six and
+          is listed in the report for a ruling. The portions are still scaled
+          to the last weigh-in — the number, not the sentence. */}
       <div className="nutr-meal-grid">
         {scaledMeals.map((meal, i) => (
           <MealIdeaCard key={`${meal.name}-${i}`} meal={meal} />
         ))}
       </div>
 
-      <p className="tiny">
-        Supplement use is your own decision and, in a tested sport, your own anti-doping
-        responsibility. This is guidance, not a clinical or dietetic prescription.
-      </p>
     </>
   );
 }

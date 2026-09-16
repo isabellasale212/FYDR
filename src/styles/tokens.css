@@ -1030,6 +1030,26 @@ Every alpha here is the handoff's own figure (§4 and §5),
      stack of cards that reads better on a blue wash. Per
      CHANGELOG-athlete-app-edits.md, "app-wide". */
   --phone-bg: #dbe7fb;
+  /* THE ATHLETE'S WEEK STRIP, EMPHASISED — Isabella, 16 Sept 2026 (the
+     evening queue, 1.1): "filled with the signature dark blue, text white;
+     dark theme the inverse, white ground, dark text." Four tokens so each
+     theme can invert without a literal in base.css: the fill, the ink, the
+     ink's triplet (the day cells wash themselves with it) and the border.
+     Light: the accent navy under white (8.62:1). */
+  --wk-strip-bg: var(--accent);
+  --wk-strip-ink: #ffffff;
+  --wk-strip-ink-rgb: 255 255 255;
+  --wk-strip-border: rgb(255 255 255 / 0.55);
+  /* DONE IS GREEN — Isabella, 16 Sept 2026 (the evening queue, 1.1): "Done is
+     GREEN, not the cyan that shipped … a green token does not exist; add
+     one." The system's --good stays cyan for everything it already colours;
+     this family is the to-do card's done state only. Fill, triplet, an ink
+     for text on a surface and an ink for the pill's own tint — measured in
+     both themes by the a11y sweep before shipping. */
+  --done: #1f9d55;
+  --done-rgb: 31 157 85;
+  --done-text: #146b3a;
+  --done-pill-text: #0f5a30;
   /* Accent ink for the phone's tinted grounds. Used to be its own value because
      the old --accent-text was tuned for a white card and fell to 4.37 on
      --phone-bg; the navy accent measures 6.91 there and 5.74 on the week
@@ -1321,6 +1341,19 @@ Every alpha here is the handoff's own figure (§4 and §5),
   --wash-accent: rgb(var(--accent-rgb) / 0.16);
   --wash-accent-strong: rgb(var(--accent-rgb) / 0.22);
   --phone-bg: #141b33;
+  /* The week strip's inverse (16 Sept 2026): a white ground, the light
+     theme's own ink (#121722, 17.9:1), the border the ink at half. New
+     tokens, not a changed dark value. */
+  --wk-strip-bg: #ffffff;
+  --wk-strip-ink: #121722;
+  --wk-strip-ink-rgb: 18 23 34;
+  --wk-strip-border: rgb(18 23 34 / 0.5);
+  /* Done, green, on dark (16 Sept 2026): a lighter green fill, its inks
+     lighter still for the dark surface and the pill's tint. */
+  --done: #34c07a;
+  --done-rgb: 52 192 122;
+  --done-text: #8fe7b6;
+  --done-pill-text: #9df0c0;
   /* Dark needs the opposite move: lighter, not darker, against #141b33. */
   --accent-on-wash: #9dbcff;
   --border-accent: rgb(var(--accent-rgb) / 0.62);
@@ -1521,6 +1554,19 @@ Every alpha here is the handoff's own figure (§4 and §5),
        name while splitting the accent; scripts/test-brand-accent.ts now
        asserts the two define the same set. */
     --phone-bg: #141b33;
+    /* The week strip's inverse (16 Sept 2026): a white ground, the light
+       theme's own ink (#121722, 17.9:1), the border the ink at half. New
+       tokens, not a changed dark value. */
+    --wk-strip-bg: #ffffff;
+    --wk-strip-ink: #121722;
+    --wk-strip-ink-rgb: 18 23 34;
+    --wk-strip-border: rgb(18 23 34 / 0.5);
+    /* Done, green, on dark (16 Sept 2026): a lighter green fill, its inks
+       lighter still for the dark surface and the pill's tint. */
+    --done: #34c07a;
+    --done-rgb: 52 192 122;
+    --done-text: #8fe7b6;
+    --done-pill-text: #9df0c0;
     --accent-on-wash: #9dbcff;
     --border-accent: rgb(var(--accent-rgb) / 0.62);
     --border-accent-soft: rgb(var(--accent-rgb) / 0.52);

@@ -30,6 +30,21 @@ it). The header is pinned and never scrolls away: one eyebrow line
 remain — and the accent progress bar with its running count and the clock
 ("3 of 12 sets · 00:12:40", "· 2 waiting to send" when the outbox holds sets).
 
+**"View plan", 16 September 2026** (Isabella's evening queue, 1.6 —
+appearance only): above the card, a ghost pill — "View plan · 4 exercises" —
+that opens the whole session in place (a disclosure, not a dialog): every
+exercise as a row, its position, name and prescription, and its state in
+words — **Now**, **Done**, or the count ("0 of 3"). Tapping a row starts the
+logger at that exercise (the rack is busy, do the next thing): the card
+swaps, the footer's label follows, and the exercises still to do — the
+skipped ones included — are listed under Then. The jump is screen state
+only: nothing is written and the coach's order is untouched; once the chosen
+exercise is complete the logger returns to the first exercise with sets left.
+A finished exercise's row is disabled and greyed; the current one carries the
+accent wash and the word. Not built, and on `docs/after-friday.md`: the timer
+pausing when the app is backgrounded, and an edit-restricted-to-current-day
+rule.
+
 Then **one exercise at a time**, a white card with no border on the tinted page:
 its name and position ("Set 2 of 3 · Rest 90s" — rest is reference text, no
 timer, no glyph), its **set chips** at 48px as the state display (logged = the
@@ -51,12 +66,14 @@ otherwise — never behind a disclosure. Then the optional session RPE field.
 The **footer** is docked on the tab bar — one fixed block, the action on the
 tabs with the bar's hairline between (Isabella, 15 September 2026) — and holds
 the one primary, labelled with what it writes: **"Log set 2 · 100 kg × 8"** at
-56px, over "Sets save as you log them." Measured at 390×844: the docked action
-is 110px (caption, the 56px primary, its padding), the bar 78px, so the block
-is 189px before the home-indicator inset and about 223px with it; with the
-sticky header above, the set card has roughly 435px of the screen on an
-iPhone — enough for the card and the stepper. The caption is the fat if that
-ever has to shrink (see the 15 September queue's report).
+56px. The caption beneath it — "Sets save as you log them." — was
+Isabella's cited example of helper prose and went under the text rule on
+16 September 2026 (the evening queue, category 1), as did the correction
+footer's "The original is kept. My data marks the session corrected…".
+Measured at 390×844 before the caption went: the docked action was 110px
+(caption, the 56px primary, its padding), the bar 78px, the block 189px
+before the home-indicator inset; without the caption the block is smaller
+by the caption's line.
 Once every set is logged the footer reads **"Finish session"**. After a set
 lands, a strip above the card reads "Back squat set 2 logged · 102.5 kg × 8 ·
 Correct it". Tapping a logged chip (or Correct it) opens the correction in
@@ -113,6 +130,8 @@ snapshot.
 | Log a set | Per exercise | Records weight and reps | stays | a `gym_set_logs` row | UNVERIFIED | the exercise is exempt for this athlete |
 | − / + on the weight and on the reps | The two number blocks, `--hit-md` squares | Moves the weight by the exercise's own step — `exercises.weight_step_kg` (migration 0108, ATH-ADULT-09 C3, 12 September 2026): 2.5 kg a plate a side by default, 2 for a dumbbell, 1.25 microloaded, as set on the library's create form; a substitute override steps by the substitute's value — and the reps by one. Never below zero. Bodyweight (load basis none) has no weight block: reps only. The adjustment is kept on the phone until the session is finished | stays | nothing until the set is logged | no | no load to set (the weight block) |
 | Log set N · … | The footer, `--hit-lg`, the one primary | Writes the set with the two numbers shown — queued on the phone first, sent at once | stays; the next chip lights, the strip names what landed | one `gym_set_logs` row | no | every set logged (the footer reads Finish session); a correction is open (Save correction / Cancel) |
+| View plan · N exercises / Hide plan | Above the strip, a ghost pill (16 September 2026, 1.6) | Opens or closes the whole session plan in place | stays | nothing | no | the session is complete |
+| An exercise row in the plan | The plan, one 44px button a row | Starts the logger at that exercise; closes the plan | stays | nothing — screen state | no | the exercise is complete (the row is disabled, "Done") |
 | A logged chip · Correct it | The set chips; the strip above the card | Opens the correction in place: the numbers edit it, the footer swaps | stays | nothing until saved | no | never (a logged set is always the correction target) |
 | Save correction · … / Cancel | The footer while a correction is open (ATH-ADULT-11 C1) | Writes the revision — the original is kept — or closes the correction | stays | one revision row (`revise_gym_set_log`) | no | no correction open |
 | Start session | On open | `startOrGetSessionLog` creates or resumes the session log | stays | a `gym_session_logs` row | no | never |

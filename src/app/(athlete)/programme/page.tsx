@@ -2,7 +2,6 @@ import Link from 'next/link';
 import { EmptyState } from '@/components/EmptyState/EmptyState';
 import { fetchMyOpenGymSessionToday, fetchMyProgrammeSessions } from '@/lib/queries/programmes';
 import { resolveTargetForDate } from '@/lib/queries/nutritionTargets';
-import { fetchLatestBodyMassForAthletes } from '@/lib/queries/bodyComposition';
 import { NutritionTargetsCard } from '@/components/NutritionTargetsCard/NutritionTargetsCard';
 import { Toast } from '@/components/Toast/Toast';
 import { enumLabel, formatDate, mdExplainer, mdLabel, todayIso } from '@/lib/format';
@@ -53,12 +52,9 @@ export default async function MyProgrammePage({
      pill they fed. Nothing else on this screen asks what is still to do, and
      that count belongs on Today, beside the list it counts. Two fewer round
      trips, and one fewer sequential await after the parallel batch. */
-  const [sessions, target, latestMass, openGym, doneToday] = await Promise.all([
+  const [sessions, target, openGym, doneToday] = await Promise.all([
     fetchMyProgrammeSessions(db, athleteId),
     resolveTargetForDate(db, athleteId, today),
-    /* PATTERN-S5 C7: whether there is a weigh-in to scale the target to,
-       for the provenance line — the athlete's own row, RLS. */
-    fetchLatestBodyMassForAthletes(db, orgId, [athleteId], { since: '1900-01-01', asOf: today }),
     /* Reopening (Isabella, 15 Sept 2026, mobile queue #9): a session opened
        today and not finished stays open until it is — startOrGetSessionLog
        finds today's in-progress log and the logger resumes at the next set.
@@ -80,7 +76,8 @@ export default async function MyProgrammePage({
         return new Set((data ?? []).map((r) => r.programme_session_id).filter((id): id is string => !!id));
       }),
   ]);
-  const hasWeighIn = latestMass.has(athleteId);
+  /* The weigh-in read (PATTERN-S5 C7) went with the provenance line it fed —
+     NutritionTargetsCard, 16 Sept 2026. */
 
   /* programme-dates.md (Isabella, 15 September 2026; migration 0132): the
      assignment carries a start date and the end falls out of the length. A
@@ -94,18 +91,34 @@ export default async function MyProgrammePage({
   const live = sessions.filter((s) => !isFinished(s));
   const finishedBlocks = [...new Map(sessions.filter(isFinished).map((s) => [s.programme_id, s])).values()];
 
-  /* Each live block is its own titled section (Isabella, the pre-deploy
-     fixes, 15 Sept 2026, #3): overlap is allowed by rule, so the header
-     names the athlete and a rehab block beside a lifting block reads as two
-     blocks, not as one programme's sessions under another's name. Grouped
-     in the resolver's order: block sequence within a programme, programmes
-     as they arrive. */
+  /* TODAY'S SESSION ONLY (Isabella, 16 Sept 2026, the evening queue, 1.4:
+     "show only the gym session scheduled for today; no previous days'
+     sessions"). Each live block is still its own titled section (the
+     pre-deploy fixes, 15 Sept 2026, #3 — overlap is allowed, so a rehab
+     block beside a lifting block reads as two), but a block now lists the
+     session whose scheduled_on (0132) is today — plus one opened or logged
+     today under a different date, so the way back into an open session
+     never disappears — and nothing else. A block with nothing today says so
+     and names the next session by its date, as words, so a rest day is not
+     an empty screen; the next session is not a row, because the queue asked
+     for today's and the rest is after Friday (docs/after-friday.md). An
+     undated block (no assignment start) cannot say which session is today's
+     and lists its sessions as before. */
   const blocks = [...live.reduce((m, s) => {
     const list = m.get(s.programme_id) ?? [];
     list.push(s);
     m.set(s.programme_id, list);
     return m;
   }, new Map<string, typeof live>()).values()];
+  const isDated = (block: typeof live) => block[0]?.assignment_starts_on !== null;
+  const todayRows = (block: typeof live) =>
+    isDated(block)
+      ? block.filter(
+          (s) => s.scheduled_on === today || openGym?.programmeSessionId === s.session_id || doneToday.has(s.session_id),
+        )
+      : block;
+  const nextRow = (block: typeof live) =>
+    block.filter((s) => s.scheduled_on !== null && s.scheduled_on > today).sort((a, b) => a.scheduled_on!.localeCompare(b.scheduled_on!))[0] ?? null;
 
   return (
     <>
@@ -139,6 +152,11 @@ export default async function MyProgrammePage({
       ) : (
         blocks.map((block) => {
           const first = block[0]!;
+          /* The header names the block and week the athlete is IN — today's
+             session's, else the next one's — not the first session's, which
+             read "Foundation · Week 1" twelve weeks into the programme once
+             the list beneath it stopped showing every week (16 Sept 2026). */
+          const current = todayRows(block)[0] ?? nextRow(block) ?? first;
           const startsOn = first.assignment_starts_on;
           const endsOn = first.assignment_ends_on;
           return (
@@ -152,8 +170,8 @@ export default async function MyProgrammePage({
                       silently mislabel either as "Gym" if that ever changed). */}
                   {enumLabel(first.programme_type)}
                   {' · '}
-                  <span title={BLOCK_PHASE_EXPLAINER[first.block_name.toLowerCase()]}>{first.block_name}</span>
-                  {` · Week ${first.week_number}`}
+                  <span title={BLOCK_PHASE_EXPLAINER[current.block_name.toLowerCase()]}>{current.block_name}</span>
+                  {` · Week ${current.week_number}`}
                 </p>
                 <h2 id={`prog-${first.programme_id}`}>{first.programme_name}</h2>
                 {/* The block's dates, from the assignment (0132): week 1 day 1 and
@@ -168,9 +186,16 @@ export default async function MyProgrammePage({
               </div>
 
               <div className="card">
-                <h3 className="card-title">Sessions</h3>
-                <div className="card flush" style={{ boxShadow: 'none', border: '1px solid var(--border)' }}>
-                  {block.map((s, index) => (
+                <h3 className="card-title">Today</h3>
+                {todayRows(block).length === 0 ? (
+                  <p className="tiny" style={{ margin: 0 }} data-no-session-today>
+                    {nextRow(block)
+                      ? `No session today. Next: ${nextRow(block)!.session_name}, ${formatDate(nextRow(block)!.scheduled_on, timezone)}.`
+                      : 'No session today.'}
+                  </p>
+                ) : null}
+                <div className="card flush" style={{ boxShadow: 'none', border: '1px solid var(--border)' }} hidden={todayRows(block).length === 0}>
+                  {todayRows(block).map((s, index) => (
                     <div key={s.session_id}>
                       {index > 0 ? <div className="hair" /> : null}
                       <Link
@@ -219,7 +244,7 @@ export default async function MyProgrammePage({
 
       {/* The targets card is shared with Today since 15 Sept 2026 (mobile
           queue #8) — NutritionTargetsCard draws it for both. */}
-      <NutritionTargetsCard target={target} hasWeighIn={hasWeighIn} title="Nutrition targets" />
+      <NutritionTargetsCard target={target} title="Nutrition targets" />
     </>
   );
 }

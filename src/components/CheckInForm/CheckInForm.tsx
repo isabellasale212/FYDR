@@ -413,21 +413,13 @@ export function CheckInForm({
         <p className="subm-count" data-complete={blocked ? undefined : ''}>
           {countText}
         </p>
-        {/* Irreversibility as one line (A4), with the reasoning — who corrects
-            a wrong number, and that My Data shows both versions — behind a
-            native disclosure (C-d) rather than spelled out under every submit.
-            Said before the tap, not after: the rule is learned at the moment it
-            matters rather than discovered on a screen with no button. */}
-        <details className="subm-why">
-          <summary>
-            <span className="subm-note">You can&rsquo;t change this after you submit.</span>
-            <span className="subm-why-link">Why can&rsquo;t I edit it?</span>
-          </summary>
-          <p className="tiny subm-why-body">
-            If you get a number wrong, tell your coach &mdash; they can record a correction, and
-            My Data will show you both what they changed it to and what you first reported.
-          </p>
-        </details>
+        {/* Irreversibility as one line (A4), said before the tap. The "Why
+            can't I edit it?" disclosure (C-d) and its body — who corrects a
+            wrong number, and that My Data shows both versions — went under
+            the text rule (Isabella, 16 Sept 2026, category 1: helper prose).
+            The limit itself stays: it is the one thing the athlete must know
+            before pressing. */}
+        <p className="subm-note" style={{ margin: '0 0 var(--sp-8)' }}>You can&rsquo;t change this after you submit.</p>
         {/* BLOCKED IS aria-disabled, NOT disabled (A2) — the treatment
          * ATH-ADULT-01 built for Locked. A disabled button leaves the tab
          * order and was dimmed to unreadable; aria-disabled keeps it focusable

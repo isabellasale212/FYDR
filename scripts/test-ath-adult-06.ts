@@ -40,8 +40,10 @@ console.log('\nA1–A3. already rated');
   const branch = page.slice(page.indexOf('{existing ? ('), page.indexOf(') : closed ? ('));
   assert(/className="after-card"/.test(branch) && /<h2 className="after-heading">Already rated<\/h2>/.test(branch), '"Already rated" as the emphasised card\'s heading');
   assert(/className="after-fact num"/.test(branch) && /You rated this session \{existing\.rpe\} of 10/.test(branch) && /` at \$\{clockHM\(existing\.submitted_at, timezone\)\}`/.test(branch), 'the fact: "You rated this session N of 10 at HH:MM."');
-  assert(/You can’t change a rating yourself\. Tell your coach and they can correct it for you\./.test(branch.replace(/\s+/g, ' ')), 'the board\'s recourse sentence');
-  assert(/The original stays visible in My data, marked Corrected\./.test(branch), 'and what happens to the original');
+  /* REPINNED 16 Sept 2026 (the text rule): the recourse sentences went;
+     the one not-editable line stands, the same as the check-in's. */
+  assert(/Entered wrong, talk to staff\./.test(branch), 'the not-editable line, Isabella\'s exact words (16 Sept 2026)');
+  assert(!/Tell your coach and they can correct it/.test(branch) && !/The original stays visible in My data/.test(branch), 'and the recourse sentences are gone');
   assert(!/A submitted rating can’t be edited, by you or by anyone/.test(branch), 'the 40-word paragraph is gone');
   assert(!/<Link href="\/today">Back to today<\/Link>/.test(branch) && !/linklike/.test(branch), 'no text link');
   assert(/<div className="subm">[\s\S]*?<Link href="\/today" className="btn-primary"[\s\S]*?Back to Today/.test(branch), 'the exit is the footer button');

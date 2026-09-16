@@ -205,6 +205,16 @@ see a blank frame. Raised as O-607.
 | `--accent-rgb` | `31,111,234` | Channel triplet for alpha tints |
 | `--accent2-rgb` | `51,182,255` | Channel triplet for alpha tints |
 
+**Added 16 September 2026, Isabella's ruling (the evening queue, 1.1) — the
+first new colour tokens since the accent decision.** Both theme-split, both
+in all three theme blocks of `tokens.css`, dark values otherwise frozen.
+
+| Token | Light | Dark | Role |
+|---|---|---|---|
+| `--done` / `--done-rgb` | `#1f9d55` / `31 157 85` | `#34c07a` / `52 192 122` | **Green** for a done status card on the athlete's Today: its edge and its wash. Isabella: "Done GREEN (add a green token)". `--good` (teal) is unchanged and still means positive elsewhere; the two are not interchangeable — Done is the athlete's finished item, good is a value's standing. |
+| `--done-text` / `--done-pill-text` | `#146b3a` / `#0f5a30` | `#8fe7b6` / `#9df0c0` | The green's ink: text and the Done pill's word on its own tint (`.pill-done`), measured ≥ 4.5:1 on the wash in both themes. |
+| `--wk-strip-bg` / `--wk-strip-ink` / `--wk-strip-ink-rgb` / `--wk-strip-border` | `var(--accent)` / `#ffffff` / `255 255 255` / `rgb(255 255 255 / 0.55)` | `#ffffff` / `#121722` / `18 23 34` / `rgb(18 23 34 / 0.5)` | The emphasised week strip on Today: a filled block, signature dark blue with white ink in light, the inverse in dark ("must pass contrast both"). The day tiles are the ink at low alpha over the fill; today's number is the ink, filled. |
+
 The `*-rgb` pair exists so tints can be built as `rgba(var(--accent-rgb), 0.14)` without
 restating the hex. **The source only provides this for `--accent` and `--accent2`**, which is
 why the status pills and the `.flag-high` stripe fall back to hard-coded

@@ -39,9 +39,12 @@ corrections need an existing row and never create one).
 The session being rated, an RPE scale, a duration, and a submit button. If it is
 already rated, an "Already rated" card instead (ATH-ADULT-06, 12 September 2026):
 one emphasised card — the accent wash — with "Already rated" as the heading, the
-fact beneath at full size ("You rated this session 5 of 10 at 11:36."), then who
-can fix a wrong rating ("Tell your coach and they can correct it for you") and that
-the original stays visible in My data. The only exit is a full-width **Back to
+fact beneath at full size ("You rated this session 5 of 10 at 11:36."), then
+Isabella's exact line for a not-editable entry, **"Entered wrong, talk to
+staff."** (16 September 2026, the evening queue — it replaced "Tell your coach
+and they can correct it for you" and "the original stays visible in My data",
+helper prose under the text rule; the form's own footer line is cut to "Once
+this is sent it can't be edited." for the same reason). The only exit is a full-width **Back to
 Today** button in the footer at the bottom of the screen. If the session cannot be
 found — cancelled, another club's, or not one of yours, and the page never says
 which — the sheet is titled "Rate a session" and the same card reads "This session

@@ -43,6 +43,15 @@ export function tonnageDeltaLine(thisKg: number, lastKg: number): string {
   return `${diff > 0 ? 'up' : 'down'} ${formatKg(Math.abs(diff)).replace(/\B(?=(\d{3})+(?!\d))/g, ',')} on last week`;
 }
 
+/** The change on last week as a direction and a size — the evening queue's
+ *  "an increase or a decrease", no other words (16 Sept 2026). Null when
+ *  there is nothing to compare. */
+export function tonnageDelta(thisKg: number, lastKg: number): { dir: 'up' | 'down'; kg: number } | null {
+  const diff = Math.round((thisKg - lastKg) * 10) / 10;
+  if (diff === 0) return null;
+  return { dir: diff > 0 ? 'up' : 'down', kg: Math.abs(diff) };
+}
+
 /** Whole kilograms with a thousands separator, for the headline. */
 export function formatTonnage(kg: number): string {
   return `${Math.round(kg).toLocaleString('en-GB')} kg`;

@@ -12,7 +12,6 @@ import { fetchWellnessDay } from '@/lib/queries/wellness';
 import { CHECKIN_WINDOW_CLOSES, checkinState, gymState, nutritionState } from '@/lib/todayStatus';
 import { fetchMyOpenGymSessionToday } from '@/lib/queries/programmes';
 import { resolveTargetForDate } from '@/lib/queries/nutritionTargets';
-import { fetchLatestBodyMassForAthletes } from '@/lib/queries/bodyComposition';
 import { NutritionTargetsCard } from '@/components/NutritionTargetsCard/NutritionTargetsCard';
 import { availabilityStatus } from '@/lib/status';
 import { availabilityLine, rpeWhen, sessionMeta } from '@/lib/todayRows';
@@ -108,7 +107,6 @@ export default async function TodayPage({
     sessions,
     openGym,
     target,
-    latestMass,
     wellnessToday,
     gymDoneToday,
   ] = await Promise.all([
@@ -129,7 +127,6 @@ export default async function TodayPage({
       /* The day's nutrition targets, below the schedule (mobile queue #8,
          15 Sept 2026) — the same resolver and card Programme uses. */
       resolveTargetForDate(db, athleteId, today),
-      fetchLatestBodyMassForAthletes(db, orgId, [athleteId], { since: '1900-01-01', asOf: today }),
       /* The three status cards (16 Sept 2026, 1.1): today's check-in as a
          fact — done is done whether or not it was expected — and whether a
          gym session log was completed today (the Programme page's own
@@ -506,7 +503,7 @@ export default async function TodayPage({
 
       {/* The day's targets, right below the day's schedule (Isabella, 15 Sept
           2026, mobile queue #8) — the card Programme draws, drawn here too. */}
-      <NutritionTargetsCard target={target} hasWeighIn={latestMass.has(athleteId)} title="Fuelling today" />
+      <NutritionTargetsCard target={target} title="Fuelling today" />
 
       {/* "Working towards" keeps its card below Today; the seven-day strip
           that shared it moved above To do (see the section under the
@@ -545,10 +542,13 @@ export default async function TodayPage({
           2026 (1.1): both are on /me/status, which the line above the week
           opens. Everything they said is still one tap away. */}
 
-      {/* Plain text below the card, as drawn: a fact, not a status banner. */}
+      {/* Plain text below the card, as drawn: a fact, not a status banner.
+          "Set by your coach." went under the text rule (16 Sept 2026,
+          category 2: orientation) — and had measured 3.9:1 on the tinted
+          ground in light. */}
       {myAllocation ? (
         <p className="team-line" role="status">
-          Team this week: {myAllocation.team_name}. <span className="dot">Set by your coach.</span>
+          Team this week: {myAllocation.team_name}.
         </p>
       ) : null}
 

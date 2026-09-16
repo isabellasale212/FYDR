@@ -172,11 +172,11 @@ export default async function RpePage({
               {existing.submitted_at ? ` at ${clockHM(existing.submitted_at, timezone)}` : ''}
               .
             </p>
-            <p className="after-note">
-              You can&rsquo;t change a rating yourself. Tell your coach and they can correct it for
-              you.
-            </p>
-            <p className="after-note">The original stays visible in My data, marked Corrected.</p>
+            {/* The two sentences of recourse went under the text rule
+                (Isabella, 16 Sept 2026, category 1); the exact wording for a
+                not-editable entry stands, the same line the check-in and My
+                data carry. */}
+            <p className="after-note">Entered wrong, talk to staff.</p>
           </div>
           <div className="subm">
             <Link href="/today" className="btn-primary" style={{ display: 'flex', justifyContent: 'center' }}>

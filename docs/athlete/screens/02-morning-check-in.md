@@ -30,9 +30,11 @@ screen, the action directly on the tabs with the bar's hairline between them
 question. The page scrolls clear of the whole block — footer, bar and inset,
 the footer's height measured (`AthleteFooterDock`) — never under it. It reads, on its own line, `0 of 6 answered · 6 to go`, counting
 down to `All six answered`, which is shown as a green chip. Under the count,
-one line — *You can't change this after you submit.* — with **Why can't I edit
-it?** beside it, a disclosure that opens the explanation (tell your coach; they
-record a correction; My data shows both versions). Then the submit button,
+one line — *You can't change this after you submit.* Until the evening of 16
+September 2026 a **Why can't I edit it?** disclosure sat beside it, opening
+the explanation (tell your coach; they record a correction; My data shows both
+versions); it went under Isabella's text rule (helper prose, category 1) and
+the limit stands alone. Then the submit button,
 **Submit entry**. While anything is outstanding the button is shown in the
 secondary style and is `aria-disabled` — announced, focusable, but a tap does
 nothing; it is never dimmed. Once every question is answered it becomes the
@@ -41,11 +43,12 @@ primary button.
 **If today is already submitted, you see an "Already submitted" card instead of a
 form** (ATH-ADULT-04, 12 September 2026): one emphasised card — the accent wash —
 with "Already submitted" as the heading, the time you sent it beneath at full
-size, then who can correct it ("Tell your coach or medical staff…") and that the
-original stays visible in My data. When staff have corrected the day, a neutral
+size, then Isabella's exact line for a not-editable entry — **"Entered wrong,
+talk to staff."** (16 September 2026, the evening queue; it replaced "Tell your
+coach or medical staff…" and "the original stays visible in My data", helper
+prose under the text rule). When staff have corrected the day, a neutral
 "Corrected" pill sits beside the heading and a line beneath the fact reads
-"Corrected by {name} on {date}. What you first reported is in My data." — the same
-words as My data's history row; naming the staff member is permitted
+"Corrected by {name} on {date}." — the same words as My data's history row; naming the staff member is permitted
 (`docs/athlete/visibility.md` withholds nothing about it) and the page reads the
 day's revision chain to know (ATH-ADULT-04 C1/C4, decided 12 September 2026). The
 "45 seconds" subhead is not shown, since there is nothing to start. The only exit is a full-width button in the footer at
@@ -107,7 +110,6 @@ answers and then refuse them.
 | Five scales | Body | Sets a value 1 to 5 | stays | nothing yet | no | already submitted |
 | Sleep stepper | Above the scales | First tap sets 7.0 from empty; then plus or minus half an hour, 0 to 14 | stays | nothing yet | no | already submitted |
 | Add heart rate or weight | Below the scales | Opens the two optional fields | stays | nothing yet | no | already submitted |
-| Why can't I edit it? | Footer, beside the irreversibility line | Opens the explanation of who corrects a wrong entry | stays | nothing | no | already submitted |
 | Submit entry | Footer, pinned to the bottom of the screen | Saves the entry. `aria-disabled` (secondary style, not dimmed) while any of the six is unanswered or a field is out of range; the count line above it says which | back to Today | one `wellness_entries` row | **No confirmation step** | already submitted |
 
 ## 7. Offline and sync
@@ -147,11 +149,11 @@ None.
 
 **The first one** (PATTERN-S9 artboard 5, 14 September 2026). The first run
 ends on this form, not on a confirmation: agreeing on the decision screen lands
-on `/check-in?first=1`, and the form carries one emphasised card above the
-scales — "Your first one — There is no score and no streak. Answer it as it is
-— the numbers are only useful if they are true." "First" is a fact about the
-record (no check-in ever, any date), not the query flag, so the card goes the
-moment one is submitted and never returns. Everything else is ATH-ADULT-03
+on `/check-in?first=1`. The emphasised card it carried above the scales —
+"Your first one — There is no score and no streak. Answer it as it is — the
+numbers are only useful if they are true." — went under Isabella's text rule
+on 16 September 2026 (helper prose, category 1); the first run now lands on
+the plain form. Everything else is ATH-ADULT-03
 unchanged: sleep starts empty and counts, both anchors carry their numeral,
 "0 of 6 answered · 6 to go", the action blocked rather than dimmed. The
 submit stays at its ATH-ADULT-03 height (measured 53px; the board's 56px

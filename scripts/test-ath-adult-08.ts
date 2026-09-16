@@ -41,7 +41,10 @@ console.log('A1–A3, A8, A9. the answered state');
   assert(/className="after-fact"/.test(branch) && /You answered/.test(branch) && /answerLabel/.test(branch), 'the fact "You answered Yes." — the spec\'s words');
   assert(/'Yes'/.test(page) && /'Roughly'/.test(page) && /'No'/.test(page) && !/most days/.test(page) && !/Some days/.test(page), 'Yes / Roughly / No, never the board\'s "Yes, most days / Some days" (D1)');
   assert(/Sent \{formatDate/.test(branch) || /Sent /.test(branch), '"Sent {date} at {time}." beneath the fact');
-  assert(/This is the one entry you can change yourself\. A correction creates a new revision and the original is kept\./.test(branch.replace(/\s+/g, ' ')), 'the existing sentence about correction');
+  /* REPINNED 16 Sept 2026 (Isabella's evening queue, the text rule): the
+     correction sentence was helper prose (category 1) and is gone; the
+     footer's "once" caption (C3) is the limit that stays. */
+  assert(!/This is the one entry you can change yourself/.test(branch), 'the correction sentence is gone (the text rule, 16 Sept 2026)');
   assert(!/linklike/.test(branch) && !/Change this answer/.test(branch), 'no text links, and "Change this answer" is gone');
   const footer = /<div className="subm subm-stack">[\s\S]*?<\/div>\s*<\/>/.exec(branch)?.[0] ?? '';
   assert(/<Link href="\/today" className="btn-primary"[\s\S]*?Back to Today/.test(footer), '"Back to Today" is the primary');
@@ -76,7 +79,7 @@ console.log('\nC1. once — the migration, the read, and the spent state before 
   assert(/<h2 className="after-heading">\s*Already answered/.test(spentBranch) && /pill pill-neutral[^>]*>\s*Corrected/.test(spentBranch), 'the spent state: "Already answered" with the Corrected pill beside it');
   assert(/Corrected \{correctedAt\}\. Originally \{priorLabel\}\./.test(spentBranch.replace(/\s+/g, ' ')), '"Corrected {date} at {time}. Originally Yes."');
   assert(/You have used your one correction for this check-in, so it can’t be changed again\./.test(spentBranch.replace(/\s+/g, ' ')), '"You have used your one correction for this check-in, so it can’t be changed again."');
-  assert(/If it still looks wrong, tell your coach\. Both versions stay visible in My data\./.test(spentBranch.replace(/\s+/g, ' ')), 'the coach as the remaining route');
+  assert(/Entered wrong, talk to staff\./.test(spentBranch) && !/Both versions stay visible in My data/.test(spentBranch), 'the not-editable line, Isabella\'s exact words (16 Sept 2026), in place of the coach sentence');
   assert(/Back to Today/.test(spentBranch) && !/Correct this answer/.test(spentBranch), 'one exit: Back to Today — no correction offered');
 }
 
@@ -87,8 +90,8 @@ console.log('\nC2. a saved correction stays on the page');
   const saved = page.slice(page.indexOf(': existing && justSaved ? ('), page.indexOf(': existing && spent ? ('));
   assert(/<h2 className="after-heading">Correction saved<\/h2>/.test(saved), '"Correction saved" as the heading');
   assert(/You answered/.test(saved) && /answerLabel/.test(saved), 'the new answer as the fact');
-  assert(/Saved \{correctedAt\}\. Your original answer, \{priorLabel\}, is kept\./.test(saved.replace(/\s+/g, ' ')), '"Saved {date} at {time}. Your original answer, Yes, is kept."');
-  assert(/My data shows the week marked Corrected, with both versions\./.test(saved) && /This answer can’t be changed again\./.test(saved), 'where both versions live, and that it cannot change again');
+  assert(/Saved \{correctedAt\}\. Originally \{priorLabel\}\./.test(saved.replace(/\s+/g, ' ')), '"Saved {date} at {time}. Originally Yes." (the text rule, 16 Sept 2026: the fact, not the sentence)');
+  assert(!/My data shows the week marked Corrected/.test(saved) && /This answer can’t be changed again\./.test(saved), 'no "where both versions live"; the limit stays');
   assert(/Back to Today/.test(saved) && !/Correct this answer/.test(saved), 'one exit: Back to Today');
   assert(/This is your one correction — you can’t change it again after you save\./.test(form.replace(/\s+/g, ' ')), 'the correction footer says it is the one correction');
 }

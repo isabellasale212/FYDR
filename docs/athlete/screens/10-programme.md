@@ -22,6 +22,20 @@ reads as two blocks, never as one programme's sessions under another's name
 and listed every live session beneath. Nutrition guidance is reached from
 here.
 
+**TODAY'S SESSION ONLY, 16 September 2026** (Isabella's evening queue, 1.4:
+"show only the gym session scheduled for today; no previous days' sessions;
+the day's nutrition target stays below"). A block's card is titled **Today**
+and lists the session whose `scheduled_on` (the assignment's start counted
+forward, migration 0132) is today — plus a session opened or logged today
+under another date, so the way back into an open session never disappears —
+and nothing else. A block with nothing today says **"No session today. Next:
+Upper B, Thu 17 Sept."** — the next session named by its date, as words, not
+a row (the next session as a row is on `docs/after-friday.md` with a
+recommendation). An undated block (no assignment start) cannot say which
+session is today's and lists its sessions as before. The block's eyebrow
+names the block and week the athlete is IN — today's session's, else the
+next one's — not the first session's.
+
 **Block names are free text a coach types**, with no fixed list. The screen
 explains the well known periodisation phase names by exact, case insensitive
 lookup. "Accumulation" is the one confirmed live in this build's data. **An
@@ -37,7 +51,7 @@ Nothing on this screen. Logging happens on `/gym/[sessionId]`.
 | Metric ID | Label | Meaning | Window | When missing |
 |---|---|---|---|---|
 | MET-030 | Prescribed load | What to lift | Per session | says so plainly |
-| MET-031 to MET-035 | Nutrition targets | Read on this screen from `protein_g`, `energy_kcal`, `fluid_ml`, drawn as four figures at `--fs-28` in two columns with the unit beside and the label under (16 September 2026, bigger numbers and less wording — the same card Today draws); under them a provenance line — "The club default target, the same for everyone on it." / "Your group's target." / "Set for you." — with "Not scaled to your weight — no weigh-in on record." when there is none (PATTERN-S5 C7, Isabella, 13 September 2026) | Current | empty |
+| MET-031 to MET-035 | Nutrition targets | Read on this screen from `protein_g`, `energy_kcal`, `fluid_ml`, drawn as four figures at `--fs-28` in two columns with the unit beside and the label under (16 September 2026, bigger numbers and less wording — the same card Today draws). The provenance line beneath them — "The club default target, the same for everyone on it." / "Your group's target." / "Set for you." / "Not scaled to your weight — no weigh-in on record." (PATTERN-S5 C7, 13 September 2026) — is gone since the evening of 16 September under the text rule (a definition sentence, category 3, removed from the athlete app) | Current | empty |
 
 ## 6. Every thing you can act on
 

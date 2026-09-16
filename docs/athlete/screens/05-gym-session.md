@@ -27,8 +27,13 @@ two target-size tokens `--hit-lg` 56px and `--hit-md` 52px; 10 C1 and 11 C1 with
 it). The header is pinned and never scrolls away: one eyebrow line
 ("PRE-SEASON STRENGTH · ACCUMULATION · WEEK 1 · DAY 1"), the session name with
 **"Finish early"** beside it — a dashed neutral outline, 44px, only while sets
-remain — and the accent progress bar with its running count and the clock
-("3 of 12 sets · 00:12:40", "· 2 waiting to send" when the outbox holds sets).
+remain — and the accent progress bar with its running count and the start
+time ("3 of 12 sets · Started 07:05", "· 2 waiting to send" when the outbox
+holds sets). **No running clock since 16 September 2026** (Isabella, after
+the second walkthrough): the elapsed count ran away on a session left open in
+the morning — the one visible consequence of deferring the timer's pause — so
+the row says when the session was started, in the club's clock, and nothing
+ticks. The timer and its pause are not built (`docs/after-friday.md`).
 
 **"View plan", 16 September 2026** (Isabella's evening queue, 1.6 —
 appearance only): above the card, a ghost pill — "View plan · 4 exercises" —

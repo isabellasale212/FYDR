@@ -19,7 +19,8 @@
  *      session (the 8 Sept file's own warning, still the one that matters)
  *
  * What the 8 Sept file guarded against and still holds: no Close/timer row,
- * no floating finish bar, the elapsed clock on the progress row.
+ * no floating finish bar. The elapsed clock on the progress row went on
+ * 16 Sept 2026 — the row says "Started HH:MM" instead.
  */
 import { readFileSync } from 'node:fs';
 
@@ -147,7 +148,10 @@ console.log('\n7. what the 8 Sept guard protected still holds');
   for (const dead of ['.gym-head-row', '.gym-close', '.gym-clock', '.gym-footer']) {
     assert(!new RegExp(`\\n${dead.replace('.', '\\.')}\\s*\\{`).test(css), `${dead} is gone from the stylesheet`);
   }
-  assert(/setInterval/.test(src) && /elapsed\(startedAt, now\)/.test(src), 'the elapsed clock ticks on the progress row');
+  /* REPINNED 16 Sept 2026 (Isabella, after the second walkthrough): no
+     running clock — the row says when the session was started, "Started
+     07:05", in the club's clock. The timer (and its pause) is not built. */
+  assert(!/setInterval/.test(src) && !/elapsed\(/.test(src) && /Started \{formatTime\(startedAt, timezone\)\}/.test(src), 'no clock: the progress row says "Started HH:MM" (16 Sept 2026)');
   assert(/gym-head-eyebrow/.test(src) && /gym-head-title/.test(src), 'one eyebrow line and the title');
 }
 

@@ -35,9 +35,12 @@ The Friday plan itself is in `docs/friday-demo-checklist.md`.
   small feature: the day's supplement guidance beneath the four targets,
   from the nutritionist's plan. Nothing in the schema carries it yet.
 - **The gym logger's timer pausing when the app is backgrounded.** Not built
-  (1.6 said not to). The clock counts from `started_at` and keeps counting
-  when the phone is put down; a pause would need a client-side "away since"
-  and a rule for what a paused minute means to the session's minutes.
+  (1.6 said not to). Since 16 September the logger shows no running clock at
+  all — "Started 07:05" in its place (Isabella's ruling after the second
+  walkthrough), so nothing runs away while the pause is deferred. Building
+  the timer would mean a client-side "away since" and a rule for what a
+  paused minute means to the session's minutes; the summary's minutes
+  (`minutesBetween(startedAt, completedAt)`) are unchanged by this.
 - **The gym logger's edit-restricted-to-current-day rule.** Not built (1.6
   said not to). Today a set is correctable from the logger while the session
   is open and from My data's session page afterwards, on any day. The rule

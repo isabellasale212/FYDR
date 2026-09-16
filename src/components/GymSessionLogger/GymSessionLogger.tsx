@@ -19,16 +19,15 @@ import { HumanError, toUserMessage, withWriteTimeout } from '@/lib/writeErrors';
 import { loadLabel, schemeLine } from '@/lib/gymPrescription';
 import { acquireWakeLock, buzz, releaseWakeLock } from '@/lib/wakeLock';
 import { bestSetsByExercise, formatKg, minutesBetween, newBests, sessionVolumeKg, setsLine, wasLine, type PriorBest } from '@/lib/gymSummary';
-import { formatDate } from '@/lib/format';
+import { formatDate, formatTime } from '@/lib/format';
 
-function elapsed(startedAt: string | null, now: number): string {
-  if (!startedAt) return '00:00';
-  const ms = Math.max(0, now - new Date(startedAt).getTime());
-  const total = Math.floor(ms / 1000);
-  const mm = String(Math.floor(total / 60)).padStart(2, '0');
-  const ss = String(total % 60).padStart(2, '0');
-  return `${mm}:${ss}`;
-}
+/* NO CLOCK (Isabella, 16 Sept 2026, after the second walkthrough). The
+   progress row used to count the minutes since the log was started, and a
+   session left open in the morning read as hours elapsed by the afternoon —
+   the one visible consequence of deferring the timer's pause
+   (docs/after-friday.md). The row now says when it was started, "Started
+   07:05", in the club's clock: honest, and nothing runs away. The timer is
+   not built. */
 
 type Props = {
   orgId: string;
@@ -236,7 +235,6 @@ export function GymSessionLogger({
   }, [adjust, draftKey]);
 
   const [sessionRpe, setSessionRpe] = useState('');
-  const [now, setNow] = useState<number | null>(null);
   /* The set being corrected, by its live id — reached from a logged chip.
      While it is open the two numbers edit the correction and the footer
      reads Save correction / Cancel (ATH-ADULT-11 C1). */
@@ -248,15 +246,6 @@ export function GymSessionLogger({
   /* The set that just landed, for the "Set 2 logged · 102.5 kg × 8 · Correct
      it" strip above the card. */
   const [lastLoggedId, setLastLoggedId] = useState<string | null>(null);
-
-  /* Ticks only while the session is open and only when there is a start to
-     count from, so a completed session does not keep a timer alive. */
-  useEffect(() => {
-    if (alreadyComplete || !startedAt) return;
-    setNow(Date.now());
-    const id = setInterval(() => setNow(Date.now()), 1000);
-    return () => clearInterval(id);
-  }, [alreadyComplete, startedAt]);
 
   const setsByExercise = useMemo(() => {
     const map = new Map<string, LoggedSet[]>();
@@ -721,7 +710,7 @@ export function GymSessionLogger({
             ) : null}
             {!alreadyComplete && startedAt ? (
               <>
-                {' '}&middot; {now !== null ? elapsed(startedAt, now) : '·'}
+                {' '}&middot; Started {formatTime(startedAt, timezone)}
               </>
             ) : null}
           </span>

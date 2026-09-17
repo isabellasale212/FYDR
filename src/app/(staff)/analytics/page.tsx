@@ -1,83 +1,127 @@
-import Link from 'next/link';
-import { AnalyticsPanel, type PanelBand } from '@/components/AnalyticsPanel/AnalyticsPanel';
-import { GroupFilter } from '@/components/GroupFilter/GroupFilter';
-import { ReportSelectNav } from '@/components/ReportSelectNav/ReportSelectNav';
+import { AnalyticsPreview, type PreviewSample } from '@/components/AnalyticsPreview/AnalyticsPreview';
+import { DesktopOnlyNotice } from '@/components/DesktopOnlyNotice/DesktopOnlyNotice';
 import { ANALYTICS, hasAnyRole } from '@/lib/access';
-import { METRICS, type MetricDef } from '@/lib/analyticsBuilder';
-import {
-  DEFAULT_WINDOW_DAYS,
-  PANELS,
-  WINDOWS,
-  axisTop,
-  axisWords,
-  bucketValue,
-  bucketsFor,
-  fmt,
-  grainFor,
-  grainWords,
-  groundWords,
-  measureFor,
-  measureName,
-  squadBand,
-  suppression,
-  titleFor,
-  zoneFor,
-  zoneWords,
-  type PanelMeasure,
-} from '@/lib/analyticsPanels';
-import { addDays, formatDate, todayIso } from '@/lib/format';
-import { groupScopeLabel } from '@/lib/groupFilter';
-import { resolveGroupFilter } from '@/lib/groupFilter.server';
-import { fetchBuilderAthletes, fetchPerAthleteDaily } from '@/lib/queries/analytics';
-import { fetchGroups } from '@/lib/queries/groups';
-import { fetchThresholds } from '@/lib/queries/thresholds';
-import { isRpeAnalyticsMetric, rpeOffLine } from '@/lib/rpeSetting';
 import { refuse, requireStaff } from '@/lib/session';
 import { isPremium } from '@/lib/tier';
 
 export const metadata = { title: 'Analytics · Fydr' };
 
-/* ANALYTICS — PATTERN-S7 C6 (Isabella, 2026-09-13; built 2026-09-14), the
- * board "PATTERN-S7 · FINAL" artboards 9–11. A WHOLLY PREMIUM DESTINATION
- * covering every metric, GPS included (docs/decisions/absence-rule.md,
- * 14 September): under D-20 it is absent from a basic club's sidebar and
- * refuses at the URL — no upsell page, discovery lives on the Settings plan
- * page — and at the database analytics_daily_rows (0125) returns nothing to
- * a club that is not premium, whatever the page does. Four fixed panels of
- * bars — the load panel (session load by default, or any of the GPS family;
- * its heading follows the measure), Wellness, Gym volume, Acute to chronic
- * — one athlete against the squad's spread, or
- * against the club's zone where one is set; Compare two names each series at
- * the end of its own bars; the group filter is the population compared
- * against. Every panel states what it measures, over
- * what window, what the ground is, and n, in one line under the title —
- * never a tooltip. The axis starts at zero and the axis line says so. One
- * bar per day up to a fortnight, one per week beyond, summed for a volume
- * measure and meaned for a scored one (lib/analyticsPanels). Hover or tap a
- * bar for its value; a tap stays. A period with nothing is a dashed stub
- * that reads "Not submitted" (or the measure's own words). Below three bars
- * with a value the panel is withheld and says why, with one action.
+/* ANALYTICS — A DESIGN PREVIEW (17 September 2026). The page draws four
+ * charts from the SAMPLE arrays below while the analytics queries are
+ * built: session load over the weeks, the acute to chronic ratio across the
+ * squad, wellness readiness with its band, total distance by session type.
+ * A visible notice says so. Nothing on the page reads the database beyond
+ * the two gates every version of this page has carried:
+ *
+ *   - D-02: Analytics is the sport scientist's alone (ANALYTICS);
+ *   - D-20 / 0125: a wholly premium destination — absent from a basic club's
+ *     sidebar (PREMIUM_ONLY) and refused at the URL, logged like any other
+ *     refusal; and analytics_daily_rows returns nothing to a club that is
+ *     not premium whatever the page does. Neither gate changed here.
+ *
+ * The three dropdowns — group, date range, measure — are client state in
+ * AnalyticsPreview and swap which of the sample series is drawn; no URL, no
+ * cookie, no read. The group filter's chips are not on this page while it
+ * shows sample data: there is no scope to apply them to (CLAUDE.md §3 is
+ * about athlete data, and none is here). Desktop-only, the reports' rule:
+ * below 768px the notice stands in for the page and the More sheet carries
+ * no Analytics row (shell.ts).
+ *
+ * What this replaced, and where it went: PATTERN-S7 C6's four data panels
+ * (lib/analyticsPanels, components/AnalyticsPanel, fetchPerAthleteDaily
+ * through analytics_daily_rows) are untouched in the tree and are what the
+ * real page will draw from when the queries are ready; the tier gate test
+ * (800_analytics_tier_gate_test.sql) still holds them to the premium rule.
+ * docs/screens/42-analytics.md records both states.
  *
  * NO EXPORT. A question worth keeping leaves as a report — the thing with a
  * definition, a row count, a print layout and an audit row.
- *
- * This replaced the four day-only boards with their metric dropdowns and
- * the coloured chart family, and with it /analytics/build (D2: "stays until
- * C6 replaces it"). All four panels read real tables through the same engine
- * as before (fetchPerAthleteDaily, one code path for the collapse, the ACWR
- * trailing ratio and the in_data denominator). docs/screens/42-analytics.md.
  */
 
-type SearchParams = Promise<Record<string, string | string[] | undefined>>;
+/* ---------------------------------------------------------------------------
+ * SAMPLE DATA. Every number the charts draw. Deterministic, plausible for a
+ * Super Series club, and named so nobody mistakes it for a read:
+ *   session load in arbitrary units (CR-10 rating × minutes, MET-007), summed
+ *   per athlete over the week and averaged across the group — a 7 × 75-minute
+ *   session is 525 AU, so four or five a week land around 2,000–3,400;
+ *   total distance in metres (MET-017), the same collapse — 3–6 km a session;
+ *   the ratio (MET-010) 0.6–1.6; readiness (MET-002) 40–95.
+ * The twelve weeks are the demo club's own window: 29 June to 14 September.
+ * ------------------------------------------------------------------------- */
+const SAMPLE_WEEKS = ['29 Jun', '6 Jul', '13 Jul', '20 Jul', '27 Jul', '3 Aug', '10 Aug', '17 Aug', '24 Aug', '31 Aug', '7 Sept', '14 Sept'] as const;
 
-function metricFor(m: PanelMeasure): MetricDef {
-  const def = METRICS.find((x) => x.key === m.metric);
-  if (!def) throw new Error(`Unknown metric ${m.metric}`);
-  return def;
-}
+/** Week 4 is the deload; weeks 6, 8, 10 and 11 carry a match. */
+const SAMPLE_SESSION_LOAD_AU = {
+  forwards: [2470, 2810, 3120, 2190, 3120, 3190, 2860, 3380, 3010, 3420, 3290, 2790],
+  backs: [2230, 2660, 2890, 2020, 2840, 3090, 2630, 3250, 2900, 2990, 3030, 2740],
+} as const;
 
-export default async function AnalyticsPage({ searchParams }: { searchParams: SearchParams }) {
-  const { db, orgId, orgName, timezone, tier, claims, collectsRpe } = await requireStaff();
+const SAMPLE_TOTAL_DISTANCE_M = {
+  forwards: [14600, 15500, 18100, 11900, 17600, 19200, 17000, 19100, 17000, 18900, 17700, 16400],
+  backs: [17100, 19000, 20600, 13700, 21700, 21700, 20900, 22500, 20500, 22900, 21700, 20700],
+} as const;
+
+/** Sixteen athletes, the trailing ratio as it stands today. */
+const SAMPLE_ACWR = [
+  { name: 'Okonkwo', group: 'forwards', ratio: 1.02 },
+  { name: 'Aholelei', group: 'forwards', ratio: 0.94 },
+  { name: 'Tameifuna', group: 'forwards', ratio: 1.11 },
+  { name: 'Koloofai', group: 'forwards', ratio: 0.87 },
+  { name: 'Hastings', group: 'forwards', ratio: 1.21 },
+  { name: 'Ross', group: 'forwards', ratio: 0.76 },
+  { name: 'Nadolo', group: 'forwards', ratio: 1.05 },
+  { name: 'Sullivan', group: 'forwards', ratio: 0.98 },
+  { name: 'Chapman', group: 'backs', ratio: 1.58 },
+  { name: 'Wren', group: 'backs', ratio: 0.91 },
+  { name: 'Moroney', group: 'backs', ratio: 1.14 },
+  { name: 'Selby', group: 'backs', ratio: 0.68 },
+  { name: 'Ferris', group: 'backs', ratio: 1.31 },
+  { name: 'Fox', group: 'backs', ratio: 1.03 },
+  { name: 'Grant', group: 'backs', ratio: 0.83 },
+  { name: 'Reid', group: 'backs', ratio: 1.19 },
+] as const;
+
+/** 84 days, oldest first: the group's mean readiness each morning. Dips in
+ *  the match weeks and after the hard days, a lift in the deload week. */
+const SAMPLE_READINESS = {
+  forwards: [
+    74, 74, 75, 74, 71, 73, 71, 73, 74, 74, 70, 68, 67, 74, 76, 71, 74, 77, 74, 75, 72, 71, 74, 69, 70, 69, 69, 73, 74, 76, 73, 74, 71, 74, 74, 70, 72, 72, 72, 69, 67, 66, 69, 67,
+    70, 71, 73, 72, 77, 76, 67, 63, 68, 65, 70, 69, 68, 72, 73, 71, 67, 68, 75, 74, 68, 63, 62, 59, 65, 65, 70, 71, 68, 72, 68, 71, 70, 72, 70, 68, 74, 74, 72, 77,
+  ],
+  backs: [
+    76, 77, 75, 72, 68, 70, 72, 77, 77, 75, 75, 75, 72, 74, 73, 77, 71, 75, 70, 74, 74, 76, 80, 73, 72, 76, 77, 75, 80, 81, 73, 73, 69, 71, 75, 70, 71, 64, 64, 67, 67, 68, 74, 74,
+    72, 70, 72, 77, 81, 77, 72, 67, 70, 69, 66, 66, 71, 73, 74, 75, 69, 75, 75, 73, 69, 66, 67, 68, 65, 69, 70, 74, 69, 70, 69, 73, 72, 74, 72, 70, 72, 75, 75, 80,
+  ],
+} as const;
+
+/** Metres per athlete per week, by the session's type on the schedule. The
+ *  three sum to SAMPLE_TOTAL_DISTANCE_M. */
+const SAMPLE_DISTANCE_BY_TYPE_M = {
+  forwards: {
+    training: [12200, 15500, 18100, 11900, 15100, 13000, 17000, 12500, 14400, 12000, 9900, 16400],
+    match: [0, 0, 0, 0, 0, 6200, 0, 6600, 0, 6900, 6400, 0],
+    testing: [2400, 0, 0, 0, 2500, 0, 0, 0, 2600, 0, 1400, 0],
+  },
+  backs: {
+    training: [14700, 19000, 20600, 13700, 19200, 14900, 20900, 15200, 17900, 15300, 13300, 20700],
+    match: [0, 0, 0, 0, 0, 6800, 0, 7300, 0, 7600, 7000, 0],
+    testing: [2400, 0, 0, 0, 2500, 0, 0, 0, 2600, 0, 1400, 0],
+  },
+} as const;
+
+const SAMPLE: PreviewSample = {
+  weeks: SAMPLE_WEEKS,
+  weekly: {
+    session_load: SAMPLE_SESSION_LOAD_AU,
+    total_distance: SAMPLE_TOTAL_DISTANCE_M,
+  },
+  acwr: SAMPLE_ACWR,
+  readiness: SAMPLE_READINESS,
+  distanceByType: SAMPLE_DISTANCE_BY_TYPE_M,
+};
+
+export default async function AnalyticsPage() {
+  const { db, orgName, tier, claims } = await requireStaff();
   /* D-02: Analytics is the sport scientist's alone. Confirmed 2026-09-05. */
   if (!hasAnyRole(claims.roles, ANALYTICS)) await refuse(db, 'analytics', '/analytics');
   /* D-20, confirmed 14 September 2026: a wholly premium destination is gone
@@ -88,253 +132,32 @@ export default async function AnalyticsPage({ searchParams }: { searchParams: Se
    * downward only. The database refuses too (0125). */
   if (!isPremium(tier)) await refuse(db, 'analytics_premium', '/analytics');
 
-  const params = await searchParams;
-  const groupIds = await resolveGroupFilter(params.groups);
-  const [groups, athletes, thresholds] = await Promise.all([fetchGroups(db, orgId), fetchBuilderAthletes(db, orgId, groupIds), fetchThresholds(db, orgId, false)]);
-  const scopeLabel = groupScopeLabel(groups, groupIds);
-
-  /* Athlete A defaults to the first in scope so the screen is never empty on
-   * arrival. Compare two is opt-in; B defaults to the next athlete. */
-  const aId = typeof params.a === 'string' && athletes.some((x) => x.id === params.a) ? params.a : (athletes[0]?.id ?? null);
-  const comparing = params.compare === '1';
-  const bId =
-    comparing && typeof params.b === 'string' && athletes.some((x) => x.id === params.b) && params.b !== aId
-      ? params.b
-      : comparing
-        ? (athletes.find((x) => x.id !== aId)?.id ?? null)
-        : null;
-  const a = athletes.find((x) => x.id === aId) ?? null;
-  const b = athletes.find((x) => x.id === bId) ?? null;
-
-  /* One window for the page, clamped to the offered list. The grain follows it. */
-  const days = (typeof params.w === 'string' && WINDOWS.find((w) => String(w.days) === params.w)?.days) || DEFAULT_WINDOW_DAYS;
-  const grain = grainFor(days);
-  const today = todayIso(timezone);
-  const range = { from: addDays(today, -(days - 1)), to: today };
-  const buckets = bucketsFor(range.from, range.to, grain);
-
-  const qs = (next: Record<string, string | undefined>) => {
-    const sp = new URLSearchParams();
-    const groupsQs = Array.isArray(params.groups) ? params.groups.join(',') : params.groups;
-    if (groupsQs) sp.set('groups', groupsQs);
-    if (aId) sp.set('a', aId);
-    if (bId) sp.set('b', bId);
-    if (comparing) sp.set('compare', '1');
-    if (days !== DEFAULT_WINDOW_DAYS) sp.set('w', String(days));
-    for (const p of PANELS) if (p.param && typeof params[p.param] === 'string') sp.set(p.param, params[p.param] as string);
-    for (const [k, v] of Object.entries(next)) {
-      if (v === undefined) sp.delete(k);
-      else sp.set(k, v);
-    }
-    const q = sp.toString();
-    return q ? `?${q}` : '';
-  };
-  const wider = WINDOWS.find((w) => w.days > days) ?? null;
-
-  /* Who set each zone rule: the thresholds read carries created_by; the name
-   *  is read once for every rule a panel might quote. */
-  const setterIds = [...new Set(thresholds.map((t) => t.created_by).filter((x): x is string => !!x))];
-  const setters = new Map<string, string>();
-  if (setterIds.length > 0) {
-    const { data } = await db.from('users').select('id, full_name').eq('org_id', orgId).in('id', setterIds);
-    for (const u of data ?? []) setters.set(u.id, u.full_name);
-  }
-
-  const panelData = a
-    ? await Promise.all(
-        PANELS.map(async (panel) => {
-          const m = measureFor(panel, panel.param ? params[panel.param] : undefined);
-          const metric = metricFor(m);
-          const rpeOff = !collectsRpe && isRpeAnalyticsMetric(metric.key);
-          if (rpeOff) return { panel, m, metric, rpeOff: true as const };
-          /* The whole scope in one read: A's bars, B's bars and the squad's
-           * spread all come from the same per-athlete daily maps. */
-          const daily = await fetchPerAthleteDaily(db, orgId, metric, range, groupIds, null);
-          const valuesA = daily.perAthlete.get(a.id) ?? new Map<string, number>();
-          const valuesB = b ? (daily.perAthlete.get(b.id) ?? new Map<string, number>()) : null;
-          const seriesA = buckets.map((bk) => bucketValue(valuesA, bk, m.measure));
-          const seriesB = valuesB ? buckets.map((bk) => bucketValue(valuesB, bk, m.measure)) : null;
-          const zone = zoneFor(panel, thresholds);
-          const bands: PanelBand[] = buckets.map((bk) => {
-            const e = squadBand(daily.perAthlete, bk, m.measure);
-            return e ? { lo: e.lo, hi: e.hi } : null;
-          });
-          /* n for the definition line: athletes in scope with any value in the window. */
-          let nWithData = 0;
-          for (const [, values] of daily.perAthlete) if ([...values.keys()].some((d) => d >= range.from && d <= range.to)) nWithData += 1;
-          const zoneRule = zone ? thresholds.find((t) => zone.names.includes(t.name)) ?? null : null;
-          const zoneText = zone ? zoneWords(zone, m, zoneRule?.created_by ? (setters.get(zoneRule.created_by) ?? null) : null, formatDate(zone.setAt.slice(0, 10), timezone)) : null;
-          const top = axisTop(panel, m, [...seriesA, ...(seriesB ?? []), ...bands.map((e) => e?.hi ?? null), zone?.hi ?? null]);
-          const points = seriesA.filter((v) => v !== null).length;
-          const held = suppression({
-            points,
-            buckets: buckets.length,
-            grain,
-            days,
-            athleteName: `${a.first_name} ${a.last_name}`,
-            widenHref: wider ? `/analytics${qs({ w: String(wider.days) })}` : null,
-            reportHref: `/reports/athlete/${a.id}`,
-          });
-          const lastIdx = (() => { for (let i = seriesA.length - 1; i >= 0; i -= 1) if (seriesA[i] !== null) return i; return -1; })();
-          return { panel, m, metric, rpeOff: false as const, seriesA, seriesB, bands, zone, zoneText, top, nWithData, held, lastIdx };
-        }),
-      )
-    : [];
-
-  const bucketLabels = buckets.map((bk) => ({ label: bk.label, long: grain === 'day' ? formatDate(bk.start, timezone) : `${formatDate(bk.start, timezone)} to ${formatDate(bk.end, timezone)}` }));
-
   return (
     <>
+      {/* The reports' rule (#18): desktop-only. Below 768px this notice is the
+          page — base.css's `.main:has(> .desk-note)` hides the rest — and the
+          More sheet carries no Analytics row. Presentation, not permission. */}
+      <DesktopOnlyNotice
+        title="Analytics is desktop-only"
+        body="Open Fydr on a desktop or laptop for the charts. Everything else is here on your phone."
+        action={{ href: '/dashboard', label: 'Back to Dashboard' }}
+      />
       <div className="topbar">
         <div className="page-head">
-          <p className="eyebrow">
-            {scopeLabel.toUpperCase()} · {orgName.toUpperCase()}
-          </p>
+          <p className="eyebrow">SAMPLE DATA · {orgName.toUpperCase()}</p>
           <h1>Analytics</h1>
         </div>
-        <div className="cmp-athletes">
-          <ReportSelectNav
-            stacked
-            label="Athlete"
-            paramKey="a"
-            value={aId ?? ''}
-            options={athletes.map((x) => ({ value: x.id, label: `${x.last_name}, ${x.first_name}` }))}
-            clearValue={athletes[0]?.id ?? ''}
-            ariaLabel="Athlete"
-          />
-          {comparing ? (
-            <ReportSelectNav
-              stacked
-              label="Compared with"
-              paramKey="b"
-              value={bId ?? ''}
-              options={athletes.filter((x) => x.id !== aId).map((x) => ({ value: x.id, label: `${x.last_name}, ${x.first_name}` }))}
-              clearValue={athletes.find((x) => x.id !== aId)?.id ?? ''}
-              ariaLabel="Athlete compared with"
-            />
-          ) : null}
-          <ReportSelectNav
-            stacked
-            label="Window"
-            paramKey="w"
-            value={String(days)}
-            options={WINDOWS.map((w) => ({ value: String(w.days), label: w.label }))}
-            clearValue={String(DEFAULT_WINDOW_DAYS)}
-            ariaLabel="Window"
-          />
-          {/* A link, not a switch: the whole comparison is a URL. */}
-          <Link href={`/analytics${qs({ compare: comparing ? undefined : '1', b: undefined })}`} className="squad-chip" aria-pressed={comparing} data-compare>
-            Compare two
-          </Link>
-        </div>
       </div>
 
-      <div className="cmp-against" style={{ marginBottom: 'var(--sp-14)' }}>
-        <span className="cmp-against-label">Compare against</span>
-        <GroupFilter groups={groups} selected={groupIds} variant="chips" />
-        <span className="cmp-against-n">
-          n = {athletes.length} · {scopeLabel.toLowerCase()}
-        </span>
-      </div>
+      <p className="apv-notice" data-preview-notice role="status">
+        <b>Design preview.</b> The charts show sample data while the analytics queries are built.
+      </p>
 
-      {!a ? (
-        <div className="empty">
-          <h2>Nobody in scope</h2>
-          <p>The group filter resolves to no athletes, so there is nothing to chart. Widen it and the four panels return.</p>
-        </div>
-      ) : (
-        <div className="cmp-grid">
-          {panelData.map((d) => {
-            const { panel, m } = d;
-            const windowWords = `last ${days} days, ${formatDate(range.from, timezone)} to ${formatDate(range.to, timezone)}`;
-            return (
-              <section key={panel.key} className="card" aria-labelledby={`p-${panel.key}`} data-panel={panel.key} data-measure={m.metric}>
-                <div className="cmp-card-head">
-                  {/* The heading is the selected measure's name where the
-                      panel offers a choice: the card says what its number is. */}
-                  <h2 className="cmp-card-title" id={`p-${panel.key}`}>
-                    {titleFor(panel, m)}
-                  </h2>
-                  <div className="cmp-card-controls">
-                    {d.rpeOff ? null : (
-                      <span className="cmp-picker-meta">
-                        {a.last_name}
-                        {b ? ` and ${b.last_name}` : ''}
-                      </span>
-                    )}
-                    {/* The measure, where the panel offers one: session load or
-                        the GPS family on Training load. A URL key per panel, so
-                        one panel's choice never moves another. */}
-                    {panel.param && panel.measures.length > 1 ? (
-                      <ReportSelectNav
-                        stacked
-                        label="Measure"
-                        paramKey={panel.param}
-                        value={m.metric}
-                        options={panel.measures.map((x) => ({ value: x.metric, label: measureName(x) }))}
-                        clearValue={panel.measures[0]!.metric}
-                        ariaLabel={`Measure for the ${panel.title} panel`}
-                      />
-                    ) : null}
-                  </div>
-                </div>
-                {d.rpeOff ? (
-                  /* Migration 0118: the club setting. The panel keeps its
-                     place and says why the plot is not drawn (the absence rule). */
-                  <p className="import-sub" style={{ marginBottom: 0 }} data-rpe-off>
-                    {rpeOffLine(`${measureName(m).toLowerCase()} on this panel`)}
-                  </p>
-                ) : (
-                  <>
-                    <p className="ap-def" data-definition>
-                      {m.sentence} · {windowWords} · {grainWords(m, grain)} · {groundWords({ zone: d.zoneText, nWithData: d.nWithData, scope: scopeLabel.toLowerCase(), grain })}.
-                    </p>
-                    {d.held ? (
-                      <div className="ap-suppressed" data-suppressed>
-                        <p style={{ margin: 0 }}>{d.held.reason}</p>
-                        <Link href={d.held.action.href} className="btn-ghost">
-                          {d.held.action.label}
-                        </Link>
-                      </div>
-                    ) : (
-                      <>
-                        {/* The figure: the latest bar, printed — never on hover alone. */}
-                        <p className="ap-figure" data-figure>
-                          {d.lastIdx >= 0 ? (
-                            <>
-                              <b>{fmt(d.seriesA[d.lastIdx]!, m.decimals)}{m.unit}</b> · {bucketLabels[d.lastIdx]!.long}
-                              {d.seriesB && d.seriesB[d.lastIdx] !== null ? ` · ${b!.last_name} ${fmt(d.seriesB[d.lastIdx]!, m.decimals)}${m.unit}` : ''}
-                              {' · '}
-                              <Link href={`/reports/athlete/${a.id}`}>full detail in the athlete report</Link>
-                            </>
-                          ) : (
-                            'No value in this window.'
-                          )}
-                        </p>
-                        <AnalyticsPanel
-                          title={titleFor(panel, m)}
-                          unit={m.unit}
-                          decimals={m.decimals}
-                          missingWord={m.missingWord}
-                          buckets={bucketLabels}
-                          a={{ label: a.last_name, values: d.seriesA }}
-                          b={b && d.seriesB ? { label: b.last_name, values: d.seriesB } : null}
-                          band={d.zone ? null : d.bands}
-                          zone={d.zone ? { lo: d.zone.lo, hi: d.zone.hi } : null}
-                          top={d.top}
-                          axisLine={axisWords(m, d.top, grain)}
-                        />
-                      </>
-                    )}
-                  </>
-                )}
-              </section>
-            );
-          })}
-        </div>
-      )}
+      <AnalyticsPreview sample={SAMPLE} />
+
       <p className="cap" data-no-export>
-        Analytics has no export. A question worth keeping leaves as a report — the athlete report, the squad weekly or the training load report carry a definition, a row count, a print layout and an audit row.
+        Analytics has no export. A question worth keeping leaves as a report — the athlete report, the squad weekly or the training load report carry a definition, a row count, a
+        print layout and an audit row.
       </p>
     </>
   );

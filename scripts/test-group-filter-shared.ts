@@ -76,14 +76,17 @@ console.log('\nthe sweep: every screen with a chip row resolves through the cook
      athlete report (one athlete, the filter deliberately off — route map §6.2)
      uses the pager without one. */
   const withChips = pages.filter((p) => { const src = strip(read(p)); return /<GroupFilter\b|<ReportHeader\b/.test(src) || (/<ReportPager\b/.test(src) && /header=\{/.test(src)); });
-  expectCount('staff screens rendering a group filter (GroupFilter, ReportHeader or a ReportPager header)', withChips, 22); // +1 on 16 Sept 2026: /dashboard/match (3.4)
+  expectCount('staff screens rendering a group filter (GroupFilter, ReportHeader or a ReportPager header)', withChips, 21); // +1 on 16 Sept 2026: /dashboard/match (3.4); −1 on 17 Sept: /analytics is a sample-data preview with its own client dropdown, no scope to filter
   const notResolving = withChips.filter((p) => !/resolveGroupFilter\(/.test(strip(read(p))));
   assert(notResolving.length === 0, notResolving.length === 0
     ? 'every one of them resolves its scope through resolveGroupFilter() — URL first, then the cookie'
     : `these read the URL only or nothing: ${notResolving.map((p) => p.replace('src/app/(staff)/', '')).join(', ')}`);
   const raw = withChips.filter((p) => /parseGroupParam\(/.test(strip(read(p))));
   assert(raw.length === 0, raw.length === 0 ? 'and none bypasses it with a raw parseGroupParam() of the URL' : `raw URL reads: ${raw.join(', ')}`);
-  for (const must of ['squad/page.tsx', 'reports/squad/page.tsx', 'reports/gps/page.tsx', 'reports/compliance/page.tsx', 'dashboard/page.tsx', 'flags/page.tsx', 'nutrition/page.tsx', 'leaderboards/page.tsx', 'analytics/page.tsx']) {
+  /* 17 Sept 2026: analytics left the sweep — a design preview of sample
+     data with a client-state group dropdown; CLAUDE.md §3 is about athlete
+     data and none is on that page. It returns with the real panels. */
+  for (const must of ['squad/page.tsx', 'reports/squad/page.tsx', 'reports/gps/page.tsx', 'reports/compliance/page.tsx', 'dashboard/page.tsx', 'flags/page.tsx', 'nutrition/page.tsx', 'leaderboards/page.tsx']) {
     assert(withChips.some((p) => p.endsWith(must)), `${must} is in the sweep`);
   }
 }

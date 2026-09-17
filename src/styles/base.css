@@ -11147,6 +11147,114 @@ button.dash-stat[aria-expanded='true'] .dash-stat-state {
   margin: var(--sp-6) 0 0;
   font-variant-numeric: tabular-nums;
 }
+/* ---------- the analytics design preview (17 Sept 2026) ----------
+   Four hand-drawn SVG charts from sample arrays, three client dropdowns.
+   Composed from the analytics panel's own classes (.cmp-grid, .cmp-card-title,
+   .ap-def, .ap-plot, .ap-x, .ap-axis) plus these: the notice on the wash
+   surface the report figure uses; the controls row, the compare row's
+   shape; a y-axis column beside each plot (the labels are HTML, never text
+   inside a stretched SVG); a legend of swatches with the word beside each;
+   and the ratio chart's name and value columns either side of its bars.
+   Tokens only, no new colour. */
+.apv-notice {
+  margin: 0 0 var(--sp-14);
+  padding: var(--sp-10) var(--sp-14);
+  border-radius: var(--r);
+  background: var(--wash-accent);
+  border: 1px solid var(--border-accent-soft);
+  font-size: var(--fs-13);
+  color: var(--text);
+}
+.apv-notice b {
+  color: var(--accent-on-wash);
+}
+.apv-controls {
+  display: flex;
+  align-items: flex-end;
+  gap: var(--sp-10);
+  flex-wrap: wrap;
+  margin-bottom: var(--sp-14);
+}
+.apv-scope {
+  margin: 0 0 var(--sp-2) auto;
+  font-size: var(--fs-12);
+  color: var(--muted);
+}
+.apv-plot {
+  display: grid;
+  grid-template-columns: auto minmax(0, 1fr);
+  gap: var(--sp-8);
+  align-items: stretch;
+}
+.apv-plot-rows {
+  grid-template-columns: auto minmax(0, 1fr) auto;
+}
+.apv-y {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  align-items: flex-end;
+  font-size: var(--fs-11);
+  line-height: 1;
+  color: var(--faint);
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  /* The plot's own top pad and baseline (14 and 10 of its 220px), less half
+     a label's height, so the three labels sit on the top, the middle and
+     the axis line. */
+  padding: var(--sp-8) 0 var(--sp-4);
+}
+/* The x labels, the axis line and the hidden table: the grid's second row,
+   in the plot's column, so they start at the plot's left edge. */
+.apv-under {
+  grid-column: 2;
+}
+.apv-rows {
+  display: flex;
+  flex-direction: column;
+  font-size: var(--fs-11);
+  color: var(--muted);
+  white-space: nowrap;
+}
+.apv-rows > span {
+  display: flex;
+  align-items: center;
+}
+.apv-rows-values {
+  font-variant-numeric: tabular-nums;
+  font-weight: var(--w-semi);
+}
+.apv-legend {
+  list-style: none;
+  margin: 0 0 var(--sp-10);
+  padding: 0;
+  display: flex;
+  flex-wrap: wrap;
+  gap: var(--sp-6) var(--sp-14);
+  font-size: var(--fs-12);
+  color: var(--text);
+}
+.apv-legend li {
+  display: inline-flex;
+  align-items: center;
+  gap: var(--sp-6);
+}
+.apv-swatch {
+  display: inline-block;
+  width: 14px;
+  height: 10px;
+  border-radius: 2px;
+  border: 1px solid var(--border);
+}
+.apv-swatch[data-shape='line'] {
+  height: 3px;
+  border: none;
+  border-radius: var(--r-full);
+}
+.apv-legend-note {
+  color: var(--muted);
+}
+
 .ap-suppressed {
   border: 1px dashed var(--border-strong);
   border-radius: var(--r);

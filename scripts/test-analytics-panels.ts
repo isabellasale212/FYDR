@@ -128,21 +128,34 @@ console.log('\n6. suppression and the page');
   assert(held !== null && held.reason === 'Not drawn: Dan Okonkwo has 2 weeks with a value in the last 84 days, out of 13 — fewer than 3. Nothing here is estimated from less.' && held.action.label === 'Widen the window', 'withheld with its reason and one action');
   assert(suppression({ points: 0, buckets: 26, grain: 'week', days: 182, athleteName: 'Dan Okonkwo', widenHref: null, reportHref: '/reports/athlete/x' })!.action.label === "Open Dan Okonkwo's report", 'at the widest window the action is the athlete\'s report');
   assert(suppression({ points: 3, buckets: 13, grain: 'week', days: 84, athleteName: 'x', widenHref: null, reportHref: 'y' }) === null, 'three draws');
+  /* REPINNED 17 Sept 2026: the page is a DESIGN PREVIEW while the analytics
+     queries are built — four hand-drawn SVG charts from sample arrays named
+     SAMPLE_*, three client dropdowns, a visible notice, no read beyond the
+     two gates. The C6 panels (lib/analyticsPanels, AnalyticsPanel,
+     fetchPerAthleteDaily) stay in the tree, guarded above, for the real page
+     to draw from. What is pinned on the page now is the preview's own shape. */
   const page = strip(read('src/app/(staff)/analytics/page.tsx'));
   assert(/data-no-export/.test(page) && /Analytics has no export/.test(page) && !/Export CSV|Export PDF|\/export|\/pdf/.test(page), 'no export of its own');
-  assert(/data-definition/.test(page) && /groundWords\(/.test(page) && /grainWords\(/.test(page), 'every panel states what it measures, the window, the grain, the ground and n');
-  assert(/data-figure/.test(page) && /full detail in the athlete report/.test(page), 'the latest value is printed with a link to the report');
-  assert(/fetchPerAthleteDaily\(db, orgId, metric, range, groupIds, null\)/.test(page), 'one read per panel: the whole scope, A and B and the band from the same maps');
-  assert(/ap-suppressed/.test(page) && /btn-ghost/.test(page), 'the withheld card carries its 44px action');
+  assert(/data-preview-notice/.test(page) && /<b>Design preview\.<\/b> The charts show sample data while the analytics queries are built\./.test(page), 'the notice, in those words');
+  assert(/const SAMPLE_WEEKS/.test(page) && /const SAMPLE_SESSION_LOAD_AU/.test(page) && /const SAMPLE_TOTAL_DISTANCE_M/.test(page) && /const SAMPLE_ACWR/.test(page) && /const SAMPLE_READINESS/.test(page) && /const SAMPLE_DISTANCE_BY_TYPE_M/.test(page), 'every number is a SAMPLE_ array in the page file');
+  assert(!/fetchPerAthleteDaily|fetchGroups|fetchBuilderAthletes|fetchThresholds|resolveGroupFilter|analytics_daily_rows/.test(page), 'the page reads nothing beyond its gates');
+  assert(/<AnalyticsPreview sample=\{SAMPLE\} \/>/.test(page), 'and hands the sample to the preview component');
   assert(!/analytics\/build/.test(page), 'no builder link');
-  assert(/data-measure=\{m\.metric\}/.test(page) && /label="Measure"/.test(page) && /paramKey=\{panel\.param\}/.test(page), 'the load panel carries its measure control; each panel its own URL key');
-  assert(/<h2 className="cmp-card-title" id=\{`p-\$\{panel\.key\}`\}>\s*\{titleFor\(panel, m\)\}/.test(page) && /\{m\.sentence\} · \{windowWords\}/.test(page) && !/\{panel\.title\}\s*<\/h2>/.test(page), 'select changes measure, heading and definition together');
+  const preview = strip(read('src/components/AnalyticsPreview/AnalyticsPreview.tsx'));
+  assert(/'use client'/.test(preview) && (preview.match(/<select /g) ?? []).length === 3 && /useState<'squad' \| GroupKey>/.test(preview) && /useState<4 \| 8 \| 12>/.test(preview) && /useState<MeasureKey>/.test(preview), 'three real selects holding client state');
+  assert(!/fetch\(|createClient|useRouter|useSearchParams|from\(/.test(preview), 'and nothing in the preview hits the server');
+  assert((preview.match(/<svg[\s>]/g) ?? []).length === 4 && !/recharts|chart\.js|d3|nivo|visx/i.test(preview), 'four inline SVGs, no chart library');
+  assert(!/#[0-9a-f]{3,6}\b/i.test(preview.replace(/&#9660;/g, '')), 'tokens only — no raw colour in the preview');
+  assert(/MET-007/.test(preview) && /MET-017/.test(preview) && /MET-008/.test(preview) && /MET-009/.test(preview) && /MET-010/.test(preview) && /MET-002/.test(preview) && /MET-006/.test(preview), 'every caption names its registry entry');
+  assert(/0\.8 to 1\.5 is the display band, not the alert/.test(preview) && /fewer than 21 of the trailing 28 days/.test(preview), 'the ratio caption carries MET-010\'s band convention and suppression rule, not an invented cutoff');
+  assert((preview.match(/className="visually-hidden"/g) ?? []).length === 4 && (preview.match(/<Legend/g) ?? []).length === 4, 'a legend and a hidden table of every value under each chart');
+  assert(/<DesktopOnlyNotice/.test(page) && /Analytics is desktop-only/.test(page), 'desktop-only, the reports\' rule, with the notice at phone width');
 }
 
 console.log('\n7. premium: gone under D-20, and gated at the database (0125)');
 {
   const page = strip(read('src/app/(staff)/analytics/page.tsx'));
-  assert(/if \(!isPremium\(tier\)\) await refuse\(db, 'analytics_premium', '\/analytics'\);/.test(page), 'a basic club is refused at the URL, logged');
+  assert(/if \(!isPremium\(tier\)\) await refuse\(db, 'analytics_premium', '\/analytics'\);/.test(page) && /await refuse\(db, 'analytics', '\/analytics'\)/.test(page), 'a basic club is refused at the URL, logged — the two gates unchanged under the preview (17 Sept 2026)');
   assert(!/PlanGate/.test(page) && !/Upgrade|upsell/i.test(page), 'no upsell page: discovery lives on the Settings plan page, one place');
   assert(PREMIUM_ONLY.has('staff.analytics'), 'and the sidebar row is absent for a basic club');
   const q = strip(read('src/lib/queries/analytics.ts'));

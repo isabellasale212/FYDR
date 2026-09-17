@@ -4,6 +4,48 @@
 
 **Analytics**, at `/analytics`.
 
+**A DESIGN PREVIEW SINCE 17 SEPTEMBER 2026.** The page draws four charts from
+sample arrays while the analytics queries are built, and says so in a notice
+at the top: "Design preview. The charts show sample data while the analytics
+queries are built." Nothing on it reads the database beyond the two gates in
+§2, which are unchanged. The four data panels described from §4 on are what
+the page drew until then and what it returns to; their engine
+(`lib/analyticsPanels`, `components/AnalyticsPanel`, `fetchPerAthleteDaily`
+through `analytics_daily_rows`, 0125) is in the tree, guarded and untouched.
+
+**The preview** (`src/app/(staff)/analytics/page.tsx` holds every number as a
+`SAMPLE_*` array; `components/AnalyticsPreview` draws them):
+
+- Three dropdowns in a row — **Group** (Whole squad · Forwards · Backs),
+  **Date range** (last 4 · 8 · 12 weeks), **Measure** (Session load · Total
+  distance) — real `<select>` elements holding client state; changing one
+  swaps which sample series is drawn. No URL, no cookie, no read. The global
+  group filter's chips are not drawn: there is no athlete data on the page to
+  scope (CLAUDE.md §3 is about athlete data).
+- Four charts, inline SVG drawn by hand, no chart library, side by side at
+  desktop width and one column below 1100px, each with a title, a one-line
+  caption naming its registry entry, a legend, axis labels with units, and a
+  visually-hidden table of every value: (1) the measure over the weeks, one
+  line a group — session load (MET-007, CR-10 × minutes, AU) or total distance
+  (MET-017, metres), summed per athlete over the week and averaged across the
+  group; (2) the acute to chronic ratio across the athletes in scope
+  (MET-010: MET-008 over MET-009, withheld below 21 of 28 days), horizontal
+  bars worst first, banded below 0.8 · 0.8 to 1.5 · above 1.5 — the
+  registry's display band, with the caption saying the flag rule is the
+  club's own threshold; (3) readiness, the analytics version (MET-002), the
+  group's daily mean as a line with the 14-day mean ± 1 SD band behind it
+  (MET-006) — **14 days, not 7: the registry has no 7-day rolling mean, so the
+  chart draws the band it defines**; (4) total distance by session type
+  (MET-017), stacked bars by week, training · match · testing in the
+  schedule's own tones.
+- Tokens only: the accent and `--accent2` for the two groups, the three
+  semantic tones for the ratio's bands and the session types, `--track` and
+  `--tick` for bands and gridlines; no new colour. Nothing inside a stretched
+  SVG is text — labels, units and legends are HTML beside and beneath it.
+- Desktop-only, the reports' rule: below 768px the desktop-only notice
+  stands in for the page and the More sheet carries no Analytics row.
+- No export, as before.
+
 Four fixed panels of bars — **the load panel** (headed by the measure it draws:
 Session load by default, or one of the GPS family), **Wellness**, **Gym
 volume**, **Acute to chronic** — one athlete against the squad's spread, or

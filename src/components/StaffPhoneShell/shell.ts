@@ -54,7 +54,9 @@ export function barRows(roles: readonly AppRole[], premium: boolean): PhoneRow[]
  *  this is the phone's presentation, not a permission. A tablet held upright
  *  or a narrow desktop window sees the same sheet (the breakpoint's known
  *  consequence). */
-const PHONE_HIDDEN = new Set(['/reports']);
+/* Analytics too (17 Sept 2026): desktop-only, the reports' rule — its page
+ *  draws the notice below 768px, so the sheet carries no row to it. */
+const PHONE_HIDDEN = new Set(['/reports', '/analytics']);
 
 /** BY ROLE AT PHONE WIDTH (Isabella, 16 Sept 2026, overnight queue 2.3 and
  *  2.4): Nutrition is the nutritionist's on a phone and Gym programme the

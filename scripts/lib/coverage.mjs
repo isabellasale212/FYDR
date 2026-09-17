@@ -40,18 +40,19 @@ export class CoverageError extends Error {}
    GroupRowActions, DashboardTabs), +1 page (dashboard/match) — twelve. */
 /* 16 Sept 2026 (the evening queue, 2.7): + src/components/TestLogPicker/
    TestLogPicker.tsx — srcFiles, srcTs, srcTsx, componentTsx, componentTs
-   each one up. */
+   each one up. 17 Sept 2026: + src/components/AnalyticsPreview/
+   AnalyticsPreview.tsx (the analytics design preview), the same five up. */
 export const COUNTS = {
   /** supabase/migrations/*.sql */
   migrations: 133,
   /** supabase/tests/*.sql (pgTAP) */
   pgtapTests: 94,
   /** every file under src, of any kind */
-  srcFiles: 564,
+  srcFiles: 565,
   /** .ts and .tsx under src */
-  srcTs: 559,
+  srcTs: 560,
   /** .tsx under src */
-  srcTsx: 311,
+  srcTsx: 312,
   /** .css under src (src/styles) */
   srcCss: 2,
   /** page.tsx under src/app/(staff) */
@@ -63,9 +64,9 @@ export const COUNTS = {
   /** .tsx under src/app/(athlete) */
   athleteTsx: 27,
   /** .tsx under src/components */
-  componentTsx: 174,
+  componentTsx: 175,
   /** .ts and .tsx under src/components */
-  componentTs: 180,
+  componentTs: 181,
   /** .tsx under src/app */
   appTsx: 136,
   /** .ts and .tsx under src/app */

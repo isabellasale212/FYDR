@@ -74,7 +74,11 @@ console.log('\n4. every dependent surface says so');
     ['src/app/(staff)/dashboard/page.tsx', /t\.off/, 'rendered by the dashboard as words, not a bar'],
     ['src/app/(staff)/leaderboards/[leaderboardId]/page.tsx', /isRpeMetric\(board\.metric_key\) && !collectsRpe/, 'the effort board'],
     ['src/app/(staff)/leaderboards/manage/page.tsx', /Ranks nothing while session RPE is off/, 'the board list'],
-    ['src/app/(staff)/analytics/page.tsx', /!collectsRpe && isRpeAnalyticsMetric\(metric\.key\)/, 'the analytics panels'],
+    /* 17 Sept 2026: the analytics page is a design preview of SAMPLE data
+       (its notice says so) and reads no club setting; the RPE-off line
+       returns with the real panels, which lib/analyticsPanels still
+       carries the measure for. Pinned to the notice until then. */
+    ['src/app/(staff)/analytics/page.tsx', /data-preview-notice/, 'the analytics page (a sample-data preview, 17 Sept 2026; the RPE-off line returns with the real panels)'],
     ['src/app/(staff)/reports/squad/page.tsx', /rpeOffLine\('the load section'\)/, 'the squad report\'s load section'],
     ['src/app/(staff)/reports/athlete/[athleteId]/page.tsx', /rpeOffLine\('session load'\)/, 'the athlete report\'s load card'],
     ['src/app/(staff)/squad/[athleteId]/page.tsx', /rpeOffLine\('this ratio'\)/, 'the profile\'s ACWR dial'],

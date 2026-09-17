@@ -68,9 +68,12 @@ console.log('1. the bar and the sheet, by role');
      nutritionist's on a phone and Gym programme the S&C's — hidden by role
      for the sport scientist here, never "not permitted" (enforcement after
      Friday); and Testing has a row of its own. */
-  const phoneSidebar = visibleSidebar.filter((r) => r !== '/reports' && r !== '/nutrition' && r !== '/programmes');
-  assert(phoneSidebar.every((r) => all.includes(r)) && all.includes('/flags') && all.includes('/testing'), 'every sidebar destination but Reports, Nutrition and Gym programme, plus Flags and Testing, is reachable');
-  assert(!all.includes('/reports'), 'Reports has no row on a phone (#18, desktop-only; presentation, not permission)');
+  /* 17 Sept 2026: Analytics is desktop-only too (the reports' rule) — its
+     page draws the notice below 768px, so the sheet has no row to it and
+     nothing at phone width leads to a desktop-only notice (2.2). */
+  const phoneSidebar = visibleSidebar.filter((r) => r !== '/reports' && r !== '/analytics' && r !== '/nutrition' && r !== '/programmes');
+  assert(phoneSidebar.every((r) => all.includes(r)) && all.includes('/flags') && all.includes('/testing'), 'every sidebar destination but Reports, Analytics, Nutrition and Gym programme, plus Flags and Testing, is reachable');
+  assert(!all.includes('/reports') && !all.includes('/analytics'), 'Reports and Analytics have no row on a phone (#18 and 17 Sept 2026, desktop-only; presentation, not permission)');
   assert(!all.includes('/nutrition') && !all.includes('/programmes'), 'nor Nutrition or Gym programme for the sport scientist (2.3, 2.4: hidden by role at phone width; enforcement after Friday)');
   assert(sheetRows(['nutritionist'], true).some((r) => r.route === '/nutrition') || barRows(['nutritionist'], true).some((r) => r.route === '/nutrition'), 'the nutritionist reaches Nutrition (the bar\'s fourth slot)');
   assert(barRows(['strength_conditioning'], true).some((r) => r.route === '/programmes'), 'and the S&C reaches Gym programme (the bar\'s fourth slot)');
